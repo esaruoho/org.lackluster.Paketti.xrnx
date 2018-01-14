@@ -433,7 +433,7 @@ if t.edit_mode==false and t.follow_player==false and t.metronome_enabled==false 
    t.edit_mode=false
    t.follow_player=false
    t.metronome_enabled=false end
-if t.playing==false then t.playing=true t.metronome_enabled=true t.follow_player=true t.edit_mode=true else end
+if t.playing==false then t.playing=true t.metronome_enabled=true t.follow_player=true t.edit_mode=true end
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Record+Follow+Metronome Toggle",invoke=function() RecordFollowMetronomeToggle() end}
@@ -465,7 +465,7 @@ renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Record+Follow Off",inv
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 function WipeEfxFromSelection()
---thanks to joule for assistance1+2! (2018)
+--thanks to joule for assistance!
 local s = renoise.song()
 
 if s.selection_in_pattern==nil then return end
@@ -799,6 +799,7 @@ renoise.tool():add_keybinding{name="Global:Paketti:2nd Fullscreen...",invoke=fun
 
 ------------------------
 function efxwrite(effect,x,y)
+local s=renoise.song()
 local counter=nil 
 local currentamount=nil
 local old_x=nil
@@ -806,22 +807,20 @@ local old_y=nil
 local new_x=nil
 local new_y=nil
 
-for i=renoise.song().selection_in_pattern.start_line,renoise.song().selection_in_pattern.end_line 
+for i=s.selection_in_pattern.start_line,renoise.song().selection_in_pattern.end_line 
 do 
-
 if 
-renoise.song():pattern(renoise.song().selected_pattern_index):track(renoise.song().selected_track_index):line(i):effect_column(1).amount_value == 0 and (x < 0 or y < 0)
-then renoise.song():pattern(renoise.song().selected_pattern_index):track(renoise.song().selected_track_index):line(i):effect_column(1).number_string="" 
-
+s:pattern(s.selected_pattern_index):track(s.selected_track_index):line(i):effect_column(1).amount_value == 0 and (x < 0 or y < 0)
+then s:pattern(s.selected_pattern_index):track(s.selected_track_index):line(i):effect_column(1).number_string="" 
 else
-renoise.song():pattern(renoise.song().selected_pattern_index):track(renoise.song().selected_track_index):line(i):effect_column(1).number_string=effect
-old_y=renoise.song():pattern(renoise.song().selected_pattern_index):track(renoise.song().selected_track_index):line(i):effect_column(1).amount_value % 16
-old_x=math.floor (renoise.song():pattern(renoise.song().selected_pattern_index):track(renoise.song().selected_track_index):line(i):effect_column(1).amount_value/16)
+s:pattern(s.selected_pattern_index):track(s.selected_track_index):line(i):effect_column(1).number_string=effect
+old_y=s:pattern(s.selected_pattern_index):track(s.selected_track_index):line(i):effect_column(1).amount_value % 16
+old_x=math.floor (s:pattern(s.selected_pattern_index):track(s.selected_track_index):line(i):effect_column(1).amount_value/16)
 
 new_x=old_x+x
 new_y=old_y+y
-print ("new_x: " .. new_x)
-print ("new_y: " .. new_y)
+--print ("new_x: " .. new_x)
+--print ("new_y: " .. new_y)
 if new_x > 15 then new_x = 15 end
 if new_y > 15 then new_y = 15 end
 if new_y < 1 then new_y = 0 end
@@ -829,7 +828,7 @@ if new_x < 1 then new_x = 0 end
 
 counter=(16*new_x)+new_y  
 
-renoise.song():pattern(renoise.song().selected_pattern_index):track(renoise.song().selected_track_index):line(i):effect_column(1).amount_value=counter 
+s:pattern(s.selected_pattern_index):track(s.selected_track_index):line(i):effect_column(1).amount_value=counter 
 end
 end
 end
@@ -1030,24 +1029,23 @@ local nol=nil
       renoise.song().selected_pattern.number_of_lines=nol
 
 number=renoise.song().transport.lpb*2
-if number == 1 then number = 2 else end
+if number == 1 then number = 2 end
 if number > 128 then number=128 
 renoise.song().transport.lpb=number
-write_bpm()
-Deselect_All()
-MarkTrackMarkPattern()
-MarkTrackMarkPattern()
-ExpandSelection()
-Deselect_All()
-return
-else end
+  write_bpm()
+  Deselect_All()
+  MarkTrackMarkPattern()
+  MarkTrackMarkPattern()
+  ExpandSelection()
+  Deselect_All()
+  return end
 renoise.song().transport.lpb=number
-write_bpm()
-Deselect_All()
-MarkTrackMarkPattern()
-MarkTrackMarkPattern()
-ExpandSelection()
-Deselect_All()
+  write_bpm()
+  Deselect_All()
+  MarkTrackMarkPattern()
+  MarkTrackMarkPattern()
+  ExpandSelection()
+  Deselect_All()
 end}
 
 renoise.tool():add_keybinding{name="Global:Paketti:Clone and Shrink Pattern to LPB/2",invoke=function()
@@ -1066,14 +1064,13 @@ local nol=nil
       renoise.song().selected_pattern.number_of_lines=nol
 
 number=renoise.song().transport.lpb/2
-if number == 1 then number = 2 else end
+if number == 1 then number = 2 end
 if number > 128 then number=128 
 renoise.song().transport.lpb=number
-write_bpm()
-return
-else end
+  write_bpm()
+return end
 renoise.song().transport.lpb=number
-write_bpm()
+  write_bpm()
 end}
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1553,8 +1550,7 @@ function adjust_quantize(quant_delta)
   if t.record_quantize_enabled==false and t.record_quantize_lines == 1 then
   t.record_quantize_lines = 1
   t.record_quantize_enabled=true
-  return
-  else end  
+  return end  
     t.record_quantize_lines=math.max(1, math.min(32, t.record_quantize_lines + quant_delta))
     t.record_quantize_enabled=true
 renoise.app():show_status("Record Quantize Lines : " .. t.record_quantize_lines)
