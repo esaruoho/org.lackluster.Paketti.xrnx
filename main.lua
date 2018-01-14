@@ -465,7 +465,7 @@ renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Record+Follow Off",inv
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 function WipeEfxFromSelection()
---thanks to joule for assistance!
+--thanks to joule for assistance1+2(2018)!
 local s = renoise.song()
 
 if s.selection_in_pattern==nil then return end
@@ -1397,38 +1397,73 @@ renoise.tool():add_keybinding{name="Pattern Editor:Paketti:dblue Expand + Resize
 local pattern = renoise.song().selected_pattern
 resize_pattern(pattern, pattern.number_of_lines * 2,1) end}
 
-function jouledoubler()
-local old_patternlength = renoise.song().selected_pattern.number_of_lines
-local s=renoise.song()
-local resultlength = nil
+function joulepatterndoubler()
+ local s=renoise.song()
+ local old_patternlength = s.selected_pattern.number_of_lines
+ local resultlength = nil
 --Note, when doubling up a 512 pattern, this will shoot a "can't change number_of_lines to 1024" error. fix.
 --Note: tried to fix, still shoots 1024 error in Terminal.
-resultlength = old_patternlength*2
-if resultlength > 512 then return 
-else 
-renoise.song().selected_pattern.number_of_lines = resultlength
-if old_patternlength >256 then return
-else
- for track in ipairs(s.selected_pattern.tracks) do
-  if not renoise.song().selected_pattern.tracks[track].is_empty then
-   for line in ipairs(s.selected_pattern.tracks[track].lines) do
-    if line <= old_patternlength then
-s.selected_pattern.tracks[track]:line(line+old_patternlength):copy_from(s.selected_pattern.tracks[track]:line(line))
+  resultlength = old_patternlength*2
+if not (resultlength > 512) then
+
+  s.selected_pattern.number_of_lines = resultlength
+
+  for track_index, patterntrack in ipairs(s.selected_pattern.tracks) do
+    if not patterntrack.is_empty then
+      for line_index, line in ipairs(patterntrack.lines) do
+        if line_index <= old_patternlength then
+          if not line.is_empty then
+            patterntrack:line(line_index+old_patternlength):copy_from(line)
+          else
+            patterntrack:line(line_index+old_patternlength):clear()
+          end
+        end
+      end
     end
-   end
   end
- end
- end
+  
+else
+  return
+end
 --Modification, cursor is placed to "start of "clone""
- --renoise.song().selected_line_index = old_patternlength+1
- renoise.song().selected_line_index = old_patternlength+renoise.song().selected_line_index
- renoise.song().transport.edit_step=0
+--renoise.song().selected_line_index = old_patternlength+1
+ s.selected_line_index = old_patternlength+s.selected_line_index
+ s.transport.edit_step=0
 
 end
+
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Joule Pattern Doubler",invoke=function() joulepatterndoubler() end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Joule Pattern Doubler",invoke=function() joulepatterndoubler() end}  
+
+function joulephrasedoubler()
+  local old_phraselength = renoise.song().selected_phrase.number_of_lines
+  local s=renoise.song()
+  local resultlength = nil
+--Note, when doubling up a 512 pattern, this will shoot a "can't change number_of_lines to 1024" error. fix.
+--Note: tried to fix, still shoots 1024 error in Terminal.
+  resultlength = old_phraselength*2
+if resultlength > 512 then return else s.selected_phrase.number_of_lines=resultlength
+
+if old_phraselength >256 then return else 
+for line_index, line in ipairs(s.selected_phrase.lines) do
+   if not line.is_empty then
+     if line_index <= old_phraselength then
+       s.selected_phrase:line(line_index+old_phraselength):copy_from(line)
+     end
+   end
+ end
 end
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Joule Pattern Doubler",invoke=function() jouledoubler() end}
-renoise.tool():add_keybinding{name="Global:Paketti:Joule Pattern Doubler",invoke=function() jouledoubler() end}    
-renoise.tool():add_keybinding{name="Global:Paketti:Joule Pattern Doubler (2nd bind)",invoke=function() jouledoubler() end}    
+--Modification, cursor is placed to "start of "clone""
+--commented away because there is no way to set current_phrase_index.
+  -- renoise.song().selected_line_index = old_patternlength+1
+  -- renoise.song().selected_line_index = old_phraselength+renoise.song().selected_line_index
+  -- renoise.song().transport.edit_step=0
+end
+end
+
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Joule Phrase Doubler (2nd bind)",invoke=function() joulepatterndoubler() end}    
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Joule Phrase Doubler",invoke=function() joulephrasedoubler() end}  
+
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 --cortex.scripts.CaptureOctave
