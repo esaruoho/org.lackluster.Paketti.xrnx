@@ -465,7 +465,7 @@ renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Record+Follow Off",inv
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 function WipeEfxFromSelection()
---thanks to joule for assistance!
+--thanks to joule for assistance1+2! (2018)
 local s = renoise.song()
 
 if s.selection_in_pattern==nil then return end
@@ -474,13 +474,14 @@ local ecvisible = s:track(s.selected_track_index).visible_effect_columns
 local pattern_track = s:pattern(s.selected_pattern_index):track(s.selected_track_index)
 
 for line_index = s.selection_in_pattern.start_line, s.selection_in_pattern.end_line do
-  local line = pattern_track:line(line_index)
-  for effect_column_index = 1, ecvisible do
-    line:effect_column(effect_column_index):clear()
+    local line = pattern_track:line(line_index)
+    if not line.is_empty then
+      for effect_column_index = 1, ecvisible do
+        line:effect_column(effect_column_index):clear()
+      end
+    end
   end
 end
-
-end 
 renoise.tool():add_keybinding{name = "Global:Paketti:Wipe Effects From Selection", invoke = function() WipeEfxFromSelection() end}
 ----------------
 --rescued from ImpulseBuddy by Protman! I have no idea how many of these were originally a part of Paketti, or something else, but
