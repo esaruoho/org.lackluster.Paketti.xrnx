@@ -30,7 +30,7 @@ w.lower_frame_is_visible=false
 w.upper_frame_is_visible=false
 w.pattern_advanced_edit_is_visible=false
 --w.disk_browser_is_visible=false
-return else end end
+return end end
 renoise.tool():add_keybinding {name="Global:Paketti:Impulse Tracker F2 Pattern Editor", invoke=function() F2() end}
 
 ----------------------------------------------------------------------------------------------------------------
@@ -77,7 +77,7 @@ return
 else end
 
 if w.active_upper_frame == renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR then w.active_upper_frame = renoise.ApplicationWindow.UPPER_FRAME_TRACK_SCOPES 
-w.upper_frame_is_visible=true return else end
+w.upper_frame_is_visible=true return end
 
 if w.active_middle_frame==renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR and w.lower_frame_is_visible==false and w.pattern_advanced_edit_is_visible==false and w.upper_frame_is_visible==false then
 w.upper_frame_is_visible=true
@@ -629,30 +629,29 @@ function homehome()
 -- If on Master or Send-track, detect and go to first effect column.
 if s.selected_note_column_index==0 and s.selected_effect_column_index > 1 and song_pos.line == 1 and renoise.song().tracks[renoise.song().selected_track_index].visible_note_columns==0 then
 s.selected_effect_column_index = 1
-return else end
+return end
 
 -- If on Master or Send-track, detect and go to 1st track and first note column.
 if s.selected_note_column_index==0 and song_pos.line == 1 and renoise.song().tracks[renoise.song().selected_track_index].visible_note_columns==0 then
 s.selected_track_index = 1
 s.selected_note_column_index = 1
-return else end
+return end
 
 -- If Effect-columns chosen, take you to current effect column's first row.
 if s.selected_note_column_index==0 and song_pos.line == 1 then
-s.selected_note_column_index=1 return else end
+s.selected_note_column_index=1 return end
 
 if s.selected_note_column_index==0 then 
 song_pos.line = 1
 s.transport.edit_pos = song_pos
-return else end
+return end
 
 
 -- If Song Position Line is already First Line - but Selected Note Column is not 1
 -- Then go to Selected Note Column 1 First Line. Return outside of script immediately.
 if song_pos.line == 1 and s.selected_note_column_index > 1 then
 s.selected_note_column_index = 1
-return
-else end
+return end
 
 -- If Song Position Line is not 1, and Selected Note Column is not 1
 -- Then go to Selected Note Column's First Line. Return outside of script immediately.
@@ -660,9 +659,7 @@ if (s.selected_note_column_index > 1) then
 s.selected_note_column_index = selcol
 song_pos.line = 1
 s.transport.edit_pos = song_pos 
-return
-else 
-end
+return end
 
   if (song_pos.line > 1) then
     song_pos.line = 1          
@@ -713,23 +710,23 @@ end
 -- If on Master or Send-track, detect and go to first effect column.
 if s.selected_note_column_index==0 and s.selected_effect_column_index > 1 and song_pos.line == 1 and renoise.song().tracks[renoise.song().selected_track_index].visible_note_columns==0 then
 s.selected_effect_column_index = 1
-return else end
+return end
 
 -- If on Master or Send-track, detect and go to 1st track and first note column.
 if s.selected_note_column_index==0 and song_pos.line == 1 and renoise.song().tracks[renoise.song().selected_track_index].visible_note_columns==0 then
 s.selected_track_index = renoise.song().sequencer_track_count
 s.selected_note_column_index = 0
-return else end
+return end
 
 -- If Effect-columns chosen, take you to current effect column's first row.
 if s.selected_note_column_index==0 and song_pos.line == number then
 s.selected_note_column_index=renoise.song().sequencer_track_count+1
- return else end
+return end
 --]]
 if s.selected_note_column_index==0 then 
 song_pos.line = number
 s.transport.edit_pos = song_pos
-return else end
+return end
 
 --[[--
 -- If Song Position Line is already First Line - but Selected Note Column is not 1
