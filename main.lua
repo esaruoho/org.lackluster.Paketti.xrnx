@@ -9,18 +9,14 @@ else renoise.song().transport.edit_mode=true end
 end}
 
 renoise.tool():add_keybinding{name="Sample Editor:Paketti:Disk Browser Focus",invoke=function()
-renoise.app().window:select_preset(7)
-end}
+renoise.app().window:select_preset(7) end}
 renoise.tool():add_midi_mapping{name="Sample Editor:Paketti:Disk Browser Focus",invoke=function()
-renoise.app().window:select_preset(7)
-end}
+renoise.app().window:select_preset(7) end}
 
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Disk Browser Focus",invoke=function()
-renoise.app().window:select_preset(8)
-end}
+renoise.app().window:select_preset(8) end}
 renoise.tool():add_midi_mapping{name="Pattern Editor:Paketti:Disk Browser Focus",invoke=function()
-renoise.app().window:select_preset(8)
-end}
+renoise.app().window:select_preset(8) end}
 
 
 function oneshottoggle()
@@ -38,7 +34,7 @@ renoise.tool():add_keybinding{name="Global:Paketti:Toggle Oneshot On/Off",invoke
 -- Show automation (via Pattern Matrix/Pattern Editor)
 function showAutomation()
   local w = renoise.app().window
-if w.active_lower_frame == renoise.ApplicationWindow.LOWER_FRAME_TRACK_AUTOMATION then  w.active_lower_frame = renoise.ApplicationWindow.LOWER_FRAME_TRACK_DSPS return else end
+if w.active_lower_frame == renoise.ApplicationWindow.LOWER_FRAME_TRACK_AUTOMATION then  w.active_lower_frame = renoise.ApplicationWindow.LOWER_FRAME_TRACK_DSPS return end
     
     w.active_lower_frame = renoise.ApplicationWindow.LOWER_FRAME_TRACK_AUTOMATION
     w.lock_keyboard_focus=true
@@ -191,13 +187,13 @@ function MetronomeOff()
 if renoise.song().transport.metronome_enabled then renoise.song().transport.metronome_enabled = false else renoise.song().transport.metronome_enabled=true end end
 
 renoise.tool():add_midi_mapping{name="Global:Paketti:Metronome On/Off x[Toggle]",invoke=function() MetronomeOff() end}
-renoise.tool():add_keybinding{name="Global:Paketti:Toggle Metronome On/Off",invoke=function() MetronomeOff()  end}
+renoise.tool():add_keybinding{name="Global:Paketti:Toggle Metronome On/Off",invoke=function() MetronomeOff() end}
 
 
 function phraseEditorVisible()
 --If no Phrase in instrument, create phrase, otherwise do nothing.
 if renoise.song().instruments[renoise.song().selected_instrument_index]:can_insert_phrase_at(1) == true then
-renoise.song().instruments[renoise.song().selected_instrument_index]:insert_phrase_at(1) else end
+renoise.song().instruments[renoise.song().selected_instrument_index]:insert_phrase_at(1) end
 
 --Select created phrase.
 renoise.song().selected_phrase_index=1
@@ -300,7 +296,7 @@ local rs=renoise.song()
 if renoise.song().transport.edit_step==0 then 
 count=renoise.song().selected_note_column_index+1
 
-if count ==rs.tracks[rs.selected_track_index].visible_note_columns then renoise.song().selected_note_column_index=count return else end
+if count ==rs.tracks[rs.selected_track_index].visible_note_columns then renoise.song().selected_note_column_index=count return end
 if count >rs.tracks[rs.selected_track_index].visible_note_columns then 
 local slicount=nil
 slicount=renoise.song().selected_line_index+1 
@@ -313,7 +309,7 @@ renoise.song().selected_note_column_index=count
 return
 else renoise.song().selected_note_column_index=count return 
 end
-else  end
+end
 
 countline=renoise.song().selected_line_index+1---1+renoise.song().transport.edit_step
    if renoise.song().transport.edit_step>1 then
@@ -323,15 +319,13 @@ countline=renoise.song().selected_line_index+1---1+renoise.song().transport.edit
    --print ("editstep" .. renoise.song().transport.edit_step)
    if countline >renoise.song().patterns[renoise.song().selected_pattern_index].number_of_lines
    then countline=1
-   else end
+   end
    renoise.song().selected_line_index=countline
  
    colnumber=renoise.song().selected_note_column_index+1
    if colnumber > rs.tracks[rs.selected_track_index].visible_note_columns then
    renoise.song().selected_note_column_index=1
-   return
-   else
-    end
+   return end
   renoise.song().selected_note_column_index=colnumber
 
   end
@@ -403,7 +397,7 @@ local s=renoise.song()
 local t=s.transport
 local w = renoise.app().window
 w.active_middle_frame=1
-if t.edit_mode == true and t.follow_player == true then t.edit_mode = false t.follow_player = false return else end
+if t.edit_mode == true and t.follow_player == true then t.edit_mode = false t.follow_player = false return end
 if t.edit_mode == false and t.follow_player == false then t.edit_mode = true t.follow_player = true return else t.edit_mode = false t.follow_player = false end
 
 if t.follow_player == false and t.edit_mode == false then t.follow_player = true t.edit_mode = true else t.follow_player = false t.edit_mode = false end
@@ -472,14 +466,14 @@ renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Record+Follow Off",inv
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 function WipeEfxFromSelection()
 --thanks to joule for assistance!
-local song = renoise.song()
+local s = renoise.song()
 
-if song.selection_in_pattern==nil then return end
+if s.selection_in_pattern==nil then return end
 
-local ecvisible = song:track(song.selected_track_index).visible_effect_columns
-local pattern_track = song:pattern(song.selected_pattern_index):track(song.selected_track_index)
+local ecvisible = s:track(s.selected_track_index).visible_effect_columns
+local pattern_track = s:pattern(s.selected_pattern_index):track(s.selected_track_index)
 
-for line_index = song.selection_in_pattern.start_line, song.selection_in_pattern.end_line do
+for line_index = s.selection_in_pattern.start_line, s.selection_in_pattern.end_line do
   local line = pattern_track:line(line_index)
   for effect_column_index = 1, ecvisible do
     line:effect_column(effect_column_index):clear()
@@ -488,6 +482,22 @@ end
 
 end 
 renoise.tool():add_keybinding{name = "Global:Paketti:Wipe Effects From Selection", invoke = function() WipeEfxFromSelection() end}
+----------------
+--rescued from ImpulseBuddy by Protman! I have no idea how many of these were originally a part of Paketti, or something else, but
+--hey, more crosspollination, more features.
+function delete_effect_column()
+local s=renoise.song()
+local currTrak = s.selected_track_index
+local currPatt = s.selected_pattern_index
+local reksult = s.selected_pattern.number_of_lines
+local iter = s.pattern_iterator:effect_columns_in_pattern_track(currPatt,currTrak)
+  for _,line in iter do
+   if not line.is_empty then
+   line:clear()
+   end
+  end 
+end
+renoise.tool():add_keybinding{name="Global:Paketti:Delete/Wipe/Clear Effect Column Content from Current Track",invoke=function() delete_effect_column() end}
 ----------------
 
 
@@ -638,28 +648,27 @@ end
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Columnizer, +1 / -1 / +10 / -10 on current_row, display needed column
 function columns(chg,thing)
-
+local song=renoise.song()
 local s=renoise.song()
+local snci=song.selected_note_column_index
+local seci=song.selected_effect_column_index
 local sst=s.selected_track
-local columns = 
-    {
-      [1] = s.selected_note_column.delay_value,
-      [2] = s.selected_note_column.panning_value, 
-      [3] = s.selected_note_column.volume_value,
---      [4] = renoise.song().selected_effect_column.number_value,
---      [5] = renoise.song().selected_effect_column.amount_value
-    }
+local columns={}
+
+if ( snci > 0 ) then 
+columns[1] = s.selected_note_column.delay_value
+columns[2] = s.selected_note_column.panning_value
+columns[3] = s.selected_note_column.volume_value
+elseif ( seci > 0 ) then
+columns[4] = s.selected_effect_column.number_value
+columns[5] = s.selected_effect_column.amount_value
+end
 
  local nc = s.selected_note_column
  local nci = s.selected_note_column_index
  local currPatt = s.selected_pattern_index
  local currTrak = s.selected_track_index
  local currLine = s.selected_line_index
--- local eav = nil 
- 
---if renoise.song().selected_note_column_index then 
--- eav = renoise.song().patterns[currPatt].tracks[currTrak].lines[currLine].note_columns[nci].effect_amount_value
---else end 
  
 if thing == 1 then
 --delay column
@@ -671,7 +680,7 @@ local pancount=nil
  sst.panning_column_visible=true
  print (nc.panning_value)
    if nc.panning_value==255 then 
-   nc.panning_value=64  
+   nc.panning_value=64 return
    end
    print(pancount)
    pancount = math.max(-20, math.min(128, columns[thing] + chg))
@@ -683,11 +692,11 @@ elseif thing == 3 then
  nc.volume_value = math.max(0, math.min(128, columns[thing] + chg))
 elseif thing == 4 then
 --effect number column
- sst.lines[currLine].effect_columns[1].number_value = math.max(0, math.min(255, columns[thing] + chg)) 
+ s.selected_line.effect_columns[seci].number_value = math.max(0, math.min(255, columns[thing] + chg)) 
 elseif thing == 5 then
 --effect amount column
 -- renoise.song().tracks[currTrak].sample_effects_column_visible=true
- sst.lines[currLine].effect_columns[1].amount_value = math.max(0, math.min(255, columns[thing] + chg)) 
+ s.selected_line.effect_columns[seci].amount_value = math.max(0, math.min(255, columns[thing] + chg)) 
 else
 -- default, shows panning, delay, volume columns.
  sst.delay_column_visible=true
@@ -750,7 +759,7 @@ renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Decrease V
 renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Increase Volume +1 x[Toggle]",invoke=function() columns(1,3) end}
 renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Decrease Volume -1 x[Toggle]",invoke=function() columns(-1,3) end}
 
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Increase Effect Number +1",invoke=function() columnspart2(1,4) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Increase Effect Number +1",invoke=function() columns(1,4) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Decrease Effect Number -1",invoke=function() columnspart2(-1,4) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Increase Effect Number +10",invoke=function() columnspart2(10,4) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Decrease Effect Number -10",invoke=function() columnspart2(-10,4) end}
@@ -975,7 +984,7 @@ renoise.tool():add_keybinding{name = "Phrase Editor:Selection:Paketti 2nd Unmark
 function switchcolumns()
   local s = renoise.song()
   local w = renoise.app().window
-if s.selected_note_column_index==nil then return else end
+if s.selected_note_column_index==nil then return end
 
   if s.selected_note_column_index==nil then return
     else if s.selected_effect_column_index==1 then s.selected_note_column_index=1
@@ -1538,7 +1547,7 @@ function adjust_quantize(quant_delta)
   local counted = nil
   counted=t.record_quantize_lines+quant_delta
   if counted == 0 then
-  t.record_quantize_enabled=false return else end
+  t.record_quantize_enabled=false return end
   
   if t.record_quantize_enabled==false and t.record_quantize_lines == 1 then
   t.record_quantize_lines = 1
@@ -1651,21 +1660,7 @@ end
 renoise.tool():add_keybinding{name="Global:Paketti:Open Ext.Editor of Selected Effect",invoke=function() OpenSelectedEffectExternalEditor() end}
 ----------------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------------
---rescued from ImpulseBuddy by Protman! I have no idea how many of these were originally a part of Paketti, or something else, but
---hey, more crosspollination, more features.
-function delete_effect_column()
-local s=renoise.song()
-local currTrak = s.selected_track_index
-local currPatt = s.selected_pattern_index
-local reksult = s.selected_pattern.number_of_lines
-local iter = s.pattern_iterator:effect_columns_in_pattern_track(currPatt,currTrak)
-  for _,line in iter do
-   if not line.is_empty then
-   line:clear()
-   end
-  end 
-end
-renoise.tool():add_keybinding{name="Global:Paketti:Delete/Wipe/Clear Effect Column Content from Current Track",invoke=function() delete_effect_column() end}
+
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1701,8 +1696,9 @@ renoise.tool():add_keybinding{name="Global:Paketti:Delete/Wipe/Clear Effect Colu
 
 
 
--- Thanks so much to everyone who helped. dblue, cortex, joule, avaruus, astu/flo, mmd(mr mark dollin) syflom, protman, ViZiON, ghostwerk,
--- vV, Bantai, danoise, Snowrobot, mxb, jenoki, kmaki, mantrakid, aleksip and the whole Renoise community.
+--[[ Thanks so much to everyone who helped. dblue, cortex, joule, avaruus, astu/flo, mmd(mr mark dollin) syflom, protman, pandabot, 
+Raul (ulneiz), ViZiON, ghostwerk, vV, Bantai, danoise, Snowrobot, mxb, jenoki, kmaki, mantrakid, aleksip and the whole Renoise community.
 --
 -- Biggest thanks to Brothomstates for suggesting that I could pick up and learn LUA, that it would not be beyond me. Really appreciate
 -- your (sometimes misplaced and ahead-of-time) faith in me.
+]]--

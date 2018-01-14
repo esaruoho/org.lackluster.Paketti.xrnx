@@ -872,7 +872,7 @@ end
  renoise.app().window.lock_keyboard_focus=true
 
 
-if renoise.song().tracks[renoise.song().selected_track_index].max_note_columns==0 then return else end
+if renoise.song().tracks[renoise.song().selected_track_index].max_note_columns==0 then return end
 
 if renoise.song().selected_track.name=="Mst" then 
 return
