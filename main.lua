@@ -2,8 +2,9 @@ require "impulsetracker"
 require "midi"
 require "loaders"
 require "joule_danoise_better_column_navigation"
+require "CheatSheet"
 
-renoise.tool():add_keybinding{name="Global:Paketti:Global Edit Mode Toggle",invoke=function () 
+renoise.tool():add_keybinding{name="Global:Paketti:Global Edit Mode Toggle",invoke=function() 
  if  renoise.song().transport.edit_mode then renoise.song().transport.edit_mode=false
 else renoise.song().transport.edit_mode=true end
 end}
@@ -18,6 +19,19 @@ renoise.app().window:select_preset(8) end}
 renoise.tool():add_midi_mapping{name="Pattern Editor:Paketti:Disk Browser Focus",invoke=function()
 renoise.app().window:select_preset(8) end}
 
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Init Phrase Settings",invoke=function()
+renoise.song().selected_phrase.visible_note_columns=1
+renoise.song().selected_phrase.visible_effect_columns=0
+renoise.song().selected_phrase.volume_column_visible=false
+renoise.song().selected_phrase.panning_column_visible=false
+renoise.song().selected_phrase.delay_column_visible=false
+renoise.song().selected_phrase.sample_effects_column_visible=false
+
+local renamephrase_to_index=renoise.song().selected_phrase_index
+renoise.song().selected_phrase.name=renamephrase_to_index
+renoise.song().selected_phrase.name=renoise.song().selected_phrase_index
+
+end}
 
 function oneshottoggle()
 
@@ -929,6 +943,7 @@ function ptnLength(number) local rs=renoise.song() rs.patterns[rs.selected_patte
 function phraseLength(number) local s=renoise.song() 
 renoise.song().instruments[renoise.song().selected_instrument_index].phrases[renoise.song().selected_phrase_index].number_of_lines=number end
 
+renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Set Pattern Length to 001",invoke=function() ptnLength(1) end}
 renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Set Pattern Length to 004",invoke=function() ptnLength(4) end}
 renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Set Pattern Length to 008",invoke=function() ptnLength(8) end}
 renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Set Pattern Length to 016",invoke=function() ptnLength(16) end}
@@ -942,6 +957,7 @@ renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Set Pattern Length 
 renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Set Pattern Length to 384",invoke=function() ptnLength(384) end}
 renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Set Pattern Length to 512",invoke=function() ptnLength(512) end}
 
+renoise.tool():add_keybinding{name = "Phrase Editor:Paketti:Set Phrase Length to 001",invoke=function() phraseLength(1) end}
 renoise.tool():add_keybinding{name = "Phrase Editor:Paketti:Set Phrase Length to 004",invoke=function() phraseLength(4) end}
 renoise.tool():add_keybinding{name = "Phrase Editor:Paketti:Set Phrase Length to 008",invoke=function() phraseLength(8) end}
 renoise.tool():add_keybinding{name = "Phrase Editor:Paketti:Set Phrase Length to 016",invoke=function() phraseLength(16) end}
