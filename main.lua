@@ -4,6 +4,16 @@ require "loaders"
 require "joule_danoise_better_column_navigation"
 require "CheatSheet"
 
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Reset Panning in Current Column",invoke=function()
+local s=renoise.song()
+local nc=s.selected_note_column
+local currTrak=s.selected_track_index
+s.selected_track.panning_column_visible=true
+nc.panning_value = 0xFF
+end}
+
+
+
 renoise.tool():add_keybinding{name="Global:Paketti:Global Edit Mode Toggle",invoke=function() 
  if  renoise.song().transport.edit_mode then renoise.song().transport.edit_mode=false
 else renoise.song().transport.edit_mode=true end
@@ -27,9 +37,9 @@ renoise.song().selected_phrase.panning_column_visible=false
 renoise.song().selected_phrase.delay_column_visible=false
 renoise.song().selected_phrase.sample_effects_column_visible=false
 
-local renamephrase_to_index=renoise.song().selected_phrase_index
+local renamephrase_to_index=tostring(renoise.song().selected_phrase_index)
 renoise.song().selected_phrase.name=renamephrase_to_index
-renoise.song().selected_phrase.name=renoise.song().selected_phrase_index
+--renoise.song().selected_phrase.name=renoise.song().selected_phrase_index
 
 end}
 
@@ -685,38 +695,25 @@ end
  local currTrak = s.selected_track_index
  local currLine = s.selected_line_index
  
-if thing == 1 then
---delay column
- sst.delay_column_visible=true
- nc.delay_value = math.max(0, math.min(255, columns[thing] + chg))
-elseif thing == 2 then
---panning column
-local pancount=nil
- sst.panning_column_visible=true
- print (nc.panning_value)
-   if nc.panning_value==255 then 
-   nc.panning_value=64 return
-   end
-   print(pancount)
-   pancount = math.max(-20, math.min(128, columns[thing] + chg))
-   if pancount < 0 then nc.panning_string = ".." else nc.panning_value = pancount end
-
-elseif thing == 3 then
---volume column
- sst.volume_column_visible=true
- nc.volume_value = math.max(0, math.min(128, columns[thing] + chg))
-elseif thing == 4 then
---effect number column
- s.selected_line.effect_columns[seci].number_value = math.max(0, math.min(255, columns[thing] + chg)) 
-elseif thing == 5 then
---effect amount column
--- renoise.song().tracks[currTrak].sample_effects_column_visible=true
- s.selected_line.effect_columns[seci].amount_value = math.max(0, math.min(255, columns[thing] + chg)) 
+if thing == 1 then --if delay columning
+        sst.delay_column_visible=true
+        nc.delay_value = math.max(0, math.min(255, columns[thing] + chg))
+elseif thing == 2 then --if panning
+        local center_out_of_bounds=false
+        changepan(chg, center_out_of_bounds)
+elseif thing == 3 then --if volume columning
+        sst.volume_column_visible=true
+        nc.volume_value = math.max(0, math.min(128, columns[thing] + chg))
+elseif thing == 4 then --if effect number columning
+        s.selected_line.effect_columns[seci].number_value = math.max(0, math.min(255, columns[thing] + chg)) 
+elseif thing == 5 then --if effect amount columning
+        -- renoise.song().tracks[currTrak].sample_effects_column_visible=true
+        s.selected_line.effect_columns[seci].amount_value = math.max(0, math.min(255, columns[thing] + chg)) 
 else
 -- default, shows panning, delay, volume columns.
- sst.delay_column_visible=true
- sst.panning_column_visible=true
- sst.volume_column_visible=true
+        sst.delay_column_visible=true
+        sst.panning_column_visible=true
+        sst.volume_column_visible=true
 end
  --nc.delay_value=(d+chg)
  --if nc.delay_value == 0 and chg < 0 then
@@ -729,6 +726,57 @@ end
 end
 
 ----------
+--Shortcut for setting Panning +1/+10/-10/-1 on current_row - automatically displays the panning column.
+--Lots of help from Joule, Raul/ulneiz, Ledger, dblue! 
+function changepan(change,center_out_of_bounds)
+-- Set the behaviour when going out of bounds.
+-- If centering (to 0x40) then pan < 0 or > 0x80 will reset the new value back to center.
+-- Else just clip to the valid pan range 0x00 to 0x80. (Default behaviour)
+center_out_of_bounds = center_out_of_bounds or false
+ 
+-- Local reference to the song.
+local s = renoise.song()
+  
+-- Local reference to the selected note column.
+local nc = s.selected_note_column
+  
+-- If no valid note column is selected...
+if nc == nil then return false end
+  
+-- When triggering the function - always make panning column visible.
+s.selected_track.panning_column_visible=true
+  
+-- Store the current pan value
+local pan = nc.panning_value
+  
+-- If the pan value is empty, set the default center value (0x40)
+if pan == renoise.PatternLine.EMPTY_PANNING then pan=0x40 end
+  
+-- Apply the pan change.
+pan = pan + change
+
+-- If wrapping to center and out of bounds, reset to center.
+if center_out_of_bounds and (pan < 0x00 or pan > 0x80) then pan=0x40
+  
+-- Else...
+  else
+
+-- Clip to valid pan range.
+pan=math.min(0x80, math.max(0x00, pan))    
+end
+  
+-- If the final value ends up back at exact center then show an empty panning column instead.
+if pan==0x40 then
+   pan = renoise.PatternLine.EMPTY_PANNING end  
+  
+-- Finally shove the new value back into the note column.
+nc.panning_value = pan 
+end
+
+
+
+
+
 function columnspart2(chg,thing)
 
 local columns = 
@@ -757,6 +805,13 @@ renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Increase D
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Decrease Delay -1",invoke=function() columns(-1,1) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Increase Delay +10",invoke=function() columns(10,1) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Decrease Delay -10",invoke=function() columns(-10,1) end}
+
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Increase Delay +1 (2nd)",invoke=function() columns(1,1) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Decrease Delay -1 (2nd)",invoke=function() columns(-1,1) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Increase Delay +10 (2nd)",invoke=function() columns(10,1) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Decrease Delay -10 (2nd)",invoke=function() columns(-10,1) end}
+
+
 renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Increase Delay +1 x[Toggle]",invoke=function() columns(1,1) end}
 renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Decrease Delay -1 x[Toggle]",invoke=function() columns(-1,1) end}
 
@@ -764,6 +819,14 @@ renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Increase P
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Decrease Panning -1",invoke=function() columns(-1,2) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Increase Panning +10",invoke=function() columns(10,2) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Decrease Panning -10",invoke=function() columns(-10,2) end}
+
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Increase Panning +1 (2nd)",invoke=function() columns(1,2) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Decrease Panning -1 (2nd)",invoke=function() columns(-1,2) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Increase Panning +10 (2nd)",invoke=function() columns(10,2) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Decrease Panning -10 (2nd)",invoke=function() columns(-10,2) end}
+
+
+
 renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Increase Panning +1 x[Toggle]",invoke=function() columns(1,2) end}
 renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Decrease Panning -1 x[Toggle]",invoke=function() columns(-1,2) end}
 
@@ -1654,9 +1717,15 @@ renoise.song().selected_effect_column_index=1
 revnote() 
 if renoise.song().selected_track.name=="Mst" then 
   return
-else renoise.song().selected_note_column_index=1 
-end
-end}
+else renoise.song().selected_note_column_index=1 end end}
+
+renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Reverse Sample effect 0B00 on/off (2nd)",invoke=function() 
+renoise.song().selected_effect_column_index=1
+revnote() 
+if renoise.song().selected_track.name=="Mst" then 
+  return
+else renoise.song().selected_note_column_index=1 end end}
+
 
 renoise.tool():add_midi_mapping{name="Pattern Editor:Paketti:Reverse Sample effect 0B00 on/off",invoke=function() 
 renoise.song().selected_effect_column_index=1
