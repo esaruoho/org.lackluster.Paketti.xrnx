@@ -20,7 +20,7 @@ w.active_lower_frame=renoise.ApplicationWindow.LOWER_FRAME_TRACK_DSPS
 --w.pattern_advanced_edit_is_visible=true
 w.instrument_box_is_visible=true
 w.disk_browser_is_visible=true
-w.pattern_matrix_is_visible = true
+-- w.pattern_matrix_is_visible = true
 return
 end
 
@@ -61,7 +61,7 @@ function F3()
 local w=renoise.app().window
 local s=renoise.song()
 
-if renoise.app().window.active_middle_frame==5 then renoise.app().window.active_middle_frame=4
+if renoise.app().window.active_middle_frame==5 then renoise.app().window.active_middle_frame=3
 else renoise.app().window.active_middle_frame=5 end
 
 w.pattern_matrix_is_visible=false
@@ -93,7 +93,7 @@ s.selected_instrument.active_tab=1
 w.active_upper_frame =renoise.ApplicationWindow.UPPER_FRAME_TRACK_SCOPES
 w.active_middle_frame=renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
 
-renoise.app().window.active_middle_frame=renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_KEYZONES
+renoise.app().window.active_middle_frame=renoise.ApplicationWindow.MIDDLE_FRAME_PHRASE_EDITOR
 end
 renoise.tool():add_keybinding {name="Global:Paketti:Impulse Tracker F3 Sample Editor", invoke=function() F3() end}
 ----------------------------------------------------------------------------------------------------------------

@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <RenoiseScriptingTool doc_version="0">
-  <Name>Paketti</Name>
+  <ApiVersion>6</ApiVersion>
+  <AutoUpgraded>true</AutoUpgraded>
   <Id>org.lackluster.Paketti</Id>
   <Version>0.13</Version>
-  <ApiVersion>5</ApiVersion>
   <Author>lackluster | esaruoho@gmail.com</Author>
-  <AutoUpgraded>false</AutoUpgraded>
+  <Name>Paketti</Name>
   <Category>misc</Category>
   <Description>Impulse Tracker Keyboard / Midi shortcuts - double keybinds, numpad stuff, etc. Combinations of other people's tools to consolidate them together.</Description>
   <Homepage>http://www.lackluster.org/</Homepage>
-  <Platform/>
-  <Icon/>
 </RenoiseScriptingTool>

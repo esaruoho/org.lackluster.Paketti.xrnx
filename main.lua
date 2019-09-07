@@ -157,9 +157,12 @@ renoise.tool():add_keybinding{name="Global:Paketti:2nd Save Song",invoke=functio
 
 
 function slicerough(changer)
+  renoise.song().selected_sample_index=1
+
 local currInst=renoise.song().selected_instrument_index
 local currSamp=renoise.song().selected_sample_index
 local number=(table.count(renoise.song().instruments[currInst].samples[currSamp].slice_markers))
+  renoise.song().selected_sample_index=1
   renoise.song().instruments[currInst].samples[currSamp].loop_mode=2
   renoise.song().instruments[currInst].samples[currSamp].new_note_action=1
   renoise.song().instruments[currInst].samples[currSamp].autofade=true
@@ -974,17 +977,37 @@ local s=renoise.song()
   local currPhra=s.selected_phrase_index
   local currInst=s.selected_instrument_index
  
-  
- if s.selected_note_column_index==nil then return 
- else 
-  if  renoise.song().patterns[renoise.song().selected_pattern_index].tracks[renoise.song().selected_track_index].lines[renoise.song().selected_line_index].note_columns[renoise.song().selected_note_column_index].note_string=="OFF" then 
+ 
+ if renoise.app().window.active_middle_frame==1 then
+    if s.selected_note_column_index==nil then return 
+      else 
+        if  renoise.song().patterns[renoise.song().selected_pattern_index].tracks[renoise.song().selected_track_index].lines[renoise.song().selected_line_index].note_columns[renoise.song().selected_note_column_index].note_string=="OFF" then 
 renoise.song().patterns[renoise.song().selected_pattern_index].tracks[renoise.song().selected_track_index].lines[renoise.song().selected_line_index].note_columns[renoise.song().selected_note_column_index].note_string=""
- else
+       else
 renoise.song().patterns[renoise.song().selected_pattern_index].tracks[renoise.song().selected_track_index].lines[renoise.song().selected_line_index].note_columns[renoise.song().selected_note_column_index].note_string="OFF"
- end
- end
+       end
 end
+ 
+else if renoise.app().window.active_middle_frame==3 then
 
+local phra=renoise.song().instruments[renoise.song().selected_instrument_index].phrases[renoise.song().selected_phrase_index]
+
+phra.sample_effects_column_visible=false
+phra.panning_column_visible=false
+phra.delay_column_visible=false
+phra.visible_note_columns=1
+phra.instrument_column_visible=false
+
+if renoise.song().instruments[renoise.song().selected_instrument_index].phrases[renoise.song().selected_phrase_index].lines[renoise.song().selected_line_index].note_columns[renoise.song().selected_note_column_index].note_string=="OFF"
+then
+renoise.song().instruments[renoise.song().selected_instrument_index].phrases[renoise.song().selected_phrase_index].lines[renoise.song().selected_line_index].note_columns[renoise.song().selected_note_column_index].note_string=""
+else
+renoise.song().instruments[renoise.song().selected_instrument_index].phrases[renoise.song().selected_phrase_index].lines[renoise.song().selected_line_index].note_columns[renoise.song().selected_note_column_index].note_string="OFF"
+end
+end 
+ 
+end
+end
 renoise.tool():add_keybinding{name = "Global:Paketti:KapsLock CapsLock Caps Lock Note Off",invoke=function() CapsLok() end}
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 --Record Quantize On/Off for Midi_Mapping
@@ -1712,12 +1735,18 @@ if efc==nil then
 end
 end
 
-renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Reverse Sample effect 0B00 on/off",invoke=function() 
+renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Reverse Sample effect 0B00 on/off",invoke=function()
+local nci=renoise.song().selected_note_column_index 
 renoise.song().selected_effect_column_index=1
 revnote() 
 if renoise.song().selected_track.name=="Mst" then 
   return
-else renoise.song().selected_note_column_index=1 end end}
+  
+else 
+renoise.song().selected_note_column_index=nci
+
+--renoise.song().selected_note_column_index=1 
+end end}
 
 renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Reverse Sample effect 0B00 on/off (2nd)",invoke=function() 
 renoise.song().selected_effect_column_index=1

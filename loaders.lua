@@ -260,8 +260,17 @@ end
 --Audio/Effects/AU/aumf:58h8:TOGU
 --73  Audio/Effects/AU/aumf:676v:TOGU
 --- AU
+-- Audio/Effects/AU/aufx:sdly:appl
+renoise.tool():add_keybinding {name="Global:Track Devices:Load SphereDelay Maybe?", invoke=function() loadvst("Audio/Effects/AU/aufx:SpDl:No1z") end}
+
 renoise.tool():add_keybinding {name="Global:Track Devices:Load D16 Syntorus", invoke=function() loadvst("Audio/Effects/AU/aufx:Sn7R:d16g") end}
 renoise.tool():add_keybinding {name="Global:Track Devices:Load D16 Toraverb", invoke=function() loadvst("Audio/Effects/AU/aufx:T4V8:d16g") end}
+renoise.tool():add_keybinding {name="Global:Track Devices:Load D16 Frontier", invoke=function() loadvst("Audio/Effects/AU/aumf:FRn7:d16g") end}
+renoise.tool():add_keybinding {name="Global:Track Devices:Load D16 Toraverb 2", invoke=function() loadvst("Audio/Effects/AU/aumf:T4V9:d16g") end}
+renoise.tool():add_keybinding {name="Global:Track Devices:Load D16 Repeater", invoke=function() loadvst("Audio/Effects/AU/aumf:RP78:d16g") end}
+renoise.tool():add_keybinding {name="Global:Track Devices:Load D16 Repeater (2nd bind)", invoke=function() loadvst("Audio/Effects/AU/aumf:RP78:d16g") end}
+
+
 renoise.tool():add_keybinding {name="Global:Track Devices:Load George Yohng's W1 1", invoke=function() loadvst("Audio/Effects/AU/aufx:4Fwl:Yhng") end}
 renoise.tool():add_keybinding {name="Global:Track Devices:Load George Yohng's W1 2", invoke=function() 
 renoise.song().selected_track:insert_device_at("Audio/Effects/AU/aufx:4FwL:4FNT", 2) end}
