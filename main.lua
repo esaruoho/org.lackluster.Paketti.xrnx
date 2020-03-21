@@ -4,6 +4,22 @@ require "loaders"
 require "joule_danoise_better_column_navigation"
 require "CheatSheet"
 
+
+-- auto-suspend plugin off:
+function autosuspendOFF()
+--renoise.tool():add_menu_entry
+renoise.song().instruments[renoise.song().selected_instrument_index].plugin_properties.auto_suspend = false
+
+end
+
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti Switch Plugin AutoSuspend Off",invoke=function() autosuspendOFF() end}
+
+
+
+
+
+
+
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Reset Panning in Current Column",invoke=function()
 local s=renoise.song()
 local nc=s.selected_note_column
@@ -11,8 +27,6 @@ local currTrak=s.selected_track_index
 s.selected_track.panning_column_visible=true
 nc.panning_value = 0xFF
 end}
-
-
 
 renoise.tool():add_keybinding{name="Global:Paketti:Global Edit Mode Toggle",invoke=function() 
  if  renoise.song().transport.edit_mode then renoise.song().transport.edit_mode=false
@@ -145,6 +159,8 @@ end
 renoise.tool():add_keybinding{name="Global:Paketti:Simple Play Record Follow",invoke=function() simpleplayrecordfollow() end}
 renoise.tool():add_midi_mapping  {name="Global:Paketti:Simple Play Record Follow",invoke=function() simpleplayrecordfollow() end}
 
+  
+  
 
 --2nd Save Song bind
 function saveSong()
@@ -158,7 +174,6 @@ renoise.tool():add_keybinding{name="Global:Paketti:2nd Save Song",invoke=functio
 
 function slicerough(changer)
   renoise.song().selected_sample_index=1
-
 local currInst=renoise.song().selected_instrument_index
 local currSamp=renoise.song().selected_sample_index
 local number=(table.count(renoise.song().instruments[currInst].samples[currSamp].slice_markers))
@@ -166,6 +181,7 @@ local number=(table.count(renoise.song().instruments[currInst].samples[currSamp]
   renoise.song().instruments[currInst].samples[currSamp].loop_mode=2
   renoise.song().instruments[currInst].samples[currSamp].new_note_action=1
   renoise.song().instruments[currInst].samples[currSamp].autofade=true
+  renoise.song().instruments[currInst].samples[currSamp].interpolation_mode=4
 
 for i=1,number do 
 renoise.song().instruments[currInst].samples[currSamp]:delete_slice_marker((renoise.song().instruments[currInst].samples[currSamp].slice_markers[1]))
@@ -195,6 +211,7 @@ end
 
 
 renoise.tool():add_midi_mapping{name="Global:Paketti:Wipe&Create Slices (16) x[Toggle]",invoke=function() slicerough(16) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Wipe&Create Slices (2)",invoke=function() slicerough(2) end}
 renoise.tool():add_keybinding{name="Global:Paketti:Wipe&Create Slices (4)",invoke=function() slicerough(4) end}
 renoise.tool():add_keybinding{name="Global:Paketti:Wipe&Create Slices (8)",invoke=function() slicerough(8) end}
 renoise.tool():add_keybinding{name="Global:Paketti:Wipe&Create Slices (16)",invoke=function() slicerough(16) end}
@@ -209,6 +226,12 @@ renoise.tool():add_menu_entry{name="Sample Editor:Paketti:Wipe&Create Slices (32
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti:Wipe&Create Slices (64)",invoke=function() slicerough(64) end}
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti:Wipe Slices",invoke=function() wipeslices() end}
 
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti:Sample Preferences",invoke=function() 
+  renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].autofade=true
+  renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].interpolation_mode=4
+  renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].oversample_enabled=true
+
+end }
 -- Metronome On/Off for keyboard shortcut and midibind.
 function MetronomeOff()
 if renoise.song().transport.metronome_enabled then renoise.song().transport.metronome_enabled = false else renoise.song().transport.metronome_enabled=true end end
@@ -265,39 +288,47 @@ renoise.tool():add_keybinding{name = "Global:Paketti:Set to One-Shot + NNA Conti
 
 -------------
 --Startup
---function startup_()
-  --local s=renoise.song()
-   --renoise.app().window:select_preset(1)
---
---
---for i = 1,8 do renoise.song().tracks[i].delay_column_visible=true end
---
-  -- 
- --  renoise.song().instruments[s.selected_instrument_index].active_tab=1
---if s.selected_sample == nil then return
---else
---
-  --  if renoise.app().window.active_middle_frame==0 and s.selected_sample.sample_buffer_observable:has_notifier(sample_loaded_change_to_sample_editor) then 
-    --s.selected_sample.sample_buffer_observable:remove_notifier(sample_loaded_change_to_sample_editor)
-  --  else
-  --  s.selected_sample.sample_buffer_observable:add_notifier(sample_loaded_change_to_sample_editor)
-  --  return
-  --  end
---end
---end
+function startup_()
+  local s=renoise.song
+--    renoise.app().window:select_preset(1)
+    
+--    for i = 1,8 do s().tracks[i].delay_column_visible=true end
+--    s().instruments[s.selected_instrument_index].active_tab=1
+    
+    if s().selected_sample == nil then return
+      else
+        if s().selected_sample.sample_buffer_observable:has_notifier(loadSampleNotifier) then 
+    return
+    --s().selected_sample.sample_buffer_observable:remove_notifier(loadSampleNotifier)
+          else
+    s().selected_sample.sample_buffer_observable:add_notifier(loadSampleNotifier)
+          return
+        end
+     end
+end
+
+
+--Sample has been loaded notifier (load sample)
+-- set autofade = true, set interpolation mode = sinc
+function loadSampleNotifier()
+  renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].autofade=true
+  renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].interpolation_mode=4
+print ("hi")
+
+
+end
+
+
+
 
 function sample_loaded_change_to_sample_editor()
    renoise.app().window.active_middle_frame=4
   end
 
---if not renoise.tool().app_new_document_observable:has_notifier(startup_) 
---   then renoise.tool().app_new_document_observable:add_notifier(startup_)
---   else renoise.tool().app_new_document_observable:remove_notifier(startup_)
---end
-
-
-
-
+if not renoise.tool().app_new_document_observable:has_notifier(startup_) 
+   then renoise.tool().app_new_document_observable:add_notifier(startup_)
+   else renoise.tool().app_new_document_observable:remove_notifier(startup_)
+end
 ----------------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------------
@@ -990,7 +1021,8 @@ end
  
 else if renoise.app().window.active_middle_frame==3 then
 
-local phra=renoise.song().instruments[renoise.song().selected_instrument_index].phrases[renoise.song().selected_phrase_index]
+--local phra=renoise.song().instruments[renoise.song().selected_instrument_index].phrases[renoise.song().selected_phrase_index]
+local phra=renoise.song().selected_phrase
 
 phra.sample_effects_column_visible=false
 phra.panning_column_visible=false
@@ -1717,6 +1749,38 @@ for st=1,16 do
     invoke=function() select_specific_track(st) end}
 end
 
+-- Destructive 0B01 adder/disabler
+function revnoter()
+local s = renoise.song()
+local efc = s.selected_effect_column
+
+if efc==nil then
+  return
+  else
+  if efc.number_value==11 then
+     renoise.song().selected_effect_column.number_value=00
+     renoise.song().selected_effect_column.amount_value=00
+  else
+     renoise.song().selected_effect_column.number_value=11
+     renoise.song().selected_effect_column.amount_value=01
+  end
+end
+end
+
+renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Reverse Sample effect 0B001 on/off",invoke=function()
+local nci=renoise.song().selected_note_column_index 
+renoise.song().selected_effect_column_index=1
+revnoter() 
+if renoise.song().selected_track.name=="Mst" then 
+  return
+  
+else 
+renoise.song().selected_note_column_index=nci
+
+--renoise.song().selected_note_column_index=1 
+end end}
+
+
 -- Destructive 0B00 adder/disabler
 function revnote()
 local s = renoise.song()
@@ -1747,6 +1811,13 @@ renoise.song().selected_note_column_index=nci
 
 --renoise.song().selected_note_column_index=1 
 end end}
+
+
+
+
+
+
+
 
 renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Reverse Sample effect 0B00 on/off (2nd)",invoke=function() 
 renoise.song().selected_effect_column_index=1
@@ -1815,7 +1886,6 @@ renoise.tool():add_keybinding{name="Global:Paketti:Open Ext.Editor of Selected E
 
 ----------------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------------
-
 
 ----------------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------------
