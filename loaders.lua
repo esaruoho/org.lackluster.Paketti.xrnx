@@ -218,18 +218,18 @@ invoke=function() loadnative("Audio/Effects/Native/*XY Pad") end}
 --User-specific VST/AU efx loading. These are with very specific settings, so use at your own peril!
 --Oct17th modification: Loadvst can be used to load the vst/au/native fx of your choice. Enjoy.
 function loadvst(vstname)
-local checkline=nil
+  local checkline=nil
   if (table.count(renoise.song().selected_track.devices)) <2 then checkline=2
-  else 
-   if renoise.song().selected_track.devices[2].name=="#Line Input" then checkline=3
-   else checkline=2
-   end
+    else 
+      if renoise.song().selected_track.devices[2].name=="#Line Input" then checkline=3
+       else checkline=2
+      end
   end
 
-local checkline=nil
-if (table.count(renoise.song().selected_track.devices)) <2 then checkline=2
-else if renoise.song().selected_track.devices[2].name=="#Line Input" then checkline=3
-else checkline=2 end end
+  local checkline=nil
+  if (table.count(renoise.song().selected_track.devices)) <2 then checkline=2
+    else if renoise.song().selected_track.devices[2].name=="#Line Input" then checkline=3
+  else checkline=2 end end
 --renoise.tool():add_keybinding {name="Global:Track Devices:Load FabFilter Pro-Q", invoke=function() loadvst("Audio/Effects/VST/FabFilter Pro-Q")
 --renoise.song().selected_track.devices[2].parameters[206].value=1 end}
 
@@ -240,6 +240,8 @@ else renoise.app().window.lower_frame_is_visible=true end
  renoise.song().selected_track:insert_device_at(vstname, checkline)
  renoise.song().selected_track.devices[checkline].external_editor_visible=true
  renoise.song().selected_track.devices[checkline].is_maximized=false
+-- renoise.song().selected_track.devices[checkline].plugin_properties.auto_suspend=false
+-- the one above is just for plugins :( not available for actual track devices
  
  renoise.song().selected_device_index= checkline
  

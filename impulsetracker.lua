@@ -61,23 +61,32 @@ function F3()
 local w=renoise.app().window
 local s=renoise.song()
 
-if renoise.app().window.active_middle_frame==5 then renoise.app().window.active_middle_frame=3
-else renoise.app().window.active_middle_frame=5 end
+if w.active_middle_frame==5 then w.active_middle_frame=3
+    else w.active_middle_frame=5 
+end
 
 w.pattern_matrix_is_visible=false
 w.pattern_advanced_edit_is_visible=false
+
 if w.active_middle_frame == 1 then
 w.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
 w.lock_keyboard_focus=true
 w.disk_browser_is_visible=true
 w.instrument_box_is_visible=true
+
+  if w.upper_frame_is_visible==true then 
+     w.active_upper_frame=2
+      else 
+      return
+   end
 w.upper_frame_is_visible=true
 w.active_upper_frame=2
 return
-else end
+else 
+end
 
-if w.active_upper_frame == renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR then w.active_upper_frame = renoise.ApplicationWindow.UPPER_FRAME_TRACK_SCOPES 
-w.upper_frame_is_visible=true return end
+if w.upper_frame_is_visible == true then w.active_upper_frame = renoise.ApplicationWindow.UPPER_FRAME_TRACK_SCOPES 
+else return end
 
 if w.active_middle_frame==renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR and w.lower_frame_is_visible==false and w.pattern_advanced_edit_is_visible==false and w.upper_frame_is_visible==false then
 w.upper_frame_is_visible=true
@@ -86,14 +95,17 @@ w.disk_browser_is_visible=true
 return
 else end
 
-if w.active_upper_frame == renoise.ApplicationWindow.UPPER_FRAME_TRACK_SCOPES then w.active_upper_frame = renoise.ApplicationWindow.UPPER_FRAME_MASTER_SPECTRUM return else w.active_upper_frame = renoise.ApplicationWindow.UPPER_FRAME_TRACK_SCOPES end
-
+if w.active_upper_frame == renoise.ApplicationWindow.UPPER_FRAME_TRACK_SCOPES and w.upper_frame_is_visible==true then 
+--w.active_upper_frame = renoise.ApplicationWindow.UPPER_FRAME_MASTER_SPECTRUM 
+--switching between trackscopes + master spectrum is not preferred anymore by this user
+return 
+else w.active_upper_frame = renoise.ApplicationWindow.UPPER_FRAME_TRACK_SCOPES end
 
 s.selected_instrument.active_tab=1
-w.active_upper_frame =renoise.ApplicationWindow.UPPER_FRAME_TRACK_SCOPES
+--w.active_upper_frame =renoise.ApplicationWindow.UPPER_FRAME_TRACK_SCOPES
 w.active_middle_frame=renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
 
-renoise.app().window.active_middle_frame=renoise.ApplicationWindow.MIDDLE_FRAME_PHRASE_EDITOR
+--renoise.app().window.active_middle_frame=renoise.ApplicationWindow.MIDDLE_FRAME_PHRASE_EDITOR
 end
 renoise.tool():add_keybinding {name="Global:Paketti:Impulse Tracker F3 Sample Editor", invoke=function() F3() end}
 ----------------------------------------------------------------------------------------------------------------
@@ -624,7 +636,11 @@ function homehome()
   local selcol = s.selected_note_column_index
   s.transport.follow_player = false
   s.transport.loop_block_enabled=false
-
+  local w = renoise.app().window
+  
+-- Always set to pattern editor
+w.active_middle_frame=renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
+ 
 
 -- If on Master or Send-track, detect and go to first effect column.
 if s.selected_note_column_index==0 and s.selected_effect_column_index > 1 and song_pos.line == 1 and renoise.song().tracks[renoise.song().selected_track_index].visible_note_columns==0 then
