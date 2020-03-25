@@ -4,6 +4,17 @@ require "loaders"
 require "joule_danoise_better_column_navigation"
 require "CheatSheet"
 
+function onStartConfig()
+renoise.song().sequencer.keep_sequence_sorted=false
+end
+
+
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Keep Sequence Sorted False",invoke=function() onStartConfig()
+end}
+
+
+
+
 
 -- auto-suspend plugin off:
 function autosuspendOFF()
@@ -13,6 +24,24 @@ renoise.song().instruments[renoise.song().selected_instrument_index].plugin_prop
 end
 
 renoise.tool():add_menu_entry{name="Instrument Box:Paketti Switch Plugin AutoSuspend Off",invoke=function() autosuspendOFF() end}
+
+
+
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti Create Phrase",invoke=function() 
+  renoise.song().instruments[renoise.song().selected_instrument_index]:insert_phrase_at(1) 
+  renoise.app().window.active_middle_frame=3
+  renoise.song().instruments[renoise.song().selected_instrument_index].phrase_editor_visible=true
+  renoise.song().selected_phrase_index=1
+  
+--  renoise.song().instruments[renoise.song().selected_instrument_index].phrases[renoise.song().selected_phrase_index].instrument_column_visible=true
+renoise.song().instruments[renoise.song().selected_instrument_index].phrases[renoise.song().selected_phrase_index].volume_column_visible=true
+renoise.song().instruments[renoise.song().selected_instrument_index].phrases[renoise.song().selected_phrase_index].panning_column_visible=true
+renoise.song().instruments[renoise.song().selected_instrument_index].phrases[renoise.song().selected_phrase_index].delay_column_visible=true
+renoise.song().instruments[renoise.song().selected_instrument_index].phrases[renoise.song().selected_phrase_index].sample_effects_column_visible=true
+  
+  
+end}
+
 
 
 
@@ -160,6 +189,7 @@ renoise.tool():add_keybinding{name="Global:Paketti:Simple Play Record Follow",in
 renoise.tool():add_midi_mapping  {name="Global:Paketti:Simple Play Record Follow",invoke=function() simpleplayrecordfollow() end}
 
   
+renoise.tool():add_keybinding{name="Global:Paketti:Simple Play Record Follow 2nd",invoke=function() simpleplayrecordfollow() end}
   
 
 --2nd Save Song bind
@@ -1262,7 +1292,7 @@ local w=renoise.app().window
     w.lower_frame_is_visible = true
     w.active_upper_frame = 1
     w.active_middle_frame= 4
-    w.active_lower_frame = 3
+    w.active_lower_frame = 1 -- TrackDSP
     w.lock_keyboard_focus=true
     else
      if pd.external_editor_visible==false then pd.external_editor_visible=true else pd.external_editor_visible=false end
