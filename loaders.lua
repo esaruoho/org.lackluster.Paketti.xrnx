@@ -251,10 +251,15 @@ else renoise.app().window.lower_frame_is_visible=true end
   end 
   
   if renoise.song().selected_track.devices[checkline].name=="AU: TAL-Togu Audio Line: TAL Reverb 4 Plugin" then 
-     renoise.song().selected_track.devices[checkline].parameters[2].value=0.6 
-     renoise.song().selected_track.devices[checkline].parameters[5].value=0.9
-     renoise.song().selected_track.devices[checkline].parameters[6].value=1
-     renoise.song().selected_track.devices[checkline].parameters[7].value=0.4
+     renoise.song().selected_track.devices[checkline].parameters[2].value=0.0 -- delay
+     renoise.song().selected_track.devices[checkline].parameters[3].value=0.30 -- High Cut
+     renoise.song().selected_track.devices[checkline].parameters[4].value=0.88 -- Size
+     renoise.song().selected_track.devices[checkline].parameters[5].value=0.9 -- Diffuse
+     renoise.song().selected_track.devices[checkline].parameters[6].value=1 -- Dry
+     renoise.song().selected_track.devices[checkline].parameters[7].value=0.4 -- low cut
+     renoise.song().selected_track.devices[checkline].parameters[9].value=0.7 -- wet
+-- renoise.song().selected_track.devices[renoise.song().selected_device_index].parameters[7].value=0.4
+
   else  end 
 end
 

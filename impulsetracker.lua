@@ -639,8 +639,7 @@ function homehome()
   local w = renoise.app().window
   
 -- Always set to pattern editor
-w.active_middle_frame=renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
- 
+renoise.app().window.active_middle_frame=1
 
 -- If on Master or Send-track, detect and go to first effect column.
 if s.selected_note_column_index==0 and s.selected_effect_column_index > 1 and song_pos.line == 1 and renoise.song().tracks[renoise.song().selected_track_index].visible_note_columns==0 then
@@ -695,7 +694,15 @@ return end
   s.selected_note_column_index=1
 end
 
-renoise.tool():add_keybinding {name="Pattern Editor:Paketti:Impulse Tracker Home *2 behaviour...", invoke=function() homehome() end }
+renoise.tool():add_keybinding {name="Global:Paketti:Impulse Tracker Home *2 behaviour...", invoke=function() alwaysPattern()
+homehome() 
+end }
+
+
+renoise.tool():add_keybinding {name="Pattern Editor:Paketti:alwaysPattern", invoke=function() alwaysPattern()
+end }
+
+
 -------------------------------------------------------------------------------------------------------------------------------------------IT EndEnd
 function endend()
  local rs=renoise.song() 
@@ -706,6 +713,9 @@ function endend()
   local selcol = s.selected_note_column_index
   s.transport.follow_player = false
   s.transport.loop_block_enabled=false
+  
+-- always set to pattern editor
+renoise.app().window.active_middle_frame=1
   
 --  s.selected_note_column_index=1 
 song_pos.line = number
@@ -782,7 +792,14 @@ end
   
 end
 
-renoise.tool():add_keybinding {name="Pattern Editor:Paketti:Impulse Tracker End *2 behaviour...", invoke=function() endend() end }
+renoise.tool():add_keybinding {name="Global:Paketti:Impulse Tracker End *2 behaviour...", invoke=function() alwaysPattern() 
+endend()
+end }
+
+function alwaysPattern()
+renoise.app().window.active_middle_frame=1
+end
+
 -----------------------------------------------------------------------------------------------------------------------------------------
 --8.  "8" in ImpulseTracker "Plays Current Line" and "Advances by EditStep".
 function PlayCurrentLine()
