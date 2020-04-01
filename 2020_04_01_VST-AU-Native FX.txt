@@ -1,0 +1,296 @@
+1  Audio/Effects/AU/aufx:025e:TOGU
+2  Audio/Effects/AU/aufx:0x7C0BCD2:MagJ
+3  Audio/Effects/AU/aufx:168a:Vxng
+4  Audio/Effects/AU/aufx:4FwL:4FNT
+5  Audio/Effects/AU/aufx:58h8:TOGU
+6  Audio/Effects/AU/aufx:Angl:HrNt
+7  Audio/Effects/AU/aufx:Bram:Ovld
+8  Audio/Effects/AU/aufx:CRS1:Togu
+9  Audio/Effects/AU/aufx:FqEh:oDin
+10  Audio/Effects/AU/aufx:FqM1:oDin
+11  Audio/Effects/AU/aufx:Hrmc:HrNt
+12  Audio/Effects/AU/aufx:KTGr:KTfx
+13  Audio/Effects/AU/aufx:M30R:VST 
+14  Audio/Effects/AU/aufx:MgAB:SmMg
+15  Audio/Effects/AU/aufx:Ni$@:-NI-
+16  Audio/Effects/AU/aufx:Ni$J:-NI-
+17  Audio/Effects/AU/aufx:Pjfj:Manu
+18  Audio/Effects/AU/aufx:QudW:Tide
+19  Audio/Effects/AU/aufx:REV3:TOGU
+20  Audio/Effects/AU/aufx:Ruum:oDin
+21  Audio/Effects/AU/aufx:S20e:ScBh
+22  Audio/Effects/AU/aufx:S2dg:ScBh
+23  Audio/Effects/AU/aufx:S_d1:ScBh
+24  Audio/Effects/AU/aufx:Sbrc:ScBh
+25  Audio/Effects/AU/aufx:Scrm:ScBh
+26  Audio/Effects/AU/aufx:Scrs:ScBh
+27  Audio/Effects/AU/aufx:Sdcb:ScBh
+28  Audio/Effects/AU/aufx:Sgeq:ScBh
+29  Audio/Effects/AU/aufx:Shrm:ScBh
+30  Audio/Effects/AU/aufx:Smbf:ScBh
+31  Audio/Effects/AU/aufx:Sn7R:d16g
+32  Audio/Effects/AU/aufx:SpDl:No1z
+33  Audio/Effects/AU/aufx:SpMd:oDin
+34  Audio/Effects/AU/aufx:Ssrb:ScBh
+35  Audio/Effects/AU/aufx:SthA:OekS
+36  Audio/Effects/AU/aufx:T4V8:d16g
+37  Audio/Effects/AU/aufx:TYP4:GSi0
+38  Audio/Effects/AU/aufx:Td96:Tdrl
+39  Audio/Effects/AU/aufx:TrSh:Scha
+40  Audio/Effects/AU/aufx:WtKt:GSi0
+41  Audio/Effects/AU/aufx:bpas:appl
+42  Audio/Effects/AU/aufx:cHL1:TOGU
+43  Audio/Effects/AU/aufx:dLay:oDin
+44  Audio/Effects/AU/aufx:dcmp:appl
+45  Audio/Effects/AU/aufx:dely:appl
+46  Audio/Effects/AU/aufx:dist:appl
+47  Audio/Effects/AU/aufx:filt:appl
+48  Audio/Effects/AU/aufx:greq:appl
+49  Audio/Effects/AU/aufx:hpas:appl
+50  Audio/Effects/AU/aufx:hshf:appl
+51  Audio/Effects/AU/aufx:lmtr:appl
+52  Audio/Effects/AU/aufx:lpas:appl
+53  Audio/Effects/AU/aufx:lshf:appl
+54  Audio/Effects/AU/aufx:mcmp:appl
+55  Audio/Effects/AU/aufx:mrev:appl
+56  Audio/Effects/AU/aufx:nbeq:appl
+57  Audio/Effects/AU/aufx:nsnd:appl
+58  Audio/Effects/AU/aufx:nutp:appl
+59  Audio/Effects/AU/aufx:pmeq:appl
+60  Audio/Effects/AU/aufx:raac:appl
+61  Audio/Effects/AU/aufx:reV4:TOGU
+62  Audio/Effects/AU/aufx:rogr:appl
+63  Audio/Effects/AU/aufx:sdly:appl
+64  Audio/Effects/AU/aufx:shmr:oDin
+65  Audio/Effects/AU/aufx:tebY:yexY
+66  Audio/Effects/AU/aufx:tmpt:appl
+67  Audio/Effects/AU/aufx:vee3:oDin
+68  Audio/Effects/AU/aumf:676v:TOGU
+69  Audio/Effects/AU/aumf:CWam:-NI-
+70  Audio/Effects/AU/aumf:Clm5:-NI-
+71  Audio/Effects/AU/aumf:CrsD:ExSl
+72  Audio/Effects/AU/aumf:DPol:3E00
+73  Audio/Effects/AU/aumf:FMic:FabF
+74  Audio/Effects/AU/aumf:FPQr:FabF
+75  Audio/Effects/AU/aumf:FRn7:d16g
+76  Audio/Effects/AU/aumf:FSim:FabF
+77  Audio/Effects/AU/aumf:FuFi:QkQk
+78  Audio/Effects/AU/aumf:NiR6:-NI-
+79  Audio/Effects/AU/aumf:OByZ:OmFo
+80  Audio/Effects/AU/aumf:OFmg:OmFo
+81  Audio/Effects/AU/aumf:OHmt:OmFo
+82  Audio/Effects/AU/aumf:Opdh:OmFo
+83  Audio/Effects/AU/aumf:REV3:TOGU
+84  Audio/Effects/AU/aumf:RP78:d16g
+85  Audio/Effects/AU/aumf:Rc17:UHfX
+86  Audio/Effects/AU/aumf:S5eq:ScBh
+87  Audio/Effects/AU/aumf:SMY2:UHfX
+88  Audio/Effects/AU/aumf:S_d2:ScBh
+89  Audio/Effects/AU/aumf:Scmp:ScBh
+90  Audio/Effects/AU/aumf:Sfkr:ScBh
+91  Audio/Effects/AU/aumf:Sgte:ScBh
+92  Audio/Effects/AU/aumf:Slim:ScBh
+93  Audio/Effects/AU/aumf:Smft:ScBh
+94  Audio/Effects/AU/aumf:StGr:SaSu
+95  Audio/Effects/AU/aumf:Svwr:ScBh
+96  Audio/Effects/AU/aumf:Swbf:ScBh
+97  Audio/Effects/AU/aumf:Sweh:ScBh
+98  Audio/Effects/AU/aumf:T4V9:d16g
+99  Audio/Effects/AU/aumf:UcA1:UHfX
+100  Audio/Effects/AU/aumf:UcD1:UHfX
+101  Audio/Effects/AU/aumf:UcF1:UHfX
+102  Audio/Effects/AU/aumf:UcG1:UHfX
+103  Audio/Effects/AU/aumf:UcP1:UHfX
+104  Audio/Effects/AU/aumf:UcQ1:UHfX
+105  Audio/Effects/AU/aumf:UcS1:UHfX
+106  Audio/Effects/AU/aumf:UcT1:UHfX
+107  Audio/Effects/AU/aumf:VOC2:TOGU
+108  Audio/Effects/AU/aumf:VUM3:HrNt
+109  Audio/Effects/AU/aumf:aumf:Togu
+110  Audio/Effects/AU/aumf:dub2:Togu
+111  Audio/Effects/AU/aumf:dubX:TOGU
+112  Audio/Effects/AU/aumf:reV0:UHfX
+113  Audio/Effects/AU/aumf:uLyr:UHfX
+114  Audio/Effects/AU/aumf:uhPV:UHfX
+115  Audio/Effects/AU/aumf:xg70:TOGU
+116  Audio/Effects/VST/20 Bands Eq
+117  Audio/Effects/VST/5 Band Eq
+118  Audio/Effects/VST/Absynth 4 FX
+119  Audio/Effects/VST/Absynth 4 FX 2x8
+120  Audio/Effects/VST/Absynth 4 Stereo
+121  Audio/Effects/VST/Absynth 4 Surround
+122  Audio/Effects/VST/Absynth 5 FX
+123  Audio/Effects/VST/Absynth 5 FX Surround
+124  Audio/Effects/VST/Analog Heat
+125  Audio/Effects/VST/BREVERB audioMIDI.com
+126  Audio/Effects/VST/Buff rice
+127  Audio/Effects/VST/ColourCopy
+128  Audio/Effects/VST/Compressor
+129  Audio/Effects/VST/Convolution reverb mono
+130  Audio/Effects/VST/Convolution reverb stereo
+131  Audio/Effects/VST/D-Pole
+132  Audio/Effects/VST/DC Blocker
+133  Audio/Effects/VST/FabFilter Micro
+134  Audio/Effects/VST/FabFilter Micro (Mono)
+135  Audio/Effects/VST/FabFilter Pro-Q
+136  Audio/Effects/VST/FabFilter Pro-Q (Mono)
+137  Audio/Effects/VST/FabFilter Simplon
+138  Audio/Effects/VST/faSampleDelay
+139  Audio/Effects/VST/Frohmage-free-funky-VST2
+140  Audio/Effects/VST/Frontier
+141  Audio/Effects/VST/Funky repeater
+142  Audio/Effects/VST/Fusion_Field
+143  Audio/Effects/VST/Gate
+144  Audio/Effects/VST/Graphic Equalizer
+145  Audio/Effects/VST/Hematohm-pro-classic-VST2
+146  Audio/Effects/VST/HoRNetAngle
+147  Audio/Effects/VST/HoRNetDeeLayPlus
+148  Audio/Effects/VST/HoRNetHarmonics
+149  Audio/Effects/VST/HoRNetVUMeterMK3
+150  Audio/Effects/VST/Hum remover
+151  Audio/Effects/VST/Limiter
+152  Audio/Effects/VST/MagicAB V2
+153  Audio/Effects/VST/Marvel GEQ
+154  Audio/Effects/VST/mda Ambience
+155  Audio/Effects/VST/mda Bandisto
+156  Audio/Effects/VST/mda BeatBox
+157  Audio/Effects/VST/mda Combo
+158  Audio/Effects/VST/mda De-ess
+159  Audio/Effects/VST/mda Degrade
+160  Audio/Effects/VST/mda Delay
+161  Audio/Effects/VST/mda Detune
+162  Audio/Effects/VST/mda Dither
+163  Audio/Effects/VST/mda DubDelay
+164  Audio/Effects/VST/mda Dynamics
+165  Audio/Effects/VST/mda Image
+166  Audio/Effects/VST/mda Leslie
+167  Audio/Effects/VST/mda Limiter
+168  Audio/Effects/VST/mda Looplex
+169  Audio/Effects/VST/mda Loudness
+170  Audio/Effects/VST/mda MultiBand
+171  Audio/Effects/VST/mda Overdrive
+172  Audio/Effects/VST/mda RePsycho!
+173  Audio/Effects/VST/mda RezFilter
+174  Audio/Effects/VST/mda RingMod
+175  Audio/Effects/VST/mda RoundPan
+176  Audio/Effects/VST/mda Shepard
+177  Audio/Effects/VST/mda Splitter
+178  Audio/Effects/VST/mda Stereo
+179  Audio/Effects/VST/mda SubBass
+180  Audio/Effects/VST/mda Talkbox
+181  Audio/Effects/VST/mda TestTone
+182  Audio/Effects/VST/mda ThruZero
+183  Audio/Effects/VST/mda Tracker
+184  Audio/Effects/VST/mda VocInput
+185  Audio/Effects/VST/mda Vocoder
+186  Audio/Effects/VST/MIDI Filter
+187  Audio/Effects/VST/Multiband freeverb
+188  Audio/Effects/VST/Multiband scraper
+189  Audio/Effects/VST/OhmBoyz-pro-classic-VST2
+190  Audio/Effects/VST/OneKnob Pumper Mono
+191  Audio/Effects/VST/OneKnob Pumper Stereo
+192  Audio/Effects/VST/Phasis
+193  Audio/Effects/VST/Predatohm-pro-classic-VST2
+194  Audio/Effects/VST/Protoverb
+195  Audio/Effects/VST/Quadravox
+196  Audio/Effects/VST/Reaktor 6 FX
+197  Audio/Effects/VST/Repeater
+198  Audio/Effects/VST/Runciter
+199  Audio/Effects/VST/SaltyGrain
+200  Audio/Effects/VST/Simple reverb
+201  Audio/Effects/VST/Smexoscope
+202  Audio/Effects/VST/Smexoscope-dark
+203  Audio/Effects/VST/soothe
+204  Audio/Effects/VST/SoundShifter Pitch Mono
+205  Audio/Effects/VST/SoundShifter Pitch Stereo
+206  Audio/Effects/VST/SphereDelay
+207  Audio/Effects/VST/Supercharger
+208  Audio/Effects/VST/Swamp buffer
+209  Audio/Effects/VST/Syntorus
+210  Audio/Effects/VST/TAL-Bitcrusher
+211  Audio/Effects/VST/TAL-Chorus-LX
+212  Audio/Effects/VST/TAL-Dub
+213  Audio/Effects/VST/TAL-Dub-2
+214  Audio/Effects/VST/TAL-Dub-3
+215  Audio/Effects/VST/TAL-Dub-X
+216  Audio/Effects/VST/TAL-Filter-2
+217  Audio/Effects/VST/TAL-Reverb
+218  Audio/Effects/VST/TAL-Reverb-2
+219  Audio/Effects/VST/TAL-Reverb-3
+220  Audio/Effects/VST/TAL-Reverb-4
+221  Audio/Effects/VST/TAL-Vocoder-2
+222  Audio/Effects/VST/TDR Kotelnikov
+223  Audio/Effects/VST/Toraverb
+224  Audio/Effects/VST/Toraverb2
+225  Audio/Effects/VST/TransientShaper
+226  Audio/Effects/VST/Type4
+227  Audio/Effects/VST/Uhbik-A
+228  Audio/Effects/VST/Uhbik-D
+229  Audio/Effects/VST/Uhbik-F
+230  Audio/Effects/VST/Uhbik-G
+231  Audio/Effects/VST/Uhbik-P
+232  Audio/Effects/VST/Uhbik-Q
+233  Audio/Effects/VST/Uhbik-S
+234  Audio/Effects/VST/Uhbik-T
+235  Audio/Effects/VST/ValhallaDelay
+236  Audio/Effects/VST/ValhallaFreqEcho
+237  Audio/Effects/VST/ValhallaRoom
+238  Audio/Effects/VST/ValhallaRoom_x64
+239  Audio/Effects/VST/ValhallaShimmer
+240  Audio/Effects/VST/ValhallaShimmer_x64
+241  Audio/Effects/VST/ValhallaSpaceModulator
+242  Audio/Effects/VST/ValhallaVintageVerb
+243  Audio/Effects/VST/ValhallaVintageVerb_x64
+244  Audio/Effects/VST/Valve warmer
+245  Audio/Effects/VST/VocalizerPro
+246  Audio/Effects/VST/VocalizerPro_64
+247  Audio/Effects/VST/VU Meter Mono
+248  Audio/Effects/VST/VU Meter Stereo
+249  Audio/Effects/VST/WatKat
+250  Audio/Effects/VST/Width Enhancer
+251  Audio/Effects/VST/Youlean Loudness Meter BETA
+252  Audio/Effects/VST/Zebrify
+253  Audio/Effects/VST/ZRev
+254  Audio/Effects/Native/Delay
+255  Audio/Effects/Native/Multitap
+256  Audio/Effects/Native/mpReverb 2
+257  Audio/Effects/Native/Reverb
+258  Audio/Effects/Native/Convolver
+259  Audio/Effects/Native/Bus Compressor
+260  Audio/Effects/Native/Compressor
+261  Audio/Effects/Native/Gate 2
+262  Audio/Effects/Native/Maximizer
+263  Audio/Effects/Native/Analog Filter
+264  Audio/Effects/Native/Digital Filter
+265  Audio/Effects/Native/Comb Filter 2
+266  Audio/Effects/Native/EQ 5
+267  Audio/Effects/Native/EQ 10
+268  Audio/Effects/Native/Mixer EQ
+269  Audio/Effects/Native/Chorus 2
+270  Audio/Effects/Native/Flanger 2
+271  Audio/Effects/Native/Phaser 2
+272  Audio/Effects/Native/RingMod 2
+273  Audio/Effects/Native/LofiMat 2
+274  Audio/Effects/Native/Distortion 2
+275  Audio/Effects/Native/Cabinet Simulator
+276  Audio/Effects/Native/Exciter
+277  Audio/Effects/Native/Stereo Expander
+278  Audio/Effects/Native/DC Offset
+279  Audio/Effects/Native/Gainer
+280  Audio/Effects/Native/Repeater
+281  Audio/Effects/Native/Doofer
+282  Audio/Effects/Native/#Line Input
+283  Audio/Effects/Native/#ReWire Input
+284  Audio/Effects/Native/#Send
+285  Audio/Effects/Native/#Multiband Send
+286  Audio/Effects/Native/*Instr. Macros
+287  Audio/Effects/Native/*Instr. Automation
+288  Audio/Effects/Native/*Instr. MIDI Control
+289  Audio/Effects/Native/*Hydra
+290  Audio/Effects/Native/*Meta Mixer
+291  Audio/Effects/Native/*Formula
+292  Audio/Effects/Native/*XY Pad
+293  Audio/Effects/Native/*LFO
+294  Audio/Effects/Native/*Key Tracker
+295  Audio/Effects/Native/*Velocity Tracker
+296  Audio/Effects/Native/*Signal Follower
