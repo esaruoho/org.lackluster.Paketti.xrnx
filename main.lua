@@ -4,16 +4,54 @@ require "loaders"
 require "joule_danoise_better_column_navigation"
 require "CheatSheet"
 
-function onStartConfig()
+function keepSequenceSortedFalse()
 renoise.song().sequencer.keep_sequence_sorted=false
 end
 
-
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Keep Sequence Sorted False",invoke=function() onStartConfig()
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Keep Sequence Sorted False",invoke=function() keepSequenceSortedFalse()
 end}
 
+-- Start of Startup notifier
+function sample_loaded_change_to_sample_editor_v2()
+local w=renoise.app().window
+if w.active_middle_frame == 1 then
+w.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
+else end
+renoise.song().selected_instrument.active_tab=1
+renoise.app().window.active_middle_frame=5
+ renoise.app():show_status("Transport to waveform successful")
+end
 
+function startup_notifier()
+local s=renoise.song()
+  renoise.song().sequencer.keep_sequence_sorted=false
+ 
+  if renoise.song().selected_sample == nil then return else
+    if renoise.song().selected_sample.sample_buffer_observable:has_notifier(sample_loaded_change_to_sample_editor_v2)
+       then renoise.song().selected_sample.sample_buffer_observable:remove_notifier(sample_loaded_change_to_sample_editor_v2)
+       else renoise.song().selected_sample.sample_buffer_observable:add_notifier(sample_loaded_change_to_sample_editor_v2)
+    end
+  end
+  renoise.song().instruments[renoise.song().selected_instrument_index].active_tab=1
+  renoise.app():show_status("Keep Sequence Sorted = False")
+end
 
+if not renoise.tool().app_new_document_observable:has_notifier(startup_notifier) 
+   then renoise.tool().app_new_document_observable:add_notifier(startup_notifier)
+   else renoise.tool().app_new_document_observable:remove_notifier(startup_notifier)
+end
+
+-- End of startup notifier
+
+--renoise.app().window:select_preset(1)
+--for i = 1,8 do renoise.song().tracks[i].delay_column_visible=true en 
+
+--
+--renoise.song().instruments[renoise.song().selected_instrument_index].active_tab=1 == Sampler
+--renoise.song().instruments[renoise.song().selected_instrument_index].active_tab=1 == Plugin
+--renoise.song().instruments[renoise.song().selected_instrument_index].active_tab=1 == Midi
+--end
+--end
 
 
 -- auto-suspend plugin off:
@@ -1299,10 +1337,10 @@ local w=renoise.app().window
      end
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Open External Editor for Plugin",invoke=function() inst_open_editor()   end}
-renoise.tool():add_keybinding{name="Global:Paketti:Open External Editor for Plugin 2nd",invoke=function() inst_open_editor()   end}
+renoise.tool():add_keybinding{name="Global:Paketti:Open External Editor for Plugin",invoke=function() inst_open_editor() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Open External Editor for Plugin 2nd",invoke=function() inst_open_editor() end}
 
---------------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------
 -- Write BPM. version 2.7.0 -syflom -LPB alteration on 15th June 2011 -esaruoho
 function get_master_track_index()
   for k,v in ripairs(renoise.song().tracks)
@@ -1329,8 +1367,7 @@ end
 renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Write Current BPM&LPB to Master column",invoke=function() write_bpm() end}
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Write Current BPM&LPB to Master column",invoke=function() write_bpm() end}
 
---------------------------------------------------------------------------------------------------------------------------------------------------------
--- Pattern Resizer by dblue. some minor modifications.
+--------------------------------------------------------------------------------------------------------------------------------------- Pattern Resizer by dblue. some minor modifications.
 function resize_pattern(pattern, new_length, patternresize)
   
   -- We need a valid pattern object
@@ -1545,11 +1582,11 @@ end
   rs:delete_track_at(1)
 end
 
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:dblueh Shrink", invoke =function()
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:dblue Shrink", invoke =function()
 local pattern = renoise.song().selected_pattern
 resize_pattern(pattern, pattern.number_of_lines * 0.5, 0) end}
 
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:dblueh Expand", invoke =function()
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:dblue Expand", invoke =function()
 local pattern = renoise.song().selected_pattern
 resize_pattern(pattern, pattern.number_of_lines * 2, 0 ) end}
 
@@ -1565,11 +1602,10 @@ function joulepatterndoubler()
  local s=renoise.song()
  local old_patternlength = s.selected_pattern.number_of_lines
  local resultlength = nil
---Note, when doubling up a 512 pattern, this will shoot a "can't change number_of_lines to 1024" error. fix.
---Note: tried to fix, still shoots 1024 error in Terminal.
-  resultlength = old_patternlength*2
-if not (resultlength > 512) then
 
+ resultlength = old_patternlength*2
+
+if not (resultlength > 512) then
   s.selected_pattern.number_of_lines = resultlength
 
   for track_index, patterntrack in ipairs(s.selected_pattern.tracks) do
@@ -1585,19 +1621,56 @@ if not (resultlength > 512) then
       end
     end
   end
-  
 else
   return
 end
+
 --Modification, cursor is placed to "start of "clone""
 --renoise.song().selected_line_index = old_patternlength+1
  s.selected_line_index = old_patternlength+s.selected_line_index
- s.transport.edit_step=0
-
+-- s.transport.edit_step=0
 end
 
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Joule Pattern Doubler",invoke=function() joulepatterndoubler() end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Joule Pattern Doubler",invoke=function() joulepatterndoubler() end}  
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Joule Pattern Halver",invoke=function() joulepatternhalver() end}  
+
+function joulepatternhalver()
+ local s=renoise.song()
+ local old_patternlength = s.selected_pattern.number_of_lines
+ local resultlength = nil
+
+ resultlength = old_patternlength/2
+
+if not (resultlength < 1) then
+  s.selected_pattern.number_of_lines = resultlength
+
+  for track_index, patterntrack in ipairs(s.selected_pattern.tracks) do
+    if not patterntrack.is_empty then
+      for line_index, line in ipairs(patterntrack.lines) do
+        if line_index <= old_patternlength then
+          if not line.is_empty then
+            patterntrack:line(line_index+old_patternlength):copy_from(line)
+          else
+            patterntrack:line(line_index+old_patternlength):clear()
+          end
+        end
+      end
+    end
+  end
+else
+  return
+end
+
+--Modification, cursor is placed to "start of "clone""
+--renoise.song().selected_line_index = old_patternlength+1
+-- s.selected_line_index = old_patternlength+s.selected_line_index
+-- s.transport.edit_step=0
+end
+
+
+-----
+
 
 function joulephrasedoubler()
   local old_phraselength = renoise.song().selected_phrase.number_of_lines
@@ -1627,6 +1700,39 @@ end
 
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Joule Phrase Doubler (2nd bind)",invoke=function() joulepatterndoubler() end}    
 renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Joule Phrase Doubler",invoke=function() joulephrasedoubler() end}  
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Joule Phrase Halver",invoke=function() joulephrasehalver() end}  
+
+
+function joulephrasehalver()
+  local old_phraselength = renoise.song().selected_phrase.number_of_lines
+  local s=renoise.song()
+  local resultlength = nil
+--Note, when doubling up a 512 pattern, this will shoot a "can't change number_of_lines to 1024" error. fix.
+--Note: tried to fix, still shoots 1024 error in Terminal.
+  resultlength = old_phraselength/2
+if resultlength > 512 or resultlength < 1 then return else s.selected_phrase.number_of_lines=resultlength
+
+if old_phraselength >256 then return else 
+for line_index, line in ipairs(s.selected_phrase.lines) do
+   if not line.is_empty then
+     if line_index <= old_phraselength then
+       s.selected_phrase:line(line_index+old_phraselength):copy_from(line)
+     end
+   end
+ end
+end
+
+
+
+--Modification, cursor is placed to "start of "clone""
+--commented away because there is no way to set current_phrase_index.
+  -- renoise.song().selected_line_index = old_patternlength+1
+  -- renoise.song().selected_line_index = old_phraselength+renoise.song().selected_line_index
+  -- renoise.song().transport.edit_step=0
+end
+end
+
+
 
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1905,46 +2011,23 @@ end
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Open Ext.Editor of Selected Effect",invoke=function() OpenSelectedEffectExternalEditor() end}
-----------------------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------
+function inspectPlugin()
+for i=1,(table.count(renoise.song().selected_track.devices[2].parameters)) 
+do oprint (renoise.song().selected_track.devices[2].name .. " " .. i .. " " .. renoise.song().selected_track.devices[2].parameters[i].name) 
+end
+end
+renoise.tool():add_keybinding {name = "Global:Paketti:Inspect Plugin", invoke = function() inspectPlugin() end}
 
---------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------
 
---------------------------------------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------
-
-----------------------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------
-
-----------------------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------
-
+------------------------------------------------------------------------------------------------------------------------------------
 
 
 --[[ Thanks so much to everyone who helped. dblue, cortex, joule, avaruus, astu/flo, mmd(mr mark dollin) syflom, protman, pandabot, 
 Raul (ulneiz), ViZiON, ghostwerk, vV, Bantai, danoise, Snowrobot, mxb, jenoki, kmaki, mantrakid, aleksip and the whole Renoise community.
 --
--- Biggest thanks to Brothomstates for suggesting that I could pick up and learn LUA, that it would not be beyond me. Really appreciate
--- your (sometimes misplaced and ahead-of-time) faith in me.
+-- Biggest thanks to Brothomstates for suggesting that I could pick up and learn LUA, that it would not be beyond me.
+-- Really appreciate you having faith in me.
 ]]--

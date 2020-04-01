@@ -1,0 +1,80 @@
+1  Audio/Generators/AU/aumu:2900:3E00
+2  Audio/Generators/AU/aumu:3EDr:3E00
+3  Audio/Generators/AU/aumu:Bass:Togu
+4  Audio/Generators/AU/aumu:CHiZ:bgTK
+5  Audio/Generators/AU/aumu:CWam:-NI-
+6  Audio/Generators/AU/aumu:Chr1:AAS 
+7  Audio/Generators/AU/aumu:Clm5:-NI-
+8  Audio/Generators/AU/aumu:DrmX:ImLi
+9  Audio/Generators/AU/aumu:Ele2:Togu
+10  Audio/Generators/AU/aumu:FOne:FabF
+11  Audio/Generators/AU/aumu:JU62:Togu
+12  Audio/Generators/AU/aumu:Kaiv:MLbs
+13  Audio/Generators/AU/aumu:NBa3:-NI-
+14  Audio/Generators/AU/aumu:NiO5:-NI-
+15  Audio/Generators/AU/aumu:NiR6:-NI-
+16  Audio/Generators/AU/aumu:PLGS:PLOG
+17  Audio/Generators/AU/aumu:SMD2:UHfX
+18  Audio/Generators/AU/aumu:SMD3:UHfX
+19  Audio/Generators/AU/aumu:S_d3:ScBh
+20  Audio/Generators/AU/aumu:Sbdm:ScBh
+21  Audio/Generators/AU/aumu:Sclr:eMai
+22  Audio/Generators/AU/aumu:Sfms:ScBh
+23  Audio/Generators/AU/aumu:Srns:ScBh
+24  Audio/Generators/AU/aumu:Tf40:Bctr
+25  Audio/Generators/AU/aumu:arpg:KRNU
+26  Audio/Generators/AU/aumu:cbSy:UHfX
+27  Audio/Generators/AU/aumu:dls :appl
+28  Audio/Generators/AU/aumu:msyn:appl
+29  Audio/Generators/AU/aumu:ncut:TOGU
+30  Audio/Generators/AU/aumu:samp:appl
+31  Audio/Generators/AU/aumu:tYn6:UHfX
+32  Audio/Generators/AU/aumu:trkr:NASH
+33  Audio/Generators/AU/aumu:x!!$:Audj
+34  Audio/Generators/VST/Absynth 4
+35  Audio/Generators/VST/Absynth 5
+36  Audio/Generators/VST/Absynth 5 Stereo
+37  Audio/Generators/VST/Analog Four
+38  Audio/Generators/VST/Analog Keys
+39  Audio/Generators/VST/Analog Rytm
+40  Audio/Generators/VST/Attack
+41  Audio/Generators/VST/audjoo_helix
+42  Audio/Generators/VST/Bassdrum
+43  Audio/Generators/VST/Battery 3
+44  Audio/Generators/VST/CheezeMachine
+45  Audio/Generators/VST/chipspeech
+46  Audio/Generators/VST/Chromaphone
+47  Audio/Generators/VST/Dexed
+48  Audio/Generators/VST/Digitakt
+49  Audio/Generators/VST/Digitone
+50  Audio/Generators/VST/Drumatic4
+51  Audio/Generators/VST/Drumaxx
+52  Audio/Generators/VST/FabFilter One
+53  Audio/Generators/VST/Flying monkey synth
+54  Audio/Generators/VST/FRMS
+55  Audio/Generators/VST/Kaivo
+56  Audio/Generators/VST/Kirnu-Cream
+57  Audio/Generators/VST/Kirnu-Cream64
+58  Audio/Generators/VST/Kontakt 5
+59  Audio/Generators/VST/Kontakt 5 16out
+60  Audio/Generators/VST/Kontakt 5 8out
+61  Audio/Generators/VST/mda DX10
+62  Audio/Generators/VST/mda ePiano
+63  Audio/Generators/VST/mda JX10
+64  Audio/Generators/VST/mda Piano
+65  Audio/Generators/VST/PG-8X
+66  Audio/Generators/VST/PG8X
+67  Audio/Generators/VST/PPG Wave 2.V
+68  Audio/Generators/VST/Rainy synth
+69  Audio/Generators/VST/Reaktor 6
+70  Audio/Generators/VST/Scaler
+71  Audio/Generators/VST/Surge
+72  Audio/Generators/VST/TAL-BassLine
+73  Audio/Generators/VST/TAL-Elek7ro-II
+74  Audio/Generators/VST/TAL-NoiseMaker
+75  Audio/Generators/VST/TAL-U-No-62
+76  Audio/Generators/VST/TripleCheese
+77  Audio/Generators/VST/tunefish4
+78  Audio/Generators/VST/TyrellN6
+79  Audio/Generators/VST/Zebra2
+80  Audio/Generators/VST/Zebralette

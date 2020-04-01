@@ -44,7 +44,6 @@ end
 renoise.tool():add_keybinding {name="Global:Paketti:dBlue Cycle Middle Frame", invoke = function() cycle_middle_frame()   end}
 
 ---------------------------
-
 --vV's wonderful sample keyzone noteon/noteoff copier + octave transposition for note-off:
 local NOTE_ON = renoise.Instrument.LAYER_NOTE_ON
 local NOTE_OFF = renoise.Instrument.LAYER_NOTE_OFF
