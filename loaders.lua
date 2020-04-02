@@ -54,43 +54,70 @@ function instrument_is_empty(instrument)
 end
 
 function search_empty_instrument()
-        local proc = renoise.song()
-        for empty_instrument = 1, #proc.instruments do
-                local samples = false
-
-                for i = 1,#proc.instruments[empty_instrument].samples do
-                        local temp_buffer = proc.instruments[empty_instrument].samples[i].sample_buffer
-                        if temp_buffer.has_sample_data then
-                                samples = true
-                                break
-                        end
-                end
-                local plugin = proc.instruments[empty_instrument].plugin_properties.plugin_loaded
-                local midi_device = proc.instruments[empty_instrument].midi_output_properties.device_name
-                if ((samples == false) and (plugin == false) and 
-                        (midi_device == nil or midi_device == "")) then
-                        return empty_instrument
-                end
-        end
-        proc:insert_instrument_at(#proc.instruments+1)
-        return #proc.instruments
+  local proc = renoise.song()
+  for empty_instrument = 1, #proc.instruments do
+    local samples = false
+                
+      for i = 1,#proc.instruments[empty_instrument].samples do
+        local temp_buffer = proc.instruments[empty_instrument].samples[i].sample_buffer
+          if temp_buffer.has_sample_data then samples = true break
+          end
+      end
+  local plugin = proc.instruments[empty_instrument].plugin_properties.plugin_loaded
+  local midi_device = proc.instruments[empty_instrument].midi_output_properties.device_name
+    if ((samples == false) and (plugin == false) and 
+        (midi_device == nil or midi_device == "")) then
+    return empty_instrument
+    end
+    end
+   proc:insert_instrument_at(#proc.instruments+1)
+  return #proc.instruments
 end
-----------------------------------------------------------------------------------------------------------------------------------------------------------------
-function LoadZebra()
+------------------------------------------------------------------------------------------------------------
+function LoadRhino()
 local s=renoise.song()
 s.selected_instrument_index = search_empty_instrument()
-renoise.song().selected_instrument.plugin_properties:load_plugin("Audio/Generators/VST/Zebra2")
+renoise.song().selected_instrument.plugin_properties:load_plugin("Audio/Generators/AU/aumu:RNB4:VSTA")
 if renoise.song().selected_instrument.plugin_properties.plugin_loaded
  then
  local pd=renoise.song().selected_instrument.plugin_properties.plugin_device
  if pd.external_editor_visible==false then pd.external_editor_visible=true else pd.external_editor_visible=false end
  end
+renoise.app().window.active_lower_frame=3
+renoise.song().selected_instrument.active_tab=2 
+end
+
+renoise.tool():add_keybinding  {name="Global:Paketti:Load Rhino 2.1 AU", invoke = function() LoadRhino() end}
+------------------------------------------------------------------------------------------------------------
+renoise.tool():add_keybinding {name = "Global:Paketti:Load FabFilter One", invoke = function()  renoise.song().instruments[renoise.song().selected_instrument_index].plugin_properties:load_plugin("Audio/Generators/AU/aumu:FOne:FabF")
+local pd=renoise.song().selected_instrument.plugin_properties.plugin_device
+ if pd.external_editor_visible==false then pd.external_editor_visible=true end end}
+------------------------------------------------------------------------------------------------------------
+renoise.tool():add_keybinding {name = "Global:Paketti:Load Surge", invoke = function()  renoise.song().instruments[renoise.song().selected_instrument_index].plugin_properties:load_plugin("Audio/Generators/VST/Surge")
+local pd=renoise.song().selected_instrument.plugin_properties.plugin_device
+ if pd.external_editor_visible==false then pd.external_editor_visible=true end 
+ 
+
+renoise.app().window.active_middle_frame=renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
+renoise.app().window.lock_keyboard_focus=true
+
+
+ end}
+------------------------------------------------------------------------------------------------------------
+function LoadZebra()
+local s=renoise.song()
+s.selected_instrument_index = search_empty_instrument()
+renoise.song().selected_instrument.plugin_properties:load_plugin("Audio/Generators/VST/Zebra2")
+if renoise.song().selected_instrument.plugin_properties.plugin_loaded then
+ local pd=renoise.song().selected_instrument.plugin_properties.plugin_device
+ if pd.external_editor_visible==false then pd.external_editor_visible=true else pd.external_editor_visible=false end
+end
 --renoise.app().window.active_lower_frame=3
 renoise.app().window.active_middle_frame=3
 renoise.song().selected_instrument.active_tab=2 
 end
 renoise.tool():add_keybinding {name="Global:Paketti:Load U-He Zebra", invoke=function() LoadZebra() end}
-------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
 function LoadPPG()
 local s=renoise.song()
 s.selected_instrument_index = search_empty_instrument()
@@ -109,7 +136,7 @@ renoise.song().selected_instrument.active_tab=2
 
 end
 renoise.tool():add_keybinding {name="Global:Paketti:Load Waldorf PPG v2", invoke=function() LoadPPG() end}
-------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
 function LoadAttack()
 local s=renoise.song()
 s.selected_instrument_index = search_empty_instrument()
@@ -123,7 +150,7 @@ renoise.app().window.active_middle_frame=3
 renoise.song().selected_instrument.active_tab=2 
 end
 renoise.tool():add_keybinding  {name="Global:Paketti:Load Waldorf Attack", invoke=function() LoadAttack() end}
-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
 function loadnative(effect)
 local checkline=nil
    if (table.count(renoise.song().selected_track.devices)) <2 then checkline=2
@@ -269,12 +296,13 @@ else renoise.app().window.lower_frame_is_visible=true end
 
 -- renoise.app().window.active_lower_frame=1
  renoise.song().selected_track:insert_device_at(vstname, checkline)
- renoise.song().selected_track.devices[checkline].external_editor_visible=true
- renoise.song().selected_track.devices[checkline].is_maximized=false
+   if renoise.song().selected_track.devices[checkline].name=="AU: Koen Tanghe @ Smartelectronix: KTGranulator" then return
+   else renoise.song().selected_track.devices[checkline].external_editor_visible=true end
+  renoise.song().selected_track.devices[checkline].is_maximized=false
 -- renoise.song().selected_track.devices[checkline].plugin_properties.auto_suspend=false
 -- the one above is just for plugins :( not available for actual track devices
  
- renoise.song().selected_device_index= checkline
+ renoise.song().selected_device_index=checkline
  
   if renoise.song().selected_track.devices[checkline].name=="VST: Schaack Audio Technologies: TransientShaper" then 
   renoise.song().selected_track.devices[checkline].parameters[1].show_in_mixer=true
@@ -303,6 +331,18 @@ else renoise.app().window.lower_frame_is_visible=true end
      renoise.song().selected_track.devices[checkline].parameters[1].value=0.474 -- Mix 
      renoise.song().selected_track.devices[checkline].parameters[3].value=0.688 -- Decay 
   else end 
+
+  if renoise.song().selected_track.devices[checkline].name=="AU: Koen Tanghe @ Smartelectronix: KTGranulator" then 
+     renoise.app().window.lower_frame_is_visible=true
+     renoise.app().window.active_lower_frame=1
+     renoise.song().selected_track.devices[checkline].is_maximized=true
+     renoise.song().selected_track.devices[checkline].parameters[31].value=1 --SplitPitch
+     renoise.song().selected_track.devices[checkline].parameters[16].value=0.75 --maxTransp
+     renoise.song().selected_track.devices[checkline].parameters[2].value=0.50 --Mix
+     renoise.song().selected_track.devices[checkline].parameters[3].value=0.35 --Mix
+     renoise.song().selected_track.devices[checkline].parameters[6].value=0.75 --Mix
+  else end 
+ 
 end
 
 --Audio/Effects/AU/aufx:cHL1:TOGU
@@ -310,6 +350,14 @@ end
 --73  Audio/Effects/AU/aumf:676v:TOGU
 --- AU
 -- Audio/Effects/AU/aufx:sdly:appl
+
+renoise.tool():add_keybinding {name="Global:Track Devices:Load Koen KTGranulator (AU)",
+invoke = function() 
+loadvst("Audio/Effects/AU/aufx:KTGr:KTfx") end}
+
+
+renoise.tool():add_keybinding {name="Global:Track Devices:Load Uhbik U-He Runciter", invoke = function() loadvst("Audio/Effects/AU/aumf:Rc17:UHfX") end}
+
 renoise.tool():add_keybinding {name="Global:Track Devices:Load SphereDelay Maybe?", invoke=function() loadvst("Audio/Effects/AU/aufx:SpDl:No1z") end}
 renoise.tool():add_keybinding {name="Global:Track Devices:Load D16 Syntorus", invoke=function() loadvst("Audio/Effects/AU/aufx:Sn7R:d16g") end}
 renoise.tool():add_keybinding {name="Global:Track Devices:Load D16 Toraverb", invoke=function() loadvst("Audio/Effects/AU/aufx:T4V8:d16g") end}

@@ -126,10 +126,10 @@ w.active_upper_frame =1 -- Set to Disk Browser
 --w.pattern_matrix_is_visible=false
 --w.pattern_advanced_edit_is_visible=false
 --w.disk_browser_is_expanded=true
-if renoise.app().window.active_middle_frame == renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_MODULATION then
+if renoise.app().window.active_middle_frame == renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_MIDI_EDITOR then
 renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_PLUGIN_EDITOR
 else
-renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_MODULATION end
+renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_MIDI_EDITOR end
 --if renoise.app().window.active_middle_frame==renoise.Instrument.TAB_PLUGIN then renoise.app().window.active_middle_frame=5 else
 --renoise.app().window.active_middle_frame=renoise.Instrument.TAB_PLUGIN end
 end
@@ -694,10 +694,13 @@ return end
   s.selected_note_column_index=1
 end
 
-renoise.tool():add_keybinding {name="Global:Paketti:Impulse Tracker Home *2 behaviour...", invoke=function() alwaysPattern()
+renoise.tool():add_keybinding {name="Pattern Editor:Paketti:Impulse Tracker Home *2 behaviour...", invoke=function() alwaysPattern()
 homehome() 
 end }
 
+renoise.tool():add_keybinding {name="Mixer:Paketti:Impulse Tracker Home *2 behaviour...", invoke=function() alwaysPattern()
+homehome() 
+end }
 
 renoise.tool():add_keybinding {name="Pattern Editor:Paketti:alwaysPattern", invoke=function() alwaysPattern()
 end }
@@ -792,9 +795,12 @@ end
   
 end
 
-renoise.tool():add_keybinding {name="Global:Paketti:Impulse Tracker End *2 behaviour...", invoke=function() alwaysPattern() 
-endend()
-end }
+renoise.tool():add_keybinding {name="Pattern Editor:Paketti:Impulse Tracker End *2 behaviour...", invoke=function() alwaysPattern() 
+endend() end }
+
+renoise.tool():add_keybinding {name="Mixer:Paketti:Impulse Tracker End *2 behaviour...", invoke=function() alwaysPattern() 
+endend() end }
+
 
 function alwaysPattern()
 renoise.app().window.active_middle_frame=1

@@ -11,59 +11,44 @@ end
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Keep Sequence Sorted False",invoke=function() keepSequenceSortedFalse()
 end}
 
--- Start of Startup notifier
-function sample_loaded_change_to_sample_editor_v2()
-local w=renoise.app().window
-if w.active_middle_frame == 1 then
-w.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
-else end
-renoise.song().selected_instrument.active_tab=1
-renoise.app().window.active_middle_frame=5
- renoise.app():show_status("Transport to waveform successful")
-end
 
-function startup_notifier()
-local s=renoise.song()
-  renoise.song().sequencer.keep_sequence_sorted=false
- 
-  if renoise.song().selected_sample == nil then return else
-    if renoise.song().selected_sample.sample_buffer_observable:has_notifier(sample_loaded_change_to_sample_editor_v2)
-       then renoise.song().selected_sample.sample_buffer_observable:remove_notifier(sample_loaded_change_to_sample_editor_v2)
-       else renoise.song().selected_sample.sample_buffer_observable:add_notifier(sample_loaded_change_to_sample_editor_v2)
-    end
-  end
-  renoise.song().instruments[renoise.song().selected_instrument_index].active_tab=1
-  renoise.app():show_status("Keep Sequence Sorted = False")
-end
+local s = nil  
+  
+function startup_()  
+ local s=renoise.song()  
+ renoise.app().window:select_preset(1)
+ renoise.song().transport.groove_enabled=true
+ if s.selected_sample == nil then return else  
+ if s.selected_sample.sample_buffer_observable:has_notifier(sample_loaded_change_to_sample_editor) then   
+ s.selected_sample.sample_buffer_observable:remove_notifier(sample_loaded_change_to_sample_editor)  
+ else  
+ s.selected_sample.sample_buffer_observable:add_notifier(sample_loaded_change_to_sample_editor)  
+ return  
+ end  
+ end
+end  
+  
+function sample_loaded_change_to_sample_editor()  
+  renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].autofade=true
+  renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].interpolation_mode=4
+ renoise.app().window.active_middle_frame=5  
+end  
+  
+if not renoise.tool().app_new_document_observable:has_notifier(startup_)   
+ then renoise.tool().app_new_document_observable:add_notifier(startup_)  
+ else renoise.tool().app_new_document_observable:remove_notifier(startup_)  
+end  
 
-if not renoise.tool().app_new_document_observable:has_notifier(startup_notifier) 
-   then renoise.tool().app_new_document_observable:add_notifier(startup_notifier)
-   else renoise.tool().app_new_document_observable:remove_notifier(startup_notifier)
-end
-
--- End of startup notifier
-
---renoise.app().window:select_preset(1)
---for i = 1,8 do renoise.song().tracks[i].delay_column_visible=true en 
-
---
 --renoise.song().instruments[renoise.song().selected_instrument_index].active_tab=1 == Sampler
 --renoise.song().instruments[renoise.song().selected_instrument_index].active_tab=1 == Plugin
 --renoise.song().instruments[renoise.song().selected_instrument_index].active_tab=1 == Midi
---end
---end
-
 
 -- auto-suspend plugin off:
 function autosuspendOFF()
 --renoise.tool():add_menu_entry
-renoise.song().instruments[renoise.song().selected_instrument_index].plugin_properties.auto_suspend = false
-
-end
+renoise.song().instruments[renoise.song().selected_instrument_index].plugin_properties.auto_suspend = false end
 
 renoise.tool():add_menu_entry{name="Instrument Box:Paketti Switch Plugin AutoSuspend Off",invoke=function() autosuspendOFF() end}
-
-
 
 renoise.tool():add_menu_entry{name="Instrument Box:Paketti Create Phrase",invoke=function() 
   renoise.song().instruments[renoise.song().selected_instrument_index]:insert_phrase_at(1) 
@@ -76,17 +61,22 @@ renoise.song().instruments[renoise.song().selected_instrument_index].phrases[ren
 renoise.song().instruments[renoise.song().selected_instrument_index].phrases[renoise.song().selected_phrase_index].panning_column_visible=true
 renoise.song().instruments[renoise.song().selected_instrument_index].phrases[renoise.song().selected_phrase_index].delay_column_visible=true
 renoise.song().instruments[renoise.song().selected_instrument_index].phrases[renoise.song().selected_phrase_index].sample_effects_column_visible=true
-  
-  
 end}
 
+renoise.tool():add_keybinding {name = "Global:Paketti:Whats My Song", invoke = function() renoise.app():show_status(renoise.song().file_name) end}
 
+----
+function G01()
+local s=renoise.song()
+  local currTrak=s.selected_track_index
+  local currPatt=s.selected_pattern_index
+local rightinstrument=nil
+local rightinstrument=renoise.song().selected_instrument_index-1
+s.patterns[currPatt].tracks[currTrak].lines[1].effect_columns[1].number_string="0G"
+s.patterns[currPatt].tracks[currTrak].lines[1].effect_columns[1].amount_string="01"
+end
 
-
-
-
-
-
+----
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Reset Panning in Current Column",invoke=function()
 local s=renoise.song()
 local nc=s.selected_note_column
@@ -355,53 +345,6 @@ end
 renoise.tool():add_keybinding{name = "Global:Paketti:Set to One-Shot + NNA Continue",invoke=function() oneshotcontinue() end}
 
 -------------
---Startup
-function startup_()
-  local s=renoise.song
---    renoise.app().window:select_preset(1)
-    
---    for i = 1,8 do s().tracks[i].delay_column_visible=true end
---    s().instruments[s.selected_instrument_index].active_tab=1
-    
-    if s().selected_sample == nil then return
-      else
-        if s().selected_sample.sample_buffer_observable:has_notifier(loadSampleNotifier) then 
-    return
-    --s().selected_sample.sample_buffer_observable:remove_notifier(loadSampleNotifier)
-          else
-    s().selected_sample.sample_buffer_observable:add_notifier(loadSampleNotifier)
-          return
-        end
-     end
-end
-
-
---Sample has been loaded notifier (load sample)
--- set autofade = true, set interpolation mode = sinc
-function loadSampleNotifier()
-  renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].autofade=true
-  renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].interpolation_mode=4
-print ("hi")
-
-
-end
-
-
-
-
-function sample_loaded_change_to_sample_editor()
-   renoise.app().window.active_middle_frame=4
-  end
-
-if not renoise.tool().app_new_document_observable:has_notifier(startup_) 
-   then renoise.tool().app_new_document_observable:add_notifier(startup_)
-   else renoise.tool().app_new_document_observable:remove_notifier(startup_)
-end
-----------------------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------------
@@ -469,14 +412,22 @@ for cck=1,12 do
 renoise.tool():add_keybinding{name = "Global:Paketti:Column Cycle Keyjazz " .. cck,invoke=function() displayNoteColumn(cck) startcolumncycling(cck) end}
 end
 
---[[
+
 renoise.tool():add_keybinding{name = "Global:Paketti:Start/Stop Column Cycling",invoke=function() startcolumncycling() 
 if renoise.song().patterns[renoise.song().selected_pattern_index]:has_line_notifier(pattern_line_notifier) then
 renoise.app():show_status("Column Cycle Keyjazz On")
 else renoise.app():show_status("Column Cycle Keyjazz Off")
 end
 end}
-]]--
+
+renoise.tool():add_keybinding {name = "Global:Paketti:Column Cycle Keyjazz 01_Special", invoke = function() 
+displayNoteColumn(12) 
+GenerateDelayValue()
+renoise.song().transport.edit_mode=true
+renoise.song().transport.edit_step=0
+renoise.song().selected_note_column_index=1
+startcolumncycling(12) end}
+
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 function GenerateDelayValue() 
 local counter=nil
@@ -1732,10 +1683,7 @@ end
 end
 end
 
-
-
-
---------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------
 --cortex.scripts.CaptureOctave
 --[[
 program: CaptureOctave v1.1
@@ -1783,10 +1731,9 @@ local w = renoise.app().window
 w.active_middle_frame=1
 -- w.active_lower_frame=1 
 -- w.upper_frame_is_visible=false
-
 end
 
---------------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
 
 function markdollins_keyboardvolchange(number)
 local s=renoise.song();if s.transport.keyboard_velocity_enabled==false then s.transport.keyboard_velocity_enabled=true end
@@ -1802,7 +1749,7 @@ renoise.tool():add_keybinding{name = "Global:Paketti:Computer Keyboard Velocity 
 renoise.tool():add_keybinding{name = "Global:Paketti:Computer Keyboard Velocity -10",invoke=function() markdollins_keyboardvolchange(-10) end}
 renoise.tool():add_keybinding{name = "Global:Paketti:Computer Keyboard Velocity +10",invoke=function() markdollins_keyboardvolchange(10) end}
 
---------------------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------
 -- Display user-specific amount of note columns or effect columns:
 function displayNoteColumn(number) local rs=renoise.song() if rs.tracks[rs.selected_track_index].visible_note_columns == 0 then return else rs.tracks[rs.selected_track_index].visible_note_columns=number end end
 
@@ -1810,8 +1757,7 @@ for dnc=1,12 do
   renoise.tool():add_keybinding{name = "Global:Paketti:Display Note Column " .. dnc,invoke=function() displayNoteColumn(dnc) end}
 end
 
---------------------------------------------------------------------------------------------------------------------------------------------------------
-
+-----------------------------------------------------------------------------------------------------------
 function GlobalLPB(number)
 renoise.song().transport.lpb=number end
 
@@ -1842,8 +1788,7 @@ renoise.tool():add_keybinding{name = "Phrase Editor:Paketti:Set Phrase LPB to 12
 renoise.tool():add_keybinding{name = "Phrase Editor:Paketti:Set Phrase LPB to 256",invoke=function() PhraseLPB(256) end}
 
 
---------------------------------------------------------------------------------------------------------------------------------------------------------
-
+-----------------------------------------------------------------------------------------------------------------------------------------
 --Quantize +1 / -1
 function adjust_quantize(quant_delta)
   local t = renoise.song().transport
@@ -1862,8 +1807,7 @@ renoise.app():show_status("Record Quantize Lines : " .. t.record_quantize_lines)
 end
 renoise.tool():add_keybinding{name="Global:Paketti:Decrease Quantization (-1)",invoke=function() adjust_quantize(-1, 0) end   }
 renoise.tool():add_keybinding{name="Global:Paketti:Increase Quantization (+1)",invoke=function() adjust_quantize(1, 0) end   }
-
---------------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------
 function displayEffectColumn(number) local rs=renoise.song() rs.tracks[rs.selected_track_index].visible_effect_columns=number end
 
 for dec=1,8 do
@@ -1944,15 +1888,8 @@ if renoise.song().selected_track.name=="Mst" then
   
 else 
 renoise.song().selected_note_column_index=nci
-
 --renoise.song().selected_note_column_index=1 
 end end}
-
-
-
-
-
-
 
 
 renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Reverse Sample effect 0B00 on/off (2nd)",invoke=function() 
@@ -1966,12 +1903,9 @@ else renoise.song().selected_note_column_index=1 end end}
 renoise.tool():add_midi_mapping{name="Pattern Editor:Paketti:Reverse Sample effect 0B00 on/off",invoke=function() 
 renoise.song().selected_effect_column_index=1
 revnote() 
-if renoise.song().selected_track.name=="Mst" then 
-  return
+if renoise.song().selected_track.name=="Mst" then return
 else renoise.song().selected_note_column_index=1 
-end
-end}
-
+end end}
 
 -- +1/-1 on Metronome LPB and Metronome BPB (loads of help from dblue)
 function adjust_metronome(lpb_delta, bpb_delta)
@@ -2011,8 +1945,7 @@ end
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Open Ext.Editor of Selected Effect",invoke=function() OpenSelectedEffectExternalEditor() end}
-------------------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------
 function inspectPlugin()
 for i=1,(table.count(renoise.song().selected_track.devices[2].parameters)) 
 do oprint (renoise.song().selected_track.devices[2].name .. " " .. i .. " " .. renoise.song().selected_track.devices[2].parameters[i].name) 
@@ -2020,14 +1953,168 @@ end
 end
 renoise.tool():add_keybinding {name = "Global:Paketti:Inspect Plugin", invoke = function() inspectPlugin() end}
 
-------------------------------------------------------------------------------------------------------------------------------------
+function inspectEffect()
+oprint("Effect displayname: " .. renoise.song().selected_track.devices[2].display_name)
+oprint("Effect name: " .. renoise.song().selected_track.devices[2].name)
+oprint("Effect path: " .. renoise.song().selected_track.devices[2].device_path)
+end
+renoise.tool():add_keybinding {name = "Global:Paketti:Inspect Effect Slot 2", invoke = function() inspectEffect() end}
 
 ------------------------------------------------------------------------------------------------------------------------------------
+function ClearRow()
+ local s=renoise.song()
+ local currTrak=s.selected_track_index
+ local currPatt=s.selected_pattern_index
+ local currLine=nil
+ currLine = renoise.song().selected_line_index
+   
+ if currLine < 1 then currLine = 1 end
+
+ for i=1,8 do
+ renoise.song().patterns[currPatt].tracks[currTrak].lines[currLine].effect_columns[i]:clear()
+ end
+
+ for i=1,12 do
+ renoise.song().patterns[currPatt].tracks[currTrak].lines[currLine].note_columns[i]:clear()
+ end
+end
+
+renoise.tool():add_keybinding {name = "Global:Paketti:Clear Current Row", invoke = function() ClearRow() end}
+
+------------------------------------------------------------------------------------------------------------------------------------
+-- // TODO: requires fixing (WipeRetain no longer works)
+local tmpvariable=nil
+
+function WipeRetain()
+tmpvariable=os.tmpname("wav")
+local s=renoise.song()
+
+s.instruments[s.selected_instrument_index].samples[1].sample_buffer:save_as(tmpvariable, "wav")
+
+if not renoise.tool().app_new_document_observable:has_notifier(WipeRetain_) then
+       renoise.tool().app_new_document_observable:add_notifier(WipeRetain_) else
+       renoise.tool().app_new_document_observable:remove_notifier(WipeRetain_)end
+renoise.app():new_song()
+end
+
+function WipeRetain_()
+local s=renoise.song()
+
+s.instruments[s.selected_instrument_index].samples[1].sample_buffer:load_from(tmpvariable)
+renoise.app().window.active_middle_frame=4
+renoise.app():show_status(tmpvariable)
+os.remove(tmpvariable)
+renoise.tool().app_new_document_observable:remove_notifier(WipeRetain_)
+end
+
+renoise.tool():add_keybinding {name = "Global:Paketti:Wipe Song Retain Sample", invoke = function() WipeRetain() end}
+
+------------------------------------------------------------------------------------------------------------------------------------
+function PakettiCapsLockPattern()
+  local s=renoise.song()
+  local currLine=s.selected_line_index
+  local currPatt=s.selected_pattern_index
+  local currTrak=s.selected_track_index
+  
+  currLine=currLine+2
+    s.patterns[currPatt].tracks[currTrak].lines[currLine].note_columns[s.selected_note_column_index].note_string="OFF"
+    s.patterns[currPatt].tracks[currTrak].lines[currLine+3].note_columns[s.selected_note_column_index].note_string="OFF"
+    s.patterns[currPatt].tracks[currTrak].lines[currLine+5].note_columns[s.selected_note_column_index].note_string="OFF"
+    s.patterns[currPatt].tracks[currTrak].lines[currLine+8].note_columns[s.selected_note_column_index].note_string="OFF"
+  currLine=currLine+8
+    s.patterns[currPatt].tracks[currTrak].lines[currLine].note_columns[s.selected_note_column_index].note_string="OFF"
+    s.patterns[currPatt].tracks[currTrak].lines[currLine+3].note_columns[s.selected_note_column_index].note_string="OFF"
+    s.patterns[currPatt].tracks[currTrak].lines[currLine+5].note_columns[s.selected_note_column_index].note_string="OFF"
+    s.patterns[currPatt].tracks[currTrak].lines[currLine+8].note_columns[s.selected_note_column_index].note_string="OFF"
+  currLine=currLine+8
+    s.patterns[currPatt].tracks[currTrak].lines[currLine].note_columns[s.selected_note_column_index].note_string="OFF"
+    s.patterns[currPatt].tracks[currTrak].lines[currLine+3].note_columns[s.selected_note_column_index].note_string="OFF"
+    s.patterns[currPatt].tracks[currTrak].lines[currLine+5].note_columns[s.selected_note_column_index].note_string="OFF"
+    s.patterns[currPatt].tracks[currTrak].lines[currLine+8].note_columns[s.selected_note_column_index].note_string="OFF"
+    s.patterns[currPatt].tracks[currTrak].lines[currLine+11].note_columns[s.selected_note_column_index].note_string="OFF"
+    s.patterns[currPatt].tracks[currTrak].lines[currLine+13].note_columns[s.selected_note_column_index].note_string="OFF"
+  renoise.song().transport.edit_step=3
+end
+
+renoise.tool():add_keybinding {name="Global:Paketti:CapsLockChassis", invoke = function() PakettiCapsLockPattern() end}
+
+--This script uncollapses everything (all tracks, master, send trax)
+function Uncollapser()
+local send_track_counter=nil
+
+   send_track_counter=renoise.song().sequencer_track_count+1+renoise.song().send_track_count
+
+   for i=1,send_track_counter do
+   renoise.song().tracks[i].collapsed=false
+   end
+end
+
+--This script collapses everything (all tracks, master, send trax)
+function Collapser()
+local send_track_counter=nil
+   send_track_counter=renoise.song().sequencer_track_count+1+renoise.song().send_track_count
+
+   for i=1,send_track_counter do
+   renoise.song().tracks[i].collapsed=true
+   end
+end
+
+renoise.tool():add_menu_entry {name="Main Menu:Tools:Paketti..:Collapser", invoke = function() Collapser() end}
+renoise.tool():add_menu_entry {name="Main Menu:Tools:Paketti..:Uncollapser", invoke = function() Uncollapser() end}
+--Global keyboard shortcuts
+renoise.tool():add_keybinding {name="Global:Paketti:Uncollapser", invoke = function() Uncollapser() end}
+renoise.tool():add_keybinding {name="Global:Paketti:Collapser", invoke = function() Collapser() end}
+--Menu entries for Pattern Editor and Mixer
+renoise.tool():add_menu_entry {name="Pattern Editor:Paketti..:Uncollapser", invoke = function() Uncollapser() end}
+renoise.tool():add_menu_entry {name="Mixer:Paketti..:Uncollapser", invoke = function() Uncollapser() end}
+renoise.tool():add_menu_entry {name="Pattern Editor:Paketti..:Collapser", invoke = function() Collapser() end}
+renoise.tool():add_menu_entry {name="Mixer:Paketti..:Collapser", invoke = function() Collapser() end}
+--Midi Mapping for Expand/Collapse
+renoise.tool():add_midi_mapping{name="Global:Paketti:Uncollapser", invoke = function() Uncollapser() end}
+renoise.tool():add_midi_mapping{name="Global:Paketti:Collapser", invoke = function() Collapser() end} 
+---------------------------------------------------------------------------------------------------------
+renoise.tool():add_menu_entry {name="Track Automation:Paketti..:Start/Stop Pattern Follow", invoke = function()
+if not renoise.song().transport.follow_player
+then renoise.song().transport.follow_player=true
+else renoise.song().transport.follow_player=false
+end end}
+
+renoise.tool():add_menu_entry {name="DSP Device Automation:Follow Off", invoke = function() renoise.song().transport.follow_player=false end}  
+---------------------------------------------------------------------------------------------------------
+function contourShuttleRecordPrototype()
+if not renoise.app().window.sample_record_dialog_is_visible
+then renoise.app().window.sample_record_dialog_is_visible=true
+else end
+renoise.song().transport:start_stop_sample_recording()
+end
+
+renoise.tool():add_keybinding {name="Global:Paketti:Contour Shuttle Record Prototype", invoke = function() contourShuttleRecordPrototype() end}
+---------------------------------------------------
+-- Hiding and showing Disk Browser + Instrument Box
+--renoise.app().window.disk_browser_is_visible=false
+--renoise.app().window.disk_browser_is_visible=true
+--renoise.app().window.instrument_box_is_visible=false
+--renoise.app().window.instrument_box_is_visible=true
 
 
---[[ Thanks so much to everyone who helped. dblue, cortex, joule, avaruus, astu/flo, mmd(mr mark dollin) syflom, protman, pandabot, 
-Raul (ulneiz), ViZiON, ghostwerk, vV, Bantai, danoise, Snowrobot, mxb, jenoki, kmaki, mantrakid, aleksip and the whole Renoise community.
---
--- Biggest thanks to Brothomstates for suggesting that I could pick up and learn LUA, that it would not be beyond me.
--- Really appreciate you having faith in me.
+-- Debug print  
+function dbug(msg)  
+ local base_types = {  
+ ["nil"]=true, ["boolean"]=true, ["number"]=true,  
+ ["string"]=true, ["thread"]=true, ["table"]=true  
+ }  
+ if not base_types[type(msg)] then oprint(msg)  
+ elseif type(msg) == 'table' then rprint(msg)  
+ else print(msg) end  
+end  
+
+------------------------------------------------------
+--[[ Thanks so much to everyone who helped. dblue, cortex, joule, avaruus, astu/flo, 
+mmd(mr mark dollin) syflom, protman, pandabot, Raul (ulneiz), ViZiON, ghostwerk, vV,
+Bantai, danoise, Snowrobot, mxb, jenoki, kmaki, mantrakid, aleksip, Connor_Bw and the whole 
+Renoise community.
+
+Biggest thanks to Brothomstates for suggesting that I could pick up and learn LUA, 
+that it would not be beyond me. Really appreciate you having faith in me.
 ]]--
+---------------------------------------------------------------------------------------------------------
