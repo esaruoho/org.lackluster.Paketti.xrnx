@@ -3,6 +3,7 @@ require "midi"
 require "loaders"
 require "joule_danoise_better_column_navigation"
 require "CheatSheet"
+require "recorder"
 
 function keepSequenceSortedFalse()
 renoise.song().sequencer.keep_sequence_sorted=false
@@ -2081,14 +2082,6 @@ end end}
 
 renoise.tool():add_menu_entry {name="DSP Device Automation:Follow Off", invoke = function() renoise.song().transport.follow_player=false end}  
 ---------------------------------------------------------------------------------------------------------
-function contourShuttleRecordPrototype()
-if not renoise.app().window.sample_record_dialog_is_visible
-then renoise.app().window.sample_record_dialog_is_visible=true
-else end
-renoise.song().transport:start_stop_sample_recording()
-end
-
-renoise.tool():add_keybinding {name="Global:Paketti:Contour Shuttle Record Prototype", invoke = function() contourShuttleRecordPrototype() end}
 ---------------------------------------------------
 -- Hiding and showing Disk Browser + Instrument Box
 --renoise.app().window.disk_browser_is_visible=false

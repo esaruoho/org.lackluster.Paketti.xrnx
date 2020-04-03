@@ -740,6 +740,7 @@
         <KeyBinding>
           <Topic>File</Topic>
           <Binding>Save Song...</Binding>
+          <Key>Control + S</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>File</Topic>
@@ -1240,6 +1241,20 @@
         <KeyBinding>
           <Topic>Paketti</Topic>
           <Binding>∿ Pattern Effect Command CheatSheet</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Set Next ReWire channel</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Play at 75% Speed (Song BPM)</Binding>
+          <Key>Shift + Control + 1</Key>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Play at 100% Speed (Song BPM)</Binding>
+          <Key>Shift + Control + 2</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
@@ -3412,7 +3427,7 @@
         <KeyBinding>
           <Topic>Paketti</Topic>
           <Binding>∿ Disk Browser Focus</Binding>
-          <Key>Control + S</Key>
+          <Key>Shift + Control + S</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
@@ -4138,7 +4153,7 @@
         <KeyBinding>
           <Topic>Paketti</Topic>
           <Binding>∿ Disk Browser Focus</Binding>
-          <Key>Control + S</Key>
+          <Key>Shift + Control + S</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
@@ -4355,6 +4370,7 @@
         <KeyBinding>
           <Topic>Track Control</Topic>
           <Binding>Rename Track</Binding>
+          <Key>Command + R</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Track Control</Topic>

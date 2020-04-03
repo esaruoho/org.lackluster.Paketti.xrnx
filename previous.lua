@@ -25,7 +25,7 @@ local s=renoise.song()
   end
 end
 renoise.tool():add_keybinding {name = "Global:Paketti:WipeSong", invoke=function() wipesong() end}
---------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------
 function start_stop_sample_and_loop_oh_my()
 local w=renoise.app().window
 local s=renoise.song()
@@ -86,37 +86,7 @@ end
 --
 --end
 --renoise.tool():add_keybinding {name = "Global:Paketti:Stair", invoke=function() stairs() end}
---------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-function PakettiCapsLockPattern()
-  local s=renoise.song()
-  local currLine=s.selected_line_index
-  local currPatt=s.selected_pattern_index
-  local currTrak=s.selected_track_index
-  
-  currLine=currLine+2
-    s.patterns[currPatt].tracks[currTrak].lines[currLine].note_columns[s.selected_note_column_index].note_string="OFF"
-    s.patterns[currPatt].tracks[currTrak].lines[currLine+3].note_columns[s.selected_note_column_index].note_string="OFF"
-    s.patterns[currPatt].tracks[currTrak].lines[currLine+5].note_columns[s.selected_note_column_index].note_string="OFF"
-    s.patterns[currPatt].tracks[currTrak].lines[currLine+8].note_columns[s.selected_note_column_index].note_string="OFF"
-  currLine=currLine+8
-    s.patterns[currPatt].tracks[currTrak].lines[currLine].note_columns[s.selected_note_column_index].note_string="OFF"
-    s.patterns[currPatt].tracks[currTrak].lines[currLine+3].note_columns[s.selected_note_column_index].note_string="OFF"
-    s.patterns[currPatt].tracks[currTrak].lines[currLine+5].note_columns[s.selected_note_column_index].note_string="OFF"
-    s.patterns[currPatt].tracks[currTrak].lines[currLine+8].note_columns[s.selected_note_column_index].note_string="OFF"
-  currLine=currLine+8
-    s.patterns[currPatt].tracks[currTrak].lines[currLine].note_columns[s.selected_note_column_index].note_string="OFF"
-    s.patterns[currPatt].tracks[currTrak].lines[currLine+3].note_columns[s.selected_note_column_index].note_string="OFF"
-    s.patterns[currPatt].tracks[currTrak].lines[currLine+5].note_columns[s.selected_note_column_index].note_string="OFF"
-    s.patterns[currPatt].tracks[currTrak].lines[currLine+8].note_columns[s.selected_note_column_index].note_string="OFF"
-    s.patterns[currPatt].tracks[currTrak].lines[currLine+11].note_columns[s.selected_note_column_index].note_string="OFF"
-    s.patterns[currPatt].tracks[currTrak].lines[currLine+13].note_columns[s.selected_note_column_index].note_string="OFF"
-  renoise.song().transport.edit_step=3
-end
-
-renoise.tool():add_keybinding {name="Global:Paketti:CapsLockChassis", invoke=function() PakettiCapsLockPattern() end}
---------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+------------------------------------------------------------------------------------------------------------------------------------------------
 function PakettiCapsLockNoteOffNextPtn()   
 local s=renoise.song()
 local wrapping=s.transport.wrapped_pattern_edit
@@ -136,31 +106,24 @@ s.patterns[currPatt].tracks[s.selected_track_index].lines[s.selected_line_index]
 then
 s.patterns[currPatt].tracks[s.selected_track_index].lines[s.selected_line_index].effect_columns[1].number_string=""
 s.patterns[currPatt].tracks[s.selected_track_index].lines[s.selected_line_index].effect_columns[1].amount_string=""
-return
-else
-end
-
-
+return else end
 
 if s.patterns[currPatt].tracks[s.selected_track_index].lines[s.selected_line_index].effect_columns[1].number_string=="0O" and s.patterns[currPatt].tracks[s.selected_track_index].lines[s.selected_line_index].effect_columns[1].amount_string=="CF"
 then s.patterns[currPatt].tracks[s.selected_track_index].lines[s.selected_line_index].effect_columns[1].number_string="00"  
      s.patterns[currPatt].tracks[s.selected_track_index].lines[s.selected_line_index].effect_columns[1].amount_string="00"
-return
-end
+return end
 
 if renoise.song().transport.edit_mode==true then
 s.patterns[currPatt].tracks[s.selected_track_index].lines[s.selected_line_index].effect_columns[1].number_string="0O"  
 s.patterns[currPatt].tracks[s.selected_track_index].lines[s.selected_line_index].effect_columns[1].amount_string="CF"
-return
-end
+return end
 
 if s.patterns[currPatt].tracks[s.selected_track_index].lines[s.selected_line_index].effect_columns[1].number_string=="0O" and 
 s.patterns[currPatt].tracks[s.selected_track_index].lines[s.selected_line_index].effect_columns[1].amount_string=="CF"
 
 then s.patterns[currPatt].tracks[s.selected_track_index].lines[s.selected_line_index].effect_columns[1].number_string="00" 
      s.patterns[currPatt].tracks[s.selected_track_index].lines[s.selected_line_index].effect_columns[1].amount_string="00"
-return
-end
+return end
 
 if s.patterns[currPatt].tracks[s.selected_track_index].lines[s.selected_line_index].note_columns[s.selected_note_column_index].note_string~=nil then
 s.patterns[currPatt].tracks[s.selected_track_index].lines[s.selected_line_index].effect_columns[1].number_string="0O"
@@ -206,9 +169,7 @@ renoise.app():show_status("Now on: " .. counter .. "/" .. s.patterns[currPatt].n
 end
 end
 
-
---------------------------------------------------------------------------------------------------------------------------------------------------------
-
+-----------------------------------------------------------------------------------------------------------------------------------------------
 function PakettiCapsLockNoteOff()   
 local s=renoise.song()
 local wrapping=s.transport.wrapped_pattern_edit
@@ -262,9 +223,7 @@ if renoise.song().transport.wrapped_pattern_edit == false then PakettiCapsLockNo
 else PakettiCapsLockNoteOff() end
 end}
 
---------------------------------------------------------------------------------------------------------------------------------------------------------------
-
----------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------
 function instrument_is_empty(instrument)
  local inst = renoise.song().instruments[instrument]
  local has_sample_data = false
@@ -296,49 +255,6 @@ function search_empty_instrument()
         proc:insert_instrument_at(#proc.instruments+1)
         return #proc.instruments
 end
---------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-function inspectPlugin()
-for i=1,(table.count(renoise.song().selected_track.devices[2].parameters)) 
-do oprint (renoise.song().selected_track.devices[2].name .. " " .. i .. " " .. renoise.song().selected_track.devices[2].parameters[i].name) 
-end
-end
-renoise.tool():add_keybinding {name = "Global:Paketti:Inspect Plugin", invoke=function() inspectPlugin() end}
---------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-function LoadRhino()
-local s=renoise.song()
-s.selected_instrument_index = search_empty_instrument()
-renoise.song().selected_instrument.plugin_properties:load_plugin("Audio/Generators/AU/aumu:RNB4:VSTA")
-if renoise.song().selected_instrument.plugin_properties.plugin_loaded
- then
- local pd=renoise.song().selected_instrument.plugin_properties.plugin_device
- if pd.external_editor_visible==false then pd.external_editor_visible=true else pd.external_editor_visible=false end
- end
-renoise.app().window.active_lower_frame=3
-renoise.song().selected_instrument.active_tab=2 
-end
-
-renoise.tool():add_keybinding  {name="Global:Paketti:Load Rhino 2.1 AU", invoke=function() LoadRhino()
-end}
---------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-function LoadAttack()
-local s=renoise.song()
-s.selected_instrument_index = search_empty_instrument()
-renoise.song().selected_instrument.plugin_properties:load_plugin("Audio/Generators/VST/Attack")
-if renoise.song().selected_instrument.plugin_properties.plugin_loaded
- then
- local pd=renoise.song().selected_instrument.plugin_properties.plugin_device
- if pd.external_editor_visible==false then pd.external_editor_visible=true else pd.external_editor_visible=false end
- end
-renoise.app().window.active_lower_frame=3
-renoise.song().selected_instrument.active_tab=2 
-end
-
-renoise.tool():add_keybinding  {name="Global:Paketti:Load Waldorf Attack", invoke=function() LoadAttack() end}
---------------------------------------------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------
 --This records to currently selected track and outputs 0501 and the c-4 and the selected_instrument
 function recordtocurrenttrack()
@@ -382,8 +298,7 @@ s.selected_instrument_index = search_empty_instrument()
 --  delay(3)
 --  renoise.song().transport:trigger_sequence(1)
 end
-  --------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+------------------------------------------------------------------------------------------------------------------------------------------------
 function finalrecord()
   local s=renoise.song()
   local ss=s.selected_sample
@@ -489,9 +404,7 @@ s.selected_instrument_index = search_empty_instrument()
  renoise.song().transport.follow_player=true
  renoise.app().window.lower_frame_is_visible=true
  renoise.app().window.active_lower_frame=2
-
 end}
-
 
 renoise.tool():add_keybinding  {name="Global:Paketti:Record to Current Track w/Metronome", invoke=function() 
 if renoise.song().transport.metronome_enabled==false then renoise.song().transport.metronome_enabled=true
@@ -546,45 +459,6 @@ end
  renoise.song().transport.loop_block_enabled=false
 end
 ----------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------
---8.  "8" in ImpulseTracker "Plays Current Line" and "Advances by EditStep".
-function PlayCurrentLine()
-local currpos=renoise.song().transport.edit_pos
-local sli=renoise.song().selected_line_index
-local t=renoise.song().transport
-local result=nil
-t:start_at(sli)
-local start_time = os.clock()
-  while (os.clock() - start_time < 0.2) do
-        -- Delay the start after panic. Don't go below 0.2 seconds 
-        -- or you might tempt some plugins to crash and take Renoise in the fall!!      
-  end
-  t:stop()
-    if renoise.song().selected_line_index == renoise.song().selected_pattern.number_of_lines then
-    renoise.song().selected_line_index = 1
-    else
-    
-      if renoise.song().selected_pattern.number_of_lines <  renoise.song().selected_line_index+renoise.song().transport.edit_step
-      then renoise.song().selected_line_index=renoise.song().selected_pattern.number_of_lines
-      
-      else
-      renoise.song().selected_line_index=renoise.song().selected_line_index+renoise.song().transport.edit_step
-      end
-    end
-end
-----------------------------------------------------------------------------------------------------------------
--- Impulse Tracker "Next Pattern / Prev Pattern"
--- These shortcuts trigger the next sequence. If you're already playing the last sequence and trigger next
--- sequence, it skips to the first sequence. If you're already playing the first sequence, it will trigger
--- the first sequence.
-
----------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------
--- 2nd Toggle Follow Pattern - Sometimes one Follow Pattern shortcut is not enough.
-----------------------------------------------------------------------------------------------------------
--- 2nd Record + Follow Toggle - Globally goes to Pattern Editor, Enables/Disables Record & Follow
--- One-stop "keyjazz record" no matter where you are (even works in the Mixer)
--- Improvement (9th Oct 2011) - Now starts following even if follow=off and record=on - if song is playing
 ----------------------------------------------------------------------------------------------------------
 --2nd keybind for LoopBlock forward/backward
 function loopblockback()
@@ -600,47 +474,6 @@ local t = renoise.song().transport
       t:loop_block_move_forwards()
       t.follow_player = true
 end
-----------------------------------------------------------------------------------------------------------
--- In which one starts realizing it is possible to control the Transport in quite a few ways.
-----------------------------------------------------------------------------------------------------------
--- Set current tempo to 75% of current tempo. Set current tempo back to the original 100% tempo.
--- Writes the currently set (75% or 100%) BPM / LPB to the Master effect_column. Takes effect immediately.
-function get_master_track_index()
-  for k,v in ripairs(renoise.song().tracks)
-    do if v.type == renoise.Track.TRACK_TYPE_MASTER then return k end  
-  end
-end
-
-function WriteToMaster()
- local column_index = renoise.song().selected_effect_column_index
- local t=renoise.song().transport
- if renoise.song().transport.bpm < 256 then -- safety check
- renoise.song().tracks[get_master_track_index()].visible_effect_columns = 2  
-    
-    if renoise.song().selected_effect_column_index <= 1 then column_index = 2 end
-    
-    renoise.song().selected_pattern.tracks[get_master_track_index()].lines[1].effect_columns[1].number_string = "ZT"
-    renoise.song().selected_pattern.tracks[get_master_track_index()].lines[1].effect_columns[1].amount_value  = t.bpm
-    renoise.song().selected_pattern.tracks[get_master_track_index()].lines[1].effect_columns[2].number_string = "ZL"
-    renoise.song().selected_pattern.tracks[get_master_track_index()].lines[1].effect_columns[2].amount_value  = t.lpb
-    end
--- † --
- end
---------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-function playat75()
- renoise.song().transport.bpm=renoise.song().transport.bpm*0.75
- WriteToMaster()
- renoise.app():show_status("BPM set to 75% (" .. renoise.song().transport.bpm .. "BPM)") 
-end
---------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-function returnbackto100()
- renoise.song().transport.bpm=renoise.song().transport.bpm/0.75
- WriteToMaster()
- renoise.app():show_status("BPM set back to 100% (" .. renoise.song().transport.bpm .. "BPM)") 
-end
---------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 function randombpm()
 local prefix=nil
@@ -654,10 +487,8 @@ local randombpm = {80, 100, 115, 123, 128, 132, 135, 138, 160}
  renoise.song().transport.bpm=prefix
  WriteToMaster()
 end
---------------------------------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------------------------
 
-renoise.tool():add_menu_entry {name = "Pattern Matrix:Paketti..:Play at 75% Speed (Song BPM)", invoke=function() playat75() end}
-renoise.tool():add_menu_entry {name = "Pattern Matrix:Paketti..:Play at 100% Speed (Song BPM)", invoke=function() returnbackto100()  end}
 ----------------------------------------------------------------------------------------------------------
 --Four things, two enable all and disable all track dsps on selected channel.
 --The other two of the four write 8 effect column's worth of bypass, or enable  the first 8 DSPs to
@@ -726,73 +557,21 @@ local ooh=(i-1)
 renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[ooh].amount_string="01"
 end
 end
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------------------
-renoise.tool():add_menu_entry {name = "Instrument Box:Create empty sample slices", invoke=function() emptyslices()  end}
-
+------------------------------------------------------------------------------------------------------------------------------------------------
 function emptyslices()
 local si=renoise.song().selected_instrument
 local ss=renoise.song().selected_sample
 local ssi=renoise.song().selected_sample_index
   ssi=1
-   for i=1,64 do
-    si:insert_sample_at(i)
-   end
+   for i=1,64 do si:insert_sample_at(i) end
 
-   for i=1,64 do 
-    renoise.song().selected_instrument.samples[i].name="empty_sampleslot" .. i
-   end
+   for i=1,64 do renoise.song().selected_instrument.samples[i].name="empty_sampleslot" .. i end
 
  renoise.song().selected_instrument.name=("multiloopersampler_instrument" .. renoise.song().selected_instrument_index)
- w.active_middle_frame= 3
-end
----------------------------------------------------------------------------------------------------------------
---Set the next ReWire channel - shortcut. If you have a pre-configured 32 input rewire master host
---running, you can just press a shortcut and get it to play in the track of your choice (on your
---master host that is). This is a really simple thing, but it works after a fashion and does
---what I wanted it to do.
-function next_rewire()
-local current=renoise.song().selected_track.output_routing
-local st=renoise.song().selected_track
-if current=="Master Track" then renoise.song().selected_track.output_routing="Bus 01 L/R"
-elseif current=="Bus 01 L/R" then st.output_routing="Bus 02 L/R"
-elseif current=="Bus 02 L/R" then st.output_routing="Bus 03 L/R"
-elseif current=="Bus 03 L/R" then st.output_routing="Bus 04 L/R"
-elseif current=="Bus 04 L/R" then st.output_routing="Bus 05 L/R"
-elseif current=="Bus 05 L/R" then st.output_routing="Bus 06 L/R"
-elseif current=="Bus 06 L/R" then st.output_routing="Bus 07 L/R"
-elseif current=="Bus 07 L/R" then st.output_routing="Bus 08 L/R"
-elseif current=="Bus 08 L/R" then st.output_routing="Bus 09 L/R"
-elseif current=="Bus 09 L/R" then st.output_routing="Bus 10 L/R"
-elseif current=="Bus 10 L/R" then st.output_routing="Bus 11 L/R"
-elseif current=="Bus 11 L/R" then st.output_routing="Bus 12 L/R"
-elseif current=="Bus 12 L/R" then st.output_routing="Bus 13 L/R"
-elseif current=="Bus 13 L/R" then st.output_routing="Bus 14 L/R"
-elseif current=="Bus 14 L/R" then st.output_routing="Bus 15 L/R"
-elseif current=="Bus 15 L/R" then st.output_routing="Bus 16 L/R"
-elseif current=="Bus 16 L/R" then st.output_routing="Bus 17 L/R"
-elseif current=="Bus 17 L/R" then st.output_routing="Bus 18 L/R"
-elseif current=="Bus 18 L/R" then st.output_routing="Bus 19 L/R"
-elseif current=="Bus 19 L/R" then st.output_routing="Bus 20 L/R"
-elseif current=="Bus 20 L/R" then st.output_routing="Bus 21 L/R"
-elseif current=="Bus 21 L/R" then st.output_routing="Bus 22 L/R"
-elseif current=="Bus 22 L/R" then st.output_routing="Bus 23 L/R"
-elseif current=="Bus 23 L/R" then st.output_routing="Bus 24 L/R"
-elseif current=="Bus 24 L/R" then st.output_routing="Bus 25 L/R"
-elseif current=="Bus 25 L/R" then st.output_routing="Bus 26 L/R"
-elseif current=="Bus 26 L/R" then st.output_routing="Bus 27 L/R"
-elseif current=="Bus 27 L/R" then st.output_routing="Bus 28 L/R"
-elseif current=="Bus 28 L/R" then st.output_routing="Bus 29 L/R"
-elseif current=="Bus 29 L/R" then st.output_routing="Bus 30 L/R"
-elseif current=="Bus 30 L/R" then st.output_routing="Bus 31 L/R"
-elseif current=="Bus 31 L/R" then st.output_routing="Master Track"
-end
-renoise.app():show_status("Current Track output set to: " .. st.output_routing) 
-end
-----------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------------------------------------
+ w.active_middle_frame= 3 end
 
+renoise.tool():add_menu_entry {name = "Instrument Box:Create empty sample slices", invoke=function() emptyslices()  end}
+----------------------------------------------------------------------------------------------------------
 --moveup
 function move_up(chg)
 local sindex=renoise.song().selected_line_index
@@ -825,7 +604,7 @@ function sample_and_to_sample_editor()
 -- delay(1)
  t:start_stop_sample_recording()
     w.active_upper_frame = 1
-    w.active_middle_frame = 4
+    w.active_middle_frame = 5
     w.active_lower_frame = 3
     w.lock_keyboard_focus=true
  end
@@ -838,13 +617,7 @@ renoise.tool():add_menu_entry {name = "Pattern Editor:Paketti..:Start Sampling",
 renoise.app().window.sample_record_dialog_is_visible=true end}  
 
 
---------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-----------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------
-
-----------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Insert 0B00 to first effect_column (destructive)
 -- Oct 9th improvement:  If playback on, then step back by 3 rows to let the 0b00 play. if playback off
 -- or if follow_off, then just input 0b00 to current_row. You can change the number by anything you like,
@@ -883,7 +656,6 @@ end
 end
 
 function write_effect()
-
   local s = renoise.song()
   local efc = s.selected_effect_column
 
@@ -931,34 +703,18 @@ end
 end} 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-renoise.tool():add_keybinding {name = "Global:Paketti:SoloKey", invoke=function() soloKey() end}
-
---------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-renoise.tool():add_keybinding {name = "Global:Paketti:Volume effect 0L00 On/Off", invoke=function() 
-renoise.song().selected_effect_column_index=1
-write_effect() 
-if renoise.song().selected_track.name=="Mst" then 
-return
-else
-renoise.song().selected_note_column_index=1
-end
-
-
- end} 
---------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-function soloKey()
+------------------------------------------------------------------------------------------------------------------------------------------------function soloKey()
 local s=renoise.song()
   s.tracks[renoise.song().selected_track_index]:solo()
-    if s.transport.playing==false then renoise.song().transport.playing=true
-    end
-       s.transport.follow_player=true
-    
+    if s.transport.playing==false then renoise.song().transport.playing=true end
+  s.transport.follow_player=true  
     if renoise.app().window.active_middle_frame~=1 then renoise.app().window.active_middle_frame=1
     end
 end
+
+renoise.tool():add_keybinding {name = "Global:Paketti:SoloKey", invoke=function() soloKey() end}
 
 function voloff()
 local s = renoise.song()
@@ -975,6 +731,13 @@ local as=efc.amount_string
       as="00"
       end      
 end
+
+renoise.tool():add_keybinding {name = "Global:Paketti:Volume effect 0L00 On/Off", invoke=function() 
+renoise.song().selected_effect_column_index=1
+write_effect() 
+if renoise.song().selected_track.name=="Mst" then return
+else renoise.song().selected_note_column_index=1 end
+end}
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -1004,105 +767,8 @@ function RecordToggle()
 end
 end
 ----------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------
 
-renoise.tool():add_midi_mapping {name="Global:Track Devices:Load #Send", invoke=function() loadnative("Audio/Effects/Native/#Send") end}
-renoise.tool():add_midi_mapping {name="Global:Track Devices:Load Meta/LFO", invoke=function() loadnative("Audio/Effects/Native/*LFO") end}
-renoise.tool():add_midi_mapping {name="Global:Track Devices:Load Meta/Hydra", invoke=function() loadnative("Audio/Effects/Native/*Hydra") end}
-renoise.tool():add_midi_mapping {name="Global:Track Devices:Load Filter", invoke=function() loadnative("Audio/Effects/Native/Filter") end}
-renoise.tool():add_midi_mapping {name="Global:Track Devices:Load Comb Filter", invoke=function() loadnative("Audio/Effects/Native/Comb Filter") end}
-renoise.tool():add_midi_mapping {name="Global:Track Devices:Load Scream Filter", invoke=function() loadnative("Audio/Effects/Native/Scream Filter") end}
-renoise.tool():add_midi_mapping {name="Global:Track Devices:Load Cabinet Simulator", invoke=function() loadnative("Audio/Effects/Native/Cabinet Simulator") end}
-renoise.tool():add_midi_mapping {name="Global:Track Devices:Load LofiMat", invoke=function() loadnative("Audio/Effects/Native/LofiMat") end}
-renoise.tool():add_midi_mapping {name="Global:Track Devices:Load RingMod", invoke=function() loadnative("Audio/Effects/Native/RingMod") end}
-renoise.tool():add_midi_mapping {name="Global:Track Devices:Load Stereo Expander", invoke=function()
-loadnative("Audio/Effects/Native/Stereo Expander") 
-end}
-
---renoise.tool():add_midi_mapping {name="Global:Track Devices:Load Meta/Instr. Automation", invoke=function() loadnative("Audio/Effects/Native/*Instr. Automation") end}
---renoise.tool():add_midi_mapping {name="Global:Track Devices:Load Meta/Instr. MIDI Control", invoke=function() loadnative("Audio/Effects/Native/*Instr. MIDI Control")end}
---renoise.tool():add_midi_mapping {name="Global:Track Devices:Load Meta/Key Tracker", invoke=function() loadnative("Audio/Effects/Native/*Key Tracker") end}
---renoise.tool():add_midi_mapping {name="Global:Track Devices:Load Meta/Signal Follower", invoke=function() loadnative("Audio/Effects/Native/*Signal Follower") end}
---renoise.tool():add_midi_mapping {name="Global:Track Devices:Load Meta/Velocity Tracker", invoke=function() loadnative("Audio/Effects/Native/*Velocity Tracker")end} 
---renoise.tool():add_midi_mapping {name="Global:Track Devices:Load Meta/XY Pad", invoke=function() loadnative("Audio/Effects/Native/*XY Pad") end}
---renoise.tool():add_midi_mapping {name="Global:Track Devices:Load Bus Compressor", invoke=function() loadnative("Audio/Effects/Native/Bus Compressor") end}
---renoise.tool():add_midi_mapping {name="Global:Track Devices:Load Chorus", invoke=function() loadnative("Audio/Effects/Native/Chorus") end}
---renoise.tool():add_midi_mapping {name="Global:Track Devices:Load Compressor", invoke=function() loadnative("Audio/Effects/Native/Compressor") end}
-renoise.tool():add_midi_mapping {name="Global:Track Devices:Load DC Offset", invoke=function()
- renoise.app().window.lower_frame_is_visible=true
- renoise.app().window.active_lower_frame=1
- renoise.song().selected_track:insert_device_at("Audio/Effects/Native/DC Offset",2)
- renoise.song().selected_device_index = 2
- renoise.song().selected_track.devices[2].parameters[2].value=1
- end}
---renoise.tool():add_midi_mapping {name="Global:Track Devices:Load Delay", invoke=function() loadnative("Audio/Effects/Native/Delay") end}
---renoise.tool():add_midi_mapping {name="Global:Track Devices:Load Distortion", invoke=function() loadnative("Audio/Effects/Native/Distortion") end}
---renoise.tool():add_midi_mapping {name="Global:Track Devices:Load EQ 10", invoke=function() loadnative("Audio/Effects/Native/EQ 10") end}
---renoise.tool():add_midi_mapping {name="Global:Track Devices:Load EQ 5", invoke=function() loadnative("Audio/Effects/Native/EQ 5") end}
---renoise.tool():add_midi_mapping {name="Global:Track Devices:Load Flanger", invoke=function() loadnative("Audio/Effects/Native/Flanger") end}
---renoise.tool():add_midi_mapping {name="Global:Track Devices:Load Gate", invoke=function() loadnative("Audio/Effects/Native/Gate") end}
---renoise.tool():add_midi_mapping {name="Global:Track Devices:Load Maximizer", invoke=function() loadnative("Audio/Effects/Native/Maximizer") end}
---renoise.tool():add_midi_mapping {name="Global:Track Devices:Load Mixer EQ", invoke=function() loadnative("Audio/Effects/Native/Mixer EQ") end}
---renoise.tool():add_midi_mapping {name="Global:Track Devices:Load mpReverb", invoke=function() loadnative("Audio/Effects/Native/mpReverb") end}
---renoise.tool():add_midi_mapping {name="Global:Track Devices:Load Phaser", invoke=function() loadnative("Audio/Effects/Native/Phaser") end}
---renoise.tool():add_midi_mapping {name="Global:Track Devices:Load Reverb", invoke=function() loadnative("Audio/Effects/Native/Reverb") end}
---renoise.tool():add_midi_mapping {name="Global:Track Devices:Load #ReWire Input", invoke=function() loadnative("Audio/Effects/Native/#ReWire Input") end}
---New to 2.8:
-renoise.tool():add_keybinding {name="Global:Track Devices:Load Exciter", invoke=function() loadnative("Audio/Effects/Native/Exciter") end}
-renoise.tool():add_keybinding {name="Global:Track Devices:Load Multitap", invoke=function() loadnative("Audio/Effects/Native/Multitap") end}
-renoise.tool():add_keybinding {name="Global:Track Devices:Load Repeater", invoke=function() loadnative("Audio/Effects/Native/Repeater") end}
---Meta
-renoise.tool():add_keybinding {name="Global:Track Devices:Load Meta/Hydra", invoke=function() loadnative("Audio/Effects/Native/*Hydra") end}
-renoise.tool():add_keybinding {name="Global:Track Devices:Load Meta/Instr. Automation", invoke=function() loadnative("Audio/Effects/Native/*Instr. Automation") end}
-renoise.tool():add_keybinding {name="Global:Track Devices:Load Meta/Instr. MIDI Control", invoke=function() loadnative("Audio/Effects/Native/*Instr. MIDI Control")end}
-renoise.tool():add_keybinding {name="Global:Track Devices:Load Meta/Key Tracker", invoke=function() loadnative("Audio/Effects/Native/*Key Tracker") end}
-renoise.tool():add_keybinding {name="Global:Track Devices:Load Meta/LFO", invoke=function() loadnative("Audio/Effects/Native/*LFO") end}
-renoise.tool():add_keybinding {name="Global:Track Devices:Load Meta/Mixer", invoke=function() loadnative("Audio/Effects/Native/*Meta Mixer") end}
-renoise.tool():add_keybinding {name="Global:Track Devices:Load Meta/Signal Follower", invoke=function() loadnative("Audio/Effects/Native/*Signal Follower") end}
-renoise.tool():add_keybinding {name="Global:Track Devices:Load Meta/Velocity Tracker", invoke=function() loadnative("Audio/Effects/Native/*Velocity Tracker")end} 
-renoise.tool():add_keybinding {name="Global:Track Devices:Load Meta/XY Pad", invoke=function() loadnative("Audio/Effects/Native/*XY Pad") end}
---
-renoise.tool():add_keybinding {name="Global:Track Devices:Load #ReWire Input", invoke=function() loadnative("Audio/Effects/Native/#ReWire Input") end}
-renoise.tool():add_keybinding {name="Global:Track Devices:Load #Send", invoke=function() loadnative("Audio/Effects/Native/#Send") end}
---
-renoise.tool():add_keybinding {name="Global:Track Devices:Load Bus Compressor", invoke=function() loadnative("Audio/Effects/Native/Bus Compressor") end}
-renoise.tool():add_keybinding {name="Global:Track Devices:Load Cabinet Simulator", invoke=function() loadnative("Audio/Effects/Native/Cabinet Simulator") end}
-renoise.tool():add_keybinding {name="Global:Track Devices:Load Comb Filter", invoke=function() loadnative("Audio/Effects/Native/Comb Filter") end}
-renoise.tool():add_keybinding {name="Global:Track Devices:Load Compressor", invoke=function() loadnative("Audio/Effects/Native/Compressor") end}
-renoise.tool():add_keybinding {name="Global:Track Devices:Load DC Offset", invoke=function() loadnative("Audio/Effects/Native/DC Offset") end}
-renoise.tool():add_keybinding {name="Global:Track Devices:Load Delay", invoke=function() loadnative("Audio/Effects/Native/Delay") end}
-renoise.tool():add_keybinding {name="Global:Track Devices:Load Distortion", invoke=function() loadnative("Audio/Effects/Native/Distortion") end}
-renoise.tool():add_keybinding {name="Global:Track Devices:Load EQ 10", invoke=function() loadnative("Audio/Effects/Native/EQ 10") end}
-renoise.tool():add_keybinding {name="Global:Track Devices:Load EQ 5", invoke=function() loadnative("Audio/Effects/Native/EQ 5") end}
-renoise.tool():add_keybinding {name="Global:Track Devices:Load Filter", invoke=function() loadnative("Audio/Effects/Native/Filter") end}
-renoise.tool():add_keybinding {name="Global:Track Devices:Load Flanger", invoke=function() loadnative("Audio/Effects/Native/Flanger") end}
-renoise.tool():add_keybinding {name="Global:Track Devices:Load Gate", invoke=function() loadnative("Audio/Effects/Native/Gate") end}
-renoise.tool():add_keybinding {name="Global:Track Devices:Load LofiMat", invoke=function() loadnative("Audio/Effects/Native/LofiMat") end}
-renoise.tool():add_keybinding {name="Global:Track Devices:Load Maximizer", invoke=function() loadnative("Audio/Effects/Native/Maximizer") end}
-renoise.tool():add_keybinding {name="Global:Track Devices:Load Mixer EQ", invoke=function() loadnative("Audio/Effects/Native/Mixer EQ") end}
-renoise.tool():add_keybinding {name="Global:Track Devices:Load mpReverb", invoke=function() loadnative("Audio/Effects/Native/mpReverb") end}
-renoise.tool():add_keybinding {name="Global:Track Devices:Load Phaser", invoke=function() loadnative("Audio/Effects/Native/Phaser") end}
-renoise.tool():add_keybinding {name="Global:Track Devices:Load Reverb", invoke=function() loadnative("Audio/Effects/Native/Reverb") end}
-renoise.tool():add_keybinding {name="Global:Track Devices:Load RingMod", invoke=function() loadnative("Audio/Effects/Native/RingMod") end}
-renoise.tool():add_keybinding {name="Global:Track Devices:Load Scream Filter", invoke=function() loadnative("Audio/Effects/Native/Scream Filter") end}
---::::::::::***************
-renoise.tool():add_keybinding {name="Global:Track Devices:Load Stereo Expander", invoke=function() 
- if renoise.song().selected_track.devices[2] then 
-  if renoise.song().selected_track.devices[2].name=="Stereo Expander" then 
-  renoise.song().tracks[renoise.song().selected_track_index]:delete_device_at(2)
-  else  loadnative("Audio/Effects/Native/Stereo Expander") 
-   end
- else  loadnative("Audio/Effects/Native/Stereo Expander") 
- 
- end  
---else if renoise.song().selected_track.devices[2].name=="Stereo Expander" then renoise.song().selected_track:delete_device_at(2)
---else loadnative("Audio/Effects/Native/Stereo Expander") end end
-end}
 --customized------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------
-renoise.tool():add_keybinding {name = "Global:Paketti:Load Fab Filter One", invoke=function()  renoise.song().instruments[renoise.song().selected_instrument_index].plugin_properties:load_plugin("Audio/Generators/VST/FabFilter One")
-local pd=renoise.song().selected_instrument.plugin_properties.plugin_device
- if pd.external_editor_visible==false then pd.external_editor_visible=true end end}
 
 renoise.tool():add_keybinding {name="Global:Track Devices:Load TOGU Audioline Reverb", invoke=function() loadvst("Audio/Effects/AU/aumf:676v:TOGU") end}
 renoise.tool():add_keybinding {name="Global:Track Devices:Load TOGU Audioline Chorus", invoke=function() loadvst("Audio/Effects/AU/aufx:Chor:Togu") end}
@@ -1111,38 +777,6 @@ renoise.tool():add_keybinding {name="Global:Track Devices:Load TOGU Audioline Du
 renoise.tool():add_keybinding {name="Global:Track Devices:Load TOGU Audioline Dub-Delay II", invoke=function() loadvst("Audio/Effects/AU/aumf:dub2:Togu") end}
 renoise.tool():add_keybinding {name="Global:Track Devices:Load TOGU Audioline Dub-Delay III",invoke=function() loadvst("Audio/Effects/AU/aumf:xg70:TOGU") end}
 
-local checkline=nil
-  if (table.count(renoise.song().selected_track.devices)) <2 then checkline=2 else 
-   if renoise.song().selected_track.devices[2].name=="#Line Input" then checkline=3    else checkline=2    end
-end
-renoise.song().selected_track.devices[checkline].is_maximized=true 
---renoise.song().selected_track.devices[2].parameters[1].show_in_mixer=true
---renoise.song().selected_track.devices[2].parameters[2].show_in_mixer=true
-end}
-renoise.tool():add_keybinding {name="Global:Track Devices:Load GRM PitchAccum", invoke=function() loadvst("Audio/Effects/VST/GRM PitchAccum Stereo")end}
-renoise.tool():add_keybinding {name="Global:Track Devices:Load Uhbik U-He Runciter", invoke=function() loadvst("Audio/Effects/VST/Runciter")end}
-
-renoise.tool():add_keybinding {name="Global:Track Devices:Load Koen KTGranulator (AU)",
-invoke=function() renoise.app().window.lower_frame_is_visible=true
---local checkline=nil
---if renoise.song().selected_track.devices[2].name=="#Line Input" then checkline=3
---else checkline=2
---end
-renoise.app().window.active_lower_frame=1
-renoise.song().selected_track:insert_device_at("Audio/Effects/AU/aufx:KTGr:KTfx", 2)
-renoise.song().selected_track.devices[2].is_maximized=true
-renoise.song().selected_track.devices[2].parameters[31].value=1 --SplitPitch
-renoise.song().selected_track.devices[2].parameters[16].value=0.75 --maxTransp
-renoise.song().selected_track.devices[2].parameters[2].value=0.50 --Mix
-renoise.song().selected_track.devices[2].parameters[3].value=0.35 --Mix
-renoise.song().selected_track.devices[2].parameters[6].value=0.75 --Mix
-renoise.song().selected_device_index= 2 end}
-
-renoise.tool():add_keybinding {name="Global:Track Devices:Load Koen KTGranulator (VST)",
-invoke=function() renoise.app().window.lower_frame_is_visible=true
-renoise.app().window.active_lower_frame=1
-renoise.song().selected_track:insert_device_at("Audio/Effects/VST/KTGranulator", 2) end}
-----------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------
 -- :::::Automation ExpCurve
 function drawVol()
@@ -1193,21 +827,12 @@ renoise.tool():add_menu_entry {name="Pattern Matrix:Paketti..:Enable EFX (Write 
 renoise.tool():add_menu_entry {name="Pattern Sequencer:Show/Hide Pattern Matrix", invoke=function() showhidepatternmatrix() end}
 -- Pattern Editor
 renoise.tool():add_menu_entry {name="Pattern Editor:Paketti..:Renoise Random BPM & Write BPM/LPB to Master",   invoke=function() randombpm()  end}
-renoise.tool():add_menu_entry {name="Pattern Editor:Paketti..:Play at 75% Speed (Song BPM)", invoke=function() playat75()  end}
-renoise.tool():add_menu_entry {name="Pattern Editor:Paketti..:Play at 100% Speed (Song BPM)", invoke=function() returnbackto100()  end}
 renoise.tool():add_menu_entry {name="--Pattern Editor:Paketti..:Bypass EFX", invoke=function() effectbypass() end}
 renoise.tool():add_menu_entry {name="Pattern Editor:Paketti..:Enable EFX", invoke=function() effectenable() end}
 renoise.tool():add_menu_entry {name="Pattern Editor:Paketti..:Bypass EFX (Write to Pattern)", invoke=function() effectbypasspattern() end}
 renoise.tool():add_menu_entry {name="Pattern Editor:Paketti..:Enable EFX (Write to Pattern)", invoke=function() effectenablepattern()  end}
 --------------------------------------------------------------------------------------------------------------------------------------------
--- Keybinds
-renoise.tool():add_keybinding {name="Global:Paketti:Impulse Tracker End *2 behaviour", invoke=function() endend() end}
---**--**--**--
-renoise.tool():add_keybinding {name="Global:Paketti:Play Current Line & Advance by EditStep",  invoke=function() PlayCurrentLine() end}
-renoise.tool():add_keybinding {name="Global:Paketti:Set Next ReWire channel", invoke=function() next_rewire() end  }
 renoise.tool():add_keybinding {name="Global:Paketti:Sample NOW then F3", invoke=function() sample_and_to_sample_editor()   end  }
-renoise.tool():add_keybinding {name="Global:Paketti:Play at 75% Speed (Song BPM)",  invoke=function() playat75() end}
-renoise.tool():add_keybinding {name="Global:Paketti:Play at 100% Speed (Song BPM)", invoke=function() returnbackto100() end}
 
 renoise.tool():add_keybinding {name="Global:Paketti:Loop Block Backwards", invoke=function() loopblockback() end}
 renoise.tool():add_keybinding {name="Global:Paketti:Loop Block Forwards", invoke=function() loopblockforward() end}
@@ -1235,14 +860,7 @@ renoise.song().instruments[renoise.song().selected_instrument_index].sample_enve
 renoise.song().instruments[renoise.song().selected_instrument_index].sample_envelopes.pitch.lfo1.phase=30
 end
 renoise.tool():add_menu_entry {name = "Sample Editor:Ding", invoke=function() something() end}
---------------------------------------------------------------------------------------------------------------------------------------------------------------
-renoise.tool():add_keybinding {name = "Global:Paketti:Column Cycle Keyjazz 01_Special", invoke=function() 
-displayNoteColumn(12) 
-GenerateDelayValue()
-renoise.song().transport.edit_mode=true
-renoise.song().transport.edit_step=0
-renoise.song().selected_note_column_index=1
-startcolumncycling(12) end}
+------------------------------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 function WipeEfxFromSelection()
@@ -1271,27 +889,6 @@ else s:track(sti):mute_column(snci, true) end end
 end
 
 --renoise.tool():add_keybinding {name = "Global:Paketti:Mute Unmute Notecolumn", invoke=function() muteUnmuteNoteColumn() end} <- confirmed as not working
-----------------------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------
-
-----------------------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------
-
-----------------------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------
-
-----------------------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------
-
-----------------------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------
-
-----------------------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------
-
-----------------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------------------------------------------------------------------
@@ -1343,39 +940,4 @@ end
 renoise.tool():add_keybinding {name = "Global:Paketti:Clear Current Row", invoke=function() ClearRow() end}
 renoise.tool():add_keybinding {name = "Global:Paketti:Clear Current Row 2nd", invoke=function() ClearRow() end}
 --]]
-
 -----------------------------------------------------------------------------------------------------------------------------------------
-
-----------------
---This script uncollapses everything (all tracks, master, send trax)
-function Uncollapser()
-local send_track_counter=nil
-   send_track_counter=renoise.song().sequencer_track_count+1+renoise.song().send_track_count
-   for i=1,send_track_counter do
-
-renoise.song().tracks[i].collapsed=false
-end
-
-end
-
-function Collapser()
-local send_track_counter=nil
-   send_track_counter=renoise.song().sequencer_track_count+1+renoise.song().send_track_count
-   for i=1,send_track_counter do
-
-renoise.song().tracks[i].collapsed=true
-end
-
-end
-
-
-
-renoise.tool():add_menu_entry {name="Main Menu:Tools:Paketti..:Collapser/Uncollapser", invoke=function() Uncollapser() end}
-renoise.tool():add_keybinding {name="Global:Paketti:Uncollapser", invoke=function() Uncollapser() end}
-renoise.tool():add_keybinding {name="Global:Paketti:Collapser", invoke=function() Collapser() end}
-
-renoise.tool():add_menu_entry {name="Pattern Editor:Paketti..:Collapser/Uncollapser", invoke=function() Uncollapser() end}
-renoise.tool():add_menu_entry {name="Mixer:Paketti..:Collapser/Uncollapser", invoke=function() Uncollapser() end}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Collapser/Uncollapser", invoke=function() Uncollapser() end}
-
-
