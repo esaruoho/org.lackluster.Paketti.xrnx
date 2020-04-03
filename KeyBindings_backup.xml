@@ -858,16 +858,6 @@
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
-          <Binding>∿ Impulse Tracker Home *2 behaviour...</Binding>
-          <Key>Option + Up</Key>
-        </KeyBinding>
-        <KeyBinding>
-          <Topic>Paketti</Topic>
-          <Binding>∿ Impulse Tracker End *2 behaviour...</Binding>
-          <Key>Option + Down</Key>
-        </KeyBinding>
-        <KeyBinding>
-          <Topic>Paketti</Topic>
           <Binding>∿ Play Current Line &amp; Advance by EditStep</Binding>
           <Key>8</Key>
         </KeyBinding>
@@ -891,8 +881,17 @@
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
+          <Binding>∿ Load Rhino 2.1 AU</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
           <Binding>∿ Load FabFilter One</Binding>
           <Key>Shift + Option + F</Key>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Load Surge</Binding>
+          <Key>Option + S</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
@@ -1091,6 +1090,14 @@
         </KeyBinding>
         <KeyBinding>
           <Topic>Track Devices</Topic>
+          <Binding>∿ Load Koen KTGranulator (AU)</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Track Devices</Topic>
+          <Binding>∿ Load Uhbik U-He Runciter</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Track Devices</Topic>
           <Binding>∿ Load SphereDelay Maybe?</Binding>
         </KeyBinding>
         <KeyBinding>
@@ -1236,6 +1243,10 @@
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
+          <Binding>∿ Whats My Song</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
           <Binding>∿ Global Edit Mode Toggle</Binding>
         </KeyBinding>
         <KeyBinding>
@@ -1269,7 +1280,6 @@
         <KeyBinding>
           <Topic>Paketti</Topic>
           <Binding>∿ 2nd Save Song</Binding>
-          <Key>Control + S</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
@@ -1365,6 +1375,14 @@
         <KeyBinding>
           <Topic>Paketti</Topic>
           <Binding>∿ Column Cycle Keyjazz 12</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Start/Stop Column Cycling</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Column Cycle Keyjazz 01_Special</Binding>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
@@ -1926,8 +1944,35 @@
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
+          <Binding>∿ Inspect Effect Slot 2</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
           <Binding>∿ Clear Current Row</Binding>
           <Key>Shift + Command + X</Key>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Wipe Song Retain Sample</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ CapsLockChassis</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Uncollapser</Binding>
+          <Key>Option + C</Key>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Collapser</Binding>
+          <Key>Shift + Option + C</Key>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Contour Shuttle Record Prototype</Binding>
+          <Key>Option + 9</Key>
         </KeyBinding>
       </KeyBindings>
     </Category>
@@ -1965,10 +2010,12 @@
         <KeyBinding>
           <Topic>Selection</Topic>
           <Binding>Select First Entry</Binding>
+          <Key>Option + Up</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Selection</Topic>
           <Binding>Select Last Entry</Binding>
+          <Key>Option + Down</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Selection</Topic>
@@ -2874,7 +2921,6 @@
         <KeyBinding>
           <Topic>Block Operations</Topic>
           <Binding>Create Phrase from Selection</Binding>
-          <Key>Option + S</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Column Operations</Topic>
@@ -3326,8 +3372,18 @@
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
+          <Binding>∿ Impulse Tracker Home *2 behaviour...</Binding>
+          <Key>Option + Up</Key>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
           <Binding>∿ alwaysPattern</Binding>
           <Key>F10</Key>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Impulse Tracker End *2 behaviour...</Binding>
+          <Key>Option + Down</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Navigation</Topic>
@@ -3356,6 +3412,7 @@
         <KeyBinding>
           <Topic>Paketti</Topic>
           <Binding>∿ Disk Browser Focus</Binding>
+          <Key>Control + S</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
@@ -4081,6 +4138,7 @@
         <KeyBinding>
           <Topic>Paketti</Topic>
           <Binding>∿ Disk Browser Focus</Binding>
+          <Key>Control + S</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
@@ -4236,7 +4294,6 @@
         <KeyBinding>
           <Topic>Edit</Topic>
           <Binding>Copy All Devices</Binding>
-          <Key>Shift + Option + C</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Edit</Topic>
@@ -4434,6 +4491,16 @@
           <Topic>Paketti</Topic>
           <Binding>∿ To Pattern Editor</Binding>
           <Key>Shift + F5</Key>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Impulse Tracker Home *2 behaviour...</Binding>
+          <Key>Option + Up</Key>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Impulse Tracker End *2 behaviour...</Binding>
+          <Key>Option + Down</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
@@ -5953,6 +6020,7 @@
         <KeyBinding>
           <Topic>Selection</Topic>
           <Binding>∿ Paketti 2nd Unmark Selection (CTRL-U)</Binding>
+          <Key>Command + U</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
@@ -6420,7 +6488,6 @@
         <KeyBinding>
           <Topic>Device Chain</Topic>
           <Binding>Copy All Devices</Binding>
-          <Key>Shift + Option + C</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Device Chain</Topic>
@@ -6774,7 +6841,6 @@
         <KeyBinding>
           <Topic>Edit</Topic>
           <Binding>Copy Device Chain</Binding>
-          <Key>Shift + Option + C</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Edit</Topic>
