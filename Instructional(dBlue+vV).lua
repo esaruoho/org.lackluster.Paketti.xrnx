@@ -41,7 +41,7 @@ function cycle_middle_frame()
   renoise.app().window.active_middle_frame = frames[index]
 end
 
-renoise.tool():add_keybinding {name="Global:Paketti:dBlue Cycle Middle Frame", invoke = function() cycle_middle_frame()   end}
+renoise.tool():add_keybinding {name="Global:Paketti:dBlue Cycle Middle Frame", invoke=function() cycle_middle_frame()   end}
 
 ---------------------------
 --vV's wonderful sample keyzone noteon/noteoff copier + octave transposition for note-off:

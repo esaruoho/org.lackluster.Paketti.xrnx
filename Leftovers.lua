@@ -1,23 +1,3 @@
-local lsfvariable=nil
-lsfvariable=os.tmpname("wav")
-
-local tmpvariable=nil
-local path="/Users/esaruoho/Music/samples/LogicSmartFolder/"
-local path2="SmartFolderFile" 
-
-function SampleToSF()
-local s=renoise.song()
-renoise.app():show_status("Saving")
-s.instruments[s.selected_instrument_index].samples[1].sample_buffer:save_as(lsfvariable, "wav")
-renoise.app():show_status("Saved")
-renoise.app():show_status("Moving")
-renoise.app():show_status("32Bit to 24Bit Converting")
-os.execute("sox " .. lsfvariable .. " -b 24 " .. path .. "LSF_a" .. s.selected_instrument_index .. "_opbab.wav")
-renoise.app():show_status("32Bit to 24Bit Conversion From Tmp-folder to Logic Smart Folder Done")
-os.execute("cd /Users/esaruoho/Music/samples/LogicSmartFolder;open .")
-renoise.app():show_status("Temporary File Name was " .. lsfvariable )
-end
-
 function savesamplestosmartfolder()
 local s=renoise.song()
 --local additionalname=os.clock
@@ -30,15 +10,9 @@ os.execute("sox " .. path .. path2 .. i .. " -b 24 " .. path .. path2 .. i .. i 
 --os.execute("open -a Logic\ Pro.app /Users/esaruoho/Music/Logic/abs4/abs4/abs4.logic")
 end
 renoise.app():show_status("32Bit to 24Bit Conversion From Tmp-folder to Logic Smart Folder Done")
-os.execute("cd /Users/esaruoho/Music/samples/LogicSmartFolder;open .")
+os.execute("cd /Users/esaruoho/Music/samples/LogicSmartFolder;open .") end
 
-end
-
-
-renoise.tool():add_keybinding {name = "Global:Paketti:Save Sample to Smart Folder", invoke = function() SampleToSF() end}
-
-renoise.tool():add_keybinding {name = "Global:Paketti:Save Samples to Smart Folder", invoke = function() savesamplestosmartfolder() end}
-----------------------------
+renoise.tool():add_keybinding {name = "Global:Paketti:Save Samples to Smart Folder", invoke=function() savesamplestosmartfolder() end}
 ---------------------------------------------------------------------------------------------------------
 -- :::::Automation ExpCurve
 function drawVol()
@@ -59,19 +33,18 @@ end
 renoise.song().transport.edit_mode = edit
 renoise.song().transport.edit_pos = pos1
 end
-renoise.tool():add_keybinding {name = "Global:Paketti:ExpCurveVol", invoke = function() drawVol() end}
-renoise.tool():add_menu_entry {name = "Pattern Editor:Paketti..:ExpCurveVol", invoke = function() drawVol() end}
-renoise.tool():add_menu_entry {name = "Pattern Matrix:Paketti..:ExpCurveVol", invoke = function() drawVol() end}
---renoise.tool():add_keybinding {name = "Global:Paketti:ExpCurveVol", invoke = function() drawVol() end}
-
+renoise.tool():add_keybinding {name = "Global:Paketti:ExpCurveVol", invoke=function() drawVol() end}
+renoise.tool():add_menu_entry {name = "Pattern Editor:Paketti..:ExpCurveVol", invoke=function() drawVol() end}
+renoise.tool():add_menu_entry {name = "Pattern Matrix:Paketti..:ExpCurveVol", invoke=function() drawVol() end}
+--renoise.tool():add_keybinding {name = "Global:Paketti:ExpCurveVol", invoke=function() drawVol() end}
 
 -- Track Automation
-renoise.tool():add_menu_entry {name="Track Automation:Paketti..:ExpCurveVol", invoke = function() drawVol() end}
-renoise.tool():add_menu_entry {name="Track Automation List:Paketti..:ExpCurveVol", invoke = function() drawVol() end}
+renoise.tool():add_menu_entry {name="Track Automation:Paketti..:ExpCurveVol", invoke=function() drawVol() end}
+renoise.tool():add_menu_entry {name="Track Automation List:Paketti..:ExpCurveVol", invoke=function() drawVol() end}
 ---------------------------
 require "FormulaDeviceManual"
 
-renoise.tool():add_keybinding {name = "Global:Paketti:FormulaDevice", invoke = function()  
+renoise.tool():add_keybinding {name = "Global:Paketti:FormulaDevice", invoke=function()  
 renoise.app().window.lower_frame_is_visible=true
 renoise.app().window.active_lower_frame=1
 renoise.song().tracks[renoise.song().selected_track_index]:insert_device_at("Audio/Effects/Native/*Formula", 2)  
@@ -85,4 +58,3 @@ show_manual (
     "FormulaDevice.txt" -- the textfile which contains the manual
   )
 end}
-

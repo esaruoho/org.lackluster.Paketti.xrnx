@@ -1,4 +1,4 @@
----------------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------
 --Groove Settings, re-written and simplified by mxb
 --Control Grooves with a slider
 renoise.tool():add_midi_mapping{name = "Paketti:Groove Settings Groove #1 x[Knob]",
@@ -36,30 +36,37 @@ renoise.tool():add_midi_mapping{name = "Paketti:Groove Settings Groove #4 x[Knob
 -- Control Computer Keyboard Velocity with a slider.
 renoise.tool():add_midi_mapping{name = "Paketti:Computer Keyboard Velocity Slider x[Knob]",
   invoke=function(midi_message) 
+  local s=renoise.song().transport
+  if t.keyboard_velocity_enabled==false then t.keyboard_velocity_enabled=true end
+     t.keyboard_velocity=midi_message.int_value end}
 
-  local s=renoise.song()
-  if s.transport.keyboard_velocity_enabled==false then
-     s.transport.keyboard_velocity_enabled=true end
-     s.transport.keyboard_velocity= midi_message.int_value end}
-     
-------------------------------------------------------------------------------------------------------------------------------------------- Show or hide pattern matrix
+-- Destructively control Sample volume with a slider
+renoise.tool():add_midi_mapping{name="Global:Paketti:Change Selected Sample Volume x[Slider]",invoke=function(midi_message)
+renoise.app().window.active_middle_frame=5
+
+renoise.song().selected_sample.volume=midi_message.int_value/127
+
+
+
+end}
+
+
+----------------------------------------------------------------------------------------------------------------------------------------
+--- Show or hide pattern matrix
 function showhidepatternmatrix()
-local w=renoise.app().window
-      if w.pattern_matrix_is_visible==true then 
-      w.pattern_matrix_is_visible=false else
-      w.pattern_matrix_is_visible=true
-      end
+local pmi=renoise.app().window.pattern_matrix_is_visible
+  if pmi==true then pmi=false else pmi=true end
 end
 
 renoise.tool():add_midi_mapping {name="Global:Paketti:Show/Hide Pattern Matrix x[Toggle]", invoke=function() showhidepatternmatrix() end}
 -----------------------------------------------------------------------------------------------------------------------------------------
 renoise.tool():add_midi_mapping {name="Global:Paketti:Record and Follow On/Off x[Knob]", invoke=function(midi_message) 
 --Aided by dblue
- local t=renoise.song().transport
-
+local t=renoise.song().transport
+local w=renoise.app().window
 if (midi_message.int_value == 127) then t.edit_mode = true t.follow_player = true t.playing = true
-  renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR 
-  renoise.app().window.lock_keyboard_focus = true
+  w.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR 
+  w.lock_keyboard_focus = true
 else end
 if (midi_message.int_value == 0) then t.edit_mode = false t.follow_player = false t.playing = false
 else end
@@ -67,18 +74,13 @@ else end
     if (midi_message.int_value >= 100) then
       t.edit_mode = true
       t.follow_player = true 
-      renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR 
-      renoise.app().window.lock_keyboard_focus = true      
+      w.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR 
+      w.lock_keyboard_focus = true      
     else 
       t.edit_mode = false
       t.follow_player = false
     end
 end}
------------------------------------------------------------------------------------------------------------------------------------------
------------------------------------------------------------------------------------------------------------------------------------------
------------------------------------------------------------------------------------------------------------------------------------------
------------------------------------------------------------------------------------------------------------------------------------------
------------------------------------------------------------------------------------------------------------------------------------------
 -----------------------------------------------------------------------------------------------------------------------------------------
 -----------------------------------------------------------------------------------------------------------------------------------------
 -----------------------------------------------------------------------------------------------------------------------------------------

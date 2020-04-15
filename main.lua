@@ -3,42 +3,89 @@ require "midi"
 require "loaders"
 require "joule_danoise_better_column_navigation"
 require "CheatSheet"
-require "recorder"
+require "recorder" -- //TODO: since notifiers do not work, how to find a workaround??
 
-function keepSequenceSortedFalse()
-renoise.song().sequencer.keep_sequence_sorted=false
-end
+local s=nil  
 
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Keep Sequence Sorted False",invoke=function() keepSequenceSortedFalse()
-end}
-
-
-local s = nil  
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Keep Sequence Sorted False",invoke=function() renoise.song().sequencer.keep_sequence_sorted=false end}
   
 function startup_()  
- local s=renoise.song()  
+ local s=renoise.song()
+ local t=s.transport
  renoise.app().window:select_preset(1)
- renoise.song().transport.groove_enabled=true
- if s.selected_sample == nil then return else  
- if s.selected_sample.sample_buffer_observable:has_notifier(sample_loaded_change_to_sample_editor) then   
- s.selected_sample.sample_buffer_observable:remove_notifier(sample_loaded_change_to_sample_editor)  
+ s.sequencer.keep_sequence_sorted=false
+ t.groove_enabled=true
+ 
+ if renoise.song().name=="Untitled" then renoise.song().transport.playing=true randobpm() else end
+ 
+ if s.selected_sample == nil then s.selected_sample_observable:add_notifier(sample_loaded_change_to_sample_editor)
+ renoise.app():show_error("hello")
  else  
- s.selected_sample.sample_buffer_observable:add_notifier(sample_loaded_change_to_sample_editor)  
- return  
- end  
+ 
+if renoise.song().selected_instrument_observable:has_notifier(sample_loaded_change_to_sample_editor) 
+then return 
+-- renoise.song().selected_instrument_observable:remove_notifier(sample_loaded_change_to_sample_editor) 
+else renoise.song().selected_instrument_observable:add_notifier(sample_loaded_change_to_sample_editor) end
+ 
+--if  renoise.song().selected_sample_observable:has_notifier(sample_loaded_change_to_sample_editor) then
+--renoise.song().selected_sample_observable:remove_notifier(sample_loaded_change_to_sample_editor)
+--else
+--renoise.song().selected_sample_observable:add_notifier(sample_loaded_change_to_sample_editor)
+--end
  end
-end  
+ end
+-- if s.selected_sample.sample_buffer_observable:has_notifier(sample_loaded_change_to_sample_editor) then   
+-- s.selected_sample.sample_buffer_observable:remove_notifier(sample_loaded_change_to_sample_editor)  
+-- else  
+-- s.selected_sample.sample_buffer_observable:add_notifier(sample_loaded_change_to_sample_editor) return  
+-- end  
+-- end
+--end  
+  
+function randobpm()
+renoise.song().transport.bpm=math.random(60,180)
+-- WriteToMaster()
+end 
+renoise.tool():add_keybinding{name="Global:Paketti:Random BPM (60-180)",invoke=function() randobpm() end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Random BPM (60-180)",invoke=function() randobpm() end}
+
+function newSongRandoBPM()
+renoise.app():new_song()
+
+
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:New Song w/ Random BPM",invoke=function() newSongRandoBPM() end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:New Song w/ Random BPM",invoke=function() newSongRandoBPM() end}
   
 function sample_loaded_change_to_sample_editor()  
-  renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].autofade=true
-  renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].interpolation_mode=4
- renoise.app().window.active_middle_frame=5  
-end  
+if
+renoise.song().selected_sample == nil then 
+if not renoise.song().selected_sample_observable:has_notifier(sample_loaded_change_to_sample_editor)
+then renoise.song().selected_sample_observable:add_notifier(sample_loaded_change_to_sample_editor)
+else 
+return
+-- renoise.song().selected_sample_observable:remove_notifier(sample_loaded_change_to_sample_editor)
+end
+
+
+else
+renoise.song().selected_sample.autofade=true
+renoise.song().selected_sample.autoseek=true
+
+renoise.song().selected_sample.interpolation_mode=4
+
+renoise.app().window.active_middle_frame=5
+
+--  renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].autofade=true
+--  renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].interpolation_mode=4
+-- renoise.app().window.active_middle_frame=5  end  
+end
+end
   
 if not renoise.tool().app_new_document_observable:has_notifier(startup_)   
  then renoise.tool().app_new_document_observable:add_notifier(startup_)  
- else renoise.tool().app_new_document_observable:remove_notifier(startup_)  
-end  
+ else renoise.tool().app_new_document_observable:remove_notifier(startup_) end  
 
 --renoise.song().instruments[renoise.song().selected_instrument_index].active_tab=1 == Sampler
 --renoise.song().instruments[renoise.song().selected_instrument_index].active_tab=1 == Plugin
@@ -49,22 +96,23 @@ function autosuspendOFF()
 --renoise.tool():add_menu_entry
 renoise.song().instruments[renoise.song().selected_instrument_index].plugin_properties.auto_suspend = false end
 
-renoise.tool():add_menu_entry{name="Instrument Box:Paketti Switch Plugin AutoSuspend Off",invoke=function() autosuspendOFF() end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti:Switch Plugin AutoSuspend Off",invoke=function() autosuspendOFF() end}
 
-renoise.tool():add_menu_entry{name="Instrument Box:Paketti Create Phrase",invoke=function() 
-  renoise.song().instruments[renoise.song().selected_instrument_index]:insert_phrase_at(1) 
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti:Create Phrase",invoke=function()
+local s=renoise.song() 
+  s.instruments[s.selected_instrument_index]:insert_phrase_at(1) 
   renoise.app().window.active_middle_frame=3
-  renoise.song().instruments[renoise.song().selected_instrument_index].phrase_editor_visible=true
-  renoise.song().selected_phrase_index=1
+  s.instruments[s.selected_instrument_index].phrase_editor_visible=true
+  s.selected_phrase_index=1
   
 --  renoise.song().instruments[renoise.song().selected_instrument_index].phrases[renoise.song().selected_phrase_index].instrument_column_visible=true
-renoise.song().instruments[renoise.song().selected_instrument_index].phrases[renoise.song().selected_phrase_index].volume_column_visible=true
-renoise.song().instruments[renoise.song().selected_instrument_index].phrases[renoise.song().selected_phrase_index].panning_column_visible=true
-renoise.song().instruments[renoise.song().selected_instrument_index].phrases[renoise.song().selected_phrase_index].delay_column_visible=true
-renoise.song().instruments[renoise.song().selected_instrument_index].phrases[renoise.song().selected_phrase_index].sample_effects_column_visible=true
+s.instruments[s.selected_instrument_index].phrases[s.selected_phrase_index].volume_column_visible=true
+s.instruments[s.selected_instrument_index].phrases[s.selected_phrase_index].panning_column_visible=true
+s.instruments[s.selected_instrument_index].phrases[s.selected_phrase_index].delay_column_visible=true
+s.instruments[s.selected_instrument_index].phrases[s.selected_phrase_index].sample_effects_column_visible=true
 end}
 
-renoise.tool():add_keybinding {name = "Global:Paketti:Whats My Song", invoke = function() renoise.app():show_status(renoise.song().file_name) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Whats My Song",invoke=function() renoise.app():show_status(renoise.song().file_name) end}
 
 ----
 function G01()
@@ -95,165 +143,147 @@ renoise.tool():add_keybinding{name="Sample Editor:Paketti:Disk Browser Focus",in
 renoise.app().window:select_preset(7) end}
 renoise.tool():add_midi_mapping{name="Sample Editor:Paketti:Disk Browser Focus",invoke=function()
 renoise.app().window:select_preset(7) end}
-
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Disk Browser Focus",invoke=function()
+renoise.tool():add_keybinding{name="Global:Paketti:Disk Browser Focus",invoke=function()
 renoise.app().window:select_preset(8) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Disk Browser Focus (2nd)",invoke=function()
+renoise.app().window:select_preset(8) end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Disk Browser Focus (ContourShuttle)",invoke=function()
+renoise.app().window:select_preset(8) end}
+
+
+
+
 renoise.tool():add_midi_mapping{name="Pattern Editor:Paketti:Disk Browser Focus",invoke=function()
 renoise.app().window:select_preset(8) end}
 
 renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Init Phrase Settings",invoke=function()
-renoise.song().selected_phrase.visible_note_columns=1
-renoise.song().selected_phrase.visible_effect_columns=0
-renoise.song().selected_phrase.volume_column_visible=false
-renoise.song().selected_phrase.panning_column_visible=false
-renoise.song().selected_phrase.delay_column_visible=false
-renoise.song().selected_phrase.sample_effects_column_visible=false
+local selphra=renoise.song().selected_phrase
+selphra.visible_note_columns=1
+selphra.visible_effect_columns=0
+selphra.volume_column_visible=false
+selphra.panning_column_visible=false
+selphra.delay_column_visible=false
+selphra.sample_effects_column_visible=false
 
 local renamephrase_to_index=tostring(renoise.song().selected_phrase_index)
-renoise.song().selected_phrase.name=renamephrase_to_index
---renoise.song().selected_phrase.name=renoise.song().selected_phrase_index
-
+selphra.name=renamephrase_to_index
+--selphra.name=renoise.song().selected_phrase_index
 end}
 
 function oneshottoggle()
-
-if renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].oneshot then
-renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].oneshot=false
-else
-renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].oneshot=true
-end
+local s=renoise.song()
+if s.instruments[s.selected_instrument_index].samples[s.selected_sample_index].oneshot 
+then s.instruments[s.selected_instrument_index].samples[s.selected_sample_index].oneshot=false 
+else s.instruments[s.selected_instrument_index].samples[s.selected_sample_index].oneshot=true end
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Toggle Oneshot On/Off",invoke=function() oneshottoggle() end}
 
-
 -- Show automation (via Pattern Matrix/Pattern Editor)
 function showAutomation()
-  local w = renoise.app().window
-if w.active_lower_frame == renoise.ApplicationWindow.LOWER_FRAME_TRACK_AUTOMATION then  w.active_lower_frame = renoise.ApplicationWindow.LOWER_FRAME_TRACK_DSPS return end
-    
-    w.active_lower_frame = renoise.ApplicationWindow.LOWER_FRAME_TRACK_AUTOMATION
+  local w=renoise.app().window
+  local raw=renoise.ApplicationWindow
+if w.active_lower_frame == raw.LOWER_FRAME_TRACK_AUTOMATION 
+then w.active_lower_frame = raw.LOWER_FRAME_TRACK_DSPS return end  
+    w.active_lower_frame = raw.LOWER_FRAME_TRACK_AUTOMATION
     w.lock_keyboard_focus=true
-    renoise.song().transport.follow_player=false
-end
+    renoise.song().transport.follow_player=false end
+
 renoise.tool():add_menu_entry{name="--Pattern Matrix:Paketti..:Switch to Automation",invoke=function() showAutomation() end}
 renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Switch to Automation",invoke=function() showAutomation() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Switch to Automation",invoke=function() showAutomation() end}
 renoise.tool():add_midi_mapping{name="Global:Paketti:Switch to Automation",invoke=function() 
-local w = renoise.app().window
-
-if renoise.ApplicationWindow.MIDDLE_FRAME_MIXER == false and w.active_lower_frame == renoise.ApplicationWindow.LOWER_FRAME_TRACK_AUTOMATION 
-then renoise.app().window.active_middle_frame=renoise.ApplicationWindow.MIDDLE_FRAME_MIXER 
-return
-else
-renoise.app().window.active_middle_frame=renoise.ApplicationWindow.MIDDLE_FRAME_MIXER 
-end
-
+  local w=renoise.app().window
+  local raw=renoise.ApplicationWindow
+if raw.MIDDLE_FRAME_MIXER == false and w.active_lower_frame == raw.LOWER_FRAME_TRACK_AUTOMATION 
+then w.active_middle_frame=raw.MIDDLE_FRAME_MIXER return
+else w.active_middle_frame=raw.MIDDLE_FRAME_MIXER end
 showAutomation() end}
-
 
 function DSPFXChain()
 --renoise.app().window.active_middle_frame=2
---renoise.app().window.active_middle_frame=2
-renoise.app().window.active_middle_frame=renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EFFECTS
-end
+renoise.app().window.active_middle_frame=renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EFFECTS end
 
-renoise.tool():add_keybinding{name = "Global:Paketti:DSP FX Chain",invoke=function() 
-DSPFXChain()
- end}
-
+renoise.tool():add_keybinding{name="Global:Paketti:DSP FX Chain",invoke=function() DSPFXChain() end}
 
 function midi_imm()
- if 
- renoise.app().window.active_middle_frame==renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_MIDI_EDITOR then 
- renoise.app().window.active_middle_frame=1 else  
- renoise.app().window.active_middle_frame=renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_MIDI_EDITOR
-end
+ if renoise.app().window.active_middle_frame==renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_MIDI_EDITOR 
+ then renoise.app().window.active_middle_frame=1 
+ else renoise.app().window.active_middle_frame=renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_MIDI_EDITOR end
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:F4 Shift Midi Immediately",invoke=function() midi_imm()   end}
-
+renoise.tool():add_keybinding{name="Global:Paketti:F4 Shift Midi Immediately",invoke=function() midi_imm() end}
 
 function simpleplay()
 if renoise.song().transport.playing == true
 then renoise.song().transport.playing = false
-else renoise.song().transport.playing = true
-
-end
-end
+else renoise.song().transport.playing = true end end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Simple Play",invoke=function() simpleplay() end}
 renoise.tool():add_midi_mapping  {name="Global:Paketti:Simple Play",invoke=function() simpleplay() end}
 
-
 function simpleplayrecordfollow()
 local w=renoise.app().window
+local t=renoise.song().transport
+local pe=renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
 -- w.upper_frame_is_visible=false
 -- w.active_middle_frame=1
 -- w.lower_frame_is_visible=true  -- if lower frame is hidden, don't reshow it. 
 
-if renoise.song().transport.playing and renoise.song().transport.follow_player and renoise.song().transport.edit_mode and w.active_middle_frame==renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
- then
-renoise.song().transport.follow_player=false
-renoise.song().transport.edit_mode=false
-return
-else 
-renoise.song().transport.follow_player=true
-renoise.song().transport.edit_mode=true
-w.active_middle_frame=renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
-end
+  if t.playing and t.follow_player and t.edit_mode and w.active_middle_frame==pe
+then t.follow_player=false
+     t.edit_mode=false return
+else t.follow_player=true
+     t.edit_mode=true
+     w.active_middle_frame=pe end
 
-  if renoise.song().transport.playing==true -- if playback is on, continue playback and follow player, toggle edit, display pattern editor
-then renoise.song().transport.follow_player=true
-     renoise.song().transport.edit_mode=true
-     w.active_middle_frame=renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
-else renoise.song().transport.playing=true -- if playback is off, start playback and follow player, toggle edit, display pattern editor
-     renoise.song().transport.follow_player=true
-     renoise.song().transport.edit_mode=true
-     w.active_middle_frame=renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
-end
+  if t.playing==true -- if playback is on, continue playback and follow player, toggle edit, display pattern editor
+then t.follow_player=true
+     t.edit_mode=true
+     w.active_middle_frame=pe
+else t.playing=true -- if playback is off, start playback and follow player, toggle edit, display pattern editor
+     t.follow_player=true
+     t.edit_mode=true
+     w.active_middle_frame=pe end
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Simple Play Record Follow",invoke=function() simpleplayrecordfollow() end}
-renoise.tool():add_midi_mapping  {name="Global:Paketti:Simple Play Record Follow",invoke=function() simpleplayrecordfollow() end}
-
-  
+renoise.tool():add_midi_mapping{name="Global:Paketti:Simple Play Record Follow",invoke=function() simpleplayrecordfollow() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Simple Play Record Follow 2nd",invoke=function() simpleplayrecordfollow() end}
-  
 
 --2nd Save Song bind
 function saveSong()
   renoise.app():save_song()
   renoise.app():show_status("Song saved: " .. "'"..renoise.app().current_song.file_name.."'")
 end
+
 renoise.tool():add_keybinding{name="Global:Paketti:2nd Save Song",invoke=function() saveSong() end}
 
-
-
-
 function slicerough(changer)
-  renoise.song().selected_sample_index=1
-local currInst=renoise.song().selected_instrument_index
-local currSamp=renoise.song().selected_sample_index
+local s=renoise.song()  
+  s.selected_sample_index=1
+local currInst=s.selected_instrument_index
+local currSamp=s.selected_sample_index
 local number=(table.count(renoise.song().instruments[currInst].samples[currSamp].slice_markers))
-  renoise.song().selected_sample_index=1
-  renoise.song().instruments[currInst].samples[currSamp].loop_mode=2
-  renoise.song().instruments[currInst].samples[currSamp].new_note_action=1
-  renoise.song().instruments[currInst].samples[currSamp].autofade=true
-  renoise.song().instruments[currInst].samples[currSamp].interpolation_mode=4
+  currSamp=1
+  s.instruments[currInst].samples[currSamp].loop_mode=2
+  s.instruments[currInst].samples[currSamp].new_note_action=1
+  s.instruments[currInst].samples[currSamp].autofade=true
+  s.instruments[currInst].samples[currSamp].interpolation_mode=4
 
 for i=1,number do 
-renoise.song().instruments[currInst].samples[currSamp]:delete_slice_marker((renoise.song().instruments[currInst].samples[currSamp].slice_markers[1]))
+s.instruments[currInst].samples[currSamp]:delete_slice_marker((s.instruments[currInst].samples[currSamp].slice_markers[1]))
 end
   
-local tw=renoise.song().selected_sample.sample_buffer.number_of_frames/changer
-  renoise.song().instruments[currInst].samples[currSamp]:insert_slice_marker(1)
+local tw=s.selected_sample.sample_buffer.number_of_frames/changer
+  s.instruments[currInst].samples[currSamp]:insert_slice_marker(1)
   for i=1,changer do
-  renoise.song().instruments[currInst].samples[currSamp]:insert_slice_marker(tw*i)
-  renoise.song().instruments[currInst].samples[currSamp].autofade=true
-  end
-renoise.song().selected_sample.beat_sync_enabled=true
-renoise.song().instruments[currInst].samples[currSamp].autofade=true
+  s.instruments[currInst].samples[currSamp]:insert_slice_marker(tw*i)
+  s.instruments[currInst].samples[currSamp].autofade=true end
+
+s.selected_sample.beat_sync_enabled=true
+s.instruments[currInst].samples[currSamp].autofade=true
 end
 --
 --Wipe all slices
@@ -265,9 +295,7 @@ local number=(table.count(renoise.song().instruments[currInst].samples[currSamp]
   for i=1,number do renoise.song().instruments[currInst].samples[currSamp]:delete_slice_marker((renoise.song().instruments[currInst].samples[currSamp].slice_markers[1]))
   end
 renoise.song().selected_sample.beat_sync_enabled=false
-
 end
-
 
 renoise.tool():add_midi_mapping{name="Global:Paketti:Wipe&Create Slices (16) x[Toggle]",invoke=function() slicerough(16) end}
 renoise.tool():add_keybinding{name="Global:Paketti:Wipe&Create Slices (2)",invoke=function() slicerough(2) end}
@@ -278,6 +306,7 @@ renoise.tool():add_keybinding{name="Global:Paketti:Wipe&Create Slices (32)",invo
 renoise.tool():add_keybinding{name="Global:Paketti:Wipe&Create Slices (64)",invoke=function() slicerough(64) end}
 renoise.tool():add_keybinding{name="Global:Paketti:Wipe Slices",invoke=function() wipeslices() end}
 
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti:Wipe&Create Slices (2)",invoke=function() slicerough(2) end}
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti:Wipe&Create Slices (4)",invoke=function() slicerough(4) end}
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti:Wipe&Create Slices (8)",invoke=function() slicerough(8) end}
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti:Wipe&Create Slices (16)",invoke=function() slicerough(16) end}
@@ -290,7 +319,7 @@ renoise.tool():add_menu_entry{name="Sample Editor:Paketti:Sample Preferences",in
   renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].interpolation_mode=4
   renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].oversample_enabled=true
 
-end }
+end}
 -- Metronome On/Off for keyboard shortcut and midibind.
 function MetronomeOff()
 if renoise.song().transport.metronome_enabled then renoise.song().transport.metronome_enabled = false else renoise.song().transport.metronome_enabled=true end end
@@ -300,57 +329,54 @@ renoise.tool():add_keybinding{name="Global:Paketti:Toggle Metronome On/Off",invo
 
 
 function phraseEditorVisible()
+  local s=renoise.song()
 --If no Phrase in instrument, create phrase, otherwise do nothing.
-if renoise.song().instruments[renoise.song().selected_instrument_index]:can_insert_phrase_at(1) == true then
-renoise.song().instruments[renoise.song().selected_instrument_index]:insert_phrase_at(1) end
+if s.instruments[s.selected_instrument_index]:can_insert_phrase_at(1) == true then
+s.instruments[s.selected_instrument_index]:insert_phrase_at(1) end
 
 --Select created phrase.
-renoise.song().selected_phrase_index=1
+s.selected_phrase_index=1
 
 --Check to make sure the Phrase Editor is Visible
-if not renoise.song().instruments[renoise.song().selected_instrument_index].phrase_editor_visible then
+if not s.instruments[s.selected_instrument_index].phrase_editor_visible then
 renoise.app().window.active_middle_frame =3
-renoise.song().instruments[renoise.song().selected_instrument_index].phrase_editor_visible=true
+s.instruments[s.selected_instrument_index].phrase_editor_visible=true
 --If Phrase Editor is already visible, go back to pattern editor.
-else renoise.song().instruments[renoise.song().selected_instrument_index].phrase_editor_visible=false 
+else s.instruments[s.selected_instrument_index].phrase_editor_visible=false 
 renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
 end end
 
-renoise.tool():add_keybinding{name = "Global:Paketti:PhraseEditorVisible",invoke=function() phraseEditorVisible() end}
+renoise.tool():add_keybinding{name="Global:Paketti:PhraseEditorVisible",invoke=function() phraseEditorVisible() end}
 
---[[renoise.tool():add_keybinding{name = "Sample Editor:Paketti:PhraseEditorVisible",invoke=function() phraseEditorVisible() end}
-renoise.tool():add_keybinding{name = "Phrase Editor:Paketti:PhraseEditorVisible",invoke=function() phraseEditorVisible() end}
-renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:PhraseEditorVisible",invoke=function() phraseEditorVisible() end}
+--[[renoise.tool():add_keybinding{name="Sample Editor:Paketti:PhraseEditorVisible",invoke=function() phraseEditorVisible() end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:PhraseEditorVisible",invoke=function() phraseEditorVisible() end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:PhraseEditorVisible",invoke=function() phraseEditorVisible() end}
 --]]
 
 --[[
 function phraseadd()
-
 renoise.song().instruments[renoise.song().selected_instrument_index]:insert_phrase_at(1)
-
 end
-renoise.tool():add_keybinding{name = "Global:Paketti:Add new Phrase",invoke=function() 
+
+renoise.tool():add_keybinding{name="Global:Paketti:Add new Phrase",invoke=function() 
 phraseadd() end}--]]
 
 function oneshotcontinue()
+  local s=renoise.song()
+  local sli=s.selected_instrument_index
+  local ssi=s.selected_sample_index
 
-if renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].oneshot
-then
-renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].oneshot=false
-renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].new_note_action=1
-else
-renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].oneshot=true
-renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].new_note_action=3
-end
-end
-renoise.tool():add_keybinding{name = "Global:Paketti:Set to One-Shot + NNA Continue",invoke=function() oneshotcontinue() end}
+  if s.instruments[sli].samples[ssi].oneshot
+then s.instruments[sli].samples[ssi].oneshot=false
+     s.instruments[sli].samples[ssi].new_note_action=1
+else s.instruments[sli].samples[ssi].oneshot=true
+     s.instruments[sli].samples[ssi].new_note_action=3 end end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Set to One-Shot + NNA Continue",invoke=function() oneshotcontinue() end}
 
 -------------
 ----------------------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------
-function displayNoteColumn(number) local rs=renoise.song() rs.tracks[rs.selected_track_index].visible_note_columns=number end --here
+function displayNoteColumn(number) local s=renoise.song() s.tracks[s.selected_track_index].visible_note_columns=number end --here
 
 function pattern_line_notifier(pos) --here
   local colnumber=nil
@@ -361,67 +387,59 @@ function pattern_line_notifier(pos) --here
 --  print (pos.track)
 --  print (pos.line)
 
-local rs=renoise.song() 
+local s=renoise.song() 
+local t=s.transport
+if t.edit_step==0 then 
+count=s.selected_note_column_index+1
 
-if renoise.song().transport.edit_step==0 then 
-count=renoise.song().selected_note_column_index+1
-
-if count ==rs.tracks[rs.selected_track_index].visible_note_columns then renoise.song().selected_note_column_index=count return end
-if count >rs.tracks[rs.selected_track_index].visible_note_columns then 
+if count == s.tracks[s.selected_track_index].visible_note_columns then s.selected_note_column_index=count return end
+if count > s.tracks[s.selected_track_index].visible_note_columns then 
 local slicount=nil
-slicount=renoise.song().selected_line_index+1 
-if slicount > renoise.song().patterns[renoise.song().selected_pattern_index].number_of_lines
+slicount=s.selected_line_index+1 
+if slicount > s.patterns[s.selected_pattern_index].number_of_lines
 then 
-renoise.song().selected_line_index=renoise.song().patterns[renoise.song().selected_pattern_index].number_of_lines
-end
+s.selected_line_index=s.patterns[s.selected_pattern_index].number_of_lines end
 count=1 
-renoise.song().selected_note_column_index=count
-return
-else renoise.song().selected_note_column_index=count return 
-end
+s.selected_note_column_index=count return
+else s.selected_note_column_index=count return end
 end
 
-countline=renoise.song().selected_line_index+1---1+renoise.song().transport.edit_step
-   if renoise.song().transport.edit_step>1 then
+countline=s.selected_line_index+1---1+renoise.song().transport.edit_step
+   if t.edit_step>1 then
    countline=countline-1
-   else countline=renoise.song().selected_line_index end
+   else countline=s.selected_line_index end
    --print ("countline is selected line index +1" .. countline)
    --print ("editstep" .. renoise.song().transport.edit_step)
-   if countline >renoise.song().patterns[renoise.song().selected_pattern_index].number_of_lines
+   if countline > s.patterns[s.selected_pattern_index].number_of_lines
    then countline=1
    end
-   renoise.song().selected_line_index=countline
+   s.selected_line_index=countline
  
-   colnumber=renoise.song().selected_note_column_index+1
-   if colnumber > rs.tracks[rs.selected_track_index].visible_note_columns then
-   renoise.song().selected_note_column_index=1
+   colnumber=s.selected_note_column_index+1
+   if colnumber > s.tracks[s.selected_track_index].visible_note_columns then
+   s.selected_note_column_index=1
    return end
-  renoise.song().selected_note_column_index=colnumber
-
-  end
+  s.selected_note_column_index=colnumber end
   
 function startcolumncycling(number) -- here
-if renoise.song().patterns[renoise.song().selected_pattern_index]:has_line_notifier(pattern_line_notifier) then
- renoise.song().patterns[renoise.song().selected_pattern_index]:remove_line_notifier(pattern_line_notifier)
+local s=renoise.song()
+  if s.patterns[s.selected_pattern_index]:has_line_notifier(pattern_line_notifier) 
+then s.patterns[s.selected_pattern_index]:remove_line_notifier(pattern_line_notifier)
  renoise.app():show_status(number .. " Column Cycle Keyjazz Off")
- else renoise.song().patterns[renoise.song().selected_pattern_index]:add_line_notifier(pattern_line_notifier)
- renoise.app():show_status(number .. " Column Cycle Keyjazz On")
- end
+else s.patterns[s.selected_pattern_index]:add_line_notifier(pattern_line_notifier)
+ renoise.app():show_status(number .. " Column Cycle Keyjazz On") end
 end
 
 for cck=1,12 do
-renoise.tool():add_keybinding{name = "Global:Paketti:Column Cycle Keyjazz " .. cck,invoke=function() displayNoteColumn(cck) startcolumncycling(cck) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Column Cycle Keyjazz " .. cck,invoke=function() displayNoteColumn(cck) startcolumncycling(cck) end}
 end
 
+renoise.tool():add_keybinding{name="Global:Paketti:Start/Stop Column Cycling",invoke=function() startcolumncycling() 
+  if renoise.song().patterns[renoise.song().selected_pattern_index]:has_line_notifier(pattern_line_notifier)
+then renoise.app():show_status("Column Cycle Keyjazz On")
+else renoise.app():show_status("Column Cycle Keyjazz Off") end end}
 
-renoise.tool():add_keybinding{name = "Global:Paketti:Start/Stop Column Cycling",invoke=function() startcolumncycling() 
-if renoise.song().patterns[renoise.song().selected_pattern_index]:has_line_notifier(pattern_line_notifier) then
-renoise.app():show_status("Column Cycle Keyjazz On")
-else renoise.app():show_status("Column Cycle Keyjazz Off")
-end
-end}
-
-renoise.tool():add_keybinding {name = "Global:Paketti:Column Cycle Keyjazz 01_Special", invoke = function() 
+renoise.tool():add_keybinding{name="Global:Paketti:Column Cycle Keyjazz 01_Special",invoke=function() 
 displayNoteColumn(12) 
 GenerateDelayValue()
 renoise.song().transport.edit_mode=true
@@ -432,20 +450,18 @@ startcolumncycling(12) end}
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 function GenerateDelayValue() 
 local counter=nil
-renoise.song().tracks[renoise.song().selected_track_index].delay_column_visible=true
+local s=renoise.song()
+s.tracks[s.selected_track_index].delay_column_visible=true
 
-for i=1,renoise.song().tracks[renoise.song().selected_track_index].visible_note_columns do
-counter=256/renoise.song().tracks[renoise.song().selected_track_index].visible_note_columns*(i-1)
+for i=1,s.tracks[s.selected_track_index].visible_note_columns do
+counter=256/s.tracks[s.selected_track_index].visible_note_columns*(i-1)
 DEC_HEX(counter)
 print (counter)
-renoise.song().patterns[renoise.song().selected_pattern_index].tracks[renoise.song().selected_track_index].lines[renoise.song().selected_line_index].note_columns[i].delay_value=counter
-end
+s.patterns[s.selected_pattern_index].tracks[s.selected_track_index].lines[s.selected_line_index].note_columns[i].delay_value=counter end
+s.selected_note_column_index=1 end
 
-renoise.song().selected_note_column_index=1
-end
-
-renoise.tool():add_keybinding{name = "Global:Paketti:Generate Delay Value on Note Columns",invoke=function() GenerateDelayValue() end}
-
+renoise.tool():add_keybinding{name="Global:Paketti:Generate Delay Value on Note Columns",invoke=function() GenerateDelayValue() end}
+----------------------------------------------------------------------------------------------------------------------------------------
 --from http://lua-users.org/lists/lua-l/2004-09/msg00054.html thax!
 function DEC_HEX(IN)
     local B,K,OUT,I,D=16,"0123456789ABCDEF","",0
@@ -457,29 +473,17 @@ function DEC_HEX(IN)
     return OUT
 end
 --from http://lua-users.org/lists/lua-l/2004-09/msg00054.html thax!
-
-
-----------------------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------------------
 function RecordFollowToggle()
 local s=renoise.song()
 local t=s.transport
-local w = renoise.app().window
+local w=renoise.app().window
 w.active_middle_frame=1
-if t.edit_mode == true and t.follow_player == true then t.edit_mode = false t.follow_player = false return end
-if t.edit_mode == false and t.follow_player == false then t.edit_mode = true t.follow_player = true return else t.edit_mode = false t.follow_player = false end
+if t.edit_mode == true and t.follow_player == true then t.edit_mode=false t.follow_player=false return end
+if t.edit_mode == false and t.follow_player == false then t.edit_mode=true t.follow_player=true return else t.edit_mode=false t.follow_player=false end
 
-if t.follow_player == false and t.edit_mode == false then t.follow_player = true t.edit_mode = true else t.follow_player = false t.edit_mode = false end
-w.active_middle_frame = 1
+if t.follow_player == false and t.edit_mode == false then t.follow_player=true t.edit_mode=true else t.follow_player=false t.edit_mode=false end
+w.active_middle_frame=1
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:2nd Record+Follow Toggle",invoke=function() RecordFollowToggle() end}
@@ -492,8 +496,8 @@ local t=renoise.song().transport
 local w=renoise.app().window
 w.active_middle_frame=1
 
-if not t.edit_mode then t.edit_mode = true else t.edit_mode = false end
-if not t.follow_player then return else t.follow_player = false end end
+if not t.edit_mode then t.edit_mode=true else t.edit_mode=false end
+if not t.follow_player then return else t.follow_player=false end end
 
 renoise.tool():add_keybinding{name="Global:Paketti:2nd Toggle EditMode",invoke=function() RecordToggle() end}
 renoise.tool():add_keybinding{name="Global:Paketti:3rd Toggle EditMode",invoke=function() RecordToggle() end}
@@ -515,32 +519,39 @@ if t.playing==false then t.playing=true t.metronome_enabled=true t.follow_player
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Record+Follow+Metronome Toggle",invoke=function() RecordFollowMetronomeToggle() end}
-
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 function RecordFollowOffPattern()
 local t=renoise.song().transport
 local w = renoise.app().window
 --w.active_middle_frame = 1
-if t.edit_mode == false then t.edit_mode = true else t.edit_mode=false end
-if t.follow_player == false then return else t.follow_player = false end end
+if t.edit_mode == false then t.edit_mode=true else t.edit_mode=false end
+if t.follow_player == false then return else t.follow_player=false end end
 
 function RecordFollowOffPhrase()
-renoise.song().transport.follow_player=false
-if renoise.song().transport.edit_mode == false then 
-renoise.song().transport.edit_mode = true else
-renoise.song().transport.edit_mode = false end
-
-end
+local t=renoise.song().transport
+t.follow_player=false
+if t.edit_mode == false then 
+t.edit_mode=true else
+t.edit_mode=false end end
 
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Record+Follow Off",invoke=function() RecordFollowOffPattern() end}
 renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Record+Follow Off",invoke=function() RecordFollowOffPhrase() end}
 
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+function emptyslices()
+local si=renoise.song().selected_instrument
+local ss=renoise.song().selected_sample
+local ssi=renoise.song().selected_sample_index
+  ssi=1
+   for i=1,64 do si:insert_sample_at(i) end
 
---------------------------------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------------------------------
+   for i=1,64 do renoise.song().selected_instrument.samples[i].name="empty_sampleslot" .. i end
+
+ renoise.song().selected_instrument.name=("multiloopersampler_instrument" .. renoise.song().selected_instrument_index)
+ w.active_middle_frame= 3 end
+
+renoise.tool():add_menu_entry {name = "Instrument Box:Paketti:Create empty sample slices", invoke=function() emptyslices() end}
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 function WipeEfxFromSelection()
 --thanks to joule for assistance1+2(2018)!
@@ -560,7 +571,7 @@ for line_index = s.selection_in_pattern.start_line, s.selection_in_pattern.end_l
     end
   end
 end
-renoise.tool():add_keybinding{name = "Global:Paketti:Wipe Effects From Selection", invoke = function() WipeEfxFromSelection() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Wipe Effects From Selection",invoke=function() WipeEfxFromSelection() end}
 ----------------
 --rescued from ImpulseBuddy by Protman! I have no idea how many of these were originally a part of Paketti, or something else, but
 --hey, more crosspollination, more features.
@@ -578,82 +589,77 @@ local iter = s.pattern_iterator:effect_columns_in_pattern_track(currPatt,currTra
 end
 renoise.tool():add_keybinding{name="Global:Paketti:Delete/Wipe/Clear Effect Column Content from Current Track",invoke=function() delete_effect_column() end}
 ----------------
-
-
-
 function bend(amount)
 local counter=nil 
---local amount=nil 
---amount=1 
-for i=renoise.song().selection_in_pattern.start_line,renoise.song().selection_in_pattern.end_line 
-do 
+local s=renoise.song()
 
-counter=renoise.song().patterns[renoise.song().selected_pattern_index].tracks[renoise.song().selected_track_index].lines[i].effect_columns[1].amount_value+amount 
+for i=s.selection_in_pattern.start_line,s.selection_in_pattern.end_line 
+do 
+counter=s.patterns[s.selected_pattern_index].tracks[s.selected_track_index].lines[i].effect_columns[1].amount_value+amount 
 
 if counter > 255 then counter=255 end
-if counter < 1 then counter=0 
-end
-renoise.song().patterns[renoise.song().selected_pattern_index].tracks[renoise.song().selected_track_index].lines[i].effect_columns[1].amount_value=counter 
-end
+if counter < 1 then counter=0 end
+s.patterns[s.selected_pattern_index].tracks[s.selected_track_index].lines[i].effect_columns[1].amount_value=counter end
 end
 
 function effectamount(amount,effectname)
 -- massive thanks to pandabot for the optimization tricks!
+local s=renoise.song()
 local counter=nil
-for i=renoise.song().selection_in_pattern.start_line,renoise.song().selection_in_pattern.end_line 
+for i=s.selection_in_pattern.start_line,s.selection_in_pattern.end_line 
 do 
-renoise.song():pattern(renoise.song().selected_pattern_index):track(renoise.song().selected_track_index):line(i):effect_column(1).number_string=effectname
-counter=renoise.song():pattern(renoise.song().selected_pattern_index):track(renoise.song().selected_track_index):line(i):effect_column(1).amount_value+amount 
+s:pattern(s.selected_pattern_index):track(s.selected_track_index):line(i):effect_column(1).number_string=effectname
+counter=s:pattern(s.selected_pattern_index):track(s.selected_track_index):line(i):effect_column(1).amount_value+amount 
 if counter > 255 then counter=255 end
 if counter < 1 then counter=0 end
-renoise.song():pattern(renoise.song().selected_pattern_index):track(renoise.song().selected_track_index):line(i):effect_column(1).amount_value=counter 
+s:pattern(s.selected_pattern_index):track(s.selected_track_index):line(i):effect_column(1).amount_value=counter 
   end
 end
 
-renoise.tool():add_keybinding{name = "Global:Paketti:Bend -1",invoke=function() bend(-1) end}
-renoise.tool():add_keybinding{name = "Global:Paketti:Bend -10",invoke=function() bend(-10) end}
-renoise.tool():add_keybinding{name = "Global:Paketti:2nd Bend -1",invoke=function() bend(-1) end}
-renoise.tool():add_keybinding{name = "Global:Paketti:2nd Bend -10",invoke=function() bend(-10) end}
-renoise.tool():add_keybinding{name = "Global:Paketti:3rd Bend -1",invoke=function() bend(-1) end}
-renoise.tool():add_keybinding{name = "Global:Paketti:3rd Bend -10",invoke=function() bend(-10) end}
-renoise.tool():add_keybinding{name = "Global:Paketti:Bend +1",invoke=function() bend(1) end}
-renoise.tool():add_keybinding{name = "Global:Paketti:Bend +10",invoke=function() bend(10) end}
-renoise.tool():add_keybinding{name = "Global:Paketti:2nd Bend +1",invoke=function() bend(1) end}
-renoise.tool():add_keybinding{name = "Global:Paketti:2nd Bend +10",invoke=function() bend(10) end}
-renoise.tool():add_keybinding{name = "Global:Paketti:3rd Bend +1",invoke=function() bend(1) end}
-renoise.tool():add_keybinding{name = "Global:Paketti:3rd Bend +10",invoke=function() bend(10) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Bend -1",invoke=function() bend(-1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Bend -10",invoke=function() bend(-10) end}
+renoise.tool():add_keybinding{name="Global:Paketti:2nd Bend -1",invoke=function() bend(-1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:2nd Bend -10",invoke=function() bend(-10) end}
+renoise.tool():add_keybinding{name="Global:Paketti:3rd Bend -1",invoke=function() bend(-1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:3rd Bend -10",invoke=function() bend(-10) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Bend +1",invoke=function() bend(1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Bend +10",invoke=function() bend(10) end}
+renoise.tool():add_keybinding{name="Global:Paketti:2nd Bend +1",invoke=function() bend(1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:2nd Bend +10",invoke=function() bend(10) end}
+renoise.tool():add_keybinding{name="Global:Paketti:3rd Bend +1",invoke=function() bend(1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:3rd Bend +10",invoke=function() bend(10) end}
 
-renoise.tool():add_keybinding{name = "Global:Paketti:Glide Amount -1",invoke=function() effectamount(-1,"0G") end}
-renoise.tool():add_keybinding{name = "Global:Paketti:Glide Amount +1",invoke=function() effectamount(1,"0G") end}
-renoise.tool():add_keybinding{name = "Global:Paketti:Glide Amount -10",invoke=function() effectamount(-10,"0G") end}
-renoise.tool():add_keybinding{name = "Global:Paketti:Glide Amount 10",invoke=function() effectamount(10,"0G") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Glide Amount -1",invoke=function() effectamount(-1,"0G") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Glide Amount +1",invoke=function() effectamount(1,"0G") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Glide Amount -10",invoke=function() effectamount(-10,"0G") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Glide Amount 10",invoke=function() effectamount(10,"0G") end}
 
-renoise.tool():add_keybinding{name = "Global:Paketti:Uxx Slide Pitch Up +1",invoke=function() effectamount(1,"0U") end}
-renoise.tool():add_keybinding{name = "Global:Paketti:Uxx Slide Pitch Up -1",invoke=function() effectamount(-1,"0U") end}
-renoise.tool():add_keybinding{name = "Global:Paketti:Uxx Slide Pitch Up +10",invoke=function() effectamount(10,"0U") end}
-renoise.tool():add_keybinding{name = "Global:Paketti:Uxx Slide Pitch Up -10",invoke=function() effectamount(-10,"0U") end}
-renoise.tool():add_keybinding{name = "Global:Paketti:Dxx Slide Pitch Down +1",invoke=function() effectamount(1,"0D") end}
-renoise.tool():add_keybinding{name = "Global:Paketti:Dxx Slide Pitch Down -1",invoke=function() effectamount(-1,"0D") end}
-renoise.tool():add_keybinding{name = "Global:Paketti:Dxx Slide Pitch Down +10",invoke=function() effectamount(10,"0D") end}
-renoise.tool():add_keybinding{name = "Global:Paketti:Dxx Slide Pitch Down -10",invoke=function() effectamount(-10,"0D") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Uxx Slide Pitch Up +1",invoke=function() effectamount(1,"0U") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Uxx Slide Pitch Up -1",invoke=function() effectamount(-1,"0U") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Uxx Slide Pitch Up +10",invoke=function() effectamount(10,"0U") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Uxx Slide Pitch Up -10",invoke=function() effectamount(-10,"0U") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Dxx Slide Pitch Down +1",invoke=function() effectamount(1,"0D") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Dxx Slide Pitch Down -1",invoke=function() effectamount(-1,"0D") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Dxx Slide Pitch Down +10",invoke=function() effectamount(10,"0D") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Dxx Slide Pitch Down -10",invoke=function() effectamount(-10,"0D") end}
 
-renoise.tool():add_keybinding{name = "Global:Paketti:2nd Uxx Slide Pitch Up +1",invoke=function() effectamount(1,"0U") end}
-renoise.tool():add_keybinding{name = "Global:Paketti:2nd Uxx Slide Pitch Up -1",invoke=function() effectamount(-1,"0U") end}
-renoise.tool():add_keybinding{name = "Global:Paketti:2nd Uxx Slide Pitch Up +10",invoke=function() effectamount(10,"0U") end}
-renoise.tool():add_keybinding{name = "Global:Paketti:2nd Uxx Slide Pitch Up -10",invoke=function() effectamount(-10,"0U") end}
-renoise.tool():add_keybinding{name = "Global:Paketti:2nd Dxx Slide Pitch Down +1",invoke=function() effectamount(1,"0D") end}
-renoise.tool():add_keybinding{name = "Global:Paketti:2nd Dxx Slide Pitch Down -1",invoke=function() effectamount(-1,"0D") end}
-renoise.tool():add_keybinding{name = "Global:Paketti:2nd Dxx Slide Pitch Down +10",invoke=function() effectamount(10,"0D") end}
-renoise.tool():add_keybinding{name = "Global:Paketti:2nd Dxx Slide Pitch Down -10",invoke=function() effectamount(-10,"0D") end}
+renoise.tool():add_keybinding{name="Global:Paketti:2nd Uxx Slide Pitch Up +1",invoke=function() effectamount(1,"0U") end}
+renoise.tool():add_keybinding{name="Global:Paketti:2nd Uxx Slide Pitch Up -1",invoke=function() effectamount(-1,"0U") end}
+renoise.tool():add_keybinding{name="Global:Paketti:2nd Uxx Slide Pitch Up +10",invoke=function() effectamount(10,"0U") end}
+renoise.tool():add_keybinding{name="Global:Paketti:2nd Uxx Slide Pitch Up -10",invoke=function() effectamount(-10,"0U") end}
+renoise.tool():add_keybinding{name="Global:Paketti:2nd Dxx Slide Pitch Down +1",invoke=function() effectamount(1,"0D") end}
+renoise.tool():add_keybinding{name="Global:Paketti:2nd Dxx Slide Pitch Down -1",invoke=function() effectamount(-1,"0D") end}
+renoise.tool():add_keybinding{name="Global:Paketti:2nd Dxx Slide Pitch Down +10",invoke=function() effectamount(10,"0D") end}
+renoise.tool():add_keybinding{name="Global:Paketti:2nd Dxx Slide Pitch Down -10",invoke=function() effectamount(-10,"0D") end}
 
-renoise.tool():add_keybinding{name = "Global:Paketti:3rd Uxx Slide Pitch Up +1",invoke=function() effectamount(1,"0U") end}
-renoise.tool():add_keybinding{name = "Global:Paketti:3rd Uxx Slide Pitch Up -1",invoke=function() effectamount(-1,"0U") end}
-renoise.tool():add_keybinding{name = "Global:Paketti:3rd Uxx Slide Pitch Up +10",invoke=function() effectamount(10,"0U") end}
-renoise.tool():add_keybinding{name = "Global:Paketti:3rd Uxx Slide Pitch Up -10",invoke=function() effectamount(-10,"0U") end}
-renoise.tool():add_keybinding{name = "Global:Paketti:3rd Dxx Slide Pitch Down +1",invoke=function() effectamount(1,"0D") end}
-renoise.tool():add_keybinding{name = "Global:Paketti:3rd Dxx Slide Pitch Down -1",invoke=function() effectamount(-1,"0D") end}
-renoise.tool():add_keybinding{name = "Global:Paketti:3rd Dxx Slide Pitch Down +10",invoke=function() effectamount(10,"0D") end}
-renoise.tool():add_keybinding{name = "Global:Paketti:3rd Dxx Slide Pitch Down -10",invoke=function() effectamount(-10,"0D") end}
+renoise.tool():add_keybinding{name="Global:Paketti:3rd Uxx Slide Pitch Up +1",invoke=function() effectamount(1,"0U") end}
+renoise.tool():add_keybinding{name="Global:Paketti:3rd Uxx Slide Pitch Up -1",invoke=function() effectamount(-1,"0U") end}
+renoise.tool():add_keybinding{name="Global:Paketti:3rd Uxx Slide Pitch Up +10",invoke=function() effectamount(10,"0U") end}
+renoise.tool():add_keybinding{name="Global:Paketti:3rd Uxx Slide Pitch Up -10",invoke=function() effectamount(-10,"0U") end}
+renoise.tool():add_keybinding{name="Global:Paketti:3rd Dxx Slide Pitch Down +1",invoke=function() effectamount(1,"0D") end}
+renoise.tool():add_keybinding{name="Global:Paketti:3rd Dxx Slide Pitch Down -1",invoke=function() effectamount(-1,"0D") end}
+renoise.tool():add_keybinding{name="Global:Paketti:3rd Dxx Slide Pitch Down +10",invoke=function() effectamount(10,"0D") end}
+renoise.tool():add_keybinding{name="Global:Paketti:3rd Dxx Slide Pitch Down -10",invoke=function() effectamount(-10,"0D") end}
 
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Effect Columns..:Clear Effect Columns",invoke=function() delete_effect_column() end}
 renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Effect Columns..:(Uxx) Selection Slide Pitch Up +1",invoke=function() effectamount(1,"0U") end}
@@ -669,10 +675,6 @@ renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Effect Columns..:(G
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Effect Columns..:(Gxx) Selection Glide -1",invoke=function() effectamount(-1,"0G") end}
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Effect Columns..:(Gxx) Selection Glide -10",invoke=function() effectamount(-10,"0G") end}
 
-
-
---------------------------------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 --BPM +1 / -1
 function adjust_bpm(bpm_delta)
@@ -681,31 +683,29 @@ function adjust_bpm(bpm_delta)
 renoise.app():show_status("BPM : " .. t.bpm)
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Decrease BPM (-1)",invoke=function() adjust_bpm(-1, 0) end   }
-renoise.tool():add_keybinding{name="Global:Paketti:Increase BPM (+1)",invoke=function() adjust_bpm(1, 0) end   }
+renoise.tool():add_keybinding{name="Global:Paketti:Decrease BPM (-1)",invoke=function() adjust_bpm(-1, 0) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Increase BPM (+1)",invoke=function() adjust_bpm(1, 0) end}
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 function FollowPatternToggle()
 local a=renoise.app()
 local t=renoise.song().transport
 local w=renoise.app().window
- if t.follow_player==true and w.active_middle_frame==renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR 
-then
-    t.follow_player = false
- else
-    t.follow_player = true
-    w.active_middle_frame=renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR 
- end
-end
+local pe=renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR 
+  if t.follow_player==true and w.active_middle_frame==pe
+then t.follow_player=false
+else t.follow_player = true
+     w.active_middle_frame=pe end end
 
 renoise.tool():add_keybinding{name="Global:Paketti:2nd Follow Pattern Toggle",invoke=function() FollowPatternToggle() end}
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Set Delay +1 / -1 / +10 / -10 on current_row, display delay column
 function delay(chg)
- local d = renoise.song().selected_note_column.delay_value
- local nc = renoise.song().selected_note_column
- local currTrak = renoise.song().selected_track_index
+ local s=renoise.song()
+ local d=s.selected_note_column.delay_value
+ local nc=s.selected_note_column
+ local currTrak=s.selected_track_index
 
- renoise.song().tracks[currTrak].delay_column_visible=true
+ s.tracks[currTrak].delay_column_visible=true
  --nc.delay_value=(d+chg)
  --if nc.delay_value == 0 and chg < 0 then
   --move_up(chg)
@@ -924,8 +924,7 @@ end
 -- 2nd Fullscreen toggle
 function SecondFullscreen()
 local w=renoise.app().window
-  if w.fullscreen==true then w.fullscreen=false else w.fullscreen=true end
-end
+  if w.fullscreen==true then w.fullscreen=false else w.fullscreen=true end end
 renoise.tool():add_keybinding{name="Global:Paketti:2nd Fullscreen...",invoke=function() SecondFullscreen() end}
 
 ------------------------
@@ -964,30 +963,30 @@ end
 end
 end
 
-renoise.tool():add_keybinding{name = "Global:Paketti:AXx Arp Amount Xx -1",invoke=function() efxwrite("0A",-1,0) end}
-renoise.tool():add_keybinding{name = "Global:Paketti:AXx Arp Amount Xx +1",invoke=function() efxwrite("0A",1,0) end}
-renoise.tool():add_keybinding{name = "Global:Paketti:AxY Arp Amount xY -1",invoke=function() efxwrite("0A",0,-1) end}
-renoise.tool():add_keybinding{name = "Global:Paketti:AxY Arp Amount xY +1",invoke=function() efxwrite("0A",0,1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:AXx Arp Amount Xx -1",invoke=function() efxwrite("0A",-1,0) end}
+renoise.tool():add_keybinding{name="Global:Paketti:AXx Arp Amount Xx +1",invoke=function() efxwrite("0A",1,0) end}
+renoise.tool():add_keybinding{name="Global:Paketti:AxY Arp Amount xY -1",invoke=function() efxwrite("0A",0,-1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:AxY Arp Amount xY +1",invoke=function() efxwrite("0A",0,1) end}
 
-renoise.tool():add_keybinding{name = "Global:Paketti:VXy Vibrato Amount Xy -1",invoke=function() efxwrite("0V",-1,0) end}
-renoise.tool():add_keybinding{name = "Global:Paketti:VXy Vibrato Amount Xy +1",invoke=function() efxwrite("0V",1,0) end}
-renoise.tool():add_keybinding{name = "Global:Paketti:VxY Vibrato Amount xY -1",invoke=function() efxwrite("0V",0,-1) end}
-renoise.tool():add_keybinding{name = "Global:Paketti:VxY Vibrato Amount xY +1",invoke=function() efxwrite("0V",0,1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:VXy Vibrato Amount Xy -1",invoke=function() efxwrite("0V",-1,0) end}
+renoise.tool():add_keybinding{name="Global:Paketti:VXy Vibrato Amount Xy +1",invoke=function() efxwrite("0V",1,0) end}
+renoise.tool():add_keybinding{name="Global:Paketti:VxY Vibrato Amount xY -1",invoke=function() efxwrite("0V",0,-1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:VxY Vibrato Amount xY +1",invoke=function() efxwrite("0V",0,1) end}
 
-renoise.tool():add_keybinding{name = "Global:Paketti:TXy Tremolo Amount Xy -1",invoke=function() efxwrite("0T",-1,0) end}
-renoise.tool():add_keybinding{name = "Global:Paketti:TXy Tremolo Amount Xy +1",invoke=function() efxwrite("0T",1,0) end}
-renoise.tool():add_keybinding{name = "Global:Paketti:TxY Tremolo Amount xY -1",invoke=function() efxwrite("0T",0,-1) end}
-renoise.tool():add_keybinding{name = "Global:Paketti:TxY Tremolo Amount xY +1",invoke=function() efxwrite("0T",0,1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:TXy Tremolo Amount Xy -1",invoke=function() efxwrite("0T",-1,0) end}
+renoise.tool():add_keybinding{name="Global:Paketti:TXy Tremolo Amount Xy +1",invoke=function() efxwrite("0T",1,0) end}
+renoise.tool():add_keybinding{name="Global:Paketti:TxY Tremolo Amount xY -1",invoke=function() efxwrite("0T",0,-1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:TxY Tremolo Amount xY +1",invoke=function() efxwrite("0T",0,1) end}
 
-renoise.tool():add_keybinding{name = "Global:Paketti:RXy Retrig Amount Xy -1",invoke=function() efxwrite("0R",-1,0) end}
-renoise.tool():add_keybinding{name = "Global:Paketti:RXy Retrig Amount Xy +1",invoke=function() efxwrite("0R",1,0) end}
-renoise.tool():add_keybinding{name = "Global:Paketti:RxY Retrig Amount xY -1",invoke=function() efxwrite("0R",0,-1) end}
-renoise.tool():add_keybinding{name = "Global:Paketti:RxY Retrig Amount xY +1",invoke=function() efxwrite("0R",0,1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:RXy Retrig Amount Xy -1",invoke=function() efxwrite("0R",-1,0) end}
+renoise.tool():add_keybinding{name="Global:Paketti:RXy Retrig Amount Xy +1",invoke=function() efxwrite("0R",1,0) end}
+renoise.tool():add_keybinding{name="Global:Paketti:RxY Retrig Amount xY -1",invoke=function() efxwrite("0R",0,-1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:RxY Retrig Amount xY +1",invoke=function() efxwrite("0R",0,1) end}
 
-renoise.tool():add_keybinding{name = "Global:Paketti:CXy Cut Volume Amount Xy -1",invoke=function() efxwrite("0C",-1,0) end}
-renoise.tool():add_keybinding{name = "Global:Paketti:CXy Cut Volume Amount Xy +1",invoke=function() efxwrite("0C",1,0) end}
-renoise.tool():add_keybinding{name = "Global:Paketti:CxY Cut Volume Amount xY -1",invoke=function() efxwrite("0C",0,-1) end}
-renoise.tool():add_keybinding{name = "Global:Paketti:CxY Cut Volume Amount xY +1",invoke=function() efxwrite("0C",0,1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:CXy Cut Volume Amount Xy -1",invoke=function() efxwrite("0C",-1,0) end}
+renoise.tool():add_keybinding{name="Global:Paketti:CXy Cut Volume Amount Xy +1",invoke=function() efxwrite("0C",1,0) end}
+renoise.tool():add_keybinding{name="Global:Paketti:CxY Cut Volume Amount xY -1",invoke=function() efxwrite("0C",0,-1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:CxY Cut Volume Amount xY +1",invoke=function() efxwrite("0C",0,1) end}
 
 --------------------------------------------------------------------------------------------------------------------
 --Note, does not currently work because Phrase Line Index is not read.
@@ -1060,7 +1059,7 @@ end
  
 end
 end
-renoise.tool():add_keybinding{name = "Global:Paketti:KapsLock CapsLock Caps Lock Note Off",invoke=function() CapsLok() end}
+renoise.tool():add_keybinding{name="Global:Paketti:KapsLock CapsLock Caps Lock Note Off",invoke=function() CapsLok() end}
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 --Record Quantize On/Off for Midi_Mapping
 renoise.tool():add_midi_mapping{
@@ -1081,56 +1080,57 @@ function ptnLength(number) local rs=renoise.song() rs.patterns[rs.selected_patte
 function phraseLength(number) local s=renoise.song() 
 renoise.song().instruments[renoise.song().selected_instrument_index].phrases[renoise.song().selected_phrase_index].number_of_lines=number end
 
-renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Set Pattern Length to 001",invoke=function() ptnLength(1) end}
-renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Set Pattern Length to 004",invoke=function() ptnLength(4) end}
-renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Set Pattern Length to 008",invoke=function() ptnLength(8) end}
-renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Set Pattern Length to 016",invoke=function() ptnLength(16) end}
-renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Set Pattern Length to 032",invoke=function() ptnLength(32) end}
-renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Set Pattern Length to 048",invoke=function() ptnLength(48) end}
-renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Set Pattern Length to 064",invoke=function() ptnLength(64) end}
-renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Set Pattern Length to 096",invoke=function() ptnLength(96) end}
-renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Set Pattern Length to 128",invoke=function() ptnLength(128) end}
-renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Set Pattern Length to 192",invoke=function() ptnLength(192) end}
-renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Set Pattern Length to 256",invoke=function() ptnLength(256) end}
-renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Set Pattern Length to 384",invoke=function() ptnLength(384) end}
-renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Set Pattern Length to 512",invoke=function() ptnLength(512) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 001",invoke=function() ptnLength(1) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 004",invoke=function() ptnLength(4) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 008",invoke=function() ptnLength(8) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 016",invoke=function() ptnLength(16) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 032",invoke=function() ptnLength(32) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 048",invoke=function() ptnLength(48) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 064",invoke=function() ptnLength(64) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 096",invoke=function() ptnLength(96) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 128",invoke=function() ptnLength(128) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 192",invoke=function() ptnLength(192) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 256",invoke=function() ptnLength(256) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 384",invoke=function() ptnLength(384) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 512",invoke=function() ptnLength(512) end}
 
-renoise.tool():add_keybinding{name = "Phrase Editor:Paketti:Set Phrase Length to 001",invoke=function() phraseLength(1) end}
-renoise.tool():add_keybinding{name = "Phrase Editor:Paketti:Set Phrase Length to 004",invoke=function() phraseLength(4) end}
-renoise.tool():add_keybinding{name = "Phrase Editor:Paketti:Set Phrase Length to 008",invoke=function() phraseLength(8) end}
-renoise.tool():add_keybinding{name = "Phrase Editor:Paketti:Set Phrase Length to 016",invoke=function() phraseLength(16) end}
-renoise.tool():add_keybinding{name = "Phrase Editor:Paketti:Set Phrase Length to 032",invoke=function() phraseLength(32) end}
-renoise.tool():add_keybinding{name = "Phrase Editor:Paketti:Set Phrase Length to 048",invoke=function() phraseLength(48) end}
-renoise.tool():add_keybinding{name = "Phrase Editor:Paketti:Set Phrase Length to 064",invoke=function() phraseLength(64) end}
-renoise.tool():add_keybinding{name = "Phrase Editor:Paketti:Set Phrase Length to 096",invoke=function() phraseLength(96) end}
-renoise.tool():add_keybinding{name = "Phrase Editor:Paketti:Set Phrase Length to 128",invoke=function() phraseLength(128) end}
-renoise.tool():add_keybinding{name = "Phrase Editor:Paketti:Set Phrase Length to 192",invoke=function() phraseLength(192) end}
-renoise.tool():add_keybinding{name = "Phrase Editor:Paketti:Set Phrase Length to 256",invoke=function() phraseLength(256) end}
-renoise.tool():add_keybinding{name = "Phrase Editor:Paketti:Set Phrase Length to 384",invoke=function() phraseLength(384) end}
-renoise.tool():add_keybinding{name = "Phrase Editor:Paketti:Set Phrase Length to 512",invoke=function() phraseLength(512) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 001",invoke=function() phraseLength(1) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 004",invoke=function() phraseLength(4) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 008",invoke=function() phraseLength(8) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 016",invoke=function() phraseLength(16) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 032",invoke=function() phraseLength(32) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 048",invoke=function() phraseLength(48) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 064",invoke=function() phraseLength(64) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 096",invoke=function() phraseLength(96) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 128",invoke=function() phraseLength(128) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 192",invoke=function() phraseLength(192) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 256",invoke=function() phraseLength(256) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 384",invoke=function() phraseLength(384) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 512",invoke=function() phraseLength(512) end}
 
-renoise.tool():add_midi_mapping{name = "Paketti:Set Pattern Length to 004",invoke=function() ptnLength(4) end}
-renoise.tool():add_midi_mapping{name = "Paketti:Set Pattern Length to 008",invoke=function() ptnLength(8) end}
-renoise.tool():add_midi_mapping{name = "Paketti:Set Pattern Length to 016",invoke=function() ptnLength(16) end}
-renoise.tool():add_midi_mapping{name = "Paketti:Set Pattern Length to 032",invoke=function() ptnLength(32) end}
-renoise.tool():add_midi_mapping{name = "Paketti:Set Pattern Length to 048",invoke=function() ptnLength(48) end}
-renoise.tool():add_midi_mapping{name = "Paketti:Set Pattern Length to 064",invoke=function() ptnLength(64) end}
-renoise.tool():add_midi_mapping{name = "Paketti:Set Pattern Length to 096",invoke=function() ptnLength(96) end}
-renoise.tool():add_midi_mapping{name = "Paketti:Set Pattern Length to 128",invoke=function() ptnLength(128) end}
-renoise.tool():add_midi_mapping{name = "Paketti:Set Pattern Length to 192",invoke=function() ptnLength(192) end}
-renoise.tool():add_midi_mapping{name = "Paketti:Set Pattern Length to 256",invoke=function() ptnLength(256) end}
-renoise.tool():add_midi_mapping{name = "Paketti:Set Pattern Length to 384",invoke=function() ptnLength(384) end}
-renoise.tool():add_midi_mapping{name = "Paketti:Set Pattern Length to 512",invoke=function() ptnLength(512) end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 001",invoke=function() ptnLength(1) end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 004",invoke=function() ptnLength(4) end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 008",invoke=function() ptnLength(8) end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 016",invoke=function() ptnLength(16) end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 032",invoke=function() ptnLength(32) end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 048",invoke=function() ptnLength(48) end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 064",invoke=function() ptnLength(64) end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 096",invoke=function() ptnLength(96) end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 128",invoke=function() ptnLength(128) end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 192",invoke=function() ptnLength(192) end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 256",invoke=function() ptnLength(256) end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 384",invoke=function() ptnLength(384) end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 512",invoke=function() ptnLength(512) end}
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 function Deselect_All() renoise.song().selection_in_pattern=nil end
 function Deselect_Phr() renoise.song().selection_in_phrase =nil end
 
-renoise.tool():add_keybinding{name = "Pattern Editor:Selection:Paketti Unmark Selection (ALT-U)",invoke=function() Deselect_All() end}
-renoise.tool():add_keybinding{name = "Pattern Editor:Selection:Paketti 2nd Unmark Selection (CTRL-U)",invoke=function() Deselect_All() end}
+renoise.tool():add_keybinding{name="Pattern Editor:Selection:Paketti Unmark Selection (ALT-U)",invoke=function() Deselect_All() end}
+renoise.tool():add_keybinding{name="Pattern Editor:Selection:Paketti 2nd Unmark Selection (CTRL-U)",invoke=function() Deselect_All() end}
 
-renoise.tool():add_keybinding{name = "Phrase Editor:Selection:Paketti Unmark Selection (ALT-U)",invoke=function() Deselect_Phr() end}
-renoise.tool():add_keybinding{name = "Phrase Editor:Selection:Paketti 2nd Unmark Selection (CTRL-U)",invoke=function() Deselect_Phr() end}
+renoise.tool():add_keybinding{name="Phrase Editor:Selection:Paketti Unmark Selection (ALT-U)",invoke=function() Deselect_Phr() end}
+renoise.tool():add_keybinding{name="Phrase Editor:Selection:Paketti 2nd Unmark Selection (CTRL-U)",invoke=function() Deselect_Phr() end}
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1167,9 +1167,9 @@ rs.selected_pattern:copy_from(src_pat)
 rs.selected_line_index=currline
 end
 
-renoise.tool():add_keybinding{name = "Global:Paketti:Clone Current Pattern to Current Sequence",invoke=function() clonePTN() end}
-renoise.tool():add_keybinding{name = "Global:Paketti:Clone Current Pattern to Current Sequence 2nd",invoke=function() clonePTN() end}
-renoise.tool():add_keybinding{name = "Global:Paketti:Clone Current Pattern to Current Sequence 3rd",invoke=function() clonePTN() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Clone Current Pattern to Current Sequence",invoke=function() clonePTN() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Clone Current Pattern to Current Sequence 2nd",invoke=function() clonePTN() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Clone Current Pattern to Current Sequence 3rd",invoke=function() clonePTN() end}
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 renoise.tool():add_keybinding{name="Global:Paketti:Clone and Expand Pattern to LPB*2",invoke=function()
@@ -1233,10 +1233,10 @@ local rs=renoise.song()
 local i=rs.selected_instrument_index;rs:insert_instrument_at(i+1):copy_from(rs.selected_instrument);rs.selected_instrument_index=i+1
 end
 
-renoise.tool():add_keybinding{name = "Global:Paketti:DuplicateInstrumentAndSelectNewInstrument",invoke=function() DuplicateInstrumentAndSelectNewInstrument() end}
-renoise.tool():add_keybinding{name = "Global:Paketti:DuplicateInstrumentAndSelectNewInstrument 2nd",invoke=function() DuplicateInstrumentAndSelectNewInstrument() end}
-renoise.tool():add_keybinding{name = "Global:Paketti:DuplicateInstrumentAndSelectNewInstrument 3rd",invoke=function() DuplicateInstrumentAndSelectNewInstrument() end}
-renoise.tool():add_menu_entry{name="Instrument Box:DuplicateInstrumentAndSelectNewInstrument",invoke=function() DuplicateInstrumentAndSelectNewInstrument() end}
+renoise.tool():add_keybinding{name="Global:Paketti:DuplicateInstrumentAndSelectNewInstrument",invoke=function() DuplicateInstrumentAndSelectNewInstrument() end}
+renoise.tool():add_keybinding{name="Global:Paketti:DuplicateInstrumentAndSelectNewInstrument 2nd",invoke=function() DuplicateInstrumentAndSelectNewInstrument() end}
+renoise.tool():add_keybinding{name="Global:Paketti:DuplicateInstrumentAndSelectNewInstrument 3rd",invoke=function() DuplicateInstrumentAndSelectNewInstrument() end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti: DuplicateInstrumentAndSelectNewInstrument",invoke=function() DuplicateInstrumentAndSelectNewInstrument() end}
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 renoise.tool():add_keybinding{name="Global:Paketti:Hide Track DSP Devices",invoke=function()
@@ -1534,19 +1534,19 @@ end
   rs:delete_track_at(1)
 end
 
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:dblue Shrink", invoke =function()
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:dblue Shrink",invoke=function()
 local pattern = renoise.song().selected_pattern
 resize_pattern(pattern, pattern.number_of_lines * 0.5, 0) end}
 
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:dblue Expand", invoke =function()
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:dblue Expand",invoke=function()
 local pattern = renoise.song().selected_pattern
 resize_pattern(pattern, pattern.number_of_lines * 2, 0 ) end}
 
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:dblue Shrink + Resize Pattern", invoke =function()
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:dblue Shrink + Resize Pattern",invoke=function()
 local pattern = renoise.song().selected_pattern
 resize_pattern(pattern, pattern.number_of_lines * 0.5,1 ) end}
 
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:dblue Expand + Resize Pattern", invoke =function()
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:dblue Expand + Resize Pattern",invoke=function()
 local pattern = renoise.song().selected_pattern
 resize_pattern(pattern, pattern.number_of_lines * 2,1) end}
 
@@ -1692,7 +1692,7 @@ author: cortex
 ]]--
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Capture Nearest Instrument and Octave Cortex",
   invoke=function(repeated) capture_ins_oct() end}
-renoise.tool():add_keybinding{name = "Mixer:Paketti:Capture Nearest Instrument and Octave Cortex",
+renoise.tool():add_keybinding{name="Mixer:Paketti:Capture Nearest Instrument and Octave Cortex",
   invoke=function(repeated) capture_ins_oct() end}
 renoise.tool():add_midi_mapping{name="Global:Paketti:Capture Nearest Instrument and Octave Cortex",
   invoke=function(repeated) capture_ins_oct() end} 
@@ -1745,17 +1745,17 @@ if addtovelocity < 1 then s.transport.keyboard_velocity_enabled=false return end
 s.transport.keyboard_velocity=addtovelocity
 end
 
-renoise.tool():add_keybinding{name = "Global:Paketti:Computer Keyboard Velocity -1",invoke=function() markdollins_keyboardvolchange(-1) end}
-renoise.tool():add_keybinding{name = "Global:Paketti:Computer Keyboard Velocity +1",invoke=function() markdollins_keyboardvolchange(1) end}
-renoise.tool():add_keybinding{name = "Global:Paketti:Computer Keyboard Velocity -10",invoke=function() markdollins_keyboardvolchange(-10) end}
-renoise.tool():add_keybinding{name = "Global:Paketti:Computer Keyboard Velocity +10",invoke=function() markdollins_keyboardvolchange(10) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Computer Keyboard Velocity -1",invoke=function() markdollins_keyboardvolchange(-1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Computer Keyboard Velocity +1",invoke=function() markdollins_keyboardvolchange(1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Computer Keyboard Velocity -10",invoke=function() markdollins_keyboardvolchange(-10) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Computer Keyboard Velocity +10",invoke=function() markdollins_keyboardvolchange(10) end}
 
 -----------------------------------------------------------------------------------------------------------
 -- Display user-specific amount of note columns or effect columns:
 function displayNoteColumn(number) local rs=renoise.song() if rs.tracks[rs.selected_track_index].visible_note_columns == 0 then return else rs.tracks[rs.selected_track_index].visible_note_columns=number end end
 
 for dnc=1,12 do
-  renoise.tool():add_keybinding{name = "Global:Paketti:Display Note Column " .. dnc,invoke=function() displayNoteColumn(dnc) end}
+  renoise.tool():add_keybinding{name="Global:Paketti:Display Note Column " .. dnc,invoke=function() displayNoteColumn(dnc) end}
 end
 
 -----------------------------------------------------------------------------------------------------------
@@ -1763,30 +1763,30 @@ function GlobalLPB(number)
 renoise.song().transport.lpb=number end
 
 for glpb=1,16 do
-    renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Set Global LPB to " .. glpb,invoke=function() GlobalLPB(glpb) end}
+    renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Global LPB to " .. glpb,invoke=function() GlobalLPB(glpb) end}
 end
 
-renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Set Global LPB to 24",invoke=function() GlobalLPB(24) end}
-renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Set Global LPB to 32",invoke=function() GlobalLPB(32) end}
-renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Set Global LPB to 48",invoke=function() GlobalLPB(48) end}
-renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Set Global LPB to 64",invoke=function() GlobalLPB(64) end}
-renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Set Global LPB to 128",invoke=function() GlobalLPB(128) end}
-renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Set Global LPB to 256",invoke=function() GlobalLPB(256) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Global LPB to 24",invoke=function() GlobalLPB(24) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Global LPB to 32",invoke=function() GlobalLPB(32) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Global LPB to 48",invoke=function() GlobalLPB(48) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Global LPB to 64",invoke=function() GlobalLPB(64) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Global LPB to 128",invoke=function() GlobalLPB(128) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Global LPB to 256",invoke=function() GlobalLPB(256) end}
 
 
 function PhraseLPB(number)
 renoise.song().instruments[renoise.song().selected_instrument_index].phrases[renoise.song().selected_phrase_index].lpb=number end
 
 for plpb=1,16 do
-renoise.tool():add_keybinding{name = "Phrase Editor:Paketti:Set Phrase LPB to " .. plpb,invoke=function() PhraseLPB(plpb) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase LPB to " .. plpb,invoke=function() PhraseLPB(plpb) end}
 end
 
-renoise.tool():add_keybinding{name = "Phrase Editor:Paketti:Set Phrase LPB to 24",invoke=function() PhraseLPB(24) end}
-renoise.tool():add_keybinding{name = "Phrase Editor:Paketti:Set Phrase LPB to 32",invoke=function() PhraseLPB(32) end}
-renoise.tool():add_keybinding{name = "Phrase Editor:Paketti:Set Phrase LPB to 48",invoke=function() PhraseLPB(48) end}
-renoise.tool():add_keybinding{name = "Phrase Editor:Paketti:Set Phrase LPB to 64",invoke=function() PhraseLPB(64) end}
-renoise.tool():add_keybinding{name = "Phrase Editor:Paketti:Set Phrase LPB to 128",invoke=function() PhraseLPB(128) end}
-renoise.tool():add_keybinding{name = "Phrase Editor:Paketti:Set Phrase LPB to 256",invoke=function() PhraseLPB(256) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase LPB to 24",invoke=function() PhraseLPB(24) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase LPB to 32",invoke=function() PhraseLPB(32) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase LPB to 48",invoke=function() PhraseLPB(48) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase LPB to 64",invoke=function() PhraseLPB(64) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase LPB to 128",invoke=function() PhraseLPB(128) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase LPB to 256",invoke=function() PhraseLPB(256) end}
 
 
 -----------------------------------------------------------------------------------------------------------------------------------------
@@ -1806,13 +1806,13 @@ function adjust_quantize(quant_delta)
     t.record_quantize_enabled=true
 renoise.app():show_status("Record Quantize Lines : " .. t.record_quantize_lines)
 end
-renoise.tool():add_keybinding{name="Global:Paketti:Decrease Quantization (-1)",invoke=function() adjust_quantize(-1, 0) end   }
-renoise.tool():add_keybinding{name="Global:Paketti:Increase Quantization (+1)",invoke=function() adjust_quantize(1, 0) end   }
+renoise.tool():add_keybinding{name="Global:Paketti:Decrease Quantization (-1)",invoke=function() adjust_quantize(-1, 0) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Increase Quantization (+1)",invoke=function() adjust_quantize(1, 0) end}
 ----------------------------------------------------------------------------------------------------------------------------------
 function displayEffectColumn(number) local rs=renoise.song() rs.tracks[rs.selected_track_index].visible_effect_columns=number end
 
 for dec=1,8 do
-  renoise.tool():add_keybinding{name = "Global:Paketti:Display Effect Column " .. dec,invoke=function() displayEffectColumn(dec) end}
+  renoise.tool():add_keybinding{name="Global:Paketti:Display Effect Column " .. dec,invoke=function() displayEffectColumn(dec) end}
 end
 
 --Select specific track:
@@ -1839,26 +1839,25 @@ if efc==nil then
   return
   else
   if efc.number_value==11 then
-     renoise.song().selected_effect_column.number_value=00
-     renoise.song().selected_effect_column.amount_value=00
+     efc.number_value=00
+     efc.amount_value=00
   else
-     renoise.song().selected_effect_column.number_value=11
-     renoise.song().selected_effect_column.amount_value=01
+     efc.number_value=11
+     efc.amount_value=01
   end
 end
 end
 
-renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Reverse Sample effect 0B001 on/off",invoke=function()
-local nci=renoise.song().selected_note_column_index 
-renoise.song().selected_effect_column_index=1
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Reverse Sample effect 0B001 on/off",invoke=function()
+local s=renoise.song()
+local nci=s.selected_note_column_index 
+s.selected_effect_column_index=1
 revnoter() 
-if renoise.song().selected_track.name=="Mst" then 
+if s.selected_track.name=="Mst" then 
   return
-  
 else 
-renoise.song().selected_note_column_index=nci
-
---renoise.song().selected_note_column_index=1 
+s.selected_note_column_index=nci
+--s.selected_note_column_index=1 
 end end}
 
 
@@ -1871,33 +1870,28 @@ if efc==nil then
   return
   else
   if efc.number_value==11 then
-     renoise.song().selected_effect_column.number_value=00
-     renoise.song().selected_effect_column.amount_value=00
+     efc.number_value=00
+     efc.amount_value=00
   else
-     renoise.song().selected_effect_column.number_value=11
-     renoise.song().selected_effect_column.amount_value=00
+     efc.number_value=11
+     efc.amount_value=00
   end
 end
 end
 
-renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Reverse Sample effect 0B00 on/off",invoke=function()
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Reverse Sample effect 0B00 on/off",invoke=function()
 local nci=renoise.song().selected_note_column_index 
 renoise.song().selected_effect_column_index=1
 revnote() 
-if renoise.song().selected_track.name=="Mst" then 
-  return
-  
-else 
-renoise.song().selected_note_column_index=nci
+if renoise.song().selected_track.name=="Mst" then return
+else renoise.song().selected_note_column_index=nci
 --renoise.song().selected_note_column_index=1 
 end end}
 
-
-renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Reverse Sample effect 0B00 on/off (2nd)",invoke=function() 
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Reverse Sample effect 0B00 on/off (2nd)",invoke=function() 
 renoise.song().selected_effect_column_index=1
 revnote() 
-if renoise.song().selected_track.name=="Mst" then 
-  return
+if renoise.song().selected_track.name=="Mst" then return
 else renoise.song().selected_note_column_index=1 end end}
 
 
@@ -1905,8 +1899,7 @@ renoise.tool():add_midi_mapping{name="Pattern Editor:Paketti:Reverse Sample effe
 renoise.song().selected_effect_column_index=1
 revnote() 
 if renoise.song().selected_track.name=="Mst" then return
-else renoise.song().selected_note_column_index=1 
-end end}
+else renoise.song().selected_note_column_index=1 end end}
 
 -- +1/-1 on Metronome LPB and Metronome BPB (loads of help from dblue)
 function adjust_metronome(lpb_delta, bpb_delta)
@@ -1915,9 +1908,8 @@ function adjust_metronome(lpb_delta, bpb_delta)
   t.metronome_lines_per_beat = math.max(1, math.min(16, t.metronome_lines_per_beat + lpb_delta))
   t.metronome_beats_per_bar = math.max(1, math.min(16, t.metronome_beats_per_bar + bpb_delta))
 -- Show status
-  renoise.song().transport.metronome_enabled = true
-  renoise.app():show_status("Metronome LPB: " .. t.metronome_lines_per_beat .. " BPB : " .. t.metronome_beats_per_bar)
-end
+  t.metronome_enabled = true
+  renoise.app():show_status("Metronome LPB: " .. t.metronome_lines_per_beat .. " BPB : " .. t.metronome_beats_per_bar) end
 
 --dblue modified to be lpb/tpl  
 function adjust_lpb_bpb(lpb_delta, tpl_delta)
@@ -1925,63 +1917,65 @@ function adjust_lpb_bpb(lpb_delta, tpl_delta)
   t.lpb = math.max(1, math.min(256, t.lpb + lpb_delta))
   t.tpl = math.max(1, math.min(16, t.tpl + tpl_delta))
 --  renoise.song().transport.metronome_enabled = true
-  renoise.app():show_status("LPB: " .. t.lpb .. " TPL : " .. t.tpl)
-end
+  renoise.app():show_status("LPB: " .. t.lpb .. " TPL : " .. t.tpl) end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Set Metronome LPB -1",invoke=function() adjust_metronome(-1, 0) end   }
-renoise.tool():add_keybinding{name="Global:Paketti:Set Metronome LPB +1",invoke=function() adjust_metronome(1, 0) end   }
-renoise.tool():add_keybinding{name="Global:Paketti:Set Metronome BPB -1",invoke=function() adjust_metronome(0, -1) end   }
-renoise.tool():add_keybinding{name="Global:Paketti:Set Metronome BPB +1",invoke=function() adjust_metronome(0, 1) end   }
-renoise.tool():add_keybinding{name="Global:Paketti:Set LPB -1",invoke=function() adjust_lpb_bpb(-1, 0) end   }
-renoise.tool():add_keybinding{name="Global:Paketti:Set LPB +1",invoke=function() adjust_lpb_bpb(1, 0) end   }
-renoise.tool():add_keybinding{name="Global:Paketti:Set TPL -1",invoke=function() adjust_lpb_bpb(0, -1) end   }
-renoise.tool():add_keybinding{name="Global:Paketti:Set TPL +1",invoke=function() adjust_lpb_bpb(0, 1) end   }
+renoise.tool():add_keybinding{name="Global:Paketti:Set Metronome LPB -1",invoke=function() adjust_metronome(-1, 0) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Metronome LPB +1",invoke=function() adjust_metronome(1, 0) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Metronome BPB -1",invoke=function() adjust_metronome(0, -1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Metronome BPB +1",invoke=function() adjust_metronome(0, 1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set LPB -1",invoke=function() adjust_lpb_bpb(-1, 0) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set LPB +1",invoke=function() adjust_lpb_bpb(1, 0) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set TPL -1",invoke=function() adjust_lpb_bpb(0, -1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set TPL +1",invoke=function() adjust_lpb_bpb(0, 1) end}
 
 function OpenSelectedEffectExternalEditor()
 local s=renoise.song()
-if not s.selected_track.devices[s.selected_device_index].external_editor_visible then
-       s.selected_track.devices[s.selected_device_index].external_editor_visible=true
-  else s.selected_track.devices[s.selected_device_index].external_editor_visible=false
+local devices=s.selected_track.devices
+if not devices[s.selected_device_index].external_editor_visible then
+       devices[s.selected_device_index].external_editor_visible=true
+  else devices[s.selected_device_index].external_editor_visible=false
 end
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Open Ext.Editor of Selected Effect",invoke=function() OpenSelectedEffectExternalEditor() end}
 -----------------------------------------------------------------------------------------------------------
 function inspectPlugin()
-for i=1,(table.count(renoise.song().selected_track.devices[2].parameters)) 
-do oprint (renoise.song().selected_track.devices[2].name .. " " .. i .. " " .. renoise.song().selected_track.devices[2].parameters[i].name) 
-end
-end
-renoise.tool():add_keybinding {name = "Global:Paketti:Inspect Plugin", invoke = function() inspectPlugin() end}
+local s=renoise.song()
+local devices=s.selected_track.devices
+for i=1,(table.count(devices[2].parameters)) 
+do oprint (devices[2].name .. " " .. i .. " " .. devices[2].parameters[i].name) end end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Inspect Plugin",invoke=function() inspectPlugin() end}
 
 function inspectEffect()
-oprint("Effect displayname: " .. renoise.song().selected_track.devices[2].display_name)
-oprint("Effect name: " .. renoise.song().selected_track.devices[2].name)
-oprint("Effect path: " .. renoise.song().selected_track.devices[2].device_path)
-end
-renoise.tool():add_keybinding {name = "Global:Paketti:Inspect Effect Slot 2", invoke = function() inspectEffect() end}
+local devices=renoise.song().selected_track.devices
+oprint("Effect displayname: " .. devices[2].display_name)
+oprint("Effect name: " .. devices[2].name)
+oprint("Effect path: " .. devices[2].device_path)
+for i=1,(table.count(devices[2].parameters)) 
+do oprint (devices[2].name .. " " .. i .. " " .. devices[2].parameters[i].name .. devices[2].parameters[i].value) end
 
+ end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Inspect Effect Slot 2",invoke=function() inspectEffect() end}
 ------------------------------------------------------------------------------------------------------------------------------------
 function ClearRow()
  local s=renoise.song()
  local currTrak=s.selected_track_index
  local currPatt=s.selected_pattern_index
  local currLine=nil
- currLine = renoise.song().selected_line_index
+ currLine = s.selected_line_index
    
  if currLine < 1 then currLine = 1 end
 
  for i=1,8 do
- renoise.song().patterns[currPatt].tracks[currTrak].lines[currLine].effect_columns[i]:clear()
- end
+ s.patterns[currPatt].tracks[currTrak].lines[currLine].effect_columns[i]:clear() end
 
  for i=1,12 do
- renoise.song().patterns[currPatt].tracks[currTrak].lines[currLine].note_columns[i]:clear()
- end
+ s.patterns[currPatt].tracks[currTrak].lines[currLine].note_columns[i]:clear() end
 end
 
-renoise.tool():add_keybinding {name = "Global:Paketti:Clear Current Row", invoke = function() ClearRow() end}
-
+renoise.tool():add_keybinding{name="Global:Paketti:Clear Current Row",invoke=function() ClearRow() end}
 ------------------------------------------------------------------------------------------------------------------------------------
 -- // TODO: requires fixing (WipeRetain no longer works)
 local tmpvariable=nil
@@ -2008,79 +2002,78 @@ os.remove(tmpvariable)
 renoise.tool().app_new_document_observable:remove_notifier(WipeRetain_)
 end
 
-renoise.tool():add_keybinding {name = "Global:Paketti:Wipe Song Retain Sample", invoke = function() WipeRetain() end}
-
+renoise.tool():add_keybinding{name="Global:Paketti:Wipe Song Retain Sample",invoke=function() WipeRetain() end}
 ------------------------------------------------------------------------------------------------------------------------------------
 function PakettiCapsLockPattern()
   local s=renoise.song()
   local currLine=s.selected_line_index
   local currPatt=s.selected_pattern_index
   local currTrak=s.selected_track_index
+  local snci=s.selected_note_column_index
   
   currLine=currLine+2
-    s.patterns[currPatt].tracks[currTrak].lines[currLine].note_columns[s.selected_note_column_index].note_string="OFF"
-    s.patterns[currPatt].tracks[currTrak].lines[currLine+3].note_columns[s.selected_note_column_index].note_string="OFF"
-    s.patterns[currPatt].tracks[currTrak].lines[currLine+5].note_columns[s.selected_note_column_index].note_string="OFF"
-    s.patterns[currPatt].tracks[currTrak].lines[currLine+8].note_columns[s.selected_note_column_index].note_string="OFF"
+    s.patterns[currPatt].tracks[currTrak].lines[currLine].note_columns[snci].note_string="OFF"
+    s.patterns[currPatt].tracks[currTrak].lines[currLine+3].note_columns[snci].note_string="OFF"
+    s.patterns[currPatt].tracks[currTrak].lines[currLine+5].note_columns[snci].note_string="OFF"
+    s.patterns[currPatt].tracks[currTrak].lines[currLine+8].note_columns[snci].note_string="OFF"
   currLine=currLine+8
-    s.patterns[currPatt].tracks[currTrak].lines[currLine].note_columns[s.selected_note_column_index].note_string="OFF"
-    s.patterns[currPatt].tracks[currTrak].lines[currLine+3].note_columns[s.selected_note_column_index].note_string="OFF"
-    s.patterns[currPatt].tracks[currTrak].lines[currLine+5].note_columns[s.selected_note_column_index].note_string="OFF"
-    s.patterns[currPatt].tracks[currTrak].lines[currLine+8].note_columns[s.selected_note_column_index].note_string="OFF"
+    s.patterns[currPatt].tracks[currTrak].lines[currLine].note_columns[snci].note_string="OFF"
+    s.patterns[currPatt].tracks[currTrak].lines[currLine+3].note_columns[snci].note_string="OFF"
+    s.patterns[currPatt].tracks[currTrak].lines[currLine+5].note_columns[snci].note_string="OFF"
+    s.patterns[currPatt].tracks[currTrak].lines[currLine+8].note_columns[snci].note_string="OFF"
   currLine=currLine+8
-    s.patterns[currPatt].tracks[currTrak].lines[currLine].note_columns[s.selected_note_column_index].note_string="OFF"
-    s.patterns[currPatt].tracks[currTrak].lines[currLine+3].note_columns[s.selected_note_column_index].note_string="OFF"
-    s.patterns[currPatt].tracks[currTrak].lines[currLine+5].note_columns[s.selected_note_column_index].note_string="OFF"
-    s.patterns[currPatt].tracks[currTrak].lines[currLine+8].note_columns[s.selected_note_column_index].note_string="OFF"
-    s.patterns[currPatt].tracks[currTrak].lines[currLine+11].note_columns[s.selected_note_column_index].note_string="OFF"
-    s.patterns[currPatt].tracks[currTrak].lines[currLine+13].note_columns[s.selected_note_column_index].note_string="OFF"
-  renoise.song().transport.edit_step=3
+    s.patterns[currPatt].tracks[currTrak].lines[currLine].note_columns[snci].note_string="OFF"
+    s.patterns[currPatt].tracks[currTrak].lines[currLine+3].note_columns[snci].note_string="OFF"
+    s.patterns[currPatt].tracks[currTrak].lines[currLine+5].note_columns[snci].note_string="OFF"
+    s.patterns[currPatt].tracks[currTrak].lines[currLine+8].note_columns[snci].note_string="OFF"
+    s.patterns[currPatt].tracks[currTrak].lines[currLine+11].note_columns[snci].note_string="OFF"
+    s.patterns[currPatt].tracks[currTrak].lines[currLine+13].note_columns[snci].note_string="OFF"
+  s.transport.edit_step=3
 end
 
-renoise.tool():add_keybinding {name="Global:Paketti:CapsLockChassis", invoke = function() PakettiCapsLockPattern() end}
+renoise.tool():add_keybinding{name="Global:Paketti:CapsLockChassis",invoke=function() PakettiCapsLockPattern() end}
 
 --This script uncollapses everything (all tracks, master, send trax)
 function Uncollapser()
 local send_track_counter=nil
+local s=renoise.song()
 
-   send_track_counter=renoise.song().sequencer_track_count+1+renoise.song().send_track_count
+   send_track_counter=s.sequencer_track_count+1+s.send_track_count
 
    for i=1,send_track_counter do
-   renoise.song().tracks[i].collapsed=false
+   s.tracks[i].collapsed=false
    end
 end
 
 --This script collapses everything (all tracks, master, send trax)
 function Collapser()
 local send_track_counter=nil
-   send_track_counter=renoise.song().sequencer_track_count+1+renoise.song().send_track_count
+local s=renoise.song()
+   send_track_counter=s.sequencer_track_count+1+s.send_track_count
 
    for i=1,send_track_counter do
-   renoise.song().tracks[i].collapsed=true
-   end
+   s.tracks[i].collapsed=true end
 end
 
-renoise.tool():add_menu_entry {name="Main Menu:Tools:Paketti..:Collapser", invoke = function() Collapser() end}
-renoise.tool():add_menu_entry {name="Main Menu:Tools:Paketti..:Uncollapser", invoke = function() Uncollapser() end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Collapser",invoke=function() Collapser() end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Uncollapser",invoke=function() Uncollapser() end}
 --Global keyboard shortcuts
-renoise.tool():add_keybinding {name="Global:Paketti:Uncollapser", invoke = function() Uncollapser() end}
-renoise.tool():add_keybinding {name="Global:Paketti:Collapser", invoke = function() Collapser() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Uncollapser",invoke=function() Uncollapser() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Collapser",invoke=function() Collapser() end}
 --Menu entries for Pattern Editor and Mixer
-renoise.tool():add_menu_entry {name="Pattern Editor:Paketti..:Uncollapser", invoke = function() Uncollapser() end}
-renoise.tool():add_menu_entry {name="Mixer:Paketti..:Uncollapser", invoke = function() Uncollapser() end}
-renoise.tool():add_menu_entry {name="Pattern Editor:Paketti..:Collapser", invoke = function() Collapser() end}
-renoise.tool():add_menu_entry {name="Mixer:Paketti..:Collapser", invoke = function() Collapser() end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Uncollapser",invoke=function() Uncollapser() end}
+renoise.tool():add_menu_entry{name="Mixer:Paketti..:Uncollapser",invoke=function() Uncollapser() end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Collapser",invoke=function() Collapser() end}
+renoise.tool():add_menu_entry{name="Mixer:Paketti..:Collapser",invoke=function() Collapser() end}
 --Midi Mapping for Expand/Collapse
-renoise.tool():add_midi_mapping{name="Global:Paketti:Uncollapser", invoke = function() Uncollapser() end}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Collapser", invoke = function() Collapser() end} 
+renoise.tool():add_midi_mapping{name="Global:Paketti:Uncollapser",invoke=function() Uncollapser() end}
+renoise.tool():add_midi_mapping{name="Global:Paketti:Collapser",invoke=function() Collapser() end} 
 ---------------------------------------------------------------------------------------------------------
-renoise.tool():add_menu_entry {name="Track Automation:Paketti..:Start/Stop Pattern Follow", invoke = function()
-if not renoise.song().transport.follow_player
-then renoise.song().transport.follow_player=true
-else renoise.song().transport.follow_player=false
-end end}
+renoise.tool():add_menu_entry{name="Track Automation:Paketti..:Start/Stop Pattern Follow",invoke=function()
+local fp=renoise.song().transport.follow_player
+if not fp then fp=true else fp=false end end}
 
-renoise.tool():add_menu_entry {name="DSP Device Automation:Follow Off", invoke = function() renoise.song().transport.follow_player=false end}  
+renoise.tool():add_menu_entry{name="DSP Device Automation:Follow Off",invoke=function() renoise.song().transport.follow_player=false end}  
 ---------------------------------------------------------------------------------------------------------
 ---------------------------------------------------
 -- Hiding and showing Disk Browser + Instrument Box
@@ -2089,6 +2082,9 @@ renoise.tool():add_menu_entry {name="DSP Device Automation:Follow Off", invoke =
 --renoise.app().window.instrument_box_is_visible=false
 --renoise.app().window.instrument_box_is_visible=true
 
+_AUTO_RELOAD_DEBUG = function() startup_()
+
+end
 
 -- Debug print  
 function dbug(msg)  
@@ -2110,4 +2106,4 @@ Renoise community.
 Biggest thanks to Brothomstates for suggesting that I could pick up and learn LUA, 
 that it would not be beyond me. Really appreciate you having faith in me.
 ]]--
----------------------------------------------------------------------------------------------------------
+-------------------------------------------------------
