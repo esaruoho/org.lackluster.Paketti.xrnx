@@ -7,25 +7,25 @@ require "recorder" -- //TODO: since notifiers do not work, how to find a workaro
 
 local s=nil  
 
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Keep Sequence Sorted False",invoke=function() renoise.song().sequencer.keep_sequence_sorted=false end}
   
 function startup_()  
  local s=renoise.song()
  local t=s.transport
+ 
  renoise.app().window:select_preset(1)
  s.sequencer.keep_sequence_sorted=false
  t.groove_enabled=true
  
- if renoise.song().name=="Untitled" then renoise.song().transport.playing=true randobpm() else end
+ if renoise.song().file_name == "" then renoise.song().transport.playing=true randobpm() end
  
  if s.selected_sample == nil then s.selected_sample_observable:add_notifier(sample_loaded_change_to_sample_editor)
  renoise.app():show_error("hello")
  else  
  
-if renoise.song().selected_instrument_observable:has_notifier(sample_loaded_change_to_sample_editor) 
+if renoise.song().selected_sample_observable:has_notifier(sample_loaded_change_to_sample_editor) 
 then return 
 -- renoise.song().selected_instrument_observable:remove_notifier(sample_loaded_change_to_sample_editor) 
-else renoise.song().selected_instrument_observable:add_notifier(sample_loaded_change_to_sample_editor) end
+else renoise.song().selected_sample_observable:add_notifier(sample_loaded_change_to_sample_editor) end
  
 --if  renoise.song().selected_sample_observable:has_notifier(sample_loaded_change_to_sample_editor) then
 --renoise.song().selected_sample_observable:remove_notifier(sample_loaded_change_to_sample_editor)
@@ -42,39 +42,49 @@ else renoise.song().selected_instrument_observable:add_notifier(sample_loaded_ch
 -- end
 --end  
   
+  
+  if not renoise.tool().app_new_document_observable:has_notifier(startup_)   
+ then renoise.tool().app_new_document_observable:add_notifier(startup_)  
+ else renoise.tool().app_new_document_observable:remove_notifier(startup_) end  
+  
 function randobpm()
 renoise.song().transport.bpm=math.random(60,180)
--- WriteToMaster()
 end 
+
 renoise.tool():add_keybinding{name="Global:Paketti:Random BPM (60-180)",invoke=function() randobpm() end}
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Random BPM (60-180)",invoke=function() randobpm() end}
 
 function newSongRandoBPM()
 renoise.app():new_song()
-
-
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:New Song w/ Random BPM",invoke=function() newSongRandoBPM() end}
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:New Song w/ Random BPM",invoke=function() newSongRandoBPM() end}
   
-function sample_loaded_change_to_sample_editor()  
-if
-renoise.song().selected_sample == nil then 
+function sample_loaded_change_to_sample_editor()
+
+
+if renoise.app().window.lock_keyboard_focus == true then return end
+
+if renoise.song().selected_sample == nil then 
 if not renoise.song().selected_sample_observable:has_notifier(sample_loaded_change_to_sample_editor)
 then renoise.song().selected_sample_observable:add_notifier(sample_loaded_change_to_sample_editor)
-else 
-return
+else return
 -- renoise.song().selected_sample_observable:remove_notifier(sample_loaded_change_to_sample_editor)
 end
 
-
 else
+
+ if renoise.app().window.active_middle_frame==1 then 
 renoise.song().selected_sample.autofade=true
 renoise.song().selected_sample.autoseek=true
-
 renoise.song().selected_sample.interpolation_mode=4
+return 
+ end
 
+renoise.song().selected_sample.autofade=true
+renoise.song().selected_sample.autoseek=true
+renoise.song().selected_sample.interpolation_mode=4
 renoise.app().window.active_middle_frame=5
 
 --  renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].autofade=true
@@ -83,9 +93,6 @@ renoise.app().window.active_middle_frame=5
 end
 end
   
-if not renoise.tool().app_new_document_observable:has_notifier(startup_)   
- then renoise.tool().app_new_document_observable:add_notifier(startup_)  
- else renoise.tool().app_new_document_observable:remove_notifier(startup_) end  
 
 --renoise.song().instruments[renoise.song().selected_instrument_index].active_tab=1 == Sampler
 --renoise.song().instruments[renoise.song().selected_instrument_index].active_tab=1 == Plugin
@@ -140,12 +147,19 @@ else renoise.song().transport.edit_mode=true end
 end}
 
 renoise.tool():add_keybinding{name="Sample Editor:Paketti:Disk Browser Focus",invoke=function()
+renoise.app().window.lock_keyboard_focus=false
 renoise.app().window:select_preset(7) end}
 renoise.tool():add_midi_mapping{name="Sample Editor:Paketti:Disk Browser Focus",invoke=function()
+renoise.app().window.lock_keyboard_focus=false
+
 renoise.app().window:select_preset(7) end}
 renoise.tool():add_keybinding{name="Global:Paketti:Disk Browser Focus",invoke=function()
+renoise.app().window.lock_keyboard_focus=false
+
 renoise.app().window:select_preset(8) end}
 renoise.tool():add_keybinding{name="Global:Paketti:Disk Browser Focus (2nd)",invoke=function()
+renoise.app().window.lock_keyboard_focus=false
+
 renoise.app().window:select_preset(8) end}
 
 renoise.tool():add_keybinding{name="Global:Paketti:Disk Browser Focus (ContourShuttle)",invoke=function()
@@ -2069,6 +2083,8 @@ renoise.tool():add_menu_entry{name="Mixer:Paketti..:Collapser",invoke=function()
 renoise.tool():add_midi_mapping{name="Global:Paketti:Uncollapser",invoke=function() Uncollapser() end}
 renoise.tool():add_midi_mapping{name="Global:Paketti:Collapser",invoke=function() Collapser() end} 
 ---------------------------------------------------------------------------------------------------------
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Keep Sequence Sorted False",invoke=function() renoise.song().sequencer.keep_sequence_sorted=false end}
+
 renoise.tool():add_menu_entry{name="Track Automation:Paketti..:Start/Stop Pattern Follow",invoke=function()
 local fp=renoise.song().transport.follow_player
 if not fp then fp=true else fp=false end end}

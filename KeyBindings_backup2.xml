@@ -1256,7 +1256,12 @@
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
-          <Binding>∿ Save Sample to Smart Folder</Binding>
+          <Binding>∿ Save Sample to Live Smart Folder</Binding>
+          <Key>Shift + Command + R</Key>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Save Sample to Logic Smart Folder</Binding>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
@@ -1495,6 +1500,7 @@
         <KeyBinding>
           <Topic>Paketti</Topic>
           <Binding>∿ 2nd Bend -1</Binding>
+          <Key>Shift + Control + Down</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
@@ -1583,6 +1589,7 @@
         <KeyBinding>
           <Topic>Paketti</Topic>
           <Binding>∿ 2nd Uxx Slide Pitch Up +1</Binding>
+          <Key>Shift + Control + Up</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
@@ -3455,11 +3462,6 @@
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
-          <Binding>∿ Keep Sequence Sorted False</Binding>
-          <Key>Option + Command + A</Key>
-        </KeyBinding>
-        <KeyBinding>
-          <Topic>Paketti</Topic>
           <Binding>∿ Reset Panning in Current Column</Binding>
         </KeyBinding>
         <KeyBinding>
@@ -3791,6 +3793,11 @@
         <KeyBinding>
           <Topic>Paketti</Topic>
           <Binding>∿ Reverse Sample effect 0B00 on/off (2nd)</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Keep Sequence Sorted False</Binding>
+          <Key>Option + Command + A</Key>
         </KeyBinding>
       </KeyBindings>
     </Category>
@@ -6528,7 +6535,6 @@
         <KeyBinding>
           <Topic>Device Chain</Topic>
           <Binding>Rename Chain</Binding>
-          <Key>Shift + Command + R</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Device Chain</Topic>

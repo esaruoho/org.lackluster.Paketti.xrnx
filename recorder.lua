@@ -87,32 +87,48 @@ lsfvariable=os.tmpname("wav")
 
 local tmpvariable=nil
 tmpvariable=os.tmpname("wav")
-local path="/Users/esaruoho/Music/samples/LogicSmartFolder/"
-local path2="SmartFolderFile" 
-local path3="/Users/esaruoho/Music/samples/LogicSmartFolder/file.wav"
+--local path="/Users/esaruoho/Music/samples/LogicSmartFolder/"
+--local path3="/Users/esaruoho/Music/samples/LogicSmartFolder/file.wav"
 --concatpath=path tmpvariable
 
-function SampleToSF()
+function SampleToLiveSF()
+local lsfvariable=nil
+lsfvariable=os.tmpname("wav")
+local path="/Users/esaruoho/Music/samples/LiveSmartFolder/"
+local path2="SmartFolderFile" 
+local s=renoise.song()
+renoise.app():show_status("Saving")
+local randoseed = nil
+local instboxname = renoise.song().selected_instrument.name
+randoseed = math.random()
+s.instruments[s.selected_instrument_index].samples[1].sample_buffer:save_as(path .. instboxname .. randoseed .. ".wav", "wav")
+--s.instruments[s.selected_instrument_index].samples[1].sample_buffer:save_as(lsfvariable, "wav")
+renoise.app():show_status("Saved")
+--renoise.app():show_status("Moving")
+--renoise.app():show_status("32Bit to 24Bit Converting")
+--os.execute("beep")
+--os.execute("sox " .. lsfvariable .. " -b 24 " .. path .. "LSF_a" .. s.selected_instrument_index .. "_opbab.wav")
+--renoise.app():show_status("32Bit to 24Bit Conversion From Tmp-folder to Logic Smart Folder Done")
+--os.execute("cd /Users/esaruoho/Music/samples/LogicSmartFolder;open .")
+--renoise.app():show_status("Temporary File Name was " .. lsfvariable )
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Save Sample to Live Smart Folder",invoke=function() SampleToLiveSF() end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti:Save Sample to Live Smart Folder",invoke=function() SampleToLiveSF() end}
+
+function SampleToLogicSF()
 local lsfvariable=nil
 lsfvariable=os.tmpname("wav")
 local path="/Users/esaruoho/Music/samples/LogicSmartFolder/"
+local path2="SmartFolderFile" 
 local s=renoise.song()
 renoise.app():show_status("Saving")
 s.instruments[s.selected_instrument_index].samples[1].sample_buffer:save_as(path .. path2 .. ".wav", "wav")
---s.instruments[s.selected_instrument_index].samples[1].sample_buffer:save_as(lsfvariable, "wav")
 renoise.app():show_status("Saved")
-renoise.app():show_status("Moving")
-renoise.app():show_status("32Bit to 24Bit Converting")
-os.execute("beep")
-os.execute("sox " .. lsfvariable .. " -b 24 " .. path .. "LSF_a" .. s.selected_instrument_index .. "_opbab.wav")
-renoise.app():show_status("32Bit to 24Bit Conversion From Tmp-folder to Logic Smart Folder Done")
-os.execute("cd /Users/esaruoho/Music/samples/LogicSmartFolder;open .")
-renoise.app():show_status("Temporary File Name was " .. lsfvariable )
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Save Sample to Smart Folder",invoke=function() SampleToSF() end}
-renoise.tool():add_menu_entry{name="Instrument Box:Paketti:Save Sample to Smart Folder",invoke=function() SampleToSF() end}
-
+renoise.tool():add_keybinding{name="Global:Paketti:Save Sample to Logic Smart Folder",invoke=function() SampleToLogicSF() end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti:Save Sample to Logic Smart Folder",invoke=function() SampleToLogicSF() end}
 
 ----------------------------------------------------------------------------------------------------------
 -- Set current tempo to 75% of current tempo. Set current tempo back to the original 100% tempo.
