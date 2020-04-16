@@ -45,8 +45,21 @@ renoise.tool():add_midi_mapping{name="Global:Paketti:Change Selected Sample Volu
 renoise.app().window.active_middle_frame=5
 
 renoise.song().selected_sample.volume=midi_message.int_value/127
+end}
 
 
+renoise.tool():add_midi_mapping{name="Global:Paketti:Delay Column x[Slider]",invoke=function(midi_message)
+renoise.app().window.active_middle_frame=1
+local results = nil
+
+results=midi_message.int_value/127
+renoise.app():show_status("haloo" .. results)
+renoise.song().selected_note_column.delay_value = math.max(0, math.min(257, midi_message.int_value * 2))
+
+-- if midi_message.int_value > 64 then columns(1,1)
+-- else if midi_message.int_value < 64 then columns(-1,1)
+-- end
+-- end
 
 end}
 
