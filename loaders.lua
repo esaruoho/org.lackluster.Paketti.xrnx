@@ -24,6 +24,17 @@ local devices = renoise.song().tracks[renoise.song().selected_track_index].avail
   end
 end}
 
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Dump Effects to Console", invoke=function() 
+local devices = renoise.song().tracks[renoise.song().selected_track_index].available_devices
+  for key, value in ipairs (devices) do 
+    print(key, value)
+  end
+end}
+
+
+
+
+
 renoise.tool():add_keybinding{name="Global:Paketti:Dump Current Instrument parameters", invoke=function() 
 local instpara = renoise.song().instruments[renoise.song().selected_instrument_index].plugin_properties.plugin_device.parameters
 --oprint (renoise.song().instruments[renoise.song().selected_instrument_index].plugin_properties.plugin_device.parameters[26].name)
@@ -35,6 +46,11 @@ local instpara = renoise.song().instruments[renoise.song().selected_instrument_i
   oprint (i .. " " .. renoise.song().instruments[renoise.song().selected_instrument_index].plugin_properties.plugin_device.parameters[i].name)
 end
 end}
+
+
+
+
+
 
 -----------------------------------------------------------------------------------------------------------------------------------
 function checkline(effect)
@@ -111,6 +127,8 @@ renoise.app().window.active_middle_frame=3
 s.selected_instrument.active_tab=2 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Load U-He Zebra", invoke=function() LoadZebra() end}
+
+
 ------------------------------------------------------------------------------------------------------------
 function LoadPPG()
 local s=renoise.song()
@@ -309,7 +327,7 @@ else raw.lower_frame_is_visible=true end
  
  renoise.song().selected_device_index=checkline
  
-  if s.selected_track.devices[checkline].name=="VST: Schaack Audio Technologies: TransientShaper" then 
+  if s.selected_track.devices[checkline].name=="AU: Schaack Audio Technologies: TransientShaper" then 
      s.selected_track.devices[checkline].parameters[1].show_in_mixer=true
      s.selected_track.devices[checkline].parameters[2].show_in_mixer=true
      s.selected_track.devices[checkline].parameters[4].show_in_mixer=true
@@ -320,6 +338,11 @@ else raw.lower_frame_is_visible=true end
   if s.selected_track.devices[checkline].name=="VST: FabFilter: Pro-Q" then 
      s.selected_track.devices[checkline].parameters[206].value=1 
   end 
+
+--  if s.selected_track.devices[checkline].name=="AU: FabFilter: Pro-Q 3" then 
+--     s.selected_track.devices[checkline].parameters[206].value=1 
+--  end 
+  
   
   if s.selected_track.devices[checkline].name=="AU: TAL-Togu Audio Line: TAL Reverb 4 Plugin" then 
      s.selected_track.devices[checkline].parameters[2].value=0.0 -- delay
@@ -363,6 +386,7 @@ end
 --- AU
 -- Audio/Effects/AU/aufx:sdly:appl
 
+renoise.tool():add_keybinding{name="Global:Track Devices:Load U-He Colour Copy", invoke=function() loadvst("Audio/Effects/AU/aumf:uLyr:UHfX") end}
 renoise.tool():add_keybinding{name="Global:Track Devices:Load Koen KTGranulator (AU)", invoke=function() loadvst("Audio/Effects/AU/aufx:KTGr:KTfx") end}
 renoise.tool():add_keybinding{name="Global:Track Devices:Load Uhbik U-He Runciter", invoke=function() loadvst("Audio/Effects/AU/aumf:Rc17:UHfX") end}
 renoise.tool():add_keybinding{name="Global:Track Devices:Load SphereDelay Maybe?", invoke=function() loadvst("Audio/Effects/AU/aufx:SpDl:No1z") end}
@@ -371,7 +395,7 @@ renoise.tool():add_keybinding{name="Global:Track Devices:Load D16 Toraverb", inv
 renoise.tool():add_keybinding{name="Global:Track Devices:Load D16 Frontier", invoke=function() loadvst("Audio/Effects/AU/aumf:FRn7:d16g") end}
 renoise.tool():add_keybinding{name="Global:Track Devices:Load D16 Toraverb 2", invoke=function() loadvst("Audio/Effects/AU/aumf:T4V9:d16g") end}
 renoise.tool():add_keybinding{name="Global:Track Devices:Load D16 Repeater", invoke=function() loadvst("Audio/Effects/AU/aumf:RP78:d16g") end}
-renoise.tool():add_keybinding{name="Global:Track Devices:Load D16 Repeater (2nd bind)", invoke=function() loadvst("Audio/Effects/AU/aumf:RP78:d16g") end}
+renoise.tool():add_keybinding{name="Global:Track Devices:Load D16 Repeater (2nd)", invoke=function() loadvst("Audio/Effects/AU/aumf:RP78:d16g") end}
 renoise.tool():add_keybinding{name="Global:Track Devices:Load George Yohng's W1 1", invoke=function() loadvst("Audio/Effects/AU/aufx:4Fwl:Yhng") end}
 renoise.tool():add_keybinding{name="Global:Track Devices:Load George Yohng's W1 2", invoke=function() loadvst("Audio/Effects/AU/aufx:4FwL:4FNT") end}
 
@@ -380,6 +404,7 @@ renoise.tool():add_keybinding{name="Global:Track Devices:Load OhmForce Hematohm"
 renoise.tool():add_keybinding{name="Global:Track Devices:Load OhmForce OhmBoyz", invoke=function() loadvst("Audio/Effects/AU/aumf:OByZ:OmFo") end}
 renoise.tool():add_keybinding{name="Global:Track Devices:Load QuikQuak FusionField", invoke=function() loadvst("Audio/Effects/AU/aumf:FuFi:QkQk") end}
 renoise.tool():add_keybinding{name="Global:Track Devices:Load Schaack Transient Shaper", invoke=function() loadvst("Audio/Effects/VST/TransientShaper") end}
+renoise.tool():add_keybinding{name="Global:Track Devices:Load FabFilter Pro-Q 3", invoke=function() loadvst("Audio/Effects/AU/aumf:FQ3p:FabF") end}
 renoise.tool():add_keybinding{name="Global:Track Devices:Load TAL-Reverb 4", invoke=function() loadvst("Audio/Effects/AU/aufx:reV4:TOGU") end}
 renoise.tool():add_keybinding{name="Global:Track Devices:Load TAL-Dub 3 AU", invoke=function() loadvst("Audio/Effects/AU/aumf:xg70:TOGU") end}
 renoise.tool():add_keybinding{name="Global:Track Devices:Load TAL-Chorus LX", invoke=function() loadvst("Audio/Effects/AU/aufx:cHL1:TOGU") end}
@@ -409,3 +434,4 @@ renoise.song().selected_track:insert_device_at("Audio/Effects/Native/DC Offset",
 renoise.song().selected_device_index=2
 renoise.song().selected_track.devices[2].parameters[2].value=1
 end}
+

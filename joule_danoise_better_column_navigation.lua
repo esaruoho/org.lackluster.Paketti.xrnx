@@ -74,7 +74,8 @@ local s = renoise.song()
    else s.selected_note_column_index = s.selected_track.visible_note_columns
    end end end end
  
-renoise.tool():add_keybinding{name="Pattern Editor:Navigation:Joule Toggle between note/fx columns",invoke=toggle_column_type}
-renoise.tool():add_keybinding{name="Pattern Editor:Navigation:Joule Jump to next column (note/fx)",invoke=function() cycle_column("next") end}
-renoise.tool():add_keybinding{name="Pattern Editor:Navigation:Joule Jump to previous column (note/fx)",invoke=function() cycle_column("prev") end}
+renoise.tool():add_keybinding{name="Pattern Editor:Navigation:Paketti Joule Toggle between note/fx columns",invoke=toggle_column_type}
+renoise.tool():add_keybinding{name="Pattern Editor:Navigation:Paketti Joule Jump to next column (note/fx)",invoke=function() cycle_column("next") end}
+renoise.tool():add_keybinding{name="Pattern Editor:Navigation:Paketti Joule Jump to previous column (note/fx)",invoke=function() cycle_column("prev") end}
 renoise.tool().app_idle_observable:add_notifier(cache_columns)
+
