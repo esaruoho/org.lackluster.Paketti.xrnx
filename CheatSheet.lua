@@ -309,3 +309,4 @@ s.selected_note_column_index=writenc
   w.lock_keyboard_focus = true
   s.selected_note_column_index=writenc
  end
+

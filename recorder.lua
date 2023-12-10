@@ -1,5 +1,5 @@
 ---------------------------------------------------------------------------------------------------------------
---Set the next ReWire channel - shortcut. If you have a pre-configured 32 input rewire master host
+--Set the next ReWire channel - shortcut. If you have a pre-configured 32 input ReWire master host
 --running, you can just press a shortcut and get it to play in the track of your choice (on your
 --master host that is). This is a really simple thing, but it works after a fashion and does
 --what I wanted it to do.
@@ -46,6 +46,7 @@ end
 renoise.tool():add_keybinding{name="Global:Paketti:Set Next ReWire channel", invoke=function() next_rewire() end  }
 ----------------------------------------------------------------------------------------------------------
 
+-- //TODO: since notifiers do not work, how to find a workaround??
 function contourShuttleRecordPrototype()
 if not renoise.app().window.sample_record_dialog_is_visible
 then renoise.app().window.sample_record_dialog_is_visible=true
@@ -66,19 +67,25 @@ function sample_and_to_sample_editor()
 -- delay(1)
  t:start_stop_sample_recording()
     w.active_upper_frame = 1
-    w.active_middle_frame = 4
-    w.active_lower_frame = 3
+    w.active_middle_frame = 3
+ --   w.active_lower_frame = 3
     w.lock_keyboard_focus=true
  end
+
+
 end
 renoise.tool():add_menu_entry{name = "Instrument Box:Start Sampling (Record)", invoke=function() sample_and_to_sample_editor()
 renoise.app().window.sample_record_dialog_is_visible = true end}  
-renoise.tool():add_menu_entry{name = "Sample Editor:Start Sampling (Record)", invoke=function() sample_and_to_sample_editor()
-renoise.app().window.sample_record_dialog_is_visible=true end}  
+
+renoise.tool():add_menu_entry{name = "--Sample Editor:Paketti:Start Sampling (Record)", invoke=function() sample_and_to_sample_editor()
+renoise.app().window.sample_record_dialog_is_visible=true 
+end}  
+
 renoise.tool():add_menu_entry{name = "Pattern Editor:Paketti..:Start Sampling (Record)", invoke=function() sample_and_to_sample_editor()
 renoise.app().window.sample_record_dialog_is_visible=true end}  
 
-renoise.tool():add_keybinding{name="Global:Paketti:Sample NOW then F3 (Record)", invoke=function() sample_and_to_sample_editor() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Sample NOW then F3 (Record)", invoke=function() sample_and_to_sample_editor()
+F3() end}
 
 
 -------
@@ -376,3 +383,4 @@ s.selected_instrument_index = search_empty_instrument()
  t.follow_player=true
  renoise.app().window.lower_frame_is_visible=true
  renoise.app().window.active_lower_frame=2 end}
+

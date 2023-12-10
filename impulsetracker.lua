@@ -7,31 +7,43 @@ w.lock_keyboard_focus=true
 
 if w.active_middle_frame==raw.MIDDLE_FRAME_PATTERN_EDITOR and w.lower_frame_is_visible then
 --renoise.app().window:select_preset(8)
-w.lower_frame_is_visible=false
-w.upper_frame_is_visible=false
-w.pattern_advanced_edit_is_visible=false
-w.instrument_box_is_visible=true
-w.disk_browser_is_visible=true
-w.pattern_matrix_is_visible=false
+  w.lower_frame_is_visible=false
+  w.upper_frame_is_visible=false
+  w.pattern_advanced_edit_is_visible=false
+  w.instrument_box_is_visible=true
+  w.disk_browser_is_visible=true
+  w.pattern_matrix_is_visible=false
 else w.active_middle_frame=raw.MIDDLE_FRAME_PATTERN_EDITOR
-w.lower_frame_is_visible=true
-w.upper_frame_is_visible=true
-w.active_lower_frame=raw.LOWER_FRAME_TRACK_DSPS
+  w.lower_frame_is_visible=true
+  w.upper_frame_is_visible=true
+  w.active_lower_frame=raw.LOWER_FRAME_TRACK_DSPS
 --w.pattern_advanced_edit_is_visible=true
-w.instrument_box_is_visible=true
-w.disk_browser_is_visible=true
+  w.instrument_box_is_visible=true
+  w.disk_browser_is_visible=true
 -- w.pattern_matrix_is_visible = true
 return end
 
 if w.disk_browser_is_visible then
-w.active_middle_frame=raw.MIDDLE_FRAME_PATTERN_EDITOR
-w.lower_frame_is_visible=false
-w.upper_frame_is_visible=false
-w.pattern_advanced_edit_is_visible=false
-w.disk_browser_is_visible=false
+  w.active_middle_frame=raw.MIDDLE_FRAME_PATTERN_EDITOR
+  w.lower_frame_is_visible=false
+  w.upper_frame_is_visible=false
+  w.pattern_advanced_edit_is_visible=false
+  w.disk_browser_is_visible=false
 --renoise.app().window:select_preset(8)
 return end end
 renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker F2 Pattern Editor", invoke=function() F2() end}
+
+-- F2
+function F2Only()
+local w=renoise.app().window
+local raw=renoise.ApplicationWindow
+w.active_middle_frame=raw.MIDDLE_FRAME_PATTERN_EDITOR
+w.lower_frame_is_visible=true
+w.upper_frame_is_visible=true
+w.active_lower_frame=raw.LOWER_FRAME_TRACK_DSPS
+end
+renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker F2 Pattern Editor ONLY", invoke=function() F2Only() end}
+
 ----------------------------------------------------------------------------------------------------------------
 function MixerToF2()
 local w=renoise.app().window
@@ -40,7 +52,6 @@ w.pattern_matrix_is_visible=false
 w.pattern_advanced_edit_is_visible=false
 w.instrument_box_is_visible=true
 w.disk_browser_is_visible=true
-
 end
 
 renoise.tool():add_keybinding{name = "Mixer:Paketti:To Pattern Editor", invoke=function() MixerToF2() end}
@@ -106,6 +117,21 @@ w.active_middle_frame=raw.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker F3 Sample Editor", invoke=function() F3() end}
+-- F3 Only
+function F3Only()
+local w=renoise.app().window
+local s=renoise.song()
+local raw=renoise.ApplicationWindow
+w.pattern_matrix_is_visible=false
+w.pattern_advanced_edit_is_visible=false
+w.upper_frame_is_visible = true
+w.disk_browser_is_visible=true
+s.selected_instrument.active_tab=1
+w.active_middle_frame=raw.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker F3 Sample Editor Only", invoke=function() F3Only() end}
+
 ----------------------------------------------------------------------------------------------------------------
 -- F4, or "Impulse Tracker Shortcut F4 display-change", "Instrument Editor".
 -- Hides Pattern Matrix, Hides Advanced Edit.
@@ -148,7 +174,8 @@ if t.playing then t:panic() else end
 local start_time = os.clock()
   while (os.clock() - start_time < 0.4) do
         -- Delay the start after panic. Don't go below 0.2 seconds 
-        -- or you might tempt some plugins to crash and take Renoise in the fall!!      
+        -- or you might tempt some plugins to crash and take Renoise in the fall!!    
+        -- ^^^ I don't know or remember who wrote the above comments but it wasn't me -Esa  
   end
 t.follow_player=true
 t.edit_mode=false
@@ -161,7 +188,7 @@ end
 
 renoise.tool():add_midi_mapping{name="Global:Paketti:Start Playback x[Toggle]",  invoke=function() ImpulseTrackerPlaySong() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker F5 Start Playback", invoke=function() ImpulseTrackerPlaySong() end}
-renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker F5 Start Playback 2nd", invoke=function() ImpulseTrackerPlaySong() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker F5 Start Playback (2nd)", invoke=function() ImpulseTrackerPlaySong() end}
 
 ----------------------------------------------------------------------------------------------------------------
 -- F6, or Impulse Tracker Play Pattern.
@@ -196,8 +223,8 @@ function ImpulseTrackerPlayFromLine()
 end
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker F7 Start Playback from Cursor Row...", invoke=function() ImpulseTrackerPlayFromLine() end}
-renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker F7 Start Playback from Cursor Row 2ndBind...", invoke=function() ImpulseTrackerPlayFromLine() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker F7 Start Playback from Cursor Row", invoke=function() ImpulseTrackerPlayFromLine() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker F7 Start Playback from Cursor Row (2nd)", invoke=function() ImpulseTrackerPlayFromLine() end}
 ------------------------------------------------------------------------------------------------------------------------------------------- F8
 function ImpulseTrackerStop()
 local t=renoise.song().transport
@@ -209,7 +236,7 @@ end
 
 renoise.tool():add_midi_mapping{name="Global:Paketti:Impulse Tracker F8 Stop Playback (Panic) x[Toggle]",  invoke=function() ImpulseTrackerStop() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker F8 Stop Playback (Panic)", invoke=function() ImpulseTrackerStop()  end}
-renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker F8 Stop Playback (Panic) 2nd", invoke=function() ImpulseTrackerStop() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker F8 Stop Playback (Panic) (2nd)", invoke=function() ImpulseTrackerStop() end}
 
 renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker F8 Stop/Start Playback (Panic)", invoke=function() 
 local t = renoise.song().transport
@@ -677,11 +704,16 @@ s.transport.edit_pos = song_pos return end
   s.selected_note_column_index=1
 end
 
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Impulse Tracker Home *2 behaviour...", invoke=function()
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Impulse Tracker Home *2 behaviour", invoke=function()
 renoise.app().window.active_middle_frame=1
 homehome()  end }
 
-renoise.tool():add_keybinding{name="Mixer:Paketti:Impulse Tracker Home *2 behaviour...", invoke=function()
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Impulse Tracker Home *2 behaviour (2nd)", invoke=function()
+renoise.app().window.active_middle_frame=1
+homehome()  end }
+
+
+renoise.tool():add_keybinding{name="Mixer:Paketti:Impulse Tracker Home *2 behaviour", invoke=function()
 renoise.app().window.active_middle_frame=1
 homehome()  end }
 
@@ -768,15 +800,20 @@ end
   --]]
 end
 
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Impulse Tracker End *2 behaviour...", invoke=function() 
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Impulse Tracker End *2 behaviour", invoke=function() 
 renoise.app().window.active_middle_frame=1
 endend() end }
 
-renoise.tool():add_keybinding{name="Mixer:Paketti:Impulse Tracker End *2 behaviour...", invoke=function()
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Impulse Tracker End *2 behaviour (2nd)", invoke=function() 
+renoise.app().window.active_middle_frame=1
+endend() end }
+
+
+renoise.tool():add_keybinding{name="Mixer:Paketti:Impulse Tracker End *2 behaviour", invoke=function()
 renoise.app().window.active_middle_frame=1
 endend() end }
 -----------------------------------------------------------------------------------------------------------------------------------------
---8.  "8" in ImpulseTracker "Plays Current Line" and "Advances by EditStep".
+--8.  "8" in Impulse Tracker "Plays Current Line" and "Advances by EditStep".
 function PlayCurrentLine()
 local s=renoise.song()
 local currpos=s.transport.edit_pos
