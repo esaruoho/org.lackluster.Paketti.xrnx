@@ -1,3 +1,7 @@
+-- All of these have been requested by tkna91 via 
+-- https://github.com/esaruoho/org.lackluster.Paketti.xrnx/issues/
+-- Please send requests if you're interested in obscure stuff that Renoise does not support (but really, should)
+
 function loopReleaseToggle()
 if renoise.song().selected_sample.loop_release
 then renoise.song().selected_sample.loop_release=false 
@@ -5,10 +9,6 @@ else renoise.song().selected_sample.loop_release=true end
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Loop Release On/Off",invoke=function() loopReleaseToggle() end}
-
-
-
-
 
 function oneShotToggle()
 if renoise.song().selected_sample.oneshot 
@@ -195,4 +195,115 @@ renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mute Grou
 renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mute Group to D",invoke=function() selectedSampleMuteGroup(13) end}
 renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mute Group to E",invoke=function() selectedSampleMuteGroup(14) end}
 renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mute Group to F",invoke=function() selectedSampleMuteGroup(15) end}
+
+-- Change Output Routing per Selected Track
+function set_output_routing_by_index(number)
+    local available_output_routings = renoise.song().tracks[renoise.song().selected_track_index].available_output_routings
+
+    if number >= 1 and number <= #available_output_routings then
+        renoise.song().tracks[renoise.song().selected_track_index].output_routing = available_output_routings[number]
+    else
+        print("Index out of range. Please use an index between 1 and " .. #available_output_routings)
+    end
+end
+
+-- Example of creating dynamic shortcuts for setting output routing, starting index at 00
+local available_output_routings = renoise.song().tracks[renoise.song().selected_track_index].available_output_routings
+
+for i, routing in ipairs(available_output_routings) do
+    local index_str = string.format("%02d", i - 1) -- Format index starting from 00
+    local routing_name = routing:match("^%s*(.-)%s*$") -- Optional: Trim leading/trailing whitespace from routing name
+    local shortcut_name = "Global:Paketti:Set Selected Track Output Routing " .. index_str .. " " .. routing_name
+
+    -- Simulated shortcut/command creation. Replace this with actual shortcut or command creation code.
+    -- Example: renoise.tool():add_keybinding {name = shortcut_name, invoke = function() set_output_routing_by_index(i) end}
+renoise.tool():add_keybinding {name = shortcut_name, invoke = function() set_output_routing_by_index(i) end}
+end
+
+
+
+function find_current_routing_index(available_routings, current_routing)
+    for index, routing in ipairs(available_routings) do
+        if routing == current_routing then
+            return index
+        end
+    end
+    return nil -- Return nil if the current routing is not found
+end
+
+
+
+function apply_selected_routing(selected_index)
+    local selected_track_index = renoise.song().selected_track_index
+    local available_output_routings = renoise.song().tracks[selected_track_index].available_output_routings
+
+    if selected_index and selected_index >= 1 and selected_index <= #available_output_routings then
+        renoise.song().tracks[selected_track_index].output_routing = available_output_routings[selected_index]
+    else
+        print("Index out of range. Please use an index between 1 and " .. #available_output_routings)
+    end
+end
+
+-- Function to open a dialog with the list of available output routings using a popup
+function showAvailableRoutings()
+    local selected_track_index = renoise.song().selected_track_index
+    local available_output_routings = renoise.song().tracks[selected_track_index].available_output_routings
+    local current_routing = renoise.song().tracks[selected_track_index].output_routing
+    local selected_routing_index = find_current_routing_index(available_output_routings, current_routing)
+
+    -- Create a ViewBuilder object
+    local vb = renoise.ViewBuilder()
+
+    local dialog -- Pre-declare the dialog variable so it can be referenced inside button callbacks
+
+    -- Define the content of the dialog
+    local dialog_content = vb:column {
+        margin = 10,
+        spacing = 5,
+        vb:text {
+            text = "Select Output Routing:"
+        },
+        vb:popup {
+            id = "popup_output_routings",
+            items = available_output_routings,
+            value = selected_routing_index or 1, -- Set the popup to the current routing, or default to the first item
+            width = 300,
+            notifier = function(index)
+                -- Update the selected index when a new item is selected
+                selected_routing_index = index
+            end
+        },
+        vb:row {
+            spacing = 10,
+            vb:button {
+                text = "OK",
+                notifier = function()
+                    apply_selected_routing(selected_routing_index)
+                    dialog:close()
+                end
+            },
+            vb:button {
+                text = "Cancel",
+                notifier = function()
+                    dialog:close()
+                end
+            }
+        }
+    }
+
+    -- Show the dialog
+    dialog = renoise.app():show_custom_dialog("Output Routings", dialog_content)
+end
+
+
+
+renoise.tool():add_menu_entry{name="---Main Menu:Tools:Paketti..:Available Routings for Track",invoke=function() showAvailableRoutings() end}
+
+
+
+
+
+
+
+
 
