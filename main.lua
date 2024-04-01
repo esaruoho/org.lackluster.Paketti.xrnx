@@ -3,10 +3,13 @@ require "impulsetracker"
 require "loaders"
 require "midi"
 require "numpad"
-require "samplecontrols"
 require "recorder" 
 require "utils"
 require "joule_danoise_better_column_navigation"
+-- These were requested via GitHub / Renoise Forum
+require "samplecontrols"
+require "forJenoki"
+
 -- Autoexec.bat
 -- everytime a new Renoise song is created, run this
 --
@@ -163,7 +166,7 @@ renoise.app().window.lock_keyboard_focus=false
 
 renoise.app().window:select_preset(8) end}
 
-renoise.tool():add_keybinding{name="Global:Paketti:Disk Browser Focus (ContourShuttle)",invoke=function()
+renoise.tool():add_keybinding{name="Global:Paketti:Contour Shuttle Disk Browser Focus",invoke=function()
 renoise.app().window:select_preset(8) end}
 
 
@@ -186,14 +189,6 @@ selphra.name=renamephrase_to_index
 --selphra.name=renoise.song().selected_phrase_index
 end}
 
-function oneshottoggle()
-local s=renoise.song()
-if s.instruments[s.selected_instrument_index].samples[s.selected_sample_index].oneshot 
-then s.instruments[s.selected_instrument_index].samples[s.selected_sample_index].oneshot=false 
-else s.instruments[s.selected_instrument_index].samples[s.selected_sample_index].oneshot=true end
-end
-
-renoise.tool():add_keybinding{name="Global:Paketti:Toggle Oneshot On/Off",invoke=function() oneshottoggle() end}
 
 -- Show automation (via Pattern Matrix/Pattern Editor)
 function showAutomation()
@@ -1323,20 +1318,8 @@ renoise.tool():add_keybinding{name="Global:Paketti:Hide Track DSP Devices",invok
   end
 end}
 --------------------------------------------------------------------------------------------------------------------------------------------------------
-function LoopSet(number)
-local loop_modet = renoise.song().selected_sample.loop_mode
-  if renoise.song().selected_sample.loop_mode==number then renoise.song().selected_sample.loop_mode=1 else loop_modet = number
-  renoise.song().selected_sample.loop_mode=loop_modet
-  end
-end
-
-renoise.tool():add_keybinding{name="Global:Paketti:Set Current Sample to Forward Loop",invoke=function() LoopSet(2) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Current Sample to Backward Loop",invoke=function() LoopSet(3) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Current Sample to Pingpong Loop",invoke=function() LoopSet(4) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Current Sample to No Loop",invoke=function() LoopSet(1) end}
-
 function LoopState(number)
-renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].loop_mode=number
+renoise.song().selected_sample.loop_mode=number
 end
 
 renoise.tool():add_keybinding{name="Sample Editor:Paketti:Set Loop Mode to 1 Off",invoke=function() LoopState(1) end}
@@ -1809,7 +1792,6 @@ w.active_middle_frame=1
 end
 
 ----------------------------------------------------------------------------------------------------
-
 function markdollins_keyboardvolchange(number)
 local s=renoise.song();if s.transport.keyboard_velocity_enabled==false then s.transport.keyboard_velocity_enabled=true end
 local addtovelocity=nil
