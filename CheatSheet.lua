@@ -140,7 +140,7 @@ local stopallbutton=vb:button {width=globalwidth, text=stopall, tooltip=stopallt
   
 -------
 --Generation of Pattern Effect
-local dialog_title = "Paketti 0.14 - Pattern Effect Command CheatSheet"
+local dialog_title = "Paketti 0.354 - Pattern Effect Command CheatSheet"
 local DEFAULT_MARGIN = renoise.ViewBuilder.DEFAULT_CONTROL_MARGIN
 local DEFAULT_SPACING = renoise.ViewBuilder.DEFAULT_CONTROL_SPACING
 

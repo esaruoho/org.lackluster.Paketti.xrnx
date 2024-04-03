@@ -54,7 +54,7 @@ w.instrument_box_is_visible=true
 w.disk_browser_is_visible=true
 end
 
-renoise.tool():add_keybinding{name = "Mixer:Paketti:To Pattern Editor", invoke=function() MixerToF2() end}
+renoise.tool():add_keybinding{name="Mixer:Paketti:To Pattern Editor", invoke=function() MixerToF2() end}
 ----------------------------------------------------------------------------------------------------------------
 function F2mini()
 local w=renoise.app().window
@@ -381,7 +381,7 @@ function DoubleSelect()
  end
 end
 
-renoise.tool():add_keybinding{name = "Pattern Editor:Selection:Paketti DoubleSelect (ALT-D)", invoke=function() DoubleSelect() end}
+renoise.tool():add_keybinding{name="Pattern Editor:Selection:Paketti DoubleSelect (ALT-D)", invoke=function() DoubleSelect() end}
 --------------------------------------------------------------------------------------------------------------------------------
 -- Protman's set octave
 -- Protman: Thanks to suva for the function per octave declaration loop :)
@@ -464,7 +464,7 @@ function ExpandSelection()
   end
 end
 
-renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Expand Selection (Protman)", invoke=function() ExpandSelection() end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Expand Selection (Protman)", invoke=function() ExpandSelection() end}
 ------------------------------------------------------------------------------------------------------------------------------------
 -------Protman's Shrink Selection
 function cpclsh_line(track, from_line, to_line)
@@ -491,7 +491,7 @@ function ShrinkSelection()
     end
   end
 end
-renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Shrink Selection (Protman)", invoke=function() ShrinkSelection() end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Shrink Selection (Protman)", invoke=function() ShrinkSelection() end}
 
 -----------------------------------------------------------------------------------------------------------------------------------------
 --Protman's Set Instrument
@@ -514,9 +514,7 @@ end
 end
 end
 
-renoise.tool():add_keybinding{
-  name = "Pattern Editor:Paketti:Set Selection to Current Instrument (Protman)",
-  invoke=function() SetInstrument() end} 
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Selection to Current Instrument (Protman)", invoke=function() SetInstrument() end} 
 ----------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------
 function MarkTrackMarkPattern()
@@ -565,7 +563,7 @@ else
         end_line = sp.number_of_lines} end
 end
 
-renoise.tool():add_keybinding{name = "Pattern Editor:Selection:Paketti Mark Track/Mark Pattern (ALT-L)", invoke=function() MarkTrackMarkPattern() end}  
+renoise.tool():add_keybinding{name="Pattern Editor:Selection:Paketti Mark Track/Mark Pattern (ALT-L)", invoke=function() MarkTrackMarkPattern() end}  
 -------------------------------------------------------------------------------------------------------------------------------------------Protman's Alt-D except patternwide
 function DoubleSelectPattern()
  local s = renoise.song()
@@ -643,8 +641,8 @@ end
  end
 end
 
-renoise.tool():add_keybinding{name = "Pattern Editor:Selection:Paketti DoubleSelectColumnOnly (Protman)", invoke=function() DoubleSelectColumnOnly() end}
-renoise.tool():add_keybinding{name = "Pattern Editor:Selection:Paketti DoubleSelectPattern (Protman)", invoke=function() DoubleSelectPattern() end}
+renoise.tool():add_keybinding{name="Pattern Editor:Selection:Paketti DoubleSelectColumnOnly (Protman)", invoke=function() DoubleSelectColumnOnly() end}
+renoise.tool():add_keybinding{name="Pattern Editor:Selection:Paketti DoubleSelectPattern (Protman)", invoke=function() DoubleSelectPattern() end}
 --------------------------------------------------------------------------------------------------------------------------------------
 --IT "Home Home Home" behaviour. First Home takes to current column first_line. Second Home takes to current track first_line. 
 --Third home takes to first track first_line.
@@ -706,17 +704,15 @@ end
 
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Impulse Tracker Home *2 behaviour", invoke=function()
 renoise.app().window.active_middle_frame=1
-homehome()  end }
+homehome() end}
 
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Impulse Tracker Home *2 behaviour (2nd)", invoke=function()
 renoise.app().window.active_middle_frame=1
-homehome()  end }
-
+homehome() end}
 
 renoise.tool():add_keybinding{name="Mixer:Paketti:Impulse Tracker Home *2 behaviour", invoke=function()
 renoise.app().window.active_middle_frame=1
-homehome()  end }
-
+homehome() end}
 ---------------------------------------------------------------------------------------------------------------------------------------IT EndEnd
 function endend()
   local s = renoise.song()
@@ -802,16 +798,15 @@ end
 
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Impulse Tracker End *2 behaviour", invoke=function() 
 renoise.app().window.active_middle_frame=1
-endend() end }
+endend() end}
 
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Impulse Tracker End *2 behaviour (2nd)", invoke=function() 
 renoise.app().window.active_middle_frame=1
-endend() end }
-
+endend() end}
 
 renoise.tool():add_keybinding{name="Mixer:Paketti:Impulse Tracker End *2 behaviour", invoke=function()
 renoise.app().window.active_middle_frame=1
-endend() end }
+endend() end}
 -----------------------------------------------------------------------------------------------------------------------------------------
 --8.  "8" in Impulse Tracker "Plays Current Line" and "Advances by EditStep".
 function PlayCurrentLine()
@@ -837,4 +832,4 @@ local start_time = os.clock()
     end
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Play Current Line & Advance by EditStep",  invoke=function() PlayCurrentLine() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Play Current Line & Advance by EditStep", invoke=function() PlayCurrentLine() end}

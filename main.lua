@@ -6,9 +6,8 @@ require "numpad"
 require "recorder" 
 require "utils"
 require "joule_danoise_better_column_navigation"
--- These were requested via GitHub / Renoise Forum
-require "samplecontrols"
-require "forJenoki"
+-- These were requested via GitHub / Renoise Forum / Renoise Discord - always get in touch with me 
+require "requests"
 
 -- Autoexec.bat
 -- everytime a new Renoise song is created, run this
@@ -18,6 +17,9 @@ function startup()
  local t=s.transport
  
  renoise.app().window:select_preset(1)
+ ---- Example of creating dynamic shortcuts for setting output routing, starting index at 00
+--local available_output_routings = renoise.song().tracks[renoise.song().selected_track_index].available_output_routings
+
  s.sequencer.keep_sequence_sorted=false
  t.groove_enabled=true
 
@@ -48,6 +50,24 @@ end
 -- end
 --end  
 
+-- Show or hide pattern matrix
+function showhidepatternmatrix()
+if renoise.app().window.active_middle_frame ~= renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
+then renoise.app().window.active_middle_frame=renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR 
+renoise.app().window.pattern_matrix_is_visible = true
+return
+end
+if renoise.app().window.pattern_matrix_is_visible == true
+then renoise.app().window.pattern_matrix_is_visible = false
+else renoise.app().window.pattern_matrix_is_visible = true
+end
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Show/Hide Pattern Matrix",invoke=function() showhidepatternmatrix() end}
+
+
+
+
 function randobpm()
 renoise.song().transport.bpm=math.random(60,180)
 end 
@@ -60,9 +80,7 @@ if not renoise.tool().app_new_document_observable:has_notifier(startup)
 
 
 renoise.tool():add_keybinding{name="Global:Paketti:Random BPM (60-180)",invoke=function() randobpm() end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Random BPM (60-180)",invoke=function() randobpm() end}
-    
-  
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Random BPM (60-180)",invoke=function() randobpm() end}
   
 function sample_loaded_change_to_sample_editor()
 
@@ -107,9 +125,9 @@ function autosuspendOFF()
 --renoise.tool():add_menu_entry
 renoise.song().instruments[renoise.song().selected_instrument_index].plugin_properties.auto_suspend = false end
 
-renoise.tool():add_menu_entry{name="Instrument Box:Paketti:Switch Plugin AutoSuspend Off",invoke=function() autosuspendOFF() end}
+renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Switch Plugin AutoSuspend Off",invoke=function() autosuspendOFF() end}
 
-renoise.tool():add_menu_entry{name="Instrument Box:Paketti:Create Phrase",invoke=function()
+function createPhrase()
 local s=renoise.song() 
   s.instruments[s.selected_instrument_index]:insert_phrase_at(1) 
   renoise.app().window.active_middle_frame=3
@@ -121,7 +139,12 @@ s.instruments[s.selected_instrument_index].phrases[s.selected_phrase_index].volu
 s.instruments[s.selected_instrument_index].phrases[s.selected_phrase_index].panning_column_visible=true
 s.instruments[s.selected_instrument_index].phrases[s.selected_phrase_index].delay_column_visible=true
 s.instruments[s.selected_instrument_index].phrases[s.selected_phrase_index].sample_effects_column_visible=true
-end}
+end
+
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Create Phrase",invoke=function() createPhrase() end}
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Create Phrase",invoke=function() createPhrase() end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Create Phrase",invoke=function() createPhrase() end}
+
 
 renoise.tool():add_keybinding{name="Global:Paketti:Whats My Song",invoke=function() renoise.app():show_status(renoise.song().file_name) end}
 
@@ -216,7 +239,11 @@ then w.active_lower_frame = raw.LOWER_FRAME_TRACK_DSPS return end
 
 renoise.tool():add_menu_entry{name="--Pattern Matrix:Paketti..:Switch to Automation",invoke=function() showAutomation() end}
 renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Switch to Automation",invoke=function() showAutomation() end}
-renoise.tool():add_keybinding{name="Global:Paketti:Switch to Automation",invoke=function() showAutomation() end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Switch to Automation",invoke=function() showAutomation() end}
+renoise.tool():add_keybinding{name="Pattern Matrix:Paketti:Switch to Automation",invoke=function() showAutomation() end}
+renoise.tool():add_keybinding{name="Mixer:Paketti:Switch to Automation",invoke=function() showAutomation() end}
+
+
 renoise.tool():add_midi_mapping{name="Global:Paketti:Switch to Automation",invoke=function() 
   local w=renoise.app().window
   local raw=renoise.ApplicationWindow
@@ -378,15 +405,15 @@ renoise.tool():add_keybinding{name="Global:Paketti:Wipe&Create Slices (32)",invo
 renoise.tool():add_keybinding{name="Global:Paketti:Wipe&Create Slices (64)",invoke=function() slicerough(64) end}
 renoise.tool():add_keybinding{name="Global:Paketti:Wipe Slices",invoke=function() wipeslices() end}
 
-renoise.tool():add_menu_entry{name="--Sample Editor:Paketti:Wipe&Create Slices (2)",invoke=function() slicerough(2) end}
-renoise.tool():add_menu_entry{name="Sample Editor:Paketti:Wipe&Create Slices (4)",invoke=function() slicerough(4) end}
-renoise.tool():add_menu_entry{name="Sample Editor:Paketti:Wipe&Create Slices (8)",invoke=function() slicerough(8) end}
-renoise.tool():add_menu_entry{name="Sample Editor:Paketti:Wipe&Create Slices (16)",invoke=function() slicerough(16) end}
-renoise.tool():add_menu_entry{name="Sample Editor:Paketti:Wipe&Create Slices (32)",invoke=function() slicerough(32) end}
-renoise.tool():add_menu_entry{name="Sample Editor:Paketti:Wipe&Create Slices (64)",invoke=function() slicerough(64) end}
-renoise.tool():add_menu_entry{name="Sample Editor:Paketti:Wipe Slices",invoke=function() wipeslices() end}
+renoise.tool():add_menu_entry{name="--Sample Editor:Paketti..:Wipe&Create Slices (2)",invoke=function() slicerough(2) end}
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Wipe&Create Slices (4)",invoke=function() slicerough(4) end}
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Wipe&Create Slices (8)",invoke=function() slicerough(8) end}
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Wipe&Create Slices (16)",invoke=function() slicerough(16) end}
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Wipe&Create Slices (32)",invoke=function() slicerough(32) end}
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Wipe&Create Slices (64)",invoke=function() slicerough(64) end}
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Wipe Slices",invoke=function() wipeslices() end}
 
-renoise.tool():add_menu_entry{name="--Sample Editor:Paketti:Sample Preferences - Autofade True, Interpolation 4, Oversample True",invoke=function() 
+renoise.tool():add_menu_entry{name="--Sample Editor:Paketti..:Sample Preferences - Autofade True, Interpolation 4, Oversample True",invoke=function() 
   renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].autofade=true
   renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].interpolation_mode=4
   renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].oversample_enabled=true
@@ -623,7 +650,7 @@ local ssi=renoise.song().selected_sample_index
  renoise.song().selected_instrument.name=("multiloopersampler_instrument" .. renoise.song().selected_instrument_index)
  w.active_middle_frame= 3 end
 
-renoise.tool():add_menu_entry {name = "Instrument Box:Paketti:Create empty sample slices", invoke=function() emptyslices() end}
+renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Create Empty Sample Slices", invoke=function() emptyslices() end}
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 function WipeEfxFromSelection()
 --thanks to joule for assistance1+2(2018)!
@@ -1304,7 +1331,7 @@ end
 renoise.tool():add_keybinding{name="Global:Paketti:DuplicateInstrumentAndSelectNewInstrument",invoke=function() DuplicateInstrumentAndSelectNewInstrument() end}
 renoise.tool():add_keybinding{name="Global:Paketti:DuplicateInstrumentAndSelectNewInstrument (2nd)",invoke=function() DuplicateInstrumentAndSelectNewInstrument() end}
 renoise.tool():add_keybinding{name="Global:Paketti:DuplicateInstrumentAndSelectNewInstrument (3rd)",invoke=function() DuplicateInstrumentAndSelectNewInstrument() end}
-renoise.tool():add_menu_entry{name="Instrument Box:Paketti: DuplicateInstrumentAndSelectNewInstrument",invoke=function() DuplicateInstrumentAndSelectNewInstrument() end}
+renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Duplicate Instrument and Select New Instrument",invoke=function() DuplicateInstrumentAndSelectNewInstrument() end}
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 renoise.tool():add_keybinding{name="Global:Paketti:Hide Track DSP Devices",invoke=function()
@@ -1638,7 +1665,7 @@ end
 -- s.transport.edit_step=0
 end
 
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Joule Pattern Doubler",invoke=function() joulepatterndoubler() end}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Joule Pattern Doubler",invoke=function() joulepatterndoubler() end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Joule Pattern Doubler",invoke=function() joulepatterndoubler() end}  
 renoise.tool():add_keybinding{name="Mixer:Paketti:Joule Pattern Doubler",invoke=function() joulepatterndoubler() end}  
 
@@ -1711,7 +1738,6 @@ renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Joule Phrase Doubler 
 renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Joule Phrase Doubler",invoke=function() joulephrasedoubler() end}  
 renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Joule Phrase Halver",invoke=function() joulephrasehalver() end}  
 
-
 function joulephrasehalver()
   local old_phraselength = renoise.song().selected_phrase.number_of_lines
   local s=renoise.song()
@@ -1731,8 +1757,6 @@ for line_index, line in ipairs(s.selected_phrase.lines) do
  end
 end
 
-
-
 --Modification, cursor is placed to "start of "clone""
 --commented away because there is no way to set current_phrase_index.
   -- renoise.song().selected_line_index = old_patternlength+1
@@ -1747,12 +1771,9 @@ end
 program: CaptureOctave v1.1
 author: cortex
 ]]--
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Capture Nearest Instrument and Octave Cortex",
-  invoke=function(repeated) capture_ins_oct() end}
-renoise.tool():add_keybinding{name="Mixer:Paketti:Capture Nearest Instrument and Octave Cortex",
-  invoke=function(repeated) capture_ins_oct() end}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Capture Nearest Instrument and Octave Cortex",
-  invoke=function(repeated) capture_ins_oct() end} 
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Capture Nearest Instrument and Octave Cortex", invoke=function(repeated) capture_ins_oct() end}
+renoise.tool():add_keybinding{name="Mixer:Paketti:Capture Nearest Instrument and Octave Cortex", invoke=function(repeated) capture_ins_oct() end}
+renoise.tool():add_midi_mapping{name="Global:Paketti:Capture Nearest Instrument and Octave Cortex", invoke=function(repeated) capture_ins_oct() end} 
 
 function capture_ins_oct()
    local closest_note = {}  
@@ -1900,7 +1921,7 @@ if efc==nil then
 end
 end
 
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Reverse Sample effect 0B001 on/off",invoke=function()
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Reverse Sample effect 0B01 on/off",invoke=function()
 local s=renoise.song()
 local nci=s.selected_note_column_index 
 s.selected_effect_column_index=1
@@ -2006,7 +2027,6 @@ oprint("Effect name: " .. devices[2].name)
 oprint("Effect path: " .. devices[2].device_path)
 for i=1,(table.count(devices[2].parameters)) 
 do oprint (devices[2].name .. " " .. i .. " " .. devices[2].parameters[i].name .. devices[2].parameters[i].value) end
-
  end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Inspect Effect Slot 2",invoke=function() inspectEffect() end}
@@ -2107,7 +2127,7 @@ local s=renoise.song()
    s.tracks[i].collapsed=true end
 end
 
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Collapser",invoke=function() Collapser() end}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Collapser",invoke=function() Collapser() end}
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Uncollapser",invoke=function() Uncollapser() end}
 --Global keyboard shortcuts
 renoise.tool():add_keybinding{name="Global:Paketti:Uncollapser",invoke=function() Uncollapser() end}

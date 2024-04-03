@@ -466,7 +466,7 @@ function instrument_is_empty(instrument)
 end
 
 ------------------------------------------------------------------------------------------------------------
-renoise.tool():add_keybinding  {name="Global:Paketti:Record to Current Track+plus", 
+renoise.tool():add_keybinding{name="Global:Paketti:Record to Current Track+plus", 
 invoke=function() 
       renoise.app().window.active_lower_frame=1
 local howmany = table.count(renoise.song().selected_track.devices)
@@ -494,9 +494,9 @@ renoise.tool():add_midi_mapping{name="Paketti:Record to Current Track x[Toggle]"
  renoise.app().window.lower_frame_is_visible=true
 end}
 
-renoise.tool():add_menu_entry{name="Sample Mappings:Record To Current", invoke=function() recordtocurrenttrack() end}
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Record To Current", invoke=function() recordtocurrenttrack() end}
 
-renoise.tool():add_keybinding  {name="Global:Paketti:Record to Current Track", invoke=function() recordtocurrenttrack() 
+renoise.tool():add_keybinding{name="Global:Paketti:Record to Current Track", invoke=function() recordtocurrenttrack() 
 local s=renoise.song()
 s.selected_instrument_index = search_empty_instrument()
   if renoise.song().transport.playing==false then renoise.song().transport.playing=true end
@@ -707,10 +707,6 @@ function RecordToggle()
 end
 end
 ----------------------------------------------------------------------------------------------------------
--- Show or hide pattern matrix
-function showhidepatternmatrix()
-local pmv=renoise.app().window.pattern_matrix_is_visible
-      if pmv==true then pmv=false else pmv=true end end
 ---------------------------------------------------------------------------------------------------------
 function delete_effect_column()
 local s=renoise.song()
@@ -732,51 +728,9 @@ renoise.tool():add_keybinding{name="Global:Track Devices:Load TOGU Audioline Dub
 renoise.tool():add_keybinding{name="Global:Track Devices:Load TOGU Audioline Dub-Delay II", invoke=function() loadvst("Audio/Effects/AU/aumf:dub2:Togu") end}
 renoise.tool():add_keybinding{name="Global:Track Devices:Load TOGU Audioline Dub-Delay III",invoke=function() loadvst("Audio/Effects/AU/aumf:xg70:TOGU") end}
 
---vV's wonderful sample keyzone noteon/noteoff copier + octave transposition for note-off:
-local NOTE_ON = renoise.Instrument.LAYER_NOTE_ON
-local NOTE_OFF = renoise.Instrument.LAYER_NOTE_OFF
-
-local function copy_note_layers(source_layer,target_layer, offset)
-  local instrument = renoise.song().selected_instrument_index
-  
-  --delete target layers prior to copying (to prevent overlays)
-  if #renoise.song().instruments[instrument].sample_mappings[target_layer] > 0 then
-    --Note that when using the delete_sample_mapping, the index is changing on-the-fly
-    --So you have to remove the mappings from the last to the first entry instead of vice versa.
-    --Else you get errors half-way.
-    for i = #renoise.song().instruments[instrument].sample_mappings[target_layer],1,-1  do
-      renoise.song().instruments[instrument]:delete_sample_mapping_at(target_layer, i)
-    end
-  end
-  
-  for i = 1,#renoise.song().instruments[instrument].sample_mappings[source_layer] do
-
-    local base_note = renoise.song().instruments[instrument].sample_mappings[source_layer][i].base_note
-    local map_velocity_to_volume = renoise.song().instruments[instrument].sample_mappings[source_layer][i].map_velocity_to_volume
-    local note_range = renoise.song().instruments[instrument].sample_mappings[source_layer][i].note_range
-    local sample_index = renoise.song().instruments[instrument].sample_mappings[source_layer][i].sample_index
-    local use_envelopes = renoise.song().instruments[instrument].sample_mappings[source_layer][i].use_envelopes
-    local velocity_range = renoise.song().instruments[instrument].sample_mappings[source_layer][i].velocity_range
-    local oct_base_note=nil
-    oct_base_note= base_note + offset
-    renoise.song().instruments[instrument]:insert_sample_mapping(target_layer, sample_index,oct_base_note,note_range,velocity_range)
-   end
-end
-
-local function norm() copy_note_layers(NOTE_ON, NOTE_OFF, 0) end
-local function octdn() copy_note_layers(NOTE_ON, NOTE_OFF, 12) end
-local function octup() copy_note_layers(NOTE_ON, NOTE_OFF, -12) end
-local function octdntwo() copy_note_layers(NOTE_ON, NOTE_OFF, 24) end
-local function octuptwo() copy_note_layers(NOTE_ON, NOTE_OFF, -24) end
-
-renoise.tool():add_menu_entry{name="--Sample Mappings:Copy note-on to note-off layer +12", invoke = octup}
-renoise.tool():add_menu_entry{name="Sample Mappings:Copy note-on to note-off layer +24", invoke = octuptwo}
-renoise.tool():add_menu_entry{name="Sample Mappings:Copy note-on to note-off layer", invoke = norm}
-renoise.tool():add_menu_entry{name="Sample Mappings:Copy note-on to note-off layer -12", invoke = octdn}
-renoise.tool():add_menu_entry{name="Sample Mappings:Copy note-on to note-off layer -24", invoke = octdntwo}
 
 --EZMaximizeSpectrum
---December 15, 2011, Renoise 2.8 B2
+--December 15, 2011, Renoise 2.8 only
 --esaruoho
 function EZMaximizeSpectrum()
 local s=renoise.song()
@@ -796,19 +750,7 @@ renoise.tool():add_keybinding{name="Global:Paketti:EZ Maximize Spectrum", invoke
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:EZ Maximize Spectrum", invoke=function() EZMaximizeSpectrum() end}
 renoise.tool():add_menu_entry{name="Mixer:EZ Maximize Spectrum", invoke=function() EZMaximizeSpectrum() end}
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:EZ Maximize Spectrum", invoke=function() EZMaximizeSpectrum() end}
---------------------------------------
 ----------------------------------------------------------------------------------------------------------
--- Midi
-renoise.tool():add_midi_mapping{name="Global:Paketti:Start Playback from Cursor Row x[Toggle]",  invoke=function() ImpulseTrackerPlaySong() end}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Stop Playback (Panic) x[Toggle]",  invoke=function() ImpulseTrackerStop() end}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Play Current Line & Advance by EditStep x[Toggle]",  invoke=function() PlayCurrentLine() end}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Show/Hide Pattern Matrix x[Toggle]", invoke=function() showhidepatternmatrix() end}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Record and Follow On/Off x[Toggle]", invoke=function() RecordFollowToggle() 
-renoise.app().window.active_middle_frame=1 end}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Metronome On/Off x[Toggle]", invoke=function() MetronomeOff() end}
-renoise.tool():add_midi_mapping{name="Global:Tools:Delay +1 Increase x[Toggle]", invoke=function() plusdelay(1) end}
-renoise.tool():add_midi_mapping{name="Global:Tools:Delay -1 Increase x[Toggle]", invoke=function() plusdelay(-1) end}
-------------------------------------------------------------------------------------------------------
 -- Menu Entries
 -- Pattern Matrix
 renoise.tool():add_menu_entry{name="Pattern Matrix:Paketti..:Bypass EFX", invoke=function() effectbypass() end}

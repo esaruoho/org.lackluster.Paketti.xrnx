@@ -74,20 +74,15 @@ function sample_and_to_sample_editor()
 
 
 end
-renoise.tool():add_menu_entry{name = "Instrument Box:Start Sampling (Record)", invoke=function() sample_and_to_sample_editor()
-renoise.app().window.sample_record_dialog_is_visible = true end}  
 
-renoise.tool():add_menu_entry{name = "--Sample Editor:Paketti:Start Sampling (Record)", invoke=function() sample_and_to_sample_editor()
-renoise.app().window.sample_record_dialog_is_visible=true 
-end}  
+renoise.tool():add_menu_entry{name="--Sample Editor:Paketti..:Start Sampling (Record)", invoke=function() sample_and_to_sample_editor()
+renoise.app().window.sample_record_dialog_is_visible=true end}  
 
-renoise.tool():add_menu_entry{name = "Pattern Editor:Paketti..:Start Sampling (Record)", invoke=function() sample_and_to_sample_editor()
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Start Sampling (Record)", invoke=function() sample_and_to_sample_editor()
 renoise.app().window.sample_record_dialog_is_visible=true end}  
 
 renoise.tool():add_keybinding{name="Global:Paketti:Sample NOW then F3 (Record)", invoke=function() sample_and_to_sample_editor()
 F3() end}
-
-
 -------
 local lsfvariable=nil
 lsfvariable=os.tmpname("wav")
@@ -121,7 +116,7 @@ renoise.app():show_status("Saved")
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Save Sample to Live Smart Folder",invoke=function() SampleToLiveSF() end}
-renoise.tool():add_menu_entry{name="Instrument Box:Paketti:Save Sample to Live Smart Folder",invoke=function() SampleToLiveSF() end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Save Sample to Live Smart Folder",invoke=function() SampleToLiveSF() end}
 
 function SampleToLogicSF()
 local lsfvariable=nil
@@ -135,7 +130,7 @@ renoise.app():show_status("Saved")
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Save Sample to Logic Smart Folder",invoke=function() SampleToLogicSF() end}
-renoise.tool():add_menu_entry{name="Instrument Box:Paketti:Save Sample to Logic Smart Folder",invoke=function() SampleToLogicSF() end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Save Sample to Logic Smart Folder",invoke=function() SampleToLogicSF() end}
 
 ----------------------------------------------------------------------------------------------------------
 -- Set current tempo to 75% of current tempo. Set current tempo back to the original 100% tempo.
@@ -208,7 +203,6 @@ function search_empty_instrument()
   proc:insert_instrument_at(#proc.instruments+1)
   return #proc.instruments
 end
-
 ------------------------------------------------------------------------------------------------------------
 --This records to currently selected track and outputs 0G01 and c-4 and selected_instrument
 function recordtocurrenttrack()
@@ -325,12 +319,11 @@ renoise.tool():add_midi_mapping{name="Paketti:Record to Current Track x[Toggle]"
   renoise.app().window.lower_frame_is_visible=true
 end}
 
-renoise.tool():add_menu_entry{name="Pattern Editor:Record To Current", invoke=function() recordtocurrenttrack() end}
-renoise.tool():add_menu_entry{name="Mixer:RecordToCurrent", invoke=function() recordtocurrenttrack() end}
-renoise.tool():add_menu_entry{name="Instrument Box:Record To Current", invoke=function() recordtocurrenttrack() end}
-renoise.tool():add_menu_entry{name="Sample Editor:Record To Current", invoke=function() recordtocurrenttrack() end}
-renoise.tool():add_menu_entry{name="Sample Mappings:Record To Current", invoke=function() recordtocurrenttrack() end}
-renoise.tool():add_keybinding{name="Global:Paketti:Record to Current Track", invoke=function() recordtocurrenttrack() 
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Record to Current Track", invoke=function() recordtocurrenttrack() end}
+renoise.tool():add_menu_entry{name="Mixer:Paketti..:Record to Current Track", invoke=function() recordtocurrenttrack() end}
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Record to Current Track", invoke=function() recordtocurrenttrack() end}
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Record to Current Track", invoke=function() recordtocurrenttrack() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Record to Current Track Track", invoke=function() recordtocurrenttrack() 
 local s=renoise.song()
  local t=renoise.song().transport
 
@@ -344,7 +337,7 @@ s.selected_instrument_index = search_empty_instrument()
  renoise.app().window.lower_frame_is_visible=true
  renoise.app().window.active_lower_frame=2 end}
 
- renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Start Sampling (Record)", invoke=function()
+ renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Start Sampling (Record)", invoke=function()
 local s=renoise.song()
 local t=s.transport
 if not t.playing then t.playing=true end
@@ -360,7 +353,7 @@ s.selected_instrument_index = search_empty_instrument()
  renoise.app().window.lower_frame_is_visible=true
  renoise.app().window.active_lower_frame=2 end}
 
-renoise.tool():add_keybinding  {name="Global:Paketti:Record to Current Track w/Metronome", invoke=function() 
+renoise.tool():add_keybinding{name="Global:Paketti:Record to Current Track w/Metronome", invoke=function() 
 local s=renoise.song()
 local t=s.transport
 
@@ -383,4 +376,19 @@ s.selected_instrument_index = search_empty_instrument()
  t.follow_player=true
  renoise.app().window.lower_frame_is_visible=true
  renoise.app().window.active_lower_frame=2 end}
+
+
+
+
+
+
+renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Record to Current Track", invoke=function() recordtocurrenttrack() end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Start Sampling (Record)", invoke=function() sample_and_to_sample_editor()
+renoise.app().window.sample_record_dialog_is_visible=true end}  
+
+
+
+
+
+
 

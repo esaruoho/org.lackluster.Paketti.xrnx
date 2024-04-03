@@ -17,19 +17,20 @@ local plugins = renoise.song().selected_instrument.plugin_properties.available_p
   end
 end}
 
-renoise.tool():add_keybinding{name="Global:Paketti:Dump Effects to Console", invoke=function() 
+renoise.tool():add_keybinding{name="Global:Paketti:Dump VST/AU/Native Effects to Console", invoke=function() 
 local devices = renoise.song().tracks[renoise.song().selected_track_index].available_devices
   for key, value in ipairs (devices) do 
     print(key, value)
   end
 end}
 
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Dump Effects to Console", invoke=function() 
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Dump VST/AU/Native Effects to Console", invoke=function() 
 local devices = renoise.song().tracks[renoise.song().selected_track_index].available_devices
   for key, value in ipairs (devices) do 
     print(key, value)
   end
 end}
+
 
 
 
@@ -106,7 +107,7 @@ renoise.tool():add_keybinding{name = "Global:Paketti:Load FabFilter One", invoke
 local pd=renoise.song().selected_instrument.plugin_properties.plugin_device
  if pd.external_editor_visible==false then pd.external_editor_visible=true end end}
 ------------------------------------------------------------------------------------------------------------
-renoise.tool():add_keybinding{name = "Global:Paketti:Load Surge", invoke=function() renoise.song().instruments[renoise.song().selected_instrument_index].plugin_properties:load_plugin("Audio/Generators/VST/Surge")
+renoise.tool():add_keybinding{name = "Global:Paketti:Load Surge (VST)", invoke=function() renoise.song().instruments[renoise.song().selected_instrument_index].plugin_properties:load_plugin("Audio/Generators/VST/Surge")
 local pd=renoise.song().selected_instrument.plugin_properties.plugin_device
  if pd.external_editor_visible==false then pd.external_editor_visible=true end 
  
@@ -126,8 +127,7 @@ end
 renoise.app().window.active_middle_frame=3
 s.selected_instrument.active_tab=2 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Load U-He Zebra", invoke=function() LoadZebra() end}
-
+renoise.tool():add_keybinding{name="Global:Paketti:Load U-He Zebra (VST)", invoke=function() LoadZebra() end}
 
 ------------------------------------------------------------------------------------------------------------
 function LoadPPG()
@@ -150,7 +150,7 @@ renoise.song().instruments[renoise.song().selected_instrument_index].plugin_prop
 
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Load Waldorf PPG v2", invoke=function() LoadPPG() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Waldorf PPG v2 (VST)", invoke=function() LoadPPG() end}
 ------------------------------------------------------------------------------------------------------------
 function LoadAttack()
 local s=renoise.song()
@@ -164,7 +164,7 @@ if s.selected_instrument.plugin_properties.plugin_loaded
 renoise.app().window.active_middle_frame=3
 s.selected_instrument.active_tab=2 
 end
-renoise.tool():add_keybinding{name="Global:Paketti:Load Waldorf Attack", invoke=function() LoadAttack() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Waldorf Attack (VST)", invoke=function() LoadAttack() end}
 ------------------------------------------------------------------------------------------------------------
 function loadnative(effect)
 local checkline=nil
@@ -201,6 +201,13 @@ local sdevices=s.selected_track.devices
   if s.selected_track.devices[checkline].name=="#Line Input" then 
   s.selected_track.devices[2].parameters[2].show_in_mixer=true
   else end
+
+  if s.selected_track.devices[checkline].name=="#Send" then 
+  s.selected_track.devices[2].parameters[2].show_in_mixer=true
+  -- This loads "#SendPakettiInit"
+  renoise.song().selected_track.devices[2].active_preset=2
+  else end
+
     
 end
 
@@ -403,27 +410,38 @@ renoise.tool():add_keybinding{name="Global:Track Devices:Load OhmForce Predatohm
 renoise.tool():add_keybinding{name="Global:Track Devices:Load OhmForce Hematohm", invoke=function() loadvst("Audio/Effects/AU/aumf:OHmt:OmFo") end}
 renoise.tool():add_keybinding{name="Global:Track Devices:Load OhmForce OhmBoyz", invoke=function() loadvst("Audio/Effects/AU/aumf:OByZ:OmFo") end}
 renoise.tool():add_keybinding{name="Global:Track Devices:Load QuikQuak FusionField", invoke=function() loadvst("Audio/Effects/AU/aumf:FuFi:QkQk") end}
-renoise.tool():add_keybinding{name="Global:Track Devices:Load Schaack Transient Shaper", invoke=function() loadvst("Audio/Effects/VST/TransientShaper") end}
+renoise.tool():add_keybinding{name="Global:Track Devices:Load Schaack Transient Shaper (VST)", invoke=function() loadvst("Audio/Effects/VST/TransientShaper") end}
 renoise.tool():add_keybinding{name="Global:Track Devices:Load FabFilter Pro-Q 3", invoke=function() loadvst("Audio/Effects/AU/aumf:FQ3p:FabF") end}
+renoise.tool():add_keybinding{name="Global:Track Devices:Load FabFilter Pro-Q 3 (VST)", invoke=function() loadvst("Audio/Effects/VST/FabFilter Pro-Q 3") end}
 renoise.tool():add_keybinding{name="Global:Track Devices:Load TAL-Reverb 4", invoke=function() loadvst("Audio/Effects/AU/aufx:reV4:TOGU") end}
 renoise.tool():add_keybinding{name="Global:Track Devices:Load TAL-Dub 3 AU", invoke=function() loadvst("Audio/Effects/AU/aumf:xg70:TOGU") end}
 renoise.tool():add_keybinding{name="Global:Track Devices:Load TAL-Chorus LX", invoke=function() loadvst("Audio/Effects/AU/aufx:cHL1:TOGU") end}
 renoise.tool():add_keybinding{name="Global:Track Devices:Load TAL-Chorus", invoke=function() loadvst("Audio/Effects/AU/aufx:Chor:Togu") end}
+
+-- ValhallaDSP (AU)
 renoise.tool():add_keybinding{name="Global:Track Devices:Load ValhallaRoom", invoke=function() loadvst("Audio/Effects/AU/aufx:Ruum:oDin") end}
 renoise.tool():add_keybinding{name="Global:Track Devices:Load ValhallaShimmer", invoke=function() loadvst("Audio/Effects/AU/aufx:shmr:oDin") end}
 renoise.tool():add_keybinding{name="Global:Track Devices:Load ValhallaFreqEchoMkI", invoke=function() loadvst("Audio/Effects/AU/aufx:FqEh:oDin") end}
 renoise.tool():add_keybinding{name="Global:Track Devices:Load ValhallaDelay", invoke=function() loadvst("Audio/Effects/AU/aufx:dLay:oDin") end}
 renoise.tool():add_keybinding{name="Global:Track Devices:Load ValhallaVintageVerb", invoke=function() loadvst("Audio/Effects/AU/aufx:vee3:oDin") end}
+renoise.tool():add_keybinding{name="Global:Track Devices:Load ValhallaSpaceModulator (AU)", invoke=function() loadvst("Audio/Effects/AU/aufx:SpMd:oDi") end}
+-- ValhallaDSP (VST)
+renoise.tool():add_keybinding{name="Global:Track Devices:Load ValhallaRoom (VST)", invoke=function() loadvst("Audio/Effects/VST/ValhallaRoom") end}
+renoise.tool():add_keybinding{name="Global:Track Devices:Load ValhallaShimmer (VST)", invoke=function() loadvst("Audio/Effects/VST/ValhallaShimmer") end}
+renoise.tool():add_keybinding{name="Global:Track Devices:Load ValhallaFreqEchoMkI (VST)", invoke=function() loadvst("Audio/Effects/VST/ValhallaFreqEcho") end}
+renoise.tool():add_keybinding{name="Global:Track Devices:Load ValhallaDelay (VST)", invoke=function() loadvst("Audio/Effects/VST/ValhallaDelay") end}
+renoise.tool():add_keybinding{name="Global:Track Devices:Load ValhallaVintageVerb (VST)", invoke=function() loadvst("Audio/Effects/VST/ValhallaVintageVerb") end}
+renoise.tool():add_keybinding{name="Global:Track Devices:Load ValhallaSpaceModulator (VST)", invoke=function() loadvst("Audio/Effects/VST/ValhallaSpaceModulator") end}
 ----------------------------------------------------------------------------------------------------------------------------------------------- VST
-renoise.tool():add_keybinding{name="Global:Track Devices:Load FabFilter Pro-Q", invoke=function() loadvst("Audio/Effects/VST/FabFilter Pro-Q") end}
-renoise.tool():add_keybinding{name="Global:Track Devices:Load GRM PitchAccum Stereo", invoke=function() loadvst("Audio/Effects/VST/GRM PitchAccum Stereo") end}
-renoise.tool():add_keybinding{name="Global:Track Devices:Load GRM Delays Stereo", invoke=function() loadvst("Audio/Effects/VST/GRM Delays Stereo") end}
-renoise.tool():add_keybinding{name="Global:Track Devices:Load GRM Reson Stereo", invoke=function() loadvst("Audio/Effects/VST/GRM Reson Stereo") end}
-renoise.tool():add_keybinding{name="Global:Track Devices:Load TAL-Dub 3 VST", invoke=function() loadvst("Audio/Effects/VST/TAL-Dub-3") end}
-renoise.tool():add_keybinding{name="Global:Track Devices:Load WatKat", invoke=function() loadvst("Audio/Effects/VST/WatKat") end}
+renoise.tool():add_keybinding{name="Global:Track Devices:Load FabFilter Pro-Q (VST)", invoke=function() loadvst("Audio/Effects/VST/FabFilter Pro-Q") end}
+renoise.tool():add_keybinding{name="Global:Track Devices:Load GRM PitchAccum Stereo (VST)", invoke=function() loadvst("Audio/Effects/VST/GRM PitchAccum Stereo") end}
+renoise.tool():add_keybinding{name="Global:Track Devices:Load GRM Delays Stereo (VST)", invoke=function() loadvst("Audio/Effects/VST/GRM Delays Stereo") end}
+renoise.tool():add_keybinding{name="Global:Track Devices:Load GRM Reson Stereo (VST)", invoke=function() loadvst("Audio/Effects/VST/GRM Reson Stereo") end}
+renoise.tool():add_keybinding{name="Global:Track Devices:Load TAL-Dub 3 (VST)", invoke=function() loadvst("Audio/Effects/VST/TAL-Dub-3") end}
+renoise.tool():add_keybinding{name="Global:Track Devices:Load WatKat (VST)", invoke=function() loadvst("Audio/Effects/VST/WatKat") end}
 ---------------------------------------------------------------------------------------
 --- Combinations
-renoise.tool():add_keybinding{name="Global:Track Devices:Load EQ10+Schaack Transient Shaper", invoke=function() 
+renoise.tool():add_keybinding{name="Global:Track Devices:Load EQ10+Schaack Transient Shaper (VST)", invoke=function() 
 loadvst("Audio/Effects/VST/TransientShaper")
 loadnative("Audio/Effects/Native/EQ 10") end}
 
@@ -434,4 +452,92 @@ renoise.song().selected_track:insert_device_at("Audio/Effects/Native/DC Offset",
 renoise.song().selected_device_index=2
 renoise.song().selected_track.devices[2].parameters[2].value=1
 end}
+
+
+
+function writeToClipboard(text)
+local devices = renoise.song().tracks[renoise.song().selected_track_index].available_devices
+
+    local command = 'echo "' .. text .. '" | pbcopy'
+    os.execute(command)
+end
+
+function launchApp(appName)
+os.execute(appName)
+end
+
+--renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:writeToClipboard",invoke=function() 
+--writeToClipboard(for key, value in ipairs (devices) do  print(key, value)
+--end}
+
+--renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Dump VST/AU/Native Effects to Clipboard", invoke=function() 
+
+
+
+--) end}
+renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Ableton Live..:Launch Ableton Live 12",invoke=function() launchApp("open -a 'Ableton\ Live\ 12\ Suite\.app'") end}
+
+--local command = 'open -a "/Applications\ Live\ 12\ Suite.app"' .. renoise.song().selected_instrument_sample .. "'
+--os.execute(command)
+
+
+
+
+
+--function() launchApp("open -a 'Ableton\ Live\ 12\ Suite.app' .. renoise.song().selected_instrument.sample") end}
+
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Pure Data..:Launch Pure Data",invoke=function() launchApp("open -a 'Pd-0.54-1.app'") end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Logic Pro..:Launch Logic Pro",invoke=function() launchApp("open -a 'Logic\ Pro.app'") end}
+
+function saveSamplesToLogicSmartFolder()
+local s=renoise.song()
+--local additionalname=os.clock
+for i = 1, #renoise.song().instruments do
+--instruments[i].samples[1]
+renoise.app():show_status("Saving")
+  s.instruments[i].samples[1].sample_buffer:save_as(path .. path2 .. i .. ".wav", "wav")
+os.execute("sox " .. path .. path2 .. i .. " -b 24 " .. path .. path2 .. i .. i .. ".wav")
+
+--os.execute("open -a Logic\ Pro.app /Users/esaruoho/Music/Logic/abs4/abs4/abs4.logic")
+end
+renoise.app():show_status("32Bit to 24Bit Conversion From Tmp-folder to Logic Smart Folder Done")
+os.execute("cd /Users/esaruoho/Music/samples/LogicSmartFolder;open .") end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Save All Samples to Logic Smart Folder", invoke=function() saveSamplesToLogicSmartFolder() end}
+----
+
+function saveSamplesToLiveSmartFolder()
+local s=renoise.song()
+--local additionalname=os.clock
+for i = 1, #renoise.song().instruments do
+--instruments[i].samples[1]
+renoise.app():show_status("Saving")
+  s.instruments[i].samples[1].sample_buffer:save_as(path .. path2 .. i .. ".wav", "wav")
+os.execute("sox " .. path .. path2 .. i .. " -b 24 " .. path .. path2 .. i .. i .. ".wav")
+
+--os.execute("open -a Logic\ Pro.app /Users/esaruoho/Music/Logic/abs4/abs4/abs4.logic")
+end
+renoise.app():show_status("32Bit to 24Bit Conversion From Tmp-folder to Logic Smart Folder Done")
+os.execute("cd /Users/esaruoho/Music/samples/LiveSmartFolder;open .") end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Save All Samples to Live Smart Folder", invoke=function() saveSamplesToLiveSmartFolder() end}
+renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Logic Pro..:Save All Samples to Logic Smart Folder", invoke=function() saveSamplesToLogicSmartFolder() end}
+renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Ableton Live..:Save All Samples to Live Smart Folder", invoke=function() saveSamplesToLiveSmartFolder() end}
+
+
+----
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

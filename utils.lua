@@ -110,6 +110,147 @@ function cycle_lower_frame()
   renoise.app().window.active_lower_frame = frames[index]
 end
 
-renoise.tool():add_keybinding {name="Global:Paketti:dBlue Cycle Middle Frame", invoke=function() cycle_middle_frame() end}
-renoise.tool():add_keybinding {name="Global:Paketti:dBlue Cycle Upper Frame", invoke=function() cycle_upper_frame() end}
-renoise.tool():add_keybinding {name="Global:Paketti:dBlue Cycle Lower Frame", invoke=function() cycle_lower_frame() end}
+renoise.tool():add_keybinding{name="Global:Paketti:dBlue Cycle Middle Frame", invoke=function() cycle_middle_frame() end}
+renoise.tool():add_keybinding{name="Global:Paketti:dBlue Cycle Upper Frame", invoke=function() cycle_upper_frame() end}
+renoise.tool():add_keybinding{name="Global:Paketti:dBlue Cycle Lower Frame", invoke=function() cycle_lower_frame() end}
+
+
+
+require "FormulaDeviceManual"
+
+renoise.tool():add_keybinding{name="Global:Paketti:FormulaDevice", invoke=function()  
+renoise.app().window.lower_frame_is_visible=true
+renoise.app().window.active_lower_frame=1
+renoise.song().tracks[renoise.song().selected_track_index]:insert_device_at("Audio/Effects/Native/*Formula", 2)  
+local infile = io.open( "FormulaDeviceXML.txt", "rb" )
+local indata = infile:read( "*all" )
+renoise.song().tracks[renoise.song().selected_track_index].devices[2].active_preset_data = indata
+infile:close()
+
+show_manual (
+    "Formula Device Documentation", -- manual dialog title
+    "FormulaDevice.txt" -- the textfile which contains the manual
+  )
+end}
+
+
+-- :::::Automation ExpCurve
+-- For some strange reason this keeps putting the information into the channel, not in the automation
+function drawVol()
+local pos = renoise.song().transport.edit_pos
+local pos1 = renoise.song().transport.edit_pos
+local edit = renoise.song().transport.edit_mode
+local length = renoise.song().selected_pattern.number_of_lines
+local curve = 1.105
+loadnative("Audio/Effects/Native/Gainer")
+renoise.song().selected_track.devices[2].is_maximized=false
+for i=1, length do
+renoise.song().transport.edit_mode = true
+pos.line = i
+renoise.song().transport.edit_pos = pos
+renoise.song().selected_track.devices[2].parameters[1]:record_value(math.pow(curve, i) / math.pow(curve, length))
+end
+
+renoise.song().transport.edit_mode = edit
+renoise.song().transport.edit_pos = pos1
+end
+renoise.tool():add_keybinding {name = "Global:Paketti:ExpCurveVol", invoke=function() drawVol() end}
+renoise.tool():add_menu_entry {name = "Pattern Editor:Paketti..:ExpCurveVol", invoke=function() drawVol() end}
+renoise.tool():add_menu_entry {name = "Pattern Matrix:Paketti..:ExpCurveVol", invoke=function() drawVol() end}
+--renoise.tool():add_keybinding {name = "Global:Paketti:ExpCurveVol", invoke=function() drawVol() end}
+
+-- Track Automation
+renoise.tool():add_menu_entry{name="Track Automation:Paketti..:ExpCurveVol", invoke=function() drawVol() end}
+renoise.tool():add_menu_entry{name="Track Automation List:Paketti..:ExpCurveVol", invoke=function() drawVol() end}
+---------------------------
+
+
+--vV's wonderful sample keyzone noteon/noteoff copier + octave transposition for note-off:
+local NOTE_ON = renoise.Instrument.LAYER_NOTE_ON
+local NOTE_OFF = renoise.Instrument.LAYER_NOTE_OFF
+
+local function copy_note_layers(source_layer,target_layer,offset)
+  local instrument = renoise.song().selected_instrument_index
+  
+  --delete target layers prior to copying (to prevent overlays)
+  if #renoise.song().instruments[instrument].sample_mappings[target_layer] > 0 then
+    --Note that when using the delete_sample_mapping, the index is changing on-the-fly
+    --So you have to remove the mappings from the last to the first entry instead of vice versa.
+    --Else you get errors half-way.
+    for i = #renoise.song().instruments[instrument].sample_mappings[target_layer],1,-1  do
+      renoise.song().instruments[instrument]:delete_sample_mapping_at(target_layer, i)
+    end
+  end
+  
+  for i = 1,#renoise.song().instruments[instrument].sample_mappings[source_layer] do
+
+    local base_note = renoise.song().instruments[instrument].sample_mappings[source_layer][i].base_note
+    local map_velocity_to_volume = renoise.song().instruments[instrument].sample_mappings[source_layer][i].map_velocity_to_volume
+    local note_range = renoise.song().instruments[instrument].sample_mappings[source_layer][i].note_range
+    local sample_index = renoise.song().instruments[instrument].sample_mappings[source_layer][i].sample
+--    local use_envelopes = renoise.song().instruments[instrument].sample_mappings[source_layer][i].use_envelopes
+    local velocity_range = renoise.song().instruments[instrument].sample_mappings[source_layer][i].velocity_range
+    local oct_base_note=nil
+    oct_base_note=base_note+offset
+    renoise.song().instruments[instrument]:insert_sample_mapping(target_layer, sample_index,oct_base_note,note_range,velocity_range)
+   end
+end
+
+local function norm() copy_note_layers(NOTE_ON, NOTE_OFF, 0) end
+local function octdn() copy_note_layers(NOTE_ON, NOTE_OFF, 12) end
+local function octup() copy_note_layers(NOTE_ON, NOTE_OFF, -12) end
+local function octdntwo() copy_note_layers(NOTE_ON, NOTE_OFF, 24) end
+local function octuptwo() copy_note_layers(NOTE_ON, NOTE_OFF, -24) end
+
+renoise.tool():add_menu_entry{name="--Sample Mappings:Paketti..:Copy Note-On to Note-Off Layer +12", invoke = octup}
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy Note-On to Note-Off Layer +24", invoke = octuptwo}
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy Note-On to Note-Off Layer", invoke = norm}renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy Note-On to Note-Off Layer -12", invoke = octdn}
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy Note-On to Note-Off Layer -24", invoke = octdntwo}
+
+
+
+local NOTE_ON = renoise.Instrument.LAYER_NOTE_ON
+local NOTE_OFF = renoise.Instrument.LAYER_NOTE_OFF
+
+local function copy_note_layers(source_layer, target_layer, offset)
+  local instrument_index = renoise.song().selected_instrument_index
+  local instrument = renoise.song():instrument(instrument_index) -- Get the instrument object
+  
+  -- Delete target layers prior to copying
+  if #instrument.sample_mappings[target_layer] > 0 then
+    for i = #instrument.sample_mappings[target_layer], 1, -1 do
+      instrument:delete_sample_mapping_at(target_layer, i)
+    end
+  end
+  
+  -- Copy mappings from source to target layer
+  for _, mapping in ipairs(instrument.sample_mappings[source_layer]) do
+    local oct_base_note = mapping.base_note + offset
+    instrument:insert_sample_mapping(target_layer, mapping.sample, oct_base_note, mapping.note_range, mapping.velocity_range)
+  end
+end
+
+-- Utility functions for different offsets
+local function norm() copy_note_layers(NOTE_ON, NOTE_OFF, 0) end
+local function octdn() copy_note_layers(NOTE_ON, NOTE_OFF, 12) end
+local function octup() copy_note_layers(NOTE_ON, NOTE_OFF, -12) end
+local function octdntwo() copy_note_layers(NOTE_ON, NOTE_OFF, 24) end
+local function octuptwo() copy_note_layers(NOTE_ON, NOTE_OFF, -24) end
+
+-- Adding menu entries
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy1 Note-On to Note-Off Layer", invoke = norm}
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy1 Note-On to Note-Off Layer +12", invoke = octup}
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy1 Note-On to Note-Off Layer +24", invoke = octuptwo}
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy1 Note-On to Note-Off Layer -12", invoke = octdn}
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy1 Note-On to Note-Off Layer -24", invoke = octdntwo}
+
+
+
+
+
+
+
+
+
+
+
