@@ -1,3 +1,4 @@
+-- has-line-input + add-line-input
 local function has_line_input()
 -- Write some code to find the line input in the correct place
 local tr = renoise.song().selected_track
@@ -18,7 +19,7 @@ local function remove_line_input()
  renoise.song().selected_track:delete_device_at(2)
 end
 
-
+-- recordamagic
 local function recordamagig9000(running)
     if running then
     renoise.song().transport.playing=true
@@ -41,7 +42,7 @@ invoke=function()
     recordtocurrenttrack()
  end
 end}
-
+-- turn samplerecorder ON
 function SampleRecorderOn()
 local howmany = table.count(renoise.song().selected_track.devices)
 
@@ -61,48 +62,14 @@ renoise.app().window.sample_record_dialog_is_visible=true
 end    
   end  
 
-else
-renoise.app().window.sample_record_dialog_is_visible=false
+else renoise.app().window.sample_record_dialog_is_visible=false
   if renoise.song().selected_track.devices[2].name=="#Line Input" then
   renoise.song().selected_track:delete_device_at(2)
   end
 end
-
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Display Sample Recorder with #Line Input", invoke=function() SampleRecorderOn() end}
-
-function recOffFollowOn()
-  renoise.song().transport.edit_mode=false
-  renoise.song().transport.follow_player=true
-  renoise.song().transport.playing=true
-end
-
-function recOnFollowOff()
-renoise.song().transport.edit_mode=true
-renoise.song().transport.follow_player=false
-renoise.song().transport.wrapped_pattern_edit=true
-renoise.app().window.active_middle_frame=1
-end
-
-renoise.tool():add_keybinding{name="Global:Paketti:Contour Shuttle Record Off", invoke=function() recOffFollowOn() end}
-renoise.tool():add_keybinding{name="Global:Paketti:Contour Shuttle Record On", invoke=function() recOnFollowOff() end}
-
-
-function KeybOctave(amount)
-local t = renoise.song().transport
-t.octave= (t.octave + amount) % 9
-end
-
-renoise.tool():add_keybinding{name="Global:Paketti:KeybOctave Up", invoke=function() KeybOctave(1) end}
-renoise.tool():add_keybinding{name="Global:Paketti:KeybOctave Down", invoke=function() KeybOctave(-1) end}
-
-function OctTranspose(UpOrDown)
-local note_column = renoise.song().selected_note_column 
-note_column.note_value = (note_column.note_value +UpOrDown) % 120
-end
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Transpose Octave Up", invoke=function() OctTranspose(12) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Transpose Octave Down", invoke=function() OctTranspose(-12) end}
 
 function AutoFilter()
 --renoise.song().tracks[get_master_track_index()].visible_effect_columns = 4  
@@ -132,31 +99,6 @@ end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Add Filter & LFO (AutoFilter)", invoke=function() AutoFilter() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Add Filter & LFO (AutoGapper)", invoke=function() AutoGapper() end}
-
-
-function JumpToNextRow()
-local LineGoTo = nil
-
-LineGoTo = renoise.song().selected_line_index
-
-
-renoise.song().tracks[get_master_track_index()].visible_effect_columns = 4
-if renoise.song().selected_pattern.tracks[get_master_track_index()].lines[renoise.song().selected_line_index].effect_columns[3].number_string == "ZB"
-then
-renoise.song().selected_pattern.tracks[get_master_track_index()].lines[renoise.song().selected_line_index].effect_columns[3].number_string = ""
-renoise.song().selected_pattern.tracks[get_master_track_index()].lines[renoise.song().selected_line_index].effect_columns[3].amount_string  = ""
-return
-end
-
-
-renoise.song().selected_pattern.tracks[get_master_track_index()].lines[renoise.song().selected_line_index].effect_columns[3].number_string = "ZB"
-
-if renoise.song().selected_line_index > 255 then LineGoTo = 00 end
-
-renoise.song().selected_pattern.tracks[get_master_track_index()].lines[renoise.song().selected_line_index].effect_columns[3].amount_value  = LineGoTo
-end
-
-renoise.tool():add_keybinding{name="Global:Paketti:Write Jump To Next Row (ZBxx)", invoke=function() JumpToNextRow() end}
 
 function glideamount(amount)
 local counter=nil 
@@ -447,14 +389,6 @@ renoise.tool():add_keybinding{name="Global:Paketti:Note Off / Caps Lock replacem
 if renoise.song().transport.wrapped_pattern_edit == false then PakettiCapsLockNoteOffNextPtn() 
 else PakettiCapsLockNoteOff() end
 end}
-
-function PakettiDelete()   
-local s=renoise.song()
-s.patterns[s.selected_pattern_index].tracks[s.selected_track_index].lines[s.selected_line_index].note_columns[s.selected_note_column_index].note_string="---"
-end
-
-renoise.tool():add_keybinding{name="Global:Paketti:Delete replacement", invoke=function() PakettiDelete() end}
-
 ---------------------------------
 function instrument_is_empty(instrument)
  local inst = renoise.song().instruments[instrument]
@@ -464,7 +398,6 @@ function instrument_is_empty(instrument)
  end
  if inst.plugin_properties.plugin_loaded or inst.midi_output_properties.device_name ~= "" or has_sample_data then return false else return true end
 end
-
 ------------------------------------------------------------------------------------------------------------
 renoise.tool():add_keybinding{name="Global:Paketti:Record to Current Track+plus", 
 invoke=function() 
@@ -575,89 +508,7 @@ local ooh=(i-1)
 renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[ooh].amount_string="01"
 end
 end
----------------------------------------------------------------------------------------------------------------
-function move_up(chg)
-local sindex=renoise.song().selected_line_index
-local s= renoise.song()
-local note=s.selected_note_column
---This switches currently selected row but doesn't 
---move the note
---s.selected_line_index = (sindex+chg)
--- moving note up, applying correct delay value and moving cursor up goes here
-end
---movedown
-function move_down(chg)
-local sindex=renoise.song().selected_line_index
-local s= renoise.song()
---This switches currently selected row but doesn't 
---move the note
---s.selected_line_index = (sindex+chg)
--- moving note down, applying correct delay value and moving cursor down goes here
-end
-----------------------------------------------------------------------------------------------------------
--- Insert 0B00 to first effect_column (destructive)
--- Oct 9th improvement:  If playback on, then step back by 3 rows to let the 0b00 play. if playback off
--- or if follow_off, then just input 0b00 to current_row. You can change the number by anything you like,
--- if you go below edit_pos 1 it will default to edit_pos1 (and playback_pos=1
-function upby(number)
-local result=nil
-local pos = renoise.song().transport.edit_pos
-result = pos.line-number
- if result <1 then result = 1
-  else print (result)
- end
-pos.line = result
-renoise.song().transport.edit_pos = pos
-renoise.song().transport.playback_pos = pos
-end
-
-function write_effect()
-
-  local s = renoise.song()
-  local efc = s.selected_effect_column
-
-    if efc==nil then
-         s.selected_effect_column.number_string="0L"
-         s.selected_effect_column.amount_value=00
-      else
-      if efc.number_string=="0L" and efc.amount_string=="00" then
-         s.selected_effect_column.number_string="0L"
-         s.selected_effect_column.amount_string="C0"
-      else
-         s.selected_effect_column.number_string="0L"
-         s.selected_effect_column.amount_value=00
-      end
-    end
-end
-
-function writeretrig()
-  local s = renoise.song()
-  local efc = s.selected_effect_column
-  local av = renoise.song().transport.lpb * 2
-    if efc==nil then
-         renoise.song().selected_effect_column.number_string="0R"
-         renoise.song().selected_effect_column.amount_value=av
-      else
-      if efc.number_string=="0R" and efc.amount_value==av then
-         renoise.song().selected_effect_column.number_string="00"
-         renoise.song().selected_effect_column.amount_string="00"
-      else
-         renoise.song().selected_effect_column.number_string="00"
-         renoise.song().selected_effect_column.amount_value=00 end end end
-
-renoise.tool():add_keybinding{name="Global:Paketti:Retrig 0RLPB On/Off", invoke=function() 
-renoise.song().selected_effect_column_index=1
-writeretrig() 
-  if renoise.song().selected_track.name=="Mst" then return
-else renoise.song().selected_note_column_index=1 end end} 
-
-renoise.tool():add_keybinding{name="Global:Paketti:SoloKey", invoke=function() soloKey() end}
-
-renoise.tool():add_keybinding{name="Global:Paketti:Volume effect 0L00 On/Off", invoke=function() 
-renoise.song().selected_effect_column_index=1
-write_effect() 
-  if renoise.song().selected_track.name=="Mst" then return
-else renoise.song().selected_note_column_index=1 end end} 
+-----------------------------------------------------------------------------------------------------
 
 function soloKey()
 local s=renoise.song()
@@ -666,25 +517,9 @@ local s=renoise.song()
     end
 
     s.transport.follow_player=true
-    
     if renoise.app().window.active_middle_frame~=1 then renoise.app().window.active_middle_frame=1 end
 end
 
-function voloff()
-local s = renoise.song()
-local efc = s.selected_effect_column
-local currTrak=s.selected_track_index
-local currLine=s.selected_line_index
-local currPatt=s.selected_pattern_index
-
-local ns=efc.number_string
-local as=efc.amount_string
-
-      if s.selected_effect_column=="0000" then
-      ns="0L"
-      as="00"
-      end      
-end
 --esa- 2nd keybind for Record Toggle ON/OFF  with effect_column reading
 function RecordToggle()
  local a=renoise.app()
@@ -707,49 +542,12 @@ function RecordToggle()
 end
 end
 ----------------------------------------------------------------------------------------------------------
----------------------------------------------------------------------------------------------------------
-function delete_effect_column()
-local s=renoise.song()
-local currTrak = s.selected_track_index
-local currPatt = s.selected_pattern_index
-local reksult = s.selected_pattern.number_of_lines
-local iter = s.pattern_iterator:effect_columns_in_pattern_track(currPatt,currTrak)
-  for _,line in iter do
-   if not line.is_empty then
-   line:clear()
-   end
-  end
-end
-----------------------------------------------------------------------------------------------------------
 renoise.tool():add_keybinding{name="Global:Track Devices:Load TOGU Audioline Reverb", invoke=function() loadvst("Audio/Effects/AU/aumf:676v:TOGU") end}
 renoise.tool():add_keybinding{name="Global:Track Devices:Load TOGU Audioline Chorus", invoke=function() loadvst("Audio/Effects/AU/aufx:Chor:Togu") end}
 renoise.tool():add_keybinding{name="Global:Track Devices:Load TOGU Audioline Ultra Simple EQ", invoke=function() loadvst("Audio/Effects/AU/aufx:TILT:Togu") end}
 renoise.tool():add_keybinding{name="Global:Track Devices:Load TOGU Audioline Dub-Delay I", invoke=function() loadvst("Audio/Effects/AU/aumf:aumf:Togu") end}
 renoise.tool():add_keybinding{name="Global:Track Devices:Load TOGU Audioline Dub-Delay II", invoke=function() loadvst("Audio/Effects/AU/aumf:dub2:Togu") end}
 renoise.tool():add_keybinding{name="Global:Track Devices:Load TOGU Audioline Dub-Delay III",invoke=function() loadvst("Audio/Effects/AU/aumf:xg70:TOGU") end}
-
-
---EZMaximizeSpectrum
---December 15, 2011, Renoise 2.8 only
---esaruoho
-function EZMaximizeSpectrum()
-local s=renoise.song()
-local t=s.transport
-local w=renoise.app().window
-  if t.playing==false then
-     t.playing=true end
-
-w.disk_browser_is_expanded=true
-w.active_upper_frame=4
-w.upper_frame_is_visible=true
-w.lower_frame_is_visible=false
-renoise.app():show_status("Current BPM: " .. t.bpm .. " Current LPB: " .. t.lpb .. ". You are feeling fine. Playback started.")
-end
-
-renoise.tool():add_keybinding{name="Global:Paketti:EZ Maximize Spectrum", invoke=function() EZMaximizeSpectrum() end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:EZ Maximize Spectrum", invoke=function() EZMaximizeSpectrum() end}
-renoise.tool():add_menu_entry{name="Mixer:EZ Maximize Spectrum", invoke=function() EZMaximizeSpectrum() end}
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:EZ Maximize Spectrum", invoke=function() EZMaximizeSpectrum() end}
 ----------------------------------------------------------------------------------------------------------
 -- Menu Entries
 -- Pattern Matrix
@@ -766,13 +564,11 @@ renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Enable EFX (Write t
 ------------------------------------------------------------------------------------------------
 --- Keybinds
 renoise.tool():add_keybinding{name="Global:Paketti:Play Current Line & Advance by EditStep",  invoke=function() PlayCurrentLine() end}
-renoise.tool():add_keybinding{name="Global:Paketti:Record+Follow+Metronome Toggle", invoke=function() RecordFollowMetronomeToggle() end}
-renoise.tool():add_keybinding{name="Global:Paketti:Open External Editor for Plugin", invoke=function() inst_open_editor()   end}
-renoise.tool():add_keybinding{name="Global:Paketti:Delete Effectcolumn content from current track", invoke=function() delete_effect_column() end }
+
 renoise.tool():add_keybinding{name="Global:Paketti:Loop Block Backwards", invoke=function() loopblockback() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Loop Block Forwards", invoke=function() loopblockforward() end}
 
-function something()
+function Ding()
 renoise.song().instruments[renoise.song().selected_instrument_index].sample_envelopes.pitch.enabled=true
 --LFO1
 --1 = Off, 2 = Sin, 3 = Saw, 4 = Pulse, 5 = Random
@@ -784,4 +580,83 @@ renoise.song().instruments[renoise.song().selected_instrument_index].sample_enve
 --LFO1 Phase
 renoise.song().instruments[renoise.song().selected_instrument_index].sample_envelopes.pitch.lfo1.phase=30
 end
-renoise.tool():add_menu_entry{name="Sample Editor:Ding", invoke=function() something() end}
+renoise.tool():add_menu_entry{name="Sample Editor:Ding", invoke=function() Ding() end}
+
+
+
+
+
+--------------
+--2nd keybind for LoopBlock forward/backward
+function loopblockback()
+local t = renoise.song().transport
+      t.loop_block_enabled=true
+      t:loop_block_move_backwards()
+      t.follow_player = true
+end
+
+function loopblockforward()
+local t = renoise.song().transport
+      t.loop_block_enabled=true
+      t:loop_block_move_forwards()
+      t.follow_player = true
+end
+
+function randombpm()
+local prefix=nil
+local randombpm = {80, 100, 115, 123, 128, 132, 135, 138, 160}
+ math.randomseed(os.time())
+  for i = 1, 9 do
+      prefix = math.random(1, #randombpm)
+      prefix = randombpm[prefix]
+      print(prefix)
+  end
+ renoise.song().transport.bpm=prefix
+ WriteToMaster()
+end
+
+----------------------------------------------------------------------------------------------------------
+------Sampler which returns to sample editor.
+function sample_and_to_sample_editor()
+  local w=renoise.app().window
+  local t=renoise.song().transport
+ if w.sample_record_dialog_is_visible==false then
+ w.sample_record_dialog_is_visible=true
+ t:start_stop_sample_recording()
+ else
+-- delay(1)
+ t:start_stop_sample_recording()
+    w.active_upper_frame = 1
+    w.active_middle_frame = 5
+    w.active_lower_frame = 3
+    w.lock_keyboard_focus=true
+ end
+end
+renoise.tool():add_menu_entry{name="Instrument Box:Start Sampling", invoke=function() sample_and_to_sample_editor()
+renoise.app().window.sample_record_dialog_is_visible = true end}  
+renoise.tool():add_menu_entry{name="Sample Editor:Start Sampling", invoke=function() sample_and_to_sample_editor()
+renoise.app().window.sample_record_dialog_is_visible=true end}  
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Start Sampling", invoke=function() sample_and_to_sample_editor()
+renoise.app().window.sample_record_dialog_is_visible=true end}  
+
+-- Midi
+renoise.tool():add_midi_mapping{name="Global:Paketti:Play Current Line & Advance by EditStep x[Toggle]",  invoke=function() PlayCurrentLine() end}
+-----------------------------------------------------------------------------------------------------------------------------
+-- Pattern Editor
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Renoise Random BPM & Write BPM/LPB to Master", invoke=function() randombpm()  end}
+--
+function muteUnmuteNoteColumn()
+local s = renoise.song()
+local sti = s.selected_track_index
+local snci = s.selected_note_column_index
+
+if s.selected_note_column_index == 0 
+  then return else
+if s:track(sti):column_is_muted(snci) == true
+  then s:track(sti):mute_column(snci, false)
+else s:track(sti):mute_column(snci, true) end end
+end
+
+--renoise.tool():add_keybinding{name="Global:Paketti:Mute Unmute Notecolumn", invoke=function() muteUnmuteNoteColumn() end} <- confirmed as not working
+----------------------------------------------------------------------------------------------------------------------------------------
+

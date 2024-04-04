@@ -225,28 +225,6 @@ function set_output_routing_by_index(number)
     end
 end
 
-function create_dynamic_shortcuts()
-    local available_output_routings = renoise.song().tracks[renoise.song().selected_track_index].available_output_routings
-
-    for i, routing in ipairs(available_output_routings) do
-        local index_str = string.format("%02d", i - 1)  -- Format index starting from 00
-        local routing_name = routing:match("^%s*(.-)%s*$")  -- Trim leading/trailing whitespace from routing name
-        local shortcut_name = "Global:Paketti:Set Selected Track Output Routing " .. index_str .. " " .. routing_name
-
-        -- Actual shortcut/command creation.
-        renoise.tool():add_keybinding {
-            name = shortcut_name,
-            invoke = function() set_output_routing_by_index(i) end
-        }
-    end
-end
-
-renoise.tool().app_new_document_observable:add_notifier(create_dynamic_shortcuts)
-
-
-
-
-
 function find_current_routing_index(available_routings, current_routing)
     for index, routing in ipairs(available_routings) do
         if routing == current_routing then
@@ -255,8 +233,6 @@ function find_current_routing_index(available_routings, current_routing)
     end
     return nil -- Return nil if the current routing is not found
 end
-
-
 
 function apply_selected_routing(selected_index)
     local selected_track_index = renoise.song().selected_track_index
@@ -323,6 +299,39 @@ end
 
 
 renoise.tool():add_menu_entry{name="---Main Menu:Tools:Paketti..:Available Routings for Track",invoke=function() showAvailableRoutings() end}
+
+function simpleOutputRoute(output)
+  -- Get the selected track from the current song
+  local track = renoise.song().tracks[renoise.song().selected_track_index]
+  
+  -- Check if the desired output index is within the range of available output routings
+  if output <= #track.available_output_routings then
+    -- If the index is valid, set the output routing
+    track.output_routing = track.available_output_routings[output]
+  else
+    -- If the index is invalid (i.e., the output doesn't exist), do nothing.
+  end
+end
+
+
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Track Output Routing 00 Master" ,invoke=function() simpleOutputRoute(1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Track Output Routing 01" ,invoke=function() simpleOutputRoute(2) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Track Output Routing 02" ,invoke=function() simpleOutputRoute(3) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Track Output Routing 03" ,invoke=function() simpleOutputRoute(4) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Track Output Routing 04" ,invoke=function() simpleOutputRoute(5) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Track Output Routing 05" ,invoke=function() simpleOutputRoute(6) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Track Output Routing 06" ,invoke=function() simpleOutputRoute(7) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Track Output Routing 07" ,invoke=function() simpleOutputRoute(8) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Track Output Routing 08" ,invoke=function() simpleOutputRoute(9) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Track Output Routing 09" ,invoke=function() simpleOutputRoute(10) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Track Output Routing 10" ,invoke=function() simpleOutputRoute(11) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Track Output Routing 11" ,invoke=function() simpleOutputRoute(12) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Track Output Routing 12" ,invoke=function() simpleOutputRoute(13) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Track Output Routing 13" ,invoke=function() simpleOutputRoute(14) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Track Output Routing 14" ,invoke=function() simpleOutputRoute(15) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Track Output Routing 15" ,invoke=function() simpleOutputRoute(16) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Track Output Routing 16" ,invoke=function() simpleOutputRoute(17) end}
+
 
 
 

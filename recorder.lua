@@ -116,7 +116,7 @@ renoise.app():show_status("Saved")
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Save Sample to Live Smart Folder",invoke=function() SampleToLiveSF() end}
-renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Save Sample to Live Smart Folder",invoke=function() SampleToLiveSF() end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Ableton Live..:Save Sample to Live Smart Folder",invoke=function() SampleToLiveSF() end}
 
 function SampleToLogicSF()
 local lsfvariable=nil
@@ -130,7 +130,7 @@ renoise.app():show_status("Saved")
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Save Sample to Logic Smart Folder",invoke=function() SampleToLogicSF() end}
-renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Save Sample to Logic Smart Folder",invoke=function() SampleToLogicSF() end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Logic Pro..:Save Sample to Logic Smart Folder",invoke=function() SampleToLogicSF() end}
 
 ----------------------------------------------------------------------------------------------------------
 -- Set current tempo to 75% of current tempo. Set current tempo back to the original 100% tempo.

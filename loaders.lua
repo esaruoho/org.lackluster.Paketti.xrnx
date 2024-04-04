@@ -205,10 +205,29 @@ local sdevices=s.selected_track.devices
   if s.selected_track.devices[checkline].name=="#Send" then 
   s.selected_track.devices[2].parameters[2].show_in_mixer=true
   -- This loads "#SendPakettiInit"
-  renoise.song().selected_track.devices[2].active_preset=2
-  else end
+-- Your target preset name
+local targetPresetName = "#SendPakettiInit"
 
+-- Retrieve the list of presets for the selected device on the selected track
+local presets = renoise.song().selected_track.devices[2].presets
+
+-- Iterate through the list of presets
+for index, presetName in ipairs(presets) do
+  -- Check if the current preset name matches the target
+  if presetName == targetPresetName then
+    -- If a match is found, set the active_preset to the index of the found preset
+    renoise.song().selected_track.devices[2].active_preset = index
     
+    -- Optionally, print a message or do something else
+    print("Preset '" .. targetPresetName .. "' found and activated at slot " .. index)
+    
+    -- Since the preset is found and activated, break out of the loop
+    break
+  end
+end
+else end
+
+
 end
 
 renoise.tool():add_keybinding{name="Global:Track Devices:Load Renoise Analog Filter",
@@ -475,7 +494,7 @@ end
 
 
 --) end}
-renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Ableton Live..:Launch Ableton Live 12",invoke=function() launchApp("open -a 'Ableton\ Live\ 12\ Suite\.app'") end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Ableton Live..:Launch Ableton Live 12",invoke=function() launchApp("open -a 'Ableton\ Live\ 12\ Suite\.app'") end}
 
 --local command = 'open -a "/Applications\ Live\ 12\ Suite.app"' .. renoise.song().selected_instrument_sample .. "'
 --os.execute(command)

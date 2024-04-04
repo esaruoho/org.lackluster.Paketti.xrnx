@@ -176,22 +176,145 @@ end}
 renoise.tool():add_keybinding{name="Sample Editor:Paketti:Disk Browser Focus",invoke=function()
 renoise.app().window.lock_keyboard_focus=false
 renoise.app().window:select_preset(7) end}
+
 renoise.tool():add_midi_mapping{name="Sample Editor:Paketti:Disk Browser Focus",invoke=function()
 renoise.app().window.lock_keyboard_focus=false
-
 renoise.app().window:select_preset(7) end}
+
 renoise.tool():add_keybinding{name="Global:Paketti:Disk Browser Focus",invoke=function()
 renoise.app().window.lock_keyboard_focus=false
-
 renoise.app().window:select_preset(8) end}
+
 renoise.tool():add_keybinding{name="Global:Paketti:Disk Browser Focus (2nd)",invoke=function()
 renoise.app().window.lock_keyboard_focus=false
-
 renoise.app().window:select_preset(8) end}
 
-renoise.tool():add_keybinding{name="Global:Paketti:Contour Shuttle Disk Browser Focus",invoke=function()
-renoise.app().window:select_preset(8) end}
+function voloff()
+local s = renoise.song()
+local efc = s.selected_effect_column
+local currTrak=s.selected_track_index
+local currLine=s.selected_line_index
+local currPatt=s.selected_pattern_index
 
+local ns=efc.number_string
+local as=efc.amount_string
+
+      if s.selected_effect_column=="0000" then
+      ns="0L"
+      as="00"
+      end
+end
+
+function write_effect()
+  local s = renoise.song()
+  local efc = s.selected_effect_column
+
+    if efc==nil then
+         s.selected_effect_column.number_string="0L"
+         s.selected_effect_column.amount_value=00
+      else
+      if efc.number_string=="0L" and efc.amount_string=="00" then
+         s.selected_effect_column.number_string="0L"
+         s.selected_effect_column.amount_string="C0"
+      else
+         s.selected_effect_column.number_string="0L"
+         s.selected_effect_column.amount_value=00
+      end
+    end
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Volume effect 0L00 On/Off", invoke=function() 
+renoise.song().selected_effect_column_index=1
+write_effect() 
+  if renoise.song().selected_track.name=="Mst" then return
+else renoise.song().selected_note_column_index=1 end end} 
+
+function upby(number)
+    local result = nil
+    local pos = renoise.song().transport.edit_pos
+    result = pos.line - number
+    if result < 1 then
+        result = 1
+    else
+        print(result)
+    end
+    pos.line = result
+    renoise.song().transport.edit_pos = pos
+    renoise.song().transport.playback_pos = pos
+end
+
+if renoise.song().transport.playing == true then
+    if renoise.song().transport.follow_player == false then return end
+    upby(4)
+    renoise.app().window.active_middle_frame = 1
+    renoise.app().window.lock_keyboard_focus = true
+    if renoise.song().tracks[renoise.song().selected_track_index].max_note_columns == 0 then return end
+    if renoise.song().selected_track.name == "Mst" then return
+    else renoise.song().selected_note_column_index = 1 end
+end
+
+
+function writeretrig()
+  local s = renoise.song()
+  local efc = s.selected_effect_column
+  local av = renoise.song().transport.lpb * 2
+    if efc==nil then
+         renoise.song().selected_effect_column.number_string="0R"
+         renoise.song().selected_effect_column.amount_value=av
+      else
+      if efc.number_string=="0R" and efc.amount_value==av then
+         renoise.song().selected_effect_column.number_string="00"
+         renoise.song().selected_effect_column.amount_string="00"
+      else
+         renoise.song().selected_effect_column.number_string="00"
+         renoise.song().selected_effect_column.amount_value=00 end end end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Retrig 0RLPB On/Off", invoke=function() 
+renoise.song().selected_effect_column_index=1
+writeretrig() 
+  if renoise.song().selected_track.name=="Mst" then return
+else renoise.song().selected_note_column_index=1 end end} 
+
+
+
+
+
+
+-- RecordFollowOn / Off / ContourShuttle
+function recOffFollowOn()
+  renoise.song().transport.edit_mode=false
+  renoise.song().transport.follow_player=true
+  renoise.song().transport.playing=true
+end
+
+function recOnFollowOff()
+renoise.song().transport.edit_mode=true
+renoise.song().transport.follow_player=false
+renoise.song().transport.wrapped_pattern_edit=true
+renoise.app().window.active_middle_frame=1
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Contour Shuttle Record Off", invoke=function() recOffFollowOn() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Contour Shuttle Record On", invoke=function() recOnFollowOff() end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Contour Shuttle Disk Browser Focus",invoke=function() renoise.app().window:select_preset(8) end}
+
+-- Keyboard Octave Up/Down switch
+function KeybOctave(amount)
+local t = renoise.song().transport
+t.octave= (t.octave + amount) % 9
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:KeybOctave Up", invoke=function() KeybOctave(1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:KeybOctave Down", invoke=function() KeybOctave(-1) end}
+
+function OctTranspose(UpOrDown)
+local note_column = renoise.song().selected_note_column 
+note_column.note_value = (note_column.note_value +UpOrDown) % 120
+end
+
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Transpose Octave Up", invoke=function() OctTranspose(12) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Transpose Octave Down", invoke=function() OctTranspose(-12) end}
 
 
 
@@ -678,7 +801,7 @@ function delete_effect_column()
 local s=renoise.song()
 local currTrak = s.selected_track_index
 local currPatt = s.selected_pattern_index
-local reksult = s.selected_pattern.number_of_lines
+
 local iter = s.pattern_iterator:effect_columns_in_pattern_track(currPatt,currTrak)
   for _,line in iter do
    if not line.is_empty then
@@ -686,6 +809,7 @@ local iter = s.pattern_iterator:effect_columns_in_pattern_track(currPatt,currTra
    end
   end 
 end
+
 renoise.tool():add_keybinding{name="Global:Paketti:Delete/Wipe/Clear Effect Column Content from Current Track",invoke=function() delete_effect_column() end}
 ----------------
 function bend(amount)
@@ -823,6 +947,26 @@ end
 
 --renoise.tool():add_midi_mapping{name="Global:Tools:Delay +1 Increase x[Toggle]",invoke=function() delay(1) end}
 --renoise.tool():add_midi_mapping{name="Global:Tools:Delay -1 Increase x[Toggle]",invoke=function() delay(-1) end}
+
+--------------
+function move_up(chg)
+local sindex=renoise.song().selected_line_index
+local s= renoise.song()
+local note=s.selected_note_column
+--This switches currently selected row but doesn't 
+--move the note
+--s.selected_line_index = (sindex+chg)
+-- moving note up, applying correct delay value and moving cursor up goes here
+end
+--movedown
+function move_down(chg)
+local sindex=renoise.song().selected_line_index
+local s= renoise.song()
+--This switches currently selected row but doesn't 
+--move the note
+--s.selected_line_index = (sindex+chg)
+-- moving note down, applying correct delay value and moving cursor down goes here
+end
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Columnizer, +1 / -1 / +10 / -10 on current_row, display needed column
 function columns(chg,thing)
@@ -926,12 +1070,7 @@ if pan==0x40 then
 nc.panning_value = pan 
 end
 
-
-
-
-
 function columnspart2(chg,thing)
-
 local columns = 
     {
       [4] = renoise.song().selected_effect_column.number_value,
@@ -949,8 +1088,7 @@ if thing == 4 then --effect number column
  renoise.song().patterns[currPatt].tracks[currTrak].lines[currLine].effect_columns[1].number_value = math.max(0, math.min(255, columns[thing] + chg)) 
 elseif thing == 5 then --effect amount column
  renoise.song().patterns[currPatt].tracks[currTrak].lines[currLine].effect_columns[1].amount_value = math.max(0, math.min(255, columns[thing] + chg)) 
-else
-end
+else end
 end
 
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Increase Delay +1",invoke=function() columns(1,1) end}
@@ -1344,7 +1482,35 @@ renoise.tool():add_keybinding{name="Global:Paketti:Hide Track DSP Devices",invok
      end
   end
 end}
---------------------------------------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------
+
+
+function JumpToNextRow()
+local LineGoTo = nil
+
+LineGoTo = renoise.song().selected_line_index
+
+
+renoise.song().tracks[get_master_track_index()].visible_effect_columns = 4
+if renoise.song().selected_pattern.tracks[get_master_track_index()].lines[renoise.song().selected_line_index].effect_columns[3].number_string == "ZB"
+then
+renoise.song().selected_pattern.tracks[get_master_track_index()].lines[renoise.song().selected_line_index].effect_columns[3].number_string = ""
+renoise.song().selected_pattern.tracks[get_master_track_index()].lines[renoise.song().selected_line_index].effect_columns[3].amount_string  = ""
+return
+end
+
+
+renoise.song().selected_pattern.tracks[get_master_track_index()].lines[renoise.song().selected_line_index].effect_columns[3].number_string = "ZB"
+
+if renoise.song().selected_line_index > 255 then LineGoTo = 00 end
+
+renoise.song().selected_pattern.tracks[get_master_track_index()].lines[renoise.song().selected_line_index].effect_columns[3].amount_value  = LineGoTo
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Write Jump To Next Row (ZBxx)", invoke=function() JumpToNextRow() end}
+
+
+-----------------------------------------------------------------
 function LoopState(number)
 renoise.song().selected_sample.loop_mode=number
 end
@@ -1771,9 +1937,9 @@ end
 program: CaptureOctave v1.1
 author: cortex
 ]]--
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Capture Nearest Instrument and Octave Cortex", invoke=function(repeated) capture_ins_oct() end}
-renoise.tool():add_keybinding{name="Mixer:Paketti:Capture Nearest Instrument and Octave Cortex", invoke=function(repeated) capture_ins_oct() end}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Capture Nearest Instrument and Octave Cortex", invoke=function(repeated) capture_ins_oct() end} 
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Capture Nearest Instrument and Octave", invoke=function(repeated) capture_ins_oct() end}
+renoise.tool():add_keybinding{name="Mixer:Paketti:Capture Nearest Instrument and Octave", invoke=function(repeated) capture_ins_oct() end}
+renoise.tool():add_midi_mapping{name="Global:Paketti:Capture Nearest Instrument and Octave", invoke=function(repeated) capture_ins_oct() end} 
 
 function capture_ins_oct()
    local closest_note = {}  
@@ -2035,19 +2201,23 @@ function ClearRow()
  local s=renoise.song()
  local currTrak=s.selected_track_index
  local currPatt=s.selected_pattern_index
- local currLine=nil
- currLine = s.selected_line_index
-   
- if currLine < 1 then currLine = 1 end
-
- for i=1,8 do
- s.patterns[currPatt].tracks[currTrak].lines[currLine].effect_columns[i]:clear() end
-
- for i=1,12 do
- s.patterns[currPatt].tracks[currTrak].lines[currLine].note_columns[i]:clear() end
+ local currLine=s.selected_line_index
+ 
+ -- Check if phrase editor is visible to avoid unintended clearing
+ if renoise.app().window.active_middle_frame ~= 1 or not s.instruments[s.selected_instrument_index].phrase_editor_visible then
+  if currLine < 1 then currLine = 1 end
+  for i=1,8 do
+   s.patterns[currPatt].tracks[currTrak].lines[currLine].effect_columns[i]:clear()
+  end
+  for i=1,12 do
+   s.patterns[currPatt].tracks[currTrak].lines[currLine].note_columns[i]:clear()
+  end
+ end
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Clear Current Row",invoke=function() ClearRow() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Clear Current Row", invoke=function() ClearRow() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Clear Current Row 2nd", invoke=function() ClearRow() end}
+
 ------------------------------------------------------------------------------------------------------------------------------------
 -- // TODO: requires fixing (WipeRetain no longer works)
 local tmpvariable=nil
