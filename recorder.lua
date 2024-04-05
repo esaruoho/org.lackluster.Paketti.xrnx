@@ -67,8 +67,7 @@ function sample_and_to_sample_editor()
 -- delay(1)
  t:start_stop_sample_recording()
     w.active_upper_frame = 1
-    w.active_middle_frame = 3
- --   w.active_lower_frame = 3
+    w.active_middle_frame = 5
     w.lock_keyboard_focus=true
  end
 
@@ -77,12 +76,11 @@ end
 
 renoise.tool():add_menu_entry{name="--Sample Editor:Paketti..:Start Sampling (Record)", invoke=function() sample_and_to_sample_editor()
 renoise.app().window.sample_record_dialog_is_visible=true end}  
-
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Start Sampling (Record)", invoke=function() sample_and_to_sample_editor()
 renoise.app().window.sample_record_dialog_is_visible=true end}  
-
 renoise.tool():add_keybinding{name="Global:Paketti:Sample NOW then F3 (Record)", invoke=function() sample_and_to_sample_editor()
 F3() end}
+
 -------
 local lsfvariable=nil
 lsfvariable=os.tmpname("wav")
@@ -131,50 +129,6 @@ end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Save Sample to Logic Smart Folder",invoke=function() SampleToLogicSF() end}
 renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Logic Pro..:Save Sample to Logic Smart Folder",invoke=function() SampleToLogicSF() end}
-
-----------------------------------------------------------------------------------------------------------
--- Set current tempo to 75% of current tempo. Set current tempo back to the original 100% tempo.
--- Writes the currently set (75% or 100%) BPM / LPB to the Master effect_column. Takes effect immediately.
-function get_master_track_index()
-  for k,v in ripairs(renoise.song().tracks)
-    do if v.type == renoise.Track.TRACK_TYPE_MASTER then return k end  
-  end
-end
-
-function WriteToMaster()
- local column_index = renoise.song().selected_effect_column_index
- local t=renoise.song().transport
- if renoise.song().transport.bpm < 256 then -- safety check
- renoise.song().tracks[get_master_track_index()].visible_effect_columns = 2  
-    
-    if renoise.song().selected_effect_column_index <= 1 then column_index = 2 end
-    
-    renoise.song().selected_pattern.tracks[get_master_track_index()].lines[1].effect_columns[1].number_string = "ZT"
-    renoise.song().selected_pattern.tracks[get_master_track_index()].lines[1].effect_columns[1].amount_value  = t.bpm
-    renoise.song().selected_pattern.tracks[get_master_track_index()].lines[1].effect_columns[2].number_string = "ZL"
-    renoise.song().selected_pattern.tracks[get_master_track_index()].lines[1].effect_columns[2].amount_value  = t.lpb
-    end
--- † --
- end
-
-function playat75()
- renoise.song().transport.bpm=renoise.song().transport.bpm*0.75
- WriteToMaster()
- renoise.app():show_status("BPM set to 75% (" .. renoise.song().transport.bpm .. "BPM)") 
-end
-
-function returnbackto100()
- renoise.song().transport.bpm=renoise.song().transport.bpm/0.75
- WriteToMaster()
- renoise.app():show_status("BPM set back to 100% (" .. renoise.song().transport.bpm .. "BPM)") 
-end
-
-renoise.tool():add_keybinding{name="Global:Paketti:Play at 75% Speed (Song BPM)", invoke=function() playat75() end}
-renoise.tool():add_keybinding{name="Global:Paketti:Play at 100% Speed (Song BPM)", invoke=function() returnbackto100() end}
-renoise.tool():add_menu_entry{name="Pattern Matrix:Paketti..:Play at 75% Speed (Song BPM)", invoke=function() playat75() end}
-renoise.tool():add_menu_entry{name="Pattern Matrix:Paketti..:Play at 100% Speed (Song BPM)", invoke=function() returnbackto100()  end}
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Play at 75% Speed (Song BPM)", invoke=function() playat75()  end}
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Play at 100% Speed (Song BPM)", invoke=function() returnbackto100()  end}
 
 -----
 function instrument_is_empty(instrument)
@@ -303,39 +257,41 @@ function finalrecord()
   end
   end
 
-renoise.tool():add_midi_mapping{name="Paketti:Record to Current Track x[Toggle]", invoke=function() recordtocurrenttrack() 
+renoise.tool():add_midi_mapping{name="Paketti:Record to Current Track x[Toggle]", invoke=function() 
+  recordtocurrenttrack()
   local t=renoise.song().transport
-   if t.playing==false then t.playing=true end
-  local seq=renoise.song().selected_sequence_index
-  local startpos = t.playback_pos  
+  if t.playing==false then t.playing=true end
   t.loop_block_enabled=false
-  --t:panic()
-  --startpos.line = renoise.song().selected_line_index
-  --startpos.sequence = renoise.song().selected_sequence_index
-  --t.playback_pos = startpos
-  --t:start(renoise.Transport.PLAYMODE_CONTINUE_PATTERN)
   t.follow_player=true
   renoise.app().window.active_lower_frame=2
   renoise.app().window.lower_frame_is_visible=true
+  -- Uncomment and refine these for specific playback position control if needed:
+  -- local startpos = t.playback_pos  
+  -- startpos.line = renoise.song().selected_line_index
+  -- startpos.sequence = renoise.song().selected_sequence_index
+  -- t.playback_pos = startpos
+  -- t:start(renoise.Transport.PLAYMODE_CONTINUE_PATTERN)
 end}
+
 
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Record to Current Track", invoke=function() recordtocurrenttrack() end}
 renoise.tool():add_menu_entry{name="Mixer:Paketti..:Record to Current Track", invoke=function() recordtocurrenttrack() end}
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Record to Current Track", invoke=function() recordtocurrenttrack() end}
 renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Record to Current Track", invoke=function() recordtocurrenttrack() end}
-renoise.tool():add_keybinding{name="Global:Paketti:Record to Current Track Track", invoke=function() recordtocurrenttrack() 
-local s=renoise.song()
- local t=renoise.song().transport
+renoise.tool():add_keybinding{name="Global:Paketti:Record to Current Track", invoke=function() 
+  local s=renoise.song()
+  local t=s.transport
 
-s.selected_instrument_index = search_empty_instrument()
-  if t.playing==false then t.playing=true end
- local seq=s.selected_sequence_index
- local startpos = s.transport.playback_pos  
- t.follow_player=true
- t.loop_block_enabled=false
- t.follow_player=true
- renoise.app().window.lower_frame_is_visible=true
- renoise.app().window.active_lower_frame=2 end}
+  recordtocurrenttrack()
+  s.selected_instrument_index = search_empty_instrument()
+  if not t.playing then t.playing=true end
+
+  t.follow_player=true
+  t.loop_block_enabled=false
+  renoise.app().window.lower_frame_is_visible=true
+  renoise.app().window.active_lower_frame=2
+end}
+
 
  renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Start Sampling (Record)", invoke=function()
 local s=renoise.song()

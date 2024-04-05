@@ -6,6 +6,7 @@ require "numpad"
 require "recorder" 
 require "utils"
 require "joule_danoise_better_column_navigation"
+require "plugin_gui"
 -- These were requested via GitHub / Renoise Forum / Renoise Discord - always get in touch with me 
 require "requests"
 
@@ -1566,6 +1567,28 @@ end
 
 renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Write Current BPM&LPB to Master column",invoke=function() write_bpm() end}
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Write Current BPM&LPB to Master column",invoke=function() write_bpm() end}
+
+
+function playat75()
+ renoise.song().transport.bpm=renoise.song().transport.bpm*0.75
+ WriteToMaster()
+ renoise.app():show_status("BPM set to 75% (" .. renoise.song().transport.bpm .. "BPM)") 
+end
+
+function returnbackto100()
+ renoise.song().transport.bpm=renoise.song().transport.bpm/0.75
+ WriteToMaster()
+ renoise.app():show_status("BPM set back to 100% (" .. renoise.song().transport.bpm .. "BPM)") 
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Play at 75% Speed (Song BPM)", invoke=function() playat75() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Play at 100% Speed (Song BPM)", invoke=function() returnbackto100() end}
+renoise.tool():add_menu_entry{name="Pattern Matrix:Paketti..:Play at 75% Speed (Song BPM)", invoke=function() playat75() end}
+renoise.tool():add_menu_entry{name="Pattern Matrix:Paketti..:Play at 100% Speed (Song BPM)", invoke=function() returnbackto100()  end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Play at 75% Speed (Song BPM)", invoke=function() playat75()  end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Play at 100% Speed (Song BPM)", invoke=function() returnbackto100()  end}
+
+
 ------------------------------------------------------------------------------------------------------------------------------------
 -- Pattern Resizer by dblue. some minor modifications.
 function resize_pattern(pattern, new_length, patternresize)

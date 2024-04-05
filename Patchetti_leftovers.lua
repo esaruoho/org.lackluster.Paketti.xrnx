@@ -113,18 +113,6 @@ renoise.song().patterns[renoise.song().selected_pattern_index].tracks[renoise.so
 end
 end
 
---from http://lua-users.org/lists/lua-l/2004-09/msg00054.html thax!
-function DEC_HEX(IN)
-    local B,K,OUT,I,D=16,"0123456789ABCDEF","",0
-    while IN>0 do
-        I=I+1
-        IN,D=math.floor(IN/B),math.mod(IN,B)+1
-        OUT=string.sub(K,D,D)..OUT
-    end
-    return OUT
-end
---from http://lua-users.org/lists/lua-l/2004-09/msg00054.html thax!
-
 function ploo()
 local rs=renoise.song()
 local n_instruments = #rs.instruments
@@ -389,16 +377,7 @@ renoise.tool():add_keybinding{name="Global:Paketti:Note Off / Caps Lock replacem
 if renoise.song().transport.wrapped_pattern_edit == false then PakettiCapsLockNoteOffNextPtn() 
 else PakettiCapsLockNoteOff() end
 end}
----------------------------------
-function instrument_is_empty(instrument)
- local inst = renoise.song().instruments[instrument]
- local has_sample_data = false
- for sample in ipairs(inst.samples) do
-  has_sample_data = has_sample_data or inst.samples[sample].sample_buffer.has_sample_data
- end
- if inst.plugin_properties.plugin_loaded or inst.midi_output_properties.device_name ~= "" or has_sample_data then return false else return true end
-end
-------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------
 renoise.tool():add_keybinding{name="Global:Paketti:Record to Current Track+plus", 
 invoke=function() 
       renoise.app().window.active_lower_frame=1
@@ -419,30 +398,8 @@ else
   return
 end end end}
 ---------------
-renoise.tool():add_midi_mapping{name="Paketti:Record to Current Track x[Toggle]", invoke=function() recordtocurrenttrack() 
- if renoise.song().transport.playing==false then renoise.song().transport.playing=true end
- renoise.song().transport.loop_block_enabled=false
- renoise.song().transport.follow_player=true
- renoise.app().window.active_lower_frame=2
- renoise.app().window.lower_frame_is_visible=true
-end}
 
 renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Record To Current", invoke=function() recordtocurrenttrack() end}
-
-renoise.tool():add_keybinding{name="Global:Paketti:Record to Current Track", invoke=function() recordtocurrenttrack() 
-local s=renoise.song()
-s.selected_instrument_index = search_empty_instrument()
-  if renoise.song().transport.playing==false then renoise.song().transport.playing=true end
- local seq=renoise.song().selected_sequence_index
- local startpos = renoise.song().transport.playback_pos  
- local t=renoise.song().transport
-  renoise.song().transport.follow_player=true
- t.loop_block_enabled=false
- renoise.song().transport.follow_player=true
- renoise.app().window.lower_frame_is_visible=true
- renoise.app().window.active_lower_frame=2
- end}
-
 ----------------------------------------------------------------------------------------------------------
 --Four things, two enable all and disable all track dsps on selected channel.
 --The other two of the four write 8 effect column's worth of bypass, or enable  the first 8 DSPs to
@@ -582,10 +539,6 @@ renoise.song().instruments[renoise.song().selected_instrument_index].sample_enve
 end
 renoise.tool():add_menu_entry{name="Sample Editor:Ding", invoke=function() Ding() end}
 
-
-
-
-
 --------------
 --2nd keybind for LoopBlock forward/backward
 function loopblockback()
@@ -602,48 +555,6 @@ local t = renoise.song().transport
       t.follow_player = true
 end
 
-function randombpm()
-local prefix=nil
-local randombpm = {80, 100, 115, 123, 128, 132, 135, 138, 160}
- math.randomseed(os.time())
-  for i = 1, 9 do
-      prefix = math.random(1, #randombpm)
-      prefix = randombpm[prefix]
-      print(prefix)
-  end
- renoise.song().transport.bpm=prefix
- WriteToMaster()
-end
-
-----------------------------------------------------------------------------------------------------------
-------Sampler which returns to sample editor.
-function sample_and_to_sample_editor()
-  local w=renoise.app().window
-  local t=renoise.song().transport
- if w.sample_record_dialog_is_visible==false then
- w.sample_record_dialog_is_visible=true
- t:start_stop_sample_recording()
- else
--- delay(1)
- t:start_stop_sample_recording()
-    w.active_upper_frame = 1
-    w.active_middle_frame = 5
-    w.active_lower_frame = 3
-    w.lock_keyboard_focus=true
- end
-end
-renoise.tool():add_menu_entry{name="Instrument Box:Start Sampling", invoke=function() sample_and_to_sample_editor()
-renoise.app().window.sample_record_dialog_is_visible = true end}  
-renoise.tool():add_menu_entry{name="Sample Editor:Start Sampling", invoke=function() sample_and_to_sample_editor()
-renoise.app().window.sample_record_dialog_is_visible=true end}  
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Start Sampling", invoke=function() sample_and_to_sample_editor()
-renoise.app().window.sample_record_dialog_is_visible=true end}  
-
--- Midi
-renoise.tool():add_midi_mapping{name="Global:Paketti:Play Current Line & Advance by EditStep x[Toggle]",  invoke=function() PlayCurrentLine() end}
------------------------------------------------------------------------------------------------------------------------------
--- Pattern Editor
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Renoise Random BPM & Write BPM/LPB to Master", invoke=function() randombpm()  end}
 --
 function muteUnmuteNoteColumn()
 local s = renoise.song()
