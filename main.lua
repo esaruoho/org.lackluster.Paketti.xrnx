@@ -7,6 +7,7 @@ require "recorder"
 require "utils"
 require "joule_danoise_better_column_navigation"
 require "plugin_gui"
+require "pluginfunction"
 -- These were requested via GitHub / Renoise Forum / Renoise Discord - always get in touch with me 
 require "requests"
 
