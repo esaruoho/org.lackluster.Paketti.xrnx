@@ -332,7 +332,38 @@ renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Track Output Rou
 renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Track Output Routing 15" ,invoke=function() simpleOutputRoute(16) end}
 renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Track Output Routing 16" ,invoke=function() simpleOutputRoute(17) end}
 
+function setBeatsyncLineAbove()
+    local currentBeatsyncLine = renoise.song().selected_sample.beat_sync_lines
+    -- Calculate the next higher power of 2
+    local power = math.ceil(math.log(currentBeatsyncLine) / math.log(2))
+    local nextPowerOfTwo = 2 ^ power
+    if nextPowerOfTwo <= currentBeatsyncLine then -- Ensure we actually move up
+        nextPowerOfTwo = nextPowerOfTwo * 2
+    end
+    -- Clamp to maximum allowed value
+    if nextPowerOfTwo > 512 then nextPowerOfTwo = 512 end
+    renoise.song().selected_sample.beat_sync_lines = nextPowerOfTwo
+    renoise.song().selected_sample.beat_sync_enabled = true
+end
 
+function setBeatsyncLineBelow()
+    local currentBeatsyncLine = renoise.song().selected_sample.beat_sync_lines
+    if currentBeatsyncLine <= 1 then -- Prevent going below 1
+        return
+    end
+    local power = math.floor(math.log(currentBeatsyncLine) / math.log(2))
+    local prevPowerOfTwo = 2 ^ power
+    if prevPowerOfTwo >= currentBeatsyncLine then -- Ensure we actually move down
+        prevPowerOfTwo = prevPowerOfTwo / 2
+    end
+    renoise.song().selected_sample.beat_sync_lines = prevPowerOfTwo
+    renoise.song().selected_sample.beat_sync_enabled = true
+end
+
+
+-- Update the keybindings to use the new functions
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Beatsync Line (Power of Two Above)",invoke=function() setBeatsyncLineAbove() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Beatsync Line (Power of Two Below)",invoke=function() setBeatsyncLineBelow() end}
 
 
 
