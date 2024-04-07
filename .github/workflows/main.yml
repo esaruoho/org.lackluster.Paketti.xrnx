@@ -18,25 +18,22 @@ jobs:
       - name: Zip XRNX Package
         run: zip -r org.lackluster.Paketti_V3.54.xrnx .
       
-      # Upload the zipped file as an artifact (optional step if you immediately create a release)
-      - name: Upload XRNX as Artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: packaged-xrnx
-          path: org.lackluster.Paketti_V3.54.xrnx
+      # Dynamically generate a tag name and set it as an environment variable
+      - name: Generate Tag Name
+        run: |
+          echo "TAG_NAME=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
       
-      # Create a unique tag for this release
+      # Create a tag with the generated tag name
       - name: Create and Push Tag
         run: |
-          DATE_TIME=$(date +'%Y%m%d%H%M%S')
-          TAG_NAME="release-$DATE_TIME"
-          echo "Creating tag: $TAG_NAME"
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
           git tag $TAG_NAME
           git push origin $TAG_NAME
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
-      # Create a GitHub release
+      # Create a GitHub release using the generated tag name
       - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@v1
