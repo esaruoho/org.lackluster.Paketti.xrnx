@@ -13,11 +13,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      - name: Install zip
+        run: sudo apt-get install zip
+
       - name: Zip repository
         run: zip -r org.lackluster.Paketti_V3.54.xrnx .
 
       - name: Upload XRNX as Artifact
         uses: actions/upload-artifact@v2
         with:
-          name: my-packaged-xrnx
+          name: packaged-xrnx
           path: org.lackluster.Paketti_V3.54.xrnx
