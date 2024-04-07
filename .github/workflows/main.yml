@@ -43,12 +43,12 @@ jobs:
           DATE_TIME=$(date +'%Y%m%d%H%M%S')
           UUID=$(uuidgen)
           TAG_NAME="release-${DATE_TIME}-${UUID}"
-          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
-          echo "Creating tag: $TAG_NAME"
+          echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_ENV
+          echo "Creating tag: ${TAG_NAME}"
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git tag $TAG_NAME
-          git push origin $TAG_NAME
+          git tag ${TAG_NAME}
+          git push origin ${TAG_NAME}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -58,8 +58,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: $TAG_NAME
-          release_name: Release $TAG_NAME
+          tag_name: ${TAG_NAME}
+          release_name: Release ${TAG_NAME}
           draft: false
           prerelease: false
 
