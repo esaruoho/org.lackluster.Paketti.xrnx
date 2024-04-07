@@ -1,32 +1,5 @@
-name: XRNX Deploy
-
-on:
-  workflow_dispatch:
-  push:
-    branches:
-      - main
-
 jobs:
-  zip-and-upload:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Install zip
-        run: sudo apt-get install zip
-
-      - name: Zip repository
-        run: zip -r org.lackluster.Paketti_V3.54.xrnx .
-
-      - name: Upload XRNX as Artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: packaged-xrnx
-          path: org.lackluster.Paketti_V3.54.xrnx
-
   create-release-and-upload:
-    needs: zip-and-upload
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -39,16 +12,16 @@ jobs:
           path: .
 
       - name: Create Tag
+        id: tag_creation
         run: |
           DATE_TIME=$(date +'%Y%m%d%H%M%S')
           UUID=$(uuidgen)
           TAG_NAME="release-${DATE_TIME}-${UUID}"
-          echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_ENV
-          echo "Creating tag: ${TAG_NAME}"
+          echo "::set-output name=tag_name::$TAG_NAME"
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git tag ${TAG_NAME}
-          git push origin ${TAG_NAME}
+          git tag $TAG_NAME
+          git push origin $TAG_NAME
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
