@@ -9,7 +9,6 @@ on:
 jobs:
   zip-and-upload:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -32,8 +31,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+
+      - name: Download XRNX Artifact
+        uses: actions/download-artifact@v2
         with:
-          fetch-depth: 0  # Necessary for tagging
+          name: packaged-xrnx
+          path: .
 
       - name: Create Tag
         run: |
