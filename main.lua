@@ -6,8 +6,9 @@ require "numpad"
 require "recorder" 
 require "utils"
 require "joule_danoise_better_column_navigation"
-require "plugin_gui"
-require "pluginfunction"
+require "PakettiPluginGUI"
+require "PakettiLoadNativeGUI"
+require "Experimental_Verify"
 -- These were requested via GitHub / Renoise Forum / Renoise Discord - always get in touch with me 
 require "requests"
 
@@ -244,7 +245,7 @@ function upby(number)
     renoise.song().transport.edit_pos = pos
     renoise.song().transport.playback_pos = pos
 end
-
+function upbyn()
 if renoise.song().transport.playing == true then
     if renoise.song().transport.follow_player == false then return end
     upby(4)
@@ -254,7 +255,12 @@ if renoise.song().transport.playing == true then
     if renoise.song().selected_track.name == "Mst" then return
     else renoise.song().selected_note_column_index = 1 end
 end
+end
 
+
+renoise.tool():add_keybinding{name="Global:Paketti:Up By Number", invoke=function() upbyn(1)
+end
+}
 
 function writeretrig()
   local s = renoise.song()
