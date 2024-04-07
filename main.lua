@@ -7,7 +7,7 @@ require "recorder"
 require "utils"
 require "joule_danoise_better_column_navigation"
 require "PakettiPluginGUI"
-require "PakettiLoadNativeGUI"
+--require "PakettiLoadNativeGUI"
 require "Experimental_Verify"
 -- These were requested via GitHub / Renoise Forum / Renoise Discord - always get in touch with me 
 require "requests"
