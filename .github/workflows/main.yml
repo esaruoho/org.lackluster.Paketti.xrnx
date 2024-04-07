@@ -26,14 +26,34 @@ jobs:
           name: packaged-xrnx
           path: org.lackluster.Paketti_V3.54.xrnx
 
+  create-release-and-upload:
+    needs: zip-and-upload
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # Necessary for tagging
+
+      - name: Create Tag
+        run: |
+          TAG_NAME="release-$(date +'%Y%m%d%H%M%S')"
+          echo "Creating tag: $TAG_NAME"
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git tag $TAG_NAME
+          git push origin $TAG_NAME
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          tag_name: $TAG_NAME
+          release_name: Release $TAG_NAME
           draft: false
           prerelease: false
 
