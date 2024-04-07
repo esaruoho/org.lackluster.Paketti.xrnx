@@ -40,7 +40,10 @@ jobs:
 
       - name: Create Tag
         run: |
-          TAG_NAME="release-$(date +'%Y%m%d%H%M%S')"
+          DATE_TIME=$(date +'%Y%m%d%H%M%S')
+          UUID=$(uuidgen)
+          TAG_NAME="release-${DATE_TIME}-${UUID}"
+          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
           echo "Creating tag: $TAG_NAME"
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
