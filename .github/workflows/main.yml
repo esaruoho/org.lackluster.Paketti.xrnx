@@ -1,4 +1,4 @@
-name: XRNX Deploy
+name: XRNX Package and Release
 
 on:
   workflow_dispatch:
@@ -7,42 +7,48 @@ on:
       - main
 
 jobs:
-  create-release-and-upload:
+  package-and-release:
     runs-on: ubuntu-latest
     steps:
+      # Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v2
-
-      - name: Download XRNX Artifact
-        uses: actions/download-artifact@v2
+      
+      # Zip the contents or specified directory of the repo
+      - name: Zip XRNX Package
+        run: zip -r org.lackluster.Paketti_V3.54.xrnx .
+      
+      # Upload the zipped file as an artifact (optional step if you immediately create a release)
+      - name: Upload XRNX as Artifact
+        uses: actions/upload-artifact@v2
         with:
           name: packaged-xrnx
-          path: .
-
-      - name: Create Tag
-        id: tag_creation
+          path: org.lackluster.Paketti_V3.54.xrnx
+      
+      # Create a unique tag for this release
+      - name: Create and Push Tag
         run: |
           DATE_TIME=$(date +'%Y%m%d%H%M%S')
-          UUID=$(uuidgen)
-          TAG_NAME="release-${DATE_TIME}-${UUID}"
-          echo "::set-output name=tag_name::$TAG_NAME"
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
+          TAG_NAME="release-$DATE_TIME"
+          echo "Creating tag: $TAG_NAME"
           git tag $TAG_NAME
           git push origin $TAG_NAME
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create Release
+      
+      # Create a GitHub release
+      - name: Create GitHub Release
+        id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.tag_creation.outputs.tag_name }}
-          release_name: Release ${{ steps.tag_creation.outputs.tag_name }}
+          tag_name: ${{ env.TAG_NAME }}
+          release_name: Release ${{ env.TAG_NAME }}
           draft: false
           prerelease: false
-
+      
+      # Upload the XRNX file to the GitHub release
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         env:
