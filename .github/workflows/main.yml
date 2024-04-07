@@ -1,3 +1,11 @@
+name: XRNX Deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
 jobs:
   create-release-and-upload:
     runs-on: ubuntu-latest
