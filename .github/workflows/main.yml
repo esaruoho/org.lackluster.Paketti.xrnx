@@ -1,0 +1,23 @@
+name: Zip Repository
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  zip-and-upload:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Zip repository
+        run: zip -r org.lackluster.Paketti_V3.54.xrnx .
+
+      - name: Upload XRNX as Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: my-packaged-xrnx
+          path: org.lackluster.Paketti_V3.54.xrnx
