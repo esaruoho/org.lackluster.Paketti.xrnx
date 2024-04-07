@@ -16,7 +16,7 @@ jobs:
       
       # Zip the contents or specified directory of the repo
       - name: Zip XRNX Package
-        run: zip -r org.lackluster.Paketti_V3.54.xrnx .
+        run: zip -r org.lackluster.Paketti_V3.54.xrnx . -x "*.git*" "*.github*"
       
       # Dynamically generate a tag name and set it as an environment variable
       - name: Generate Tag Name
