@@ -1,4 +1,4 @@
-name: Zip Repository
+name: XRNX Deploy
 
 on:
   push:
