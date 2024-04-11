@@ -1,14 +1,19 @@
+require "PakettiLoadNativeGUI"
+require "PakettiPreferencesGUI"
+require "PakettiMainMenuEntries"
 require "CheatSheet"
 require "impulsetracker"
 require "loaders"
 require "midi"
-require "numpad"
 require "recorder" 
 require "utils"
-require "joule_danoise_better_column_navigation"
 --require "PakettiPluginGUI"
-require "PakettiLoadNativeGUI"
+require "PakettiInstrumentBox"
+require "PakettiPatternMatrix"
+require "PakettiSamples"
+require "PakettiPatternEditor"
 require "Experimental_Verify"
+require "0G01_Loader"
 -- These were requested via GitHub / Renoise Forum / Renoise Discord - always get in touch with me 
 require "requests"
 
@@ -53,27 +58,6 @@ end
 -- end
 --end  
 
--- Show or hide pattern matrix
-function showhidepatternmatrix()
-if renoise.app().window.active_middle_frame ~= renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
-then renoise.app().window.active_middle_frame=renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR 
-renoise.app().window.pattern_matrix_is_visible = true
-return
-end
-if renoise.app().window.pattern_matrix_is_visible == true
-then renoise.app().window.pattern_matrix_is_visible = false
-else renoise.app().window.pattern_matrix_is_visible = true
-end
-end
-
-renoise.tool():add_keybinding{name="Global:Paketti:Show/Hide Pattern Matrix",invoke=function() showhidepatternmatrix() end}
-
-
-
-
-function randobpm()
-renoise.song().transport.bpm=math.random(60,180)
-end 
 
 if not renoise.tool().app_new_document_observable:has_notifier(startup)   
   then renoise.tool().app_new_document_observable:add_notifier(startup)
@@ -81,14 +65,9 @@ if not renoise.tool().app_new_document_observable:has_notifier(startup)
   
 --local s=nil  
 
-
-renoise.tool():add_keybinding{name="Global:Paketti:Random BPM (60-180)",invoke=function() randobpm() end}
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Random BPM (60-180)",invoke=function() randobpm() end}
   
 function sample_loaded_change_to_sample_editor()
-
 -- if renoise.app().window.lock_keyboard_focus == true then return end
-
 --disabled these so that i can get renoise to work the same way it should
 -- renoise should never change to the sample that was used in the channel you're on.
 --if renoise.song().selected_sample == nil then 
@@ -100,12 +79,12 @@ function sample_loaded_change_to_sample_editor()
 
 --else
 
- if renoise.app().window.active_middle_frame==1 then 
-renoise.song().selected_sample.autofade=true
-renoise.song().selected_sample.autoseek=true
-renoise.song().selected_sample.interpolation_mode=4
-return 
- end
+if renoise.app().window.active_middle_frame==1 then 
+  renoise.song().selected_sample.autofade=true
+  renoise.song().selected_sample.autoseek=true
+  renoise.song().selected_sample.interpolation_mode=4
+  return 
+end
 
 renoise.song().selected_sample.autofade=true
 renoise.song().selected_sample.autoseek=true
@@ -118,7 +97,6 @@ renoise.app().window.active_middle_frame=5
 --end
 end
   
-
 --renoise.song().instruments[renoise.song().selected_instrument_index].active_tab=1 == Sampler
 --renoise.song().instruments[renoise.song().selected_instrument_index].active_tab=1 == Plugin
 --renoise.song().instruments[renoise.song().selected_instrument_index].active_tab=1 == Midi
@@ -368,12 +346,11 @@ then w.active_lower_frame = raw.LOWER_FRAME_TRACK_DSPS return end
     w.lock_keyboard_focus=true
     renoise.song().transport.follow_player=false end
 
-renoise.tool():add_menu_entry{name="--Pattern Matrix:Paketti..:Switch to Automation",invoke=function() showAutomation() end}
+
 renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Switch to Automation",invoke=function() showAutomation() end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Switch to Automation",invoke=function() showAutomation() end}
 renoise.tool():add_keybinding{name="Pattern Matrix:Paketti:Switch to Automation",invoke=function() showAutomation() end}
 renoise.tool():add_keybinding{name="Mixer:Paketti:Switch to Automation",invoke=function() showAutomation() end}
-
 
 renoise.tool():add_midi_mapping{name="Global:Paketti:Switch to Automation",invoke=function() 
   local w=renoise.app().window
@@ -1549,51 +1526,6 @@ end
 renoise.tool():add_keybinding{name="Global:Paketti:Open External Editor for Plugin",invoke=function() inst_open_editor() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Open External Editor for Plugin (2nd)",invoke=function() inst_open_editor() end}
 ----------------------------------------------------------------------------------------------------------------------------------
--- Write BPM. version 2.7.0 -syflom -LPB alteration on 15th June 2011 -esaruoho
-function get_master_track_index()
-  for k,v in ripairs(renoise.song().tracks)
-    do if v.type == renoise.Track.TRACK_TYPE_MASTER then return k end  
-  end
-end
-
-function write_bpm()
-  if renoise.song().transport.bpm < 256 then -- safety check
-    local column_index = renoise.song().selected_effect_column_index
-    local t=renoise.song().transport
-  renoise.song().tracks[get_master_track_index()].visible_effect_columns = 2  
-    
-    if renoise.song().selected_effect_column_index <= 1 then column_index = 2 end
-    
-    renoise.song().selected_pattern.tracks[get_master_track_index()].lines[1].effect_columns[1].number_string = "ZT"
-    renoise.song().selected_pattern.tracks[get_master_track_index()].lines[1].effect_columns[1].amount_value  = t.bpm
-    renoise.song().selected_pattern.tracks[get_master_track_index()].lines[1].effect_columns[2].number_string = "ZL"
-    renoise.song().selected_pattern.tracks[get_master_track_index()].lines[1].effect_columns[2].amount_value  = t.lpb
-  end
-end
--- † --
-
-renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Write Current BPM&LPB to Master column",invoke=function() write_bpm() end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Write Current BPM&LPB to Master column",invoke=function() write_bpm() end}
-
-
-function playat75()
- renoise.song().transport.bpm=renoise.song().transport.bpm*0.75
- WriteToMaster()
- renoise.app():show_status("BPM set to 75% (" .. renoise.song().transport.bpm .. "BPM)") 
-end
-
-function returnbackto100()
- renoise.song().transport.bpm=renoise.song().transport.bpm/0.75
- WriteToMaster()
- renoise.app():show_status("BPM set back to 100% (" .. renoise.song().transport.bpm .. "BPM)") 
-end
-
-renoise.tool():add_keybinding{name="Global:Paketti:Play at 75% Speed (Song BPM)", invoke=function() playat75() end}
-renoise.tool():add_keybinding{name="Global:Paketti:Play at 100% Speed (Song BPM)", invoke=function() returnbackto100() end}
-renoise.tool():add_menu_entry{name="Pattern Matrix:Paketti..:Play at 75% Speed (Song BPM)", invoke=function() playat75() end}
-renoise.tool():add_menu_entry{name="Pattern Matrix:Paketti..:Play at 100% Speed (Song BPM)", invoke=function() returnbackto100()  end}
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Play at 75% Speed (Song BPM)", invoke=function() playat75()  end}
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Play at 100% Speed (Song BPM)", invoke=function() returnbackto100()  end}
 
 
 ------------------------------------------------------------------------------------------------------------------------------------

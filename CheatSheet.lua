@@ -251,9 +251,6 @@ end
   a:show_custom_dialog(dialog_title, dialog_content,my_keyhandler_func)
 end
       
-renoise.tool():add_keybinding{name = "Global:Paketti:Pattern Effect Command CheatSheet",invoke=function() CheatSheet() end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Effect Column CheatSheet", invoke=function() CheatSheet() end}
-
 -----
 --functions+ descriptions + etc + for 16 shortcuts for effects
 --local status="0Axy - Arpeggio (x=base note offset1, y=base noteoffset 2) *"
@@ -309,4 +306,7 @@ s.selected_note_column_index=writenc
   w.lock_keyboard_focus = true
   s.selected_note_column_index=writenc
  end
+
+renoise.tool():add_keybinding{name = "Global:Paketti:Pattern Effect Command CheatSheet",invoke=function() CheatSheet() end}
+
 

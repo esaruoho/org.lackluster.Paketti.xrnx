@@ -1,4 +1,4 @@
----------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 --Set the next ReWire channel - shortcut. If you have a pre-configured 32 input ReWire master host
 --running, you can just press a shortcut and get it to play in the track of your choice (on your
 --master host that is). This is a really simple thing, but it works after a fashion and does
@@ -157,7 +157,7 @@ function search_empty_instrument()
   proc:insert_instrument_at(#proc.instruments+1)
   return #proc.instruments
 end
-------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------
 --This records to currently selected track and outputs 0G01 and c-4 and selected_instrument
 function recordtocurrenttrack()
 renoise.song().transport.edit_mode=false
@@ -205,7 +205,7 @@ s.selected_instrument_index = search_empty_instrument()
 --  delay(3)
 --  renoise.song().transport:trigger_sequence(1)
 end
-------------------------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------
 function finalrecord()
   local s=renoise.song()
   local ss=s.selected_sample

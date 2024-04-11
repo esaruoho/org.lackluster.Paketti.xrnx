@@ -1,4 +1,4 @@
-local function show_plugin_list_dialog()
+function show_plugin_list_dialog()
     local vb = renoise.ViewBuilder()
     local checkboxes = {}
 
@@ -114,51 +114,55 @@ local function addAsShortcut()
 end
     local custom_dialog
 
-    local action_buttons_and_shortcut = vb:column {
-        spacing = 0,
-        margin = 15,
-        vb:row {
-            vb:button {
-                text = "Load Device(s)",
-                width = "100%",
-                notifier = function()
-                    loadSelectedNativeDevices(false)
-                end
-            },
-            vb:button {
-                text = "Load Device(s) & Close",
-                width = "100%",
-                notifier = function()
-                    loadSelectedNativeDevices(true)
-                end
-            }
-        },
+   -- Define the action buttons and their behaviors
+    local button_height = renoise.ViewBuilder.DEFAULT_DIALOG_BUTTON_HEIGHT
+    local button_spacing = renoise.ViewBuilder.DEFAULT_DIALOG_SPACING
+    local action_buttons = vb:column {
+      uniform = true,
+      width = "100%",
+      vb:horizontal_aligner {
         vb:button {
-            text = "Add as Shortcut",
-            width = "100%",
-            notifier = addAsShortcut
-        },
-        vb:button {
-            text = "Cancel",
-            width = "100%",
+            text = "Load Plugin",
+            width = "50%",
+            height = button_height,
             notifier = function()
+                loadSelectedNativeDevice()
+            end
+        },
+        vb:button {
+            text = "Load Plugin & Close",
+            width = "50%",
+            height = button_height,
+            notifier = function()
+                loadSelectedNativeDevice()
                 custom_dialog:close()
             end
-        }
+        } 
+      },
+      vb:button {
+          text = "Add as Shortcut",
+          height = button_height,
+          notifier = addAsShortcut
+          
+      },
+      vb:button {
+          text = "Cancel",
+          height = button_height,
+          notifier = function()
+              custom_dialog:close()
+          end
+      }
     }
+   
 
     local dialog_content = vb:column {
         margin = 10,
-        spacing = 10,
+        spacing = 5,
         create_scrollable_native_list(),
-        action_buttons_and_shortcut
+        action_buttons -- _and_shortcut
     }
 
     custom_dialog = renoise.app():show_custom_dialog("Load Native Device", dialog_content)
 end
 
-renoise.tool():add_menu_entry {
-    name = "Main Menu:Tools:Paketti..:Load Native Devices Dialog",
-    invoke = show_plugin_list_dialog
-}
 

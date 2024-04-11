@@ -251,7 +251,8 @@ local function octuptwo() copy_note_layers(NOTE_ON, NOTE_OFF, -24) end
 
 renoise.tool():add_menu_entry{name="--Sample Mappings:Paketti..:Copy Note-On to Note-Off Layer +12", invoke = octup}
 renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy Note-On to Note-Off Layer +24", invoke = octuptwo}
-renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy Note-On to Note-Off Layer", invoke = norm}renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy Note-On to Note-Off Layer -12", invoke = octdn}
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy Note-On to Note-Off Layer", invoke = norm}
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy Note-On to Note-Off Layer -12", invoke = octdn}
 renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy Note-On to Note-Off Layer -24", invoke = octdntwo}
 
 

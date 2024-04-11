@@ -24,18 +24,6 @@ local devices = renoise.song().tracks[renoise.song().selected_track_index].avail
   end
 end}
 
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Dump VST/AU/Native Effects to Console", invoke=function() 
-local devices = renoise.song().tracks[renoise.song().selected_track_index].available_devices
-  for key, value in ipairs (devices) do 
-    print(key, value)
-  end
-end}
-
-
-
-
-
-
 renoise.tool():add_keybinding{name="Global:Paketti:Dump Current Instrument parameters", invoke=function() 
 local instpara = renoise.song().instruments[renoise.song().selected_instrument_index].plugin_properties.plugin_device.parameters
 --oprint (renoise.song().instruments[renoise.song().selected_instrument_index].plugin_properties.plugin_device.parameters[26].name)
@@ -50,7 +38,19 @@ end}
 
 
 
-
+-- This sets up an AutoFilter - i.e. a LFO followed by a Filter, with the LFO affecting the Cutoff filter.
+-- Simple, but effective.
+function AutoFilter()
+local ss=renoise.song().selected_track
+local raw=renoise.app().window
+raw.active_lower_frame=1
+raw.lower_frame_is_visible=true
+    loadnative("Audio/Effects/Native/Filter")
+    loadnative("Audio/Effects/Native/*LFO")
+  ss.devices[2].parameters[2].value=2
+  ss.devices[2].parameters[3].value=1
+end
+renoise.tool():add_keybinding{name="Global:Paketti:Add Filter & LFO (AutoFilter)", invoke=function() AutoFilter() end}
 
 
 -----------------------------------------------------------------------------------------------------------------------------------
@@ -144,7 +144,7 @@ renoise.app().window.active_middle_frame=3
 s.selected_instrument.active_tab=2 
 --     renoise.song().selected_track.devices[checkline].parameters[1].value=0.474 -- Mix 
 
-renoise.song().instruments[renoise.song().selected_instrument_index].plugin_properties.plugin_device.active_preset_data="PPG_Arpeg.XML"
+renoise.song().instruments[renoise.song().selected_instrument_index].plugin_properties.plugin_device.active_preset_data="Presets/PPG_Arpeg.XML"
 --loadnative("Audio/Effects/Native/*Instr. Automation")
 --     s.selected_track.devices[2].parameters[2].value=0.0 -- delay
 
@@ -473,13 +473,6 @@ renoise.song().selected_track.devices[2].parameters[2].value=1
 end}
 
 
-
-function writeToClipboard(text)
-local devices = renoise.song().tracks[renoise.song().selected_track_index].available_devices
-
-    local command = 'echo "' .. text .. '" | pbcopy'
-    os.execute(command)
-end
 
 function launchApp(appName)
 os.execute(appName)

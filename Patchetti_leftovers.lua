@@ -19,8 +19,8 @@ local function remove_line_input()
  renoise.song().selected_track:delete_device_at(2)
 end
 
--- recordamagic
-local function recordamagig9000(running)
+-- recordamajic
+local function recordamajic9000(running)
     if running then
     renoise.song().transport.playing=true
         -- start recording code here
@@ -32,7 +32,7 @@ renoise.song().transport:start_stop_sample_recording()
     end
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Recordamajig9000",
+renoise.tool():add_keybinding{name="Global:Paketti:Recordammajic9000",
 invoke=function()
  if has_line_input() then
     recordtocurrenttrack()    
@@ -42,6 +42,7 @@ invoke=function()
     recordtocurrenttrack()
  end
 end}
+
 -- turn samplerecorder ON
 function SampleRecorderOn()
 local howmany = table.count(renoise.song().selected_track.devices)
@@ -70,35 +71,6 @@ end
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Display Sample Recorder with #Line Input", invoke=function() SampleRecorderOn() end}
-
-function AutoFilter()
---renoise.song().tracks[get_master_track_index()].visible_effect_columns = 4  
-renoise.app().window.active_lower_frame=1
-renoise.app().window.lower_frame_is_visible=true
-  loadnative("Audio/Effects/Native/Filter")
-  loadnative("Audio/Effects/Native/*LFO")
-  renoise.song().selected_track.devices[2].parameters[2].value=2
-  renoise.song().selected_track.devices[2].parameters[3].value=1
-end
-
-function AutoGapper()
---renoise.song().tracks[get_master_track_index()].visible_effect_columns = 4  
-local gapper=nil
-renoise.app().window.active_lower_frame=1
-renoise.app().window.lower_frame_is_visible=true
-  loadnative("Audio/Effects/Native/Filter")
-  loadnative("Audio/Effects/Native/*LFO")
-  renoise.song().selected_track.devices[2].parameters[2].value=2
-  renoise.song().selected_track.devices[2].parameters[3].value=1
-  renoise.song().selected_track.devices[2].parameters[7].value=2
-  renoise.song().selected_track.devices[3].parameters[5].value=0.0074
-local gapper=renoise.song().patterns[renoise.song().selected_pattern_index].number_of_lines*2*4
-  renoise.song().selected_track.devices[2].parameters[6].value_string=tostring(gapper)
---renoise.song().selected_pattern.tracks[get_master_track_index()].lines[renoise.song().selected_line_index].effect_columns[4].number_string = "18"
-end
-
-renoise.tool():add_keybinding{name="Global:Paketti:Add Filter & LFO (AutoFilter)", invoke=function() AutoFilter() end}
-renoise.tool():add_keybinding{name="Global:Paketti:Add Filter & LFO (AutoGapper)", invoke=function() AutoGapper() end}
 
 function glideamount(amount)
 local counter=nil 
@@ -141,7 +113,6 @@ function startup_()
   local s=renoise.song()
    renoise.app().window:select_preset(1)
    
- 
    renoise.song().instruments[s.selected_instrument_index].active_tab=1
     if renoise.app().window.active_middle_frame==0 and s.selected_sample.sample_buffer_observable:has_notifier(sample_loaded_change_to_sample_editor) then 
     s.selected_sample.sample_buffer_observable:remove_notifier(sample_loaded_change_to_sample_editor)
@@ -161,21 +132,7 @@ if not renoise.tool().app_new_document_observable:has_notifier(startup_)
    else renoise.tool().app_new_document_observable:remove_notifier(startup_)
 end
 --------------------------------------------------------------------------------
---Wipes the pattern data, but not the samples or instruments.
---WARNING: Does not reset current filename.
-function wipesong()
-local s=renoise.song()
-  for i=1,300 do
-    if s.patterns[i].is_empty==false then
-    s.patterns[i]:clear()
-    renoise.song().patterns[i].number_of_lines=64
-    else 
-    print ("Encountered empty pattern, not deleting")
-    renoise.song().patterns[i].number_of_lines=64
-    end
-  end
-end
-renoise.tool():add_keybinding{name="Global:Paketti:WipeSong", invoke=function() wipesong() end}
+
 
 function start_stop_sample_and_loop_oh_my()
 local w=renoise.app().window
@@ -405,12 +362,6 @@ renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Record To Current"
 --The other two of the four write 8 effect column's worth of bypass, or enable  the first 8 DSPs to
 --Pattern Editor. It's destructive and does not take into consideration anything that is already in
 --the effect columns, but might save you some hassle with cpu-hungry multi-part songs :)
-function effectbypass()
-local number = (table.count(renoise.song().selected_track.devices))
- for i=2,number  do 
-  renoise.song().selected_track.devices[i].is_active=false
- end
-end
 
 function effectbypasspattern()
 local currTrak = renoise.song().selected_track_index
@@ -434,12 +385,7 @@ renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].
  end
 end
 
-function effectenable()
-local number = (table.count(renoise.song().selected_track.devices))
-for i=2,number  do 
-renoise.song().selected_track.devices[i].is_active=true
-end
-end
+
 
 function effectenablepattern()
 local currTrak = renoise.song().selected_track_index
@@ -466,7 +412,6 @@ renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].
 end
 end
 -----------------------------------------------------------------------------------------------------
-
 function soloKey()
 local s=renoise.song()
   s.tracks[renoise.song().selected_track_index]:solo()
@@ -498,24 +443,14 @@ function RecordToggle()
    end
 end
 end
-----------------------------------------------------------------------------------------------------------
-renoise.tool():add_keybinding{name="Global:Track Devices:Load TOGU Audioline Reverb", invoke=function() loadvst("Audio/Effects/AU/aumf:676v:TOGU") end}
-renoise.tool():add_keybinding{name="Global:Track Devices:Load TOGU Audioline Chorus", invoke=function() loadvst("Audio/Effects/AU/aufx:Chor:Togu") end}
-renoise.tool():add_keybinding{name="Global:Track Devices:Load TOGU Audioline Ultra Simple EQ", invoke=function() loadvst("Audio/Effects/AU/aufx:TILT:Togu") end}
-renoise.tool():add_keybinding{name="Global:Track Devices:Load TOGU Audioline Dub-Delay I", invoke=function() loadvst("Audio/Effects/AU/aumf:aumf:Togu") end}
-renoise.tool():add_keybinding{name="Global:Track Devices:Load TOGU Audioline Dub-Delay II", invoke=function() loadvst("Audio/Effects/AU/aumf:dub2:Togu") end}
-renoise.tool():add_keybinding{name="Global:Track Devices:Load TOGU Audioline Dub-Delay III",invoke=function() loadvst("Audio/Effects/AU/aumf:xg70:TOGU") end}
-----------------------------------------------------------------------------------------------------------
+
 -- Menu Entries
 -- Pattern Matrix
-renoise.tool():add_menu_entry{name="Pattern Matrix:Paketti..:Bypass EFX", invoke=function() effectbypass() end}
-renoise.tool():add_menu_entry{name="Pattern Matrix:Paketti..:Enable EFX", invoke=function() effectenable() end}
 renoise.tool():add_menu_entry{name="Pattern Matrix:Paketti..:Bypass EFX (Write to Pattern)", invoke=function() effectbypasspattern()  end}
 renoise.tool():add_menu_entry{name="Pattern Matrix:Paketti..:Enable EFX (Write to Pattern)", invoke=function() effectenablepattern() end}
 -- Pattern Sequencer
-renoise.tool():add_menu_entry{name="Pattern Sequencer:Show/Hide Pattern Matrix", invoke=function() showhidepatternmatrix() end}
-renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Bypass EFX", invoke=function() effectbypass() end}
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Enable EFX", invoke=function() effectenable() end}
+
+
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Bypass EFX (Write to Pattern)", invoke=function() effectbypasspattern() end}
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Enable EFX (Write to Pattern)", invoke=function() effectenablepattern()  end}
 ------------------------------------------------------------------------------------------------
@@ -537,20 +472,4 @@ end
 renoise.tool():add_menu_entry{name="Sample Editor:Ding", invoke=function() Ding() end}
 
 --------------
-
-
-function muteUnmuteNoteColumn()
-local s = renoise.song()
-local sti = s.selected_track_index
-local snci = s.selected_note_column_index
-
-if s.selected_note_column_index == 0 
-  then return else
-if s:track(sti):column_is_muted(snci) == true
-  then s:track(sti):mute_column(snci, false)
-else s:track(sti):mute_column(snci, true) end end
-end
-
---renoise.tool():add_keybinding{name="Global:Paketti:Mute Unmute Notecolumn", invoke=function() muteUnmuteNoteColumn() end} <- confirmed as not working
-----------------------------------------------------------------------------------------------------------------------------------------
 

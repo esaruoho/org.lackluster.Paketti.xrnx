@@ -298,7 +298,6 @@ end
 
 
 
-renoise.tool():add_menu_entry{name="---Main Menu:Tools:Paketti..:Available Routings for Track",invoke=function() showAvailableRoutings() end}
 
 function simpleOutputRoute(output)
   -- Get the selected track from the current song
