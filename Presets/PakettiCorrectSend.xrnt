@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RenoiseDeviceChain doc_version="21">
+  <SelectedPresetName>Init</SelectedPresetName>
+  <SelectedPresetLibrary>Bundled Content</SelectedPresetLibrary>
+  <SelectedPresetIsModified>false</SelectedPresetIsModified>
+  <Devices>
+    <SendDevice type="SendDevice">
+      <IsMaximized>true</IsMaximized>
+      <IsSelected>true</IsSelected>
+      <SelectedPresetName>Init</SelectedPresetName>
+      <SelectedPresetLibrary>Bundled Content</SelectedPresetLibrary>
+      <SelectedPresetIsModified>true</SelectedPresetIsModified>
+      <IsActive>
+        <Value>1.0</Value>
+        <Visualization>Device only</Visualization>
+      </IsActive>
+      <SendAmount>
+        <Value>0.0</Value>
+        <Visualization>Mixer and Device</Visualization>
+      </SendAmount>
+      <SendPan>
+        <Value>0.5</Value>
+        <Visualization>Device only</Visualization>
+      </SendPan>
+      <DestSendTrack>
+        <Value>0.0</Value>
+        <Visualization>Device only</Visualization>
+      </DestSendTrack>
+      <MuteSource>false</MuteSource>
+      <SmoothParameterChanges>true</SmoothParameterChanges>
+      <ApplyPostVolume>true</ApplyPostVolume>
+    </SendDevice>
+  </Devices>
+</RenoiseDeviceChain>
