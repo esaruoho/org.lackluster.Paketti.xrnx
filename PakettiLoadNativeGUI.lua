@@ -126,7 +126,7 @@ end
             width = "50%",
             height = button_height,
             notifier = function()
-                loadSelectedNativeDevice()
+                loadSelectedNativeDevices()
             end
         },
         vb:button {
@@ -134,7 +134,7 @@ end
             width = "50%",
             height = button_height,
             notifier = function()
-                loadSelectedNativeDevice()
+                loadSelectedNativeDevices()
                 custom_dialog:close()
             end
         } 
@@ -162,7 +162,7 @@ end
         action_buttons -- _and_shortcut
     }
 
-    custom_dialog = renoise.app():show_custom_dialog("Load Native Device", dialog_content)
+    custom_dialog = renoise.app():show_custom_dialog("Load Native Device(s)", dialog_content)
 end
 
 
