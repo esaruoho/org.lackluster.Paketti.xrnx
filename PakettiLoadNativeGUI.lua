@@ -122,7 +122,7 @@ end
       width = "100%",
       vb:horizontal_aligner {
         vb:button {
-            text = "Load Plugin",
+            text = "Load Device(s)",
             width = "50%",
             height = button_height,
             notifier = function()
@@ -130,7 +130,7 @@ end
             end
         },
         vb:button {
-            text = "Load Plugin & Close",
+            text = "Load Device(s) & Close",
             width = "50%",
             height = button_height,
             notifier = function()
@@ -140,7 +140,7 @@ end
         } 
       },
       vb:button {
-          text = "Add as Shortcut",
+          text = "Add Device(s) as Shortcut(s)",
           height = button_height,
           notifier = addAsShortcut
           
