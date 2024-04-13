@@ -24,7 +24,6 @@
 
 
 
--- Write BPM. version 2.7.0 -syflom -LPB alteration on 15th June 2011 -esaruoho
 function get_master_track_index()
   for k,v in ripairs(renoise.song().tracks)
     do if v.type == renoise.Track.TRACK_TYPE_MASTER then return k end  
@@ -45,22 +44,51 @@ function write_bpm()
     renoise.song().selected_pattern.tracks[get_master_track_index()].lines[1].effect_columns[2].amount_value  = t.lpb
   end
 end
--- † --
 
 renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Write Current BPM&LPB to Master column",invoke=function() write_bpm() end}
+
+function randombpm()
+local prefix=nil
+local randombpm = {80, 100, 115, 123, 128, 132, 135, 138, 160}
+ math.randomseed(os.time())
+  for i = 1, 9 do
+      prefix = math.random(1, #randombpm)
+      prefix = randombpm[prefix]
+      print(prefix)
+  end
+ renoise.song().transport.bpm=prefix
+    if renoise.tool().preferences.RandomBPM.value then
+        write_bpm()
+    end
+end
+
+renoise.tool():add_keybinding{
+    name = "Pattern Editor:Paketti..:Renoise Random BPM & Write BPM/LPB to Master",
+    invoke = function()
+        local randombpm = {80, 100, 115, 123, 128, 132, 135, 138, 160}
+        math.randomseed(os.time())
+        local prefix = randombpm[math.random(#randombpm)]
+        renoise.song().transport.bpm = prefix
+
+        if renoise.tool().preferences.RandomBPM.value then 
+      
+            write_bpm()
+        end
+    end
+}
 
 
 
 
 function playat75()
  renoise.song().transport.bpm=renoise.song().transport.bpm*0.75
- WriteToMaster()
+ write_bpm()
  renoise.app():show_status("BPM set to 75% (" .. renoise.song().transport.bpm .. "BPM)") 
 end
 
 function returnbackto100()
  renoise.song().transport.bpm=renoise.song().transport.bpm/0.75
- WriteToMaster()
+ write_bpm()
  renoise.app():show_status("BPM set back to 100% (" .. renoise.song().transport.bpm .. "BPM)") 
 end
 

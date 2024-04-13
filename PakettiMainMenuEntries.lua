@@ -1,5 +1,22 @@
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Random BPM (60-180)",invoke=function()
-renoise.song().transport.bpm=math.random(60,180) end}
+
+renoise.tool():add_menu_entry{
+    name = "--Main Menu:Tools:Paketti..:Random BPM (60-180)",
+    invoke = function()
+        local randombpm = {80, 100, 115, 123, 128, 132, 135, 138, 160}
+        math.randomseed(os.time())
+        local prefix = randombpm[math.random(#randombpm)]
+        renoise.song().transport.bpm = prefix
+
+        if renoise.tool().preferences.RandomBPM.value then
+    
+            write_bpm()
+        end
+    end
+}
+
+
+
+--renoise.song().transport.bpm=math.random(60,180) end}
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Write Current BPM&LPB to Master column",invoke=function() write_bpm() end}
 renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Bypass All Devices on Channel", invoke=function() effectbypass() end}
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Enable All Devices on Channel", invoke=function() effectenable() end}

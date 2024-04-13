@@ -1,18 +1,3 @@
-function randombpm()
-local prefix=nil
-local randombpm = {80, 100, 115, 123, 128, 132, 135, 138, 160}
- math.randomseed(os.time())
-  for i = 1, 9 do
-      prefix = math.random(1, #randombpm)
-      prefix = randombpm[prefix]
-      print(prefix)
-  end
- renoise.song().transport.bpm=prefix
- WriteToMaster()
-end
-
--- Pattern Editor
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Renoise Random BPM & Write BPM/LPB to Master", invoke=function() randombpm()  end}
 
 
 function cycle_middle_frame()
