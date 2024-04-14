@@ -534,7 +534,6 @@ if renoise.song().transport.metronome_enabled then renoise.song().transport.metr
 renoise.tool():add_midi_mapping{name="Global:Paketti:Metronome On/Off x[Toggle]",invoke=function() MetronomeOff() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Toggle Metronome On/Off",invoke=function() MetronomeOff() end}
 
-
 function phraseEditorVisible()
   local s=renoise.song()
 --If no Phrase in instrument, create phrase, otherwise do nothing.
@@ -1759,78 +1758,6 @@ resize_pattern(pattern, pattern.number_of_lines * 0.5,1 ) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:dblue Expand + Resize Pattern",invoke=function()
 local pattern = renoise.song().selected_pattern
 resize_pattern(pattern, pattern.number_of_lines * 2,1) end}
-
-function joulepatterndoubler()
- local s=renoise.song()
- local old_patternlength = s.selected_pattern.number_of_lines
- local resultlength = nil
-
- resultlength = old_patternlength*2
-
-if not (resultlength > 512) then
-  s.selected_pattern.number_of_lines = resultlength
-
-  for track_index, patterntrack in ipairs(s.selected_pattern.tracks) do
-    if not patterntrack.is_empty then
-      for line_index, line in ipairs(patterntrack.lines) do
-        if line_index <= old_patternlength then
-          if not line.is_empty then
-            patterntrack:line(line_index+old_patternlength):copy_from(line)
-          else
-            patterntrack:line(line_index+old_patternlength):clear()
-          end
-        end
-      end
-    end
-  end
-else
-  return
-end
-
---Modification, cursor is placed to "start of "clone""
---renoise.song().selected_line_index = old_patternlength+1
- s.selected_line_index = old_patternlength+s.selected_line_index
--- s.transport.edit_step=0
-end
-
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Joule Pattern Doubler",invoke=function() joulepatterndoubler() end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Joule Pattern Doubler",invoke=function() joulepatterndoubler() end}  
-renoise.tool():add_keybinding{name="Mixer:Paketti:Joule Pattern Doubler",invoke=function() joulepatterndoubler() end}  
-
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Joule Pattern Halver",invoke=function() joulepatternhalver() end}  
-
-function joulepatternhalver()
- local s=renoise.song()
- local old_patternlength = s.selected_pattern.number_of_lines
- local resultlength = nil
-
- resultlength = old_patternlength/2
-
-if not (resultlength < 1) then
-  s.selected_pattern.number_of_lines = resultlength
-
-  for track_index, patterntrack in ipairs(s.selected_pattern.tracks) do
-    if not patterntrack.is_empty then
-      for line_index, line in ipairs(patterntrack.lines) do
-        if line_index <= old_patternlength then
-          if not line.is_empty then
-            patterntrack:line(line_index+old_patternlength):copy_from(line)
-          else
-            patterntrack:line(line_index+old_patternlength):clear()
-          end
-        end
-      end
-    end
-  end
-else
-  return
-end
-
---Modification, cursor is placed to "start of "clone""
---renoise.song().selected_line_index = old_patternlength+1
--- s.selected_line_index = old_patternlength+s.selected_line_index
--- s.transport.edit_step=0
-end
 
 
 -----

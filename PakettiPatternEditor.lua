@@ -22,6 +22,116 @@
 
 
 
+function pakettiPatternDoubler()
+  local song = renoise.song()
+  local pattern_index = song.selected_pattern_index
+  local old_patternlength = song.selected_pattern.number_of_lines
+  local new_patternlength = old_patternlength * 2
+
+  if new_patternlength <= 512 then
+    song.selected_pattern.number_of_lines = new_patternlength
+
+    -- Loop through each track in the selected pattern
+    for track_index, pattern_track in ipairs(song.selected_pattern.tracks) do
+      if not pattern_track.is_empty then
+        -- Copy notes in the pattern
+        for line_index = 1, old_patternlength do
+          local line = pattern_track:line(line_index)
+          local new_line = pattern_track:line(line_index + old_patternlength)
+          if not line.is_empty then
+            new_line:copy_from(line)
+          else
+            new_line:clear()
+          end
+        end
+      end
+
+      -- Handle automation duplication with detailed debug output
+      local track_automations = song.patterns[pattern_index].tracks[track_index].automation
+      if next(track_automations) ~= nil then -- Check if there's any automation
+        for param, automation in pairs(track_automations) do
+          print("Processing automation for parameter:", param)
+          local points = automation.points
+          for i, point in ipairs(points) do
+            local new_time = point.time + old_patternlength
+            if new_time <= new_patternlength then
+              automation:add_point_at(new_time, point.value)
+              print("Duplicating point:", point.time, point.value, "to", new_time)
+            end
+          end
+        end
+      else
+        print("No automation found in track", track_index)
+      end
+    end
+
+    song.selected_line_index = old_patternlength + 1
+    print("Pattern doubled successfully.")
+  else
+    print("New pattern length exceeds 512 lines, operation cancelled.")
+  end
+end
+
+function pakettiPatternHalver()
+  local s = renoise.song()
+  local old_patternlength = s.selected_pattern.number_of_lines
+  local resultlength = math.floor(old_patternlength / 2)
+
+  -- Check if the result length is less than 1, which would be invalid
+  if resultlength < 1 then
+    print("Resulting pattern length is too small, operation cancelled.")
+    return
+  end
+
+  -- Set the new pattern length
+  s.selected_pattern.number_of_lines = resultlength
+
+  -- Adjust automation for each track
+  for track_index, track in ipairs(s.selected_pattern.tracks) do
+    local track_automations = s.patterns[s.selected_pattern_index].tracks[track_index].automation
+    for _, automation in pairs(track_automations) do
+      local points = automation.points
+      local new_points = {}
+
+      -- Collect new points, scaling down the time values
+      for _, point in ipairs(points) do
+        local new_time = math.floor((point.time / old_patternlength) * resultlength)
+        if new_time >= 1 and new_time <= resultlength then
+          table.insert(new_points, {time = new_time, value = point.value})
+        end
+      end
+
+      -- Clear existing points and add scaled points
+      automation:clear_points()
+      for _, point in ipairs(new_points) do
+        automation:add_point_at(point.time, point.value)
+      end
+    end
+  end
+end
+
+-- The function can be bound to a menu item or a keybinding within Renoise to make it easily accessible
+renoise.tool():add_menu_entry{
+    name = "Main Menu:Tools:Paketti..:Paketti Pattern Halver",
+    invoke = pakettiPatternHalver
+}
+
+renoise.tool():add_keybinding{
+    name = "Pattern Editor:Paketti:Paketti Pattern Halver",
+    invoke = pakettiPatternHalver
+}
+
+renoise.tool():add_keybinding{
+    name = "Mixer:Paketti:Paketti Pattern Halver",
+    invoke = pakettiPatternHalver
+}
+
+
+-- Add menu entries and keybindings for the tool
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Paketti Pattern Doubler", invoke=pakettiPatternDoubler}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Paketti Pattern Doubler", invoke=pakettiPatternDoubler}
+renoise.tool():add_keybinding{name="Mixer:Paketti:Paketti Pattern Doubler", invoke=pakettiPatternDoubler}
+
 
 
 function get_master_track_index()
