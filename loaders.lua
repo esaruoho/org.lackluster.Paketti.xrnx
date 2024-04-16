@@ -37,6 +37,29 @@ end
 end}
 
 
+-- Open Instrument External Editor
+function inst_open_editor()
+local pd=renoise.song().selected_instrument.plugin_properties.plugin_device
+local w=renoise.app().window
+    if renoise.song().selected_instrument.plugin_properties.plugin_loaded==false then
+    w.pattern_matrix_is_visible = false
+    w.sample_record_dialog_is_visible = false
+    w.upper_frame_is_visible = true
+    w.lower_frame_is_visible = true
+    w.active_upper_frame = 1
+    w.active_middle_frame= 4
+    w.active_lower_frame = 1 -- TrackDSP
+    w.lock_keyboard_focus=true
+    else
+     if pd.external_editor_visible==false then pd.external_editor_visible=true else pd.external_editor_visible=false end
+     end
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Open External Editor for Plugin",invoke=function() inst_open_editor() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Open External Editor for Plugin (2nd)",invoke=function() inst_open_editor() end}
+------------------------------------------------------------------------------------------------------------------------------------
+
+
 
 -- This sets up an AutoFilter - i.e. a LFO followed by a Filter, with the LFO affecting the Cutoff filter.
 -- Simple, but effective.
@@ -52,6 +75,16 @@ raw.lower_frame_is_visible=true
 end
 renoise.tool():add_keybinding{name="Global:Paketti:Add Filter & LFO (AutoFilter)", invoke=function() AutoFilter() end}
 
+----------------
+function read_file(path)
+    local file = io.open(path, "r")  -- Open the file in read mode
+    if not file then
+        error("File not found: " .. path)
+    end
+    local content = file:read("*a")  -- Read the entire content of the file into a string
+    file:close()
+    return content
+end
 
 -----------------------------------------------------------------------------------------------------------------------------------
 function checkline(effect)
@@ -191,6 +224,10 @@ local sdevices=s.selected_track.devices
   s.selected_track.devices[checkline].parameters[1].show_in_mixer=false
   s.selected_track.devices[checkline].parameters[3].show_in_mixer=false
   s.selected_track.devices[checkline].parameters[5].show_in_mixer=false 
+      local PakettiMultiSend_xml_file_path = "Presets/PakettiMultiSend.XML"
+    local PakettiMultiSend_xml_data = read_file(PakettiMultiSend_xml_file_path)
+renoise.song().selected_track.devices[2].active_preset_data=PakettiMultiSend_xml_data
+
   else end
   
   if s.selected_track.devices[checkline].name=="Gainer" then 
@@ -204,29 +241,10 @@ local sdevices=s.selected_track.devices
 
   if s.selected_track.devices[checkline].name=="#Send" then 
   s.selected_track.devices[2].parameters[2].show_in_mixer=true
-  -- This loads "#SendPakettiInit"
--- Your target preset name
-local targetPresetName = "#SendPakettiInit"
-
--- Retrieve the list of presets for the selected device on the selected track
-local presets = renoise.song().selected_track.devices[2].presets
-
--- Iterate through the list of presets
-for index, presetName in ipairs(presets) do
-  -- Check if the current preset name matches the target
-  if presetName == targetPresetName then
-    -- If a match is found, set the active_preset to the index of the found preset
-    renoise.song().selected_track.devices[2].active_preset = index
-    
-    -- Optionally, print a message or do something else
-    print("Preset '" .. targetPresetName .. "' found and activated at slot " .. index)
-    
-    -- Since the preset is found and activated, break out of the loop
-    break
-  end
-end
+    local PakettiSend_xml_file_path = "Presets/PakettiSend.XML"
+    local PakettiSend_xml_data = read_file(PakettiSend_xml_file_path)
+renoise.song().selected_track.devices[2].active_preset_data=PakettiSend_xml_data
 else end
-
 
 end
 

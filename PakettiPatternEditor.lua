@@ -13,12 +13,31 @@
 
 
 
+----------------------------------------------------------------------------------------------------
+function computerKeyboardVolChange(number)
+local s=renoise.song();if s.transport.keyboard_velocity_enabled==false then s.transport.keyboard_velocity_enabled=true end
+local addtovelocity=nil
+addtovelocity=s.transport.keyboard_velocity+number
+if addtovelocity > 127 then addtovelocity=127 end
+if addtovelocity < 1 then s.transport.keyboard_velocity_enabled=false return end
+s.transport.keyboard_velocity=addtovelocity
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Computer Keyboard Velocity -1",invoke=function() computerKeyboardVolChange(-1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Computer Keyboard Velocity +1",invoke=function() computerKeyboardVolChange(1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Computer Keyboard Velocity -10",invoke=function() computerKeyboardVolChange(-10) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Computer Keyboard Velocity +10",invoke=function() computerKeyboardVolChange(10) end}
 
 
+--BPM +1 / -1
+function adjust_bpm(bpm_delta)
+  local t = renoise.song().transport
+  t.bpm = math.max(32, math.min(999, t.bpm + bpm_delta))
+renoise.app():show_status("BPM : " .. t.bpm)
+end
 
-
-
-
+renoise.tool():add_keybinding{name="Global:Paketti:BPM Decrease (-1)",invoke=function() adjust_bpm(-1, 0) end}
+renoise.tool():add_keybinding{name="Global:Paketti:BPM Increase (+1)",invoke=function() adjust_bpm(1, 0) end}
 
 
 
@@ -110,21 +129,6 @@ function pakettiPatternHalver()
   end
 end
 
--- The function can be bound to a menu item or a keybinding within Renoise to make it easily accessible
-renoise.tool():add_menu_entry{
-    name = "Main Menu:Tools:Paketti..:Paketti Pattern Halver",
-    invoke = pakettiPatternHalver
-}
-
-renoise.tool():add_keybinding{
-    name = "Pattern Editor:Paketti:Paketti Pattern Halver",
-    invoke = pakettiPatternHalver
-}
-
-renoise.tool():add_keybinding{
-    name = "Mixer:Paketti:Paketti Pattern Halver",
-    invoke = pakettiPatternHalver
-}
 
 
 -- Add menu entries and keybindings for the tool
@@ -132,7 +136,10 @@ renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Paketti Pattern 
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Paketti Pattern Doubler", invoke=pakettiPatternDoubler}
 renoise.tool():add_keybinding{name="Mixer:Paketti:Paketti Pattern Doubler", invoke=pakettiPatternDoubler}
 
-
+-- The function can be bound to a menu item or a keybinding within Renoise to make it easily accessible
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Paketti Pattern Halver", invoke = pakettiPatternHalver}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Paketti Pattern Halver", invoke = pakettiPatternHalver}
+renoise.tool():add_keybinding{name="Mixer:Paketti:Paketti Pattern Halver", invoke = pakettiPatternHalver}
 
 function get_master_track_index()
   for k,v in ripairs(renoise.song().tracks)
@@ -208,11 +215,39 @@ renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Play at 75% Speed (
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Play at 100% Speed (Song BPM)", invoke=function() returnbackto100()  end}
 
 
+renoise.tool():add_keybinding {
+    name = "Global:Paketti:Random BPM from List",
+    invoke = function()
+        -- Define a list of possible BPM values
+        local bpmList = {80, 100, 115, 123, 128, 132, 135, 138, 160}
+        
+        -- Get the current BPM
+        local currentBPM = renoise.song().transport.bpm
+        
+        -- Filter the list to exclude the current BPM
+        local newBpmList = {}
+        for _, bpm in ipairs(bpmList) do
+            if bpm ~= currentBPM then
+                table.insert(newBpmList, bpm)
+            end
+        end
 
+        -- Select a random BPM from the filtered list
+        if #newBpmList > 0 then
+            local selectedBPM = newBpmList[math.random(#newBpmList)]
+            renoise.song().transport.bpm = selectedBPM
+            print("Random BPM set to: " .. selectedBPM) -- Debug output to the console
+        else
+            print("No alternative BPM available to switch to.")
+        end
 
--- This Requires Preferences so that you can define minBPM maxBPM and also whether it imprints the BPM LPB to the Master
-renoise.tool():add_keybinding{name="Global:Paketti:Random BPM (60-180)",invoke=function()
-renoise.song().transport.bpm=math.random(60,180) end}
+        -- Optional: write the BPM to a file or apply other logic
+        if renoise.tool().preferences.RandomBPM and renoise.tool().preferences.RandomBPM.value then
+            write_bpm() -- Ensure this function is defined elsewhere in your tool
+            print("BPM written to file or handled additionally.")
+        end
+    end
+}
 
 
 
@@ -299,4 +334,234 @@ renoise.tool():add_keybinding{name="Pattern Editor:Navigation:Paketti Joule Jump
 renoise.tool():add_keybinding{name="Pattern Editor:Navigation:Paketti Joule Jump to previous column (note/fx)",invoke=function() cycle_column("prev") end}
 renoise.tool().app_idle_observable:add_notifier(cache_columns)
 
+-- Pattern Resizer by dblue. some minor modifications.
+function resize_pattern(pattern, new_length, patternresize)
+  
+  -- We need a valid pattern object
+  if (pattern == nil) then
+    renoise.app():show_status('Need a valid pattern object!')
+    return
+  end
+  
+  -- Rounding function
+  local function round(value)
+    return math.floor(value + 0.5)
+  end
+  
+  -- Shortcut to the song object
+  local rs = renoise.song()
+  
+  -- Get the current pattern length
+  local src_length = pattern.number_of_lines 
+  
+  -- Make sure new_length is within valid limits
+  local dst_length = math.min(512, math.max(1, new_length))
+   
+  -- If the new length is the same as the old length, then we have nothing to do.
+  if (dst_length == src_length) then
+    return
+  end
+  
+  -- Set conversation ratio
+  local ratio = dst_length / src_length
+  
+  -- Change pattern length
+  if patternresize==1 then 
+ pattern.number_of_lines = dst_length
+end
+   
+  -- Source
+  local src_track = nil
+  local src_line = nil
+  local src_note_column = nil
+  local src_effect_column = nil
+  
+  -- Insert a new track as a temporary work area
+  rs:insert_track_at(1)
+  
+  -- Destination
+  local dst_track = pattern:track(1)
+  local dst_line_index = 0
+  local dst_delay = 0
+  local dst_line = nil
+  local dst_note_column = nil
+  local dst_effect_column = nil
+  
+  -- Misc
+  local tmp_line_index = 0
+  local tmp_line_delay = 0
+  local delay_column_used = false   
+  local track = nil
+
+  -- Iterate through each track
+  for src_track_index = 2, #rs.tracks, 1 do
+  
+    track = rs:track(src_track_index)
+
+    -- Set source track
+    src_track = pattern:track(src_track_index)
+    
+    -- Reset delay check
+    delay_column_used = false
+ 
+    -- Iterate through source lines
+    for src_line_index = 0, src_length - 1, 1 do
+    
+      -- Set source line
+      src_line = src_track:line(src_line_index + 1)
+      
+      -- Only process source line if it contains data
+      if (not src_line.is_empty) then
+           
+        -- Store temporary line index and delay
+        tmp_line_index = math.floor(src_line_index * ratio)
+        tmp_line_delay = math.floor(((src_line_index * ratio) - tmp_line_index) * 256)
+         
+        -- Process note columns
+        for note_column_index = 1, track.visible_note_columns, 1 do
+        
+          -- Set source note column
+          src_note_column = src_line:note_column(note_column_index)
+          
+          -- Only process note column if it contains data 
+          if (not src_note_column.is_empty) then
+          
+            -- Calculate destination line and delay
+            dst_line_index = tmp_line_index
+            dst_delay = math.ceil(tmp_line_delay + (src_note_column.delay_value * ratio))
+            
+            -- Wrap note to next line if necessary
+            while (dst_delay >= 256) do
+              dst_delay = dst_delay - 256
+              dst_line_index = dst_line_index + 1
+            end
+            
+            -- Keep track of whether the delay column is used
+            -- so that we can make it visible later if necessary.
+            if (dst_delay > 0) then
+              delay_column_used = true
+            end
+            dst_line = dst_track:line(dst_line_index + 1)
+            dst_note_column = dst_line:note_column(note_column_index)
+            
+            -- Note prioritisation 
+            if (dst_note_column.is_empty) then
+            
+              -- Destination is empty. Safe to copy
+              dst_note_column:copy_from(src_note_column)
+              dst_note_column.delay_value = dst_delay   
+              
+            else
+              -- Destination contains data. Try to prioritise...
+            
+              -- If destination contains a note-off...
+              if (dst_note_column.note_value == 120) then
+                -- Source note takes priority
+                dst_note_column:copy_from(src_note_column)
+                dst_note_column.delay_value = dst_delay
+                
+              else
+              
+                -- If the source is louder than destination...
+                if (src_note_column.volume_value > dst_note_column.volume_value) then
+                  -- Louder source note takes priority
+                  dst_note_column:copy_from(src_note_column)
+                  dst_note_column.delay_value = dst_delay
+                  
+                -- If source note is less delayed than destination...
+                elseif (src_note_column.delay_value < dst_note_column.delay_value) then
+                  -- Less delayed source note takes priority
+                  dst_note_column:copy_from(src_note_column)
+                  dst_note_column.delay_value = dst_delay 
+                  
+                end
+                
+              end      
+              
+            end -- End: Note prioritisation 
+          
+          end -- End: Only process note column if it contains data 
+         
+        end -- End: Process note columns
+          
+        -- Process effect columns     
+        for effect_column_index = 1, track.visible_effect_columns, 1 do
+          src_effect_column = src_line:effect_column(effect_column_index)
+          if (not src_effect_column.is_empty) then
+            dst_effect_column = dst_track:line(round(src_line_index * ratio) + 1):effect_column(effect_column_index)
+            if (dst_effect_column.is_empty) then
+              dst_effect_column:copy_from(src_effect_column)
+            end
+          end
+        end
+      
+      end -- End: Only process source line if it contains data
+
+    end -- End: Iterate through source lines
+    
+    -- If there is automation to process...
+    if (#src_track.automation > 0) then
+    
+      -- Copy processed lines from temporary track back to original track
+      -- We can't simply use copy_from here, since it will erase the automation
+      for line_index = 1, dst_length, 1 do
+        dst_line = dst_track:line(line_index)
+        src_line = src_track:line(line_index)
+        src_line:copy_from(dst_line)
+      end
+    
+      -- Process automation
+      for _, automation in ipairs(src_track.automation) do
+        local points = {}
+        for _, point in ipairs(automation.points) do
+          if (point.time <= src_length) then
+            table.insert(points, { time = math.min(dst_length - 1, math.max(0, round((point.time - 1) * ratio))), value = point.value })
+          end
+          automation:remove_point_at(point.time)
+        end
+        for _, point in ipairs(points) do
+          if (not automation:has_point_at(point.time + 1)) then
+            automation:add_point_at(point.time + 1, point.value)
+          end
+        end
+      end
+    
+    else
+    
+      -- No automation to process. We can save time and just copy_from
+      src_track:copy_from(dst_track)
+    
+    end
+       
+    -- Clear temporary track for re-use
+    dst_track:clear()
+     
+    -- Show the delay column if any note delays have been used
+    if (rs:track(src_track_index).type == 1) then
+      if (delay_column_used) then
+        rs:track(src_track_index).delay_column_visible = true
+      end
+    end
+               
+  end -- End: Iterate through each track
+ 
+  -- Remove temporary track
+  rs:delete_track_at(1)
+end
+
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:dblue Shrink",invoke=function()
+local pattern = renoise.song().selected_pattern
+resize_pattern(pattern, pattern.number_of_lines * 0.5, 0) end}
+
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:dblue Expand",invoke=function()
+local pattern = renoise.song().selected_pattern
+resize_pattern(pattern, pattern.number_of_lines * 2, 0 ) end}
+
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:dblue Shrink + Resize Pattern",invoke=function()
+local pattern = renoise.song().selected_pattern
+resize_pattern(pattern, pattern.number_of_lines * 0.5,1 ) end}
+
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:dblue Expand + Resize Pattern",invoke=function()
+local pattern = renoise.song().selected_pattern
+resize_pattern(pattern, pattern.number_of_lines * 2,1) end}
 

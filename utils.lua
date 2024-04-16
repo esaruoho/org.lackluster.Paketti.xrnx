@@ -1,3 +1,36 @@
+function writeToClipboard(text)
+    -- Using AppleScript to handle clipboard operations
+    local safe_text = text:gsub('"', '\\"')  -- Escape double quotes for AppleScript
+    local command = 'osascript -e \'set the clipboard to "' .. safe_text .. '"\''
+
+    -- Execute the command and check for errors
+    local success, exit_code, exit_reason = os.execute(command)
+    if success then
+        print("Successfully copied to clipboard: " .. text)
+    else
+        print("Failed to copy to clipboard:", exit_reason, "(exit code " .. tostring(exit_code) .. ")")
+    end
+end
+
+function delay(seconds)
+    local command = "sleep " .. tonumber(seconds)
+    os.execute(command)
+end
+
+-- Add keybinding and menu entry in a more compact format
+renoise.tool():add_keybinding{name="Global:Paketti:∿ Squiggly Sinewave to Clipboard (macOS)", invoke=function() writeToClipboard("∿") 
+writeToClipboard("∿")
+writeToClipboard("∿")
+writeToClipboard("∿")
+delay(5)
+writeToClipboard("∿") end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:∿ Squiggly Sinewave to Clipboard (macOS)", invoke=function() 
+writeToClipboard("∿")
+writeToClipboard("∿")
+writeToClipboard("∿")
+delay(5)
+writeToClipboard("∿") end}
+
 
 
 function cycle_middle_frame()

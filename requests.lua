@@ -15,7 +15,6 @@ renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Time Signature 3/
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Time Signature 7/8 and 56 rows @ LPB 8",invoke=function() jenokiSystem(7,8,56) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Time Signature 6/8 and 48 rows @ LPB 8",invoke=function() jenokiSystem(6,8,48) end}
 
--- From tkna91
 -- All of these have been requested by tkna91 via 
 -- https://github.com/esaruoho/org.lackluster.Paketti.xrnx/issues/
 -- Please send requests if you're interested in obscure stuff that Renoise does not support (but really, should)
@@ -360,10 +359,33 @@ function setBeatsyncLineBelow()
 end
 
 
--- Update the keybindings to use the new functions
 renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Beatsync Line (Power of Two Above)",invoke=function() setBeatsyncLineAbove() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Beatsync Line (Power of Two Below)",invoke=function() setBeatsyncLineBelow() end}
 
+-- Shortcuts as requested by Casiino
+-- 
+renoise.tool():add_keybinding{name="Global:Paketti:Computer Keyboard Velocity -16",invoke=function() computerKeyboardVolChange(-16) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Computer Keyboard Velocity +16",invoke=function() computerKeyboardVolChange(16) end}
+renoise.tool():add_keybinding{name="Global:Paketti:BPM Decrease (-5)",invoke=function() adjust_bpm(-5, 0) end}
+renoise.tool():add_keybinding{name="Global:Paketti:BPM Increase (+5)",invoke=function() adjust_bpm(5, 0) end}
 
+
+function loopExitToggle()
+  if 
+  renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].loop_release 
+  then 
+  renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].loop_release=false
+  else
+  renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].loop_release=true
+  end
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Selected Sample Exit Loop Note-Off Toggle",invoke=function() loopExitToggle() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Selected Sample Exit Loop Note-Off Off",invoke=function() 
+renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].loop_release=false
+ end}
+renoise.tool():add_keybinding{name="Global:Paketti:Selected Sample Exit Loop Note-Off On",invoke=function() 
+renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].loop_release=true
+ end}
 
 

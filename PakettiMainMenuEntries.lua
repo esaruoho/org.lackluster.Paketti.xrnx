@@ -1,15 +1,39 @@
 
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Inspect Plugin",invoke=function() inspectPlugin() end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Inspect Device in Slot 2",invoke=function() inspectEffect() end}
+
+
+
 renoise.tool():add_menu_entry{
     name = "--Main Menu:Tools:Paketti..:Random BPM (60-180)",
-    invoke = function()
-        local randombpm = {80, 100, 115, 123, 128, 132, 135, 138, 160}
-        math.randomseed(os.time())
-        local prefix = randombpm[math.random(#randombpm)]
-        renoise.song().transport.bpm = prefix
+   invoke = function()
+        -- Define a list of possible BPM values
+        local bpmList = {80, 100, 115, 123, 128, 132, 135, 138, 160}
+        
+        -- Get the current BPM
+        local currentBPM = renoise.song().transport.bpm
+        
+        -- Filter the list to exclude the current BPM
+        local newBpmList = {}
+        for _, bpm in ipairs(bpmList) do
+            if bpm ~= currentBPM then
+                table.insert(newBpmList, bpm)
+            end
+        end
 
-        if renoise.tool().preferences.RandomBPM.value then
-    
-            write_bpm()
+        -- Select a random BPM from the filtered list
+        if #newBpmList > 0 then
+            local selectedBPM = newBpmList[math.random(#newBpmList)]
+            renoise.song().transport.bpm = selectedBPM
+            print("Random BPM set to: " .. selectedBPM) -- Debug output to the console
+        else
+            print("No alternative BPM available to switch to.")
+        end
+
+        -- Optional: write the BPM to a file or apply other logic
+        if renoise.tool().preferences.RandomBPM and renoise.tool().preferences.RandomBPM.value then
+            write_bpm() -- Ensure this function is defined elsewhere in your tool
+            print("BPM written to file or handled additionally.")
         end
     end
 }

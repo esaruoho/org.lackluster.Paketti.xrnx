@@ -132,8 +132,6 @@ if not renoise.tool().app_new_document_observable:has_notifier(startup_)
    else renoise.tool().app_new_document_observable:remove_notifier(startup_)
 end
 --------------------------------------------------------------------------------
-
-
 function start_stop_sample_and_loop_oh_my()
 local w=renoise.app().window
 local s=renoise.song()
@@ -250,7 +248,6 @@ else
 s.patterns[currPatt].tracks[s.selected_track_index].lines[s.selected_line_index].note_columns[s.selected_note_column_index].note_string="OFF"
 end
 
-
 --s.patterns[currPatt].tracks[s.selected_track_index].lines[s.selected_line_index].note_columns[s.selected_note_column_index].note_string="OFF"
 end
 
@@ -354,7 +351,6 @@ else
   recordtocurrenttrack()
   return
 end end end}
----------------
 
 renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Record To Current", invoke=function() recordtocurrenttrack() end}
 ----------------------------------------------------------------------------------------------------------
@@ -362,7 +358,6 @@ renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Record To Current"
 --The other two of the four write 8 effect column's worth of bypass, or enable  the first 8 DSPs to
 --Pattern Editor. It's destructive and does not take into consideration anything that is already in
 --the effect columns, but might save you some hassle with cpu-hungry multi-part songs :)
-
 function effectbypasspattern()
 local currTrak = renoise.song().selected_track_index
 local number = (table.count(renoise.song().selected_track.devices))
@@ -384,8 +379,6 @@ local ooh=(i-1)
 renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[ooh].amount_string="00"
  end
 end
-
-
 
 function effectenablepattern()
 local currTrak = renoise.song().selected_track_index
@@ -449,27 +442,9 @@ end
 renoise.tool():add_menu_entry{name="Pattern Matrix:Paketti..:Bypass EFX (Write to Pattern)", invoke=function() effectbypasspattern()  end}
 renoise.tool():add_menu_entry{name="Pattern Matrix:Paketti..:Enable EFX (Write to Pattern)", invoke=function() effectenablepattern() end}
 -- Pattern Sequencer
-
-
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Bypass EFX (Write to Pattern)", invoke=function() effectbypasspattern() end}
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Enable EFX (Write to Pattern)", invoke=function() effectenablepattern()  end}
 ------------------------------------------------------------------------------------------------
 --- Keybinds
 renoise.tool():add_keybinding{name="Global:Paketti:Play Current Line & Advance by EditStep",  invoke=function() PlayCurrentLine() end}
-
-function Ding()
-renoise.song().instruments[renoise.song().selected_instrument_index].sample_envelopes.pitch.enabled=true
---LFO1
---1 = Off, 2 = Sin, 3 = Saw, 4 = Pulse, 5 = Random
-renoise.song().instruments[renoise.song().selected_instrument_index].sample_envelopes.pitch.lfo1.mode=2
---LFO1 amount
-renoise.song().instruments[renoise.song().selected_instrument_index].sample_envelopes.pitch.lfo1.amount=99
---LFO1 Frequency
-renoise.song().instruments[renoise.song().selected_instrument_index].sample_envelopes.pitch.lfo1.frequency=13
---LFO1 Phase
-renoise.song().instruments[renoise.song().selected_instrument_index].sample_envelopes.pitch.lfo1.phase=30
-end
-renoise.tool():add_menu_entry{name="Sample Editor:Ding", invoke=function() Ding() end}
-
---------------
 

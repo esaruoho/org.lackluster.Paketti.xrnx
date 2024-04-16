@@ -47,17 +47,6 @@ renoise.tool():add_keybinding{name="Global:Paketti:WipeSong", invoke=function() 
 
 
 
-function writeToClipboard(text)
-local devices = renoise.song().tracks[renoise.song().selected_track_index].available_devices
-
-    local command = 'echo "' .. text .. '" | pbcopy'
-    os.execute(command)
-end
-
-
-
-
-
 
 
 
@@ -233,5 +222,20 @@ local function listDevicesByType(typeFilter)
     end
     printItems(deviceItems)
 end
+
+
+function Ding()
+renoise.song().instruments[renoise.song().selected_instrument_index].sample_envelopes.pitch.enabled=true
+--LFO1
+--1 = Off, 2 = Sin, 3 = Saw, 4 = Pulse, 5 = Random
+renoise.song().instruments[renoise.song().selected_instrument_index].sample_envelopes.pitch.lfo1.mode=2
+--LFO1 amount
+renoise.song().instruments[renoise.song().selected_instrument_index].sample_envelopes.pitch.lfo1.amount=99
+--LFO1 Frequency
+renoise.song().instruments[renoise.song().selected_instrument_index].sample_envelopes.pitch.lfo1.frequency=13
+--LFO1 Phase
+renoise.song().instruments[renoise.song().selected_instrument_index].sample_envelopes.pitch.lfo1.phase=30
+end
+renoise.tool():add_menu_entry{name="Sample Editor:Ding", invoke=function() Ding() end}
 
 
