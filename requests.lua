@@ -369,7 +369,6 @@ renoise.tool():add_keybinding{name="Global:Paketti:Computer Keyboard Velocity +1
 renoise.tool():add_keybinding{name="Global:Paketti:BPM Decrease (-5)",invoke=function() adjust_bpm(-5, 0) end}
 renoise.tool():add_keybinding{name="Global:Paketti:BPM Increase (+5)",invoke=function() adjust_bpm(5, 0) end}
 
-
 function loopExitToggle()
   if 
   renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].loop_release 
@@ -388,4 +387,15 @@ renoise.tool():add_keybinding{name="Global:Paketti:Selected Sample Exit Loop Not
 renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].loop_release=true
  end}
 
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Autofade On",invoke=function() renoise.song().selected_sample.autofade=true end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Autofade Off",invoke=function() renoise.song().selected_sample.autofade=false end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Finetune -5",invoke=function() selectedSampleFinetune(-5) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Finetune +5",invoke=function() selectedSampleFinetune(5) end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Volume +0.05",invoke=function() selectedSampleVolume(0.05) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Volume -0.05",invoke=function() selectedSampleVolume(-0.05) end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Panning +0.05",invoke=function() selectedSamplePanning(0.05) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Panning -0.05",invoke=function() selectedSamplePanning(-0.05) end}
 

@@ -468,59 +468,6 @@ end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Save Song (2nd)",invoke=function() saveSong() end}
 
-function slicerough(changer)
-local s=renoise.song()  
-  s.selected_sample_index=1
-local currInst=s.selected_instrument_index
-local currSamp=s.selected_sample_index
-local number=(table.count(renoise.song().instruments[currInst].samples[currSamp].slice_markers))
-  currSamp=1
-  s.instruments[currInst].samples[currSamp].loop_mode=2
-  s.instruments[currInst].samples[currSamp].new_note_action=1
-  s.instruments[currInst].samples[currSamp].autofade=true
-  s.instruments[currInst].samples[currSamp].interpolation_mode=4
-
-for i=1,number do 
-s.instruments[currInst].samples[currSamp]:delete_slice_marker((s.instruments[currInst].samples[currSamp].slice_markers[1]))
-end
-  
-local tw=s.selected_sample.sample_buffer.number_of_frames/changer
-  s.instruments[currInst].samples[currSamp]:insert_slice_marker(1)
-  for i=1,changer do
-  s.instruments[currInst].samples[currSamp]:insert_slice_marker(tw*i)
-  s.instruments[currInst].samples[currSamp].autofade=true end
-
-s.selected_sample.beat_sync_enabled=true
-s.instruments[currInst].samples[currSamp].autofade=true
-end
---
---Wipe all slices
-function wipeslices()
-local currInst=renoise.song().selected_instrument_index
-local currSamp=renoise.song().selected_sample_index
-local number=(table.count(renoise.song().instruments[currInst].samples[currSamp].slice_markers))
-
-  for i=1,number do renoise.song().instruments[currInst].samples[currSamp]:delete_slice_marker((renoise.song().instruments[currInst].samples[currSamp].slice_markers[1]))
-  end
-renoise.song().selected_sample.beat_sync_enabled=false
-end
-
-renoise.tool():add_midi_mapping{name="Global:Paketti:Wipe&Create Slices (16) x[Toggle]",invoke=function() slicerough(16) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Wipe&Create Slices (2)",invoke=function() slicerough(2) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Wipe&Create Slices (4)",invoke=function() slicerough(4) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Wipe&Create Slices (8)",invoke=function() slicerough(8) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Wipe&Create Slices (16)",invoke=function() slicerough(16) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Wipe&Create Slices (32)",invoke=function() slicerough(32) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Wipe&Create Slices (64)",invoke=function() slicerough(64) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Wipe Slices",invoke=function() wipeslices() end}
-
-renoise.tool():add_menu_entry{name="--Sample Editor:Paketti..:Wipe&Create Slices (2)",invoke=function() slicerough(2) end}
-renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Wipe&Create Slices (4)",invoke=function() slicerough(4) end}
-renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Wipe&Create Slices (8)",invoke=function() slicerough(8) end}
-renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Wipe&Create Slices (16)",invoke=function() slicerough(16) end}
-renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Wipe&Create Slices (32)",invoke=function() slicerough(32) end}
-renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Wipe&Create Slices (64)",invoke=function() slicerough(64) end}
-renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Wipe Slices",invoke=function() wipeslices() end}
 
 renoise.tool():add_menu_entry{name="--Sample Editor:Paketti..:Sample Preferences - Autofade True, Interpolation 4, Oversample True",invoke=function() 
   renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].autofade=true
