@@ -447,6 +447,9 @@ end
 
 function ExpandSelection()
   local s = renoise.song()
+  if s.selection_in_pattern == nil then
+  return
+  else  
   local sl = s.selection_in_pattern.start_line
   local el = s.selection_in_pattern.end_line
   local st = s.selection_in_pattern.start_track
@@ -463,6 +466,7 @@ function ExpandSelection()
     end
   end
 end
+end
 
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Expand Selection (Protman)", invoke=function() ExpandSelection() end}
 ------------------------------------------------------------------------------------------------------------------------------------
@@ -476,6 +480,9 @@ end
 
 function ShrinkSelection()
   local s = renoise.song()
+  if s.selection_in_pattern == nil then
+  return
+  else
   local sl = s.selection_in_pattern.start_line
   local el = s.selection_in_pattern.end_line
   local st = s.selection_in_pattern.start_track
@@ -490,6 +497,7 @@ function ShrinkSelection()
       end
     end
   end
+end
 end
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Shrink Selection (Protman)", invoke=function() ShrinkSelection() end}
 

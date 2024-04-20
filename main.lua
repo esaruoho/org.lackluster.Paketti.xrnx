@@ -1084,70 +1084,9 @@ local w=renoise.app().window
   if w.fullscreen==true then w.fullscreen=false else w.fullscreen=true end end
 renoise.tool():add_keybinding{name="Global:Paketti:Fullscreen (2nd)",invoke=function() SecondFullscreen() end}
 
-------------------------
-function efxwrite(effect,x,y)
-local s=renoise.song()
-local counter=nil 
-local currentamount=nil
-local old_x=nil
-local old_y=nil
-local new_x=nil
-local new_y=nil
-
-for i=s.selection_in_pattern.start_line,renoise.song().selection_in_pattern.end_line 
-do 
-if 
-s:pattern(s.selected_pattern_index):track(s.selected_track_index):line(i):effect_column(1).amount_value == 0 and (x < 0 or y < 0)
-then s:pattern(s.selected_pattern_index):track(s.selected_track_index):line(i):effect_column(1).number_string="" 
-else
-s:pattern(s.selected_pattern_index):track(s.selected_track_index):line(i):effect_column(1).number_string=effect
-old_y=s:pattern(s.selected_pattern_index):track(s.selected_track_index):line(i):effect_column(1).amount_value % 16
-old_x=math.floor (s:pattern(s.selected_pattern_index):track(s.selected_track_index):line(i):effect_column(1).amount_value/16)
-
-new_x=old_x+x
-new_y=old_y+y
---print ("new_x: " .. new_x)
---print ("new_y: " .. new_y)
-if new_x > 15 then new_x = 15 end
-if new_y > 15 then new_y = 15 end
-if new_y < 1 then new_y = 0 end
-if new_x < 1 then new_x = 0 end
-
-counter=(16*new_x)+new_y  
-
-s:pattern(s.selected_pattern_index):track(s.selected_track_index):line(i):effect_column(1).amount_value=counter 
-end
-end
-end
-
-renoise.tool():add_keybinding{name="Global:Paketti:AXx Arp Amount Xx -1",invoke=function() efxwrite("0A",-1,0) end}
-renoise.tool():add_keybinding{name="Global:Paketti:AXx Arp Amount Xx +1",invoke=function() efxwrite("0A",1,0) end}
-renoise.tool():add_keybinding{name="Global:Paketti:AxY Arp Amount xY -1",invoke=function() efxwrite("0A",0,-1) end}
-renoise.tool():add_keybinding{name="Global:Paketti:AxY Arp Amount xY +1",invoke=function() efxwrite("0A",0,1) end}
-
-renoise.tool():add_keybinding{name="Global:Paketti:VXy Vibrato Amount Xy -1",invoke=function() efxwrite("0V",-1,0) end}
-renoise.tool():add_keybinding{name="Global:Paketti:VXy Vibrato Amount Xy +1",invoke=function() efxwrite("0V",1,0) end}
-renoise.tool():add_keybinding{name="Global:Paketti:VxY Vibrato Amount xY -1",invoke=function() efxwrite("0V",0,-1) end}
-renoise.tool():add_keybinding{name="Global:Paketti:VxY Vibrato Amount xY +1",invoke=function() efxwrite("0V",0,1) end}
-
-renoise.tool():add_keybinding{name="Global:Paketti:TXy Tremolo Amount Xy -1",invoke=function() efxwrite("0T",-1,0) end}
-renoise.tool():add_keybinding{name="Global:Paketti:TXy Tremolo Amount Xy +1",invoke=function() efxwrite("0T",1,0) end}
-renoise.tool():add_keybinding{name="Global:Paketti:TxY Tremolo Amount xY -1",invoke=function() efxwrite("0T",0,-1) end}
-renoise.tool():add_keybinding{name="Global:Paketti:TxY Tremolo Amount xY +1",invoke=function() efxwrite("0T",0,1) end}
-
-renoise.tool():add_keybinding{name="Global:Paketti:RXy Retrig Amount Xy -1",invoke=function() efxwrite("0R",-1,0) end}
-renoise.tool():add_keybinding{name="Global:Paketti:RXy Retrig Amount Xy +1",invoke=function() efxwrite("0R",1,0) end}
-renoise.tool():add_keybinding{name="Global:Paketti:RxY Retrig Amount xY -1",invoke=function() efxwrite("0R",0,-1) end}
-renoise.tool():add_keybinding{name="Global:Paketti:RxY Retrig Amount xY +1",invoke=function() efxwrite("0R",0,1) end}
-
-renoise.tool():add_keybinding{name="Global:Paketti:CXy Cut Volume Amount Xy -1",invoke=function() efxwrite("0C",-1,0) end}
-renoise.tool():add_keybinding{name="Global:Paketti:CXy Cut Volume Amount Xy +1",invoke=function() efxwrite("0C",1,0) end}
-renoise.tool():add_keybinding{name="Global:Paketti:CxY Cut Volume Amount xY -1",invoke=function() efxwrite("0C",0,-1) end}
-renoise.tool():add_keybinding{name="Global:Paketti:CxY Cut Volume Amount xY +1",invoke=function() efxwrite("0C",0,1) end}
-
 --------------------------------------------------------------------------------------------------------------------
 --Note, does not currently work because Phrase Line Index is not read.
-function Phraplusdelay(chg)
+function Phrplusdelay(chg)
  local d = renoise.song().selected_note_column.delay_value
  local nc = renoise.song().selected_note_column
  local currTrak = renoise.song().selected_track_index
@@ -1169,55 +1108,11 @@ renoise.song().selected_instrument:phrase(currPhra):line(sli):note_column(snci).
  end--]]
 end
 
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Increase Delay +1",invoke=function() Phraplusdelay(1) end}
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Decrease Delay -1",invoke=function() Phraplusdelay(-1) end}
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Increase Delay +10",invoke=function() Phraplusdelay(10) end}
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Decrease Delay -10",invoke=function() Phraplusdelay(-10) end}
-----------------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------------------------------
--- Toggle CapsLock Note Off "===" On / Off.
-function CapsLok()
-local s=renoise.song()
-  local currLine=s.selected_line_index
-  local currPatt=s.selected_pattern_index
-  local currTrak=s.selected_track_index
-  local currPhra=s.selected_phrase_index
-  local currInst=s.selected_instrument_index
- 
- 
- if renoise.app().window.active_middle_frame==1 then
-    if s.selected_note_column_index==nil then return 
-      else 
-        if  renoise.song().patterns[renoise.song().selected_pattern_index].tracks[renoise.song().selected_track_index].lines[renoise.song().selected_line_index].note_columns[renoise.song().selected_note_column_index].note_string=="OFF" then 
-renoise.song().patterns[renoise.song().selected_pattern_index].tracks[renoise.song().selected_track_index].lines[renoise.song().selected_line_index].note_columns[renoise.song().selected_note_column_index].note_string=""
-       else
-renoise.song().patterns[renoise.song().selected_pattern_index].tracks[renoise.song().selected_track_index].lines[renoise.song().selected_line_index].note_columns[renoise.song().selected_note_column_index].note_string="OFF"
-       end
-end
- 
-else if renoise.app().window.active_middle_frame==3 then
-
---local phra=renoise.song().instruments[renoise.song().selected_instrument_index].phrases[renoise.song().selected_phrase_index]
-local phra=renoise.song().selected_phrase
-
-phra.sample_effects_column_visible=false
-phra.panning_column_visible=false
-phra.delay_column_visible=false
-phra.visible_note_columns=1
-phra.instrument_column_visible=false
-
-if renoise.song().instruments[renoise.song().selected_instrument_index].phrases[renoise.song().selected_phrase_index].lines[renoise.song().selected_line_index].note_columns[renoise.song().selected_note_column_index].note_string=="OFF"
-then
-renoise.song().instruments[renoise.song().selected_instrument_index].phrases[renoise.song().selected_phrase_index].lines[renoise.song().selected_line_index].note_columns[renoise.song().selected_note_column_index].note_string=""
-else
-renoise.song().instruments[renoise.song().selected_instrument_index].phrases[renoise.song().selected_phrase_index].lines[renoise.song().selected_line_index].note_columns[renoise.song().selected_note_column_index].note_string="OFF"
-end
-end 
- 
-end
-end
-renoise.tool():add_keybinding{name="Global:Paketti:KapsLock CapsLock Caps Lock Note Off",invoke=function() CapsLok() end}
---------------------------------------------------------------------------------------------------------------------------------------------------------
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Increase Delay +1",invoke=function() Phrplusdelay(1) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Decrease Delay -1",invoke=function() Phrplusdelay(-1) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Increase Delay +10",invoke=function() Phrplusdelay(10) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Decrease Delay -10",invoke=function() Phrplusdelay(-10) end}
+---------------------------------------------------------------------------------------------------------------------------
 --Record Quantize On/Off for Midi_Mapping
 renoise.tool():add_midi_mapping{
 name = "Global:Paketti:Record Quantize On/Off x[Toggle]",
@@ -1228,69 +1123,7 @@ invoke=function()
      renoise.song().transport.record_quantize_enabled=true
    end
 end}
-
-
--------------------------------------------------------------------------------------------------------------------------------------------
--------------------------------------------------------------------------------------------------------------------------------------------
-
-function ptnLength(number) local rs=renoise.song() rs.patterns[rs.selected_pattern_index].number_of_lines=number end
-function phraseLength(number) local s=renoise.song() 
-renoise.song().instruments[renoise.song().selected_instrument_index].phrases[renoise.song().selected_phrase_index].number_of_lines=number end
-
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 001",invoke=function() ptnLength(1) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 004",invoke=function() ptnLength(4) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 008",invoke=function() ptnLength(8) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 016",invoke=function() ptnLength(16) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 032",invoke=function() ptnLength(32) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 048",invoke=function() ptnLength(48) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 064",invoke=function() ptnLength(64) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 096",invoke=function() ptnLength(96) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 128",invoke=function() ptnLength(128) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 192",invoke=function() ptnLength(192) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 256",invoke=function() ptnLength(256) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 384",invoke=function() ptnLength(384) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 512",invoke=function() ptnLength(512) end}
-
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 001",invoke=function() phraseLength(1) end}
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 004",invoke=function() phraseLength(4) end}
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 008",invoke=function() phraseLength(8) end}
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 016",invoke=function() phraseLength(16) end}
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 032",invoke=function() phraseLength(32) end}
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 048",invoke=function() phraseLength(48) end}
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 064",invoke=function() phraseLength(64) end}
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 096",invoke=function() phraseLength(96) end}
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 128",invoke=function() phraseLength(128) end}
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 192",invoke=function() phraseLength(192) end}
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 256",invoke=function() phraseLength(256) end}
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 384",invoke=function() phraseLength(384) end}
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 512",invoke=function() phraseLength(512) end}
-
-renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 001",invoke=function() ptnLength(1) end}
-renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 004",invoke=function() ptnLength(4) end}
-renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 008",invoke=function() ptnLength(8) end}
-renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 016",invoke=function() ptnLength(16) end}
-renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 032",invoke=function() ptnLength(32) end}
-renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 048",invoke=function() ptnLength(48) end}
-renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 064",invoke=function() ptnLength(64) end}
-renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 096",invoke=function() ptnLength(96) end}
-renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 128",invoke=function() ptnLength(128) end}
-renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 192",invoke=function() ptnLength(192) end}
-renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 256",invoke=function() ptnLength(256) end}
-renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 384",invoke=function() ptnLength(384) end}
-renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 512",invoke=function() ptnLength(512) end}
-
----------------------------------------------------------------------------------------------------------------------------------------------------
-function Deselect_All() renoise.song().selection_in_pattern=nil end
-function Deselect_Phr() renoise.song().selection_in_phrase =nil end
-
-renoise.tool():add_keybinding{name="Pattern Editor:Selection:Paketti Unmark Selection (ALT-U)",invoke=function() Deselect_All() end}
-renoise.tool():add_keybinding{name="Pattern Editor:Selection:Paketti Unmark Selection (CTRL-U) (2nd)",invoke=function() Deselect_All() end}
-
-renoise.tool():add_keybinding{name="Phrase Editor:Selection:Paketti Unmark Selection (ALT-U)",invoke=function() Deselect_Phr() end}
-renoise.tool():add_keybinding{name="Phrase Editor:Selection:Paketti Unmark Selection (CTRL-U) (2nd)",invoke=function() Deselect_Phr() end}
-
---------------------------------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------
 --Switch between Effect and Note Column
 function switchcolumns()
   local s = renoise.song()
@@ -1545,35 +1378,7 @@ function displayNoteColumn(number) local rs=renoise.song() if rs.tracks[rs.selec
 for dnc=1,12 do
   renoise.tool():add_keybinding{name="Global:Paketti:Display Note Column " .. dnc,invoke=function() displayNoteColumn(dnc) end}
 end
------------------------------------------------------------------------------------------------------------
-function GlobalLPB(number)
-renoise.song().transport.lpb=number end
 
-for glpb=1,16 do
-    renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Global LPB to " .. glpb,invoke=function() GlobalLPB(glpb) end}
-end
-
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Global LPB to 24",invoke=function() GlobalLPB(24) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Global LPB to 32",invoke=function() GlobalLPB(32) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Global LPB to 48",invoke=function() GlobalLPB(48) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Global LPB to 64",invoke=function() GlobalLPB(64) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Global LPB to 128",invoke=function() GlobalLPB(128) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Global LPB to 256",invoke=function() GlobalLPB(256) end}
-
-
-function PhraseLPB(number)
-renoise.song().instruments[renoise.song().selected_instrument_index].phrases[renoise.song().selected_phrase_index].lpb=number end
-
-for plpb=1,16 do
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase LPB to " .. plpb,invoke=function() PhraseLPB(plpb) end}
-end
-
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase LPB to 24",invoke=function() PhraseLPB(24) end}
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase LPB to 32",invoke=function() PhraseLPB(32) end}
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase LPB to 48",invoke=function() PhraseLPB(48) end}
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase LPB to 64",invoke=function() PhraseLPB(64) end}
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase LPB to 128",invoke=function() PhraseLPB(128) end}
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase LPB to 256",invoke=function() PhraseLPB(256) end}
 -----------------------------------------------------------------------------------------------------------------------------------------
 --Quantize +1 / -1
 function adjust_quantize(quant_delta)

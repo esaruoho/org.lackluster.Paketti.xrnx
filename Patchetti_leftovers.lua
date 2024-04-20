@@ -33,15 +33,12 @@ renoise.song().transport:start_stop_sample_recording()
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Recordammajic9000",
-invoke=function()
- if has_line_input() then
-    recordtocurrenttrack()    
-    G01()
- else
-    add_line_input()
-    recordtocurrenttrack()
- end
-end}
+invoke=function() if has_line_input() then 
+      recordtocurrenttrack()    
+      G01()
+ else add_line_input()
+      recordtocurrenttrack()
+ end end}
 
 -- turn samplerecorder ON
 function SampleRecorderOn()
@@ -281,8 +278,9 @@ end
 
 function PakettiCapsLockNoteOff()   
 local s=renoise.song()
-local wrapping=s.transport.wrapped_pattern_edit
-local editstep=s.transport.edit_step
+local st=s.transport
+local wrapping=st.wrapped_pattern_edit
+local editstep=st.edit_step
 
 local currLine=s.selected_line_index
 local currPatt=s.selected_sequence_index
@@ -332,7 +330,7 @@ if renoise.song().transport.wrapped_pattern_edit == false then PakettiCapsLockNo
 else PakettiCapsLockNoteOff() end
 end}
 --------------------------------------------------------------
-renoise.tool():add_keybinding{name="Global:Paketti:Record to Current Track+plus", 
+renoise.tool():add_keybinding{name="Global:Paketti:Record to Current Track+Plus", 
 invoke=function() 
       renoise.app().window.active_lower_frame=1
 local howmany = table.count(renoise.song().selected_track.devices)
