@@ -56,10 +56,10 @@ else if changedSampleTranspose < -120 then changedSampleTranspose = -120 end end
 renoise.song().selected_sample.transpose=changedSampleTranspose
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Selected Sample Transpose -1",invoke=function() selectedSampleTranspose(-1) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Selected Sample Transpose +1",invoke=function() selectedSampleTranspose(1) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Selected Sample Transpose -12",invoke=function() selectedSampleTranspose(-12) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Selected Sample Transpose +12",invoke=function() selectedSampleTranspose(12) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Transpose -1",invoke=function() selectedSampleTranspose(-1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Transpose +1",invoke=function() selectedSampleTranspose(1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Transpose -12",invoke=function() selectedSampleTranspose(-12) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Transpose +12",invoke=function() selectedSampleTranspose(12) end}
 renoise.tool():add_keybinding{name="Global:Paketti:Selected Sample Transpose 0",invoke=function() renoise.song().selected_sample.transpose=0 end}
 
 function selectedSampleFinetune(amount)
@@ -398,4 +398,161 @@ renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Volume -0
 
 renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Panning +0.05",invoke=function() selectedSamplePanning(0.05) end}
 renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Panning -0.05",invoke=function() selectedSamplePanning(-0.05) end}
+
+
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Transpose -5",invoke=function() selectedSampleTranspose(-5) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Transpose +5",invoke=function() selectedSampleTranspose(5) end}
+
+-- Function to assign a modulation set to the selected sample based on a given index
+function selectedSampleMod(number)
+  local instrument = renoise.song().instruments[renoise.song().selected_instrument_index]
+  
+  -- Check if there are any modulation sets
+  if not instrument or #instrument.sample_modulation_sets == 0 then
+    print("No modulation sets available or no instrument selected.")
+    return
+  end
+  
+  -- Get the number of available modulation sets
+  local num_modulation_sets = #instrument.sample_modulation_sets
+  
+  -- Check if the provided index is within the valid range
+  -- Adjusting to include 0 in the check, as it represents no modulation set assigned
+  if number < 0 or number > num_modulation_sets then
+    -- print("Invalid modulation_set_index value '" .. number .. "'. Valid values are (0 to " .. num_modulation_sets .. ").")
+    return
+  end
+
+  -- Assign the modulation set index to the selected sample
+  -- This assignment now confidently allows setting the index to 0
+  instrument.samples[renoise.song().selected_sample_index].modulation_set_index = number
+end
+
+-- Function to assign an FX chain to the selected sample based on a given index
+function selectedSampleFX(number)
+  local instrument = renoise.song().instruments[renoise.song().selected_instrument_index]
+  
+  -- Check if there are any FX chains
+  if not instrument or #instrument.sample_device_chains == 0 then
+    print("No FX chains available or no instrument selected.")
+    return
+  end
+  
+  -- Get the number of available FX chains
+  local num_fx_sets = #instrument.sample_device_chains
+  
+  -- Check if the provided index is within the valid range
+  -- Adjusting to include 0 in the check, as it represents no FX chain assigned
+  if number < 0 or number > num_fx_sets then
+    -- print("Invalid device_chain_index value '" .. number .. "'. Valid values are (0 to " .. num_fx_sets .. ").")
+    return
+  end
+
+  -- Assign the FX chain index to the selected sample
+  -- This assignment confidently allows setting the index to 0
+  instrument.samples[renoise.song().selected_sample_index].device_chain_index = number
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mod to 0",invoke=function() selectedSampleMod(0) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mod to 1",invoke=function() selectedSampleMod(1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mod to 2",invoke=function() selectedSampleMod(2) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mod to 3",invoke=function() selectedSampleMod(3) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mod to 4",invoke=function() selectedSampleMod(4) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mod to 5",invoke=function() selectedSampleMod(5) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mod to 6",invoke=function() selectedSampleMod(6) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mod to 7",invoke=function() selectedSampleMod(7) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mod to 8",invoke=function() selectedSampleMod(8) end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample FX to 0",invoke=function() selectedSampleFX(0) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample FX to 1",invoke=function() selectedSampleFX(1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample FX to 2",invoke=function() selectedSampleFX(2) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample FX to 3",invoke=function() selectedSampleFX(3) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample FX to 4",invoke=function() selectedSampleFX(4) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample FX to 5",invoke=function() selectedSampleFX(5) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample FX to 6",invoke=function() selectedSampleFX(6) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample FX to 7",invoke=function() selectedSampleFX(7) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample FX to 8",invoke=function() selectedSampleFX(8) end}
+
+-- Function to assign a modulation set index to all samples in the selected instrument
+function selectedInstrumentAllMod(number)
+  local instrument = renoise.song().instruments[renoise.song().selected_instrument_index]
+
+  -- Check if the instrument and samples are valid
+  if not instrument or #instrument.samples == 0 then
+    print("No samples are available or no instrument selected.")
+    return
+  end
+
+  -- Get the number of available modulation sets
+  local num_modulation_sets = #instrument.sample_modulation_sets
+
+  -- Check if the provided index is within the valid range
+  if number < 0 or number > num_modulation_sets then
+    print("Invalid modulation_set_index value '" .. number .. "'. Valid values are (0 to " .. num_modulation_sets .. ").")
+    return
+  end
+
+  -- Assign the modulation set index to each sample in the instrument
+  for i, sample in ipairs(instrument.samples) do
+    sample.modulation_set_index = number
+  end
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument All Mod to 0",invoke=function() selectedInstrumentAllMod(0) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument All Mod to 1",invoke=function() selectedInstrumentAllMod(1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument All Mod to 2",invoke=function() selectedInstrumentAllMod(2) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument All Mod to 3",invoke=function() selectedInstrumentAllMod(3) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument All Mod to 4",invoke=function() selectedInstrumentAllMod(4) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument All Mod to 5",invoke=function() selectedInstrumentAllMod(5) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument All Mod to 6",invoke=function() selectedInstrumentAllMod(6) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument All Mod to 7",invoke=function() selectedInstrumentAllMod(7) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument All Mod to 8",invoke=function() selectedInstrumentAllMod(8) end}
+
+-- Function to assign an FX chain index to all samples in the selected instrument
+function selectedInstrumentAllFx(number)
+  local instrument = renoise.song().instruments[renoise.song().selected_instrument_index]
+
+  -- Check if the instrument and samples are valid
+  if not instrument or #instrument.samples == 0 then
+    print("No samples are available or no instrument selected.")
+    return
+  end
+
+  -- Get the number of available FX chains
+  local num_fx_sets = #instrument.sample_device_chains
+
+  -- Check if the provided index is within the valid range
+  if number < 0 or number > num_fx_sets then
+    print("Invalid device_chain_index value '" .. number .. "'. Valid values are (0 to " .. num_fx_sets .. ").")
+    return
+  end
+
+  -- Assign the FX chain index to each sample in the instrument
+  for i, sample in ipairs(instrument.samples) do
+    sample.device_chain_index = number
+  end
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument All Fx to 0",invoke=function() selectedInstrumentAllFx(0) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument All Fx to 1",invoke=function() selectedInstrumentAllFx(1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument All Fx to 2",invoke=function() selectedInstrumentAllFx(2) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument All Fx to 3",invoke=function() selectedInstrumentAllFx(3) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument All Fx to 4",invoke=function() selectedInstrumentAllFx(4) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument All Fx to 5",invoke=function() selectedInstrumentAllFx(5) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument All Fx to 6",invoke=function() selectedInstrumentAllFx(6) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument All Fx to 7",invoke=function() selectedInstrumentAllFx(7) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument All Fx to 8",invoke=function() selectedInstrumentAllFx(8) end}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
