@@ -544,11 +544,47 @@ renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument All F
 renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument All Fx to 8",invoke=function() selectedInstrumentAllFx(8) end}
 
 
+-- Function to toggle the autofade setting for all samples in the selected instrument
+function selectedInstrumentAllAutofadeToggle()
+  local instrument = renoise.song().instruments[renoise.song().selected_instrument_index]
+
+  -- Check if the instrument and samples are valid
+  if not instrument or #instrument.samples == 0 then
+    print("No samples are available or no instrument selected.")
+    return
+  end
+
+  -- Iterate through each sample in the instrument and toggle the autofade setting
+  for i, sample in ipairs(instrument.samples) do
+    sample.autofade = not sample.autofade
+  end
+end
+
+-- Function to set the autofade setting for all samples in the selected instrument based on a given state
+function selectedInstrumentAllAutofadeControl(state)
+  local instrument = renoise.song().instruments[renoise.song().selected_instrument_index]
+
+  -- Check if the instrument and samples are valid
+  if not instrument or #instrument.samples == 0 then
+    --print("No samples are available or no instrument selected.")
+    return
+  end
+
+  -- Convert numerical state to boolean for autofade
+  local autofadeState = (state == 1)
+
+  -- Iterate through each sample in the instrument and set the autofade setting
+  for i, sample in ipairs(instrument.samples) do
+    sample.autofade = autofadeState
+  end
+end
 
 
 
 
-
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument All Autofade On/Off",invoke=function() selectedInstrumentAllAutofadeToggle() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument All Autofade On",invoke=function() selectedInstrumentAllAutofadeControl(1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument All Autofade Off",invoke=function() selectedInstrumentAllAutofadeControl(0) end}
 
 
 
