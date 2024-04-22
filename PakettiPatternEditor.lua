@@ -449,7 +449,7 @@ local cached_note_column_index = nil
 local cached_effect_column_index = nil
  
 function toggle_column_type()
-  local ss = renoise.song()
+  local s = renoise.song()
   if s.selected_track.type == renoise.Track.TRACK_TYPE_SEQUENCER then
     if s.selected_note_column_index ~= 0 then
       local col_idx = (cached_effect_column_index ~= 0) and 
@@ -519,9 +519,9 @@ local s = renoise.song()
    else s.selected_note_column_index = s.selected_track.visible_note_columns
    end end end end
  
-renoise.tool():add_keybinding{name="Pattern Editor:Navigation:Paketti Joule Toggle between note/fx columns",invoke=toggle_column_type}
-renoise.tool():add_keybinding{name="Pattern Editor:Navigation:Paketti Joule Jump to next column (note/fx)",invoke=function() cycle_column("next") end}
-renoise.tool():add_keybinding{name="Pattern Editor:Navigation:Paketti Joule Jump to previous column (note/fx)",invoke=function() cycle_column("prev") end}
+renoise.tool():add_keybinding{name="Pattern Editor:Navigation:Paketti Switch between Note/FX columns",invoke=toggle_column_type}
+renoise.tool():add_keybinding{name="Pattern Editor:Navigation:Paketti Jump to Next Column (Note/FX)",invoke=function() cycle_column("next") end}
+renoise.tool():add_keybinding{name="Pattern Editor:Navigation:Paketti Jump to Previous Column (Note/FX)",invoke=function() cycle_column("prev") end}
 renoise.tool().app_idle_observable:add_notifier(cache_columns)
 
 -- Pattern Resizer by dblue. some minor modifications.
