@@ -32,9 +32,10 @@ renoise.song().patterns[renoise.song().selected_pattern_index].tracks[renoise.so
 end
  
 else if renoise.app().window.active_middle_frame==3 then return
-else
-
+-- i just cut out the phrase writing since it doesn't seem to want to work
+end
 --local phra=renoise.song().instruments[renoise.song().selected_instrument_index].phrases[renoise.song().selected_phrase_index]
+if renoise.song().selected_phrase == nil then return else
 local phra=renoise.song().selected_phrase
 
 phra.sample_effects_column_visible=false
@@ -50,6 +51,7 @@ else
 renoise.song().instruments[renoise.song().selected_instrument_index].phrases[renoise.song().selected_phrase_index].lines[renoise.song().selected_line_index].note_columns[renoise.song().selected_note_column_index].note_string="OFF"
 end
 end 
+ 
  
 end
 end
