@@ -2,9 +2,14 @@
 local vb = renoise.ViewBuilder()
 
 -- Define Preferences
-local preferences = renoise.Document.create("ScriptingToolPreferences") {
-    _0G01_Loader = false,
-    RandomBPM = false
+preferences = renoise.Document.create("ScriptingToolPreferences") {
+    _0G01_Loader = false, -- Default is false "don't apply 0G01 and write to new channel when loading sample"
+    RandomBPM = false, -- Default is false "don't write BPM to Master"
+    loadPaleGreenTheme = false, -- Default is false "don't load Pale Green Theme"
+    WipeSlicesLoopSetting = 2, -- Default is "Forward"
+    WipeSlicesBeatSyncMode = 2, -- Default is (Time-Stretch (Percussion))
+    WipeSlicesOneShot = false, -- Default is Off
+    WipeSlicesAutoseek = true,
 }
 
 renoise.tool().preferences = preferences
@@ -12,6 +17,10 @@ renoise.tool().preferences = preferences
 -- Function to update Random BPM and its dependent functions
 local function update_random_bpm_preferences()
     -- No additional actions needed here for now, could be expanded if needed
+end
+
+local function  update_loadPaleGreenTheme_preferences()
+renoise.app():load_theme("Presets/palegreen.xrnc")
 end
 
 -- Dialog reference, should be accessible globally within this script
@@ -112,57 +121,72 @@ local function safe_initialize()
     end
 end
 
-safe_initialize()
-
--- GUI for setting preferences
+safe_initialize()-- GUI for setting preferences
 function show_paketti_preferences()
     if dialog and dialog.visible then return end
 
-    local checkbox_0G01_Loader = vb:checkbox {
-        value = preferences._0G01_Loader.value,
-        notifier = function(value)
-            preferences._0G01_Loader.value = value
-            update_0G01_loader_menu_entries()
-        end
-    }
+    local vb = renoise.ViewBuilder()
 
-    local checkbox_RandomBPM = vb:checkbox {
-        value = preferences.RandomBPM.value,
-        notifier = function(value)
-            preferences.RandomBPM.value = value
-            update_random_bpm_preferences()
-        end
-    }
+    -- Define all checkbox variables at the start to ensure they are accessible throughout the function
+    local checkboxOff, checkboxForward, checkboxReverse, checkboxPingPong
+    local checkboxRepitch, checkboxPercussion, checkboxTexture
+    local checkboxOneShotOn, checkboxOneShotOff
+    local checkboxAutoseekOn, checkboxAutoseekOff
 
+    -- Helper function to create a horizontal rule
+    local function horizontal_rule()
+        return vb:horizontal_aligner {mode = "justify", width = "100%", vb:space {width = 2}, vb:row {height = 2, style = "panel", width = "100%"}, vb:space {width = 2}}
+    end
+
+    -- Helper function to add vertical space
+    local function vertical_space(height)
+        return vb:row {height = height}
+    end
+
+    -- Initialize the checkboxes with their specific settings and notifiers
+    checkboxOff = vb:checkbox {value = preferences.WipeSlicesLoopSetting.value == 1, notifier = function(checked) if checked then preferences.WipeSlicesLoopSetting.value = 1; checkboxForward.value = false; checkboxReverse.value = false; checkboxPingPong.value = false; end end}
+    checkboxForward = vb:checkbox {value = preferences.WipeSlicesLoopSetting.value == 2, notifier = function(checked) if checked then preferences.WipeSlicesLoopSetting.value = 2; checkboxOff.value = false; checkboxReverse.value = false; checkboxPingPong.value = false; end end}
+    checkboxReverse = vb:checkbox {value = preferences.WipeSlicesLoopSetting.value == 3, notifier = function(checked) if checked then preferences.WipeSlicesLoopSetting.value = 3; checkboxOff.value = false; checkboxForward.value = false; checkboxPingPong.value = false; end end}
+    checkboxPingPong = vb:checkbox {value = preferences.WipeSlicesLoopSetting.value == 4, notifier = function(checked) if checked then preferences.WipeSlicesLoopSetting.value = 4; checkboxOff.value = false; checkboxForward.value = false; checkboxReverse.value = false; end end}
+
+    checkboxRepitch = vb:checkbox {value = preferences.WipeSlicesBeatSyncMode.value == 1, notifier = function(checked) if checked then preferences.WipeSlicesBeatSyncMode.value = 1; checkboxPercussion.value = false; checkboxTexture.value = false; end end}
+    checkboxPercussion = vb:checkbox {value = preferences.WipeSlicesBeatSyncMode.value == 2, notifier = function(checked) if checked then preferences.WipeSlicesBeatSyncMode.value = 2; checkboxRepitch.value = false; checkboxTexture.value = false; end end}
+    checkboxTexture = vb:checkbox {value = preferences.WipeSlicesBeatSyncMode.value == 3, notifier = function(checked) if checked then preferences.WipeSlicesBeatSyncMode.value = 3; checkboxRepitch.value = false; checkboxPercussion.value = false; end end}
+
+    checkboxOneShotOn = vb:checkbox {value = preferences.WipeSlicesOneShot.value, notifier = function(checked) preferences.WipeSlicesOneShot.value = checked; checkboxOneShotOff.value = not checked; end}
+    checkboxOneShotOff = vb:checkbox {value = not preferences.WipeSlicesOneShot.value, notifier = function(checked) preferences.WipeSlicesOneShot.value = not checked; checkboxOneShotOn.value = not checked; end}
+
+    checkboxAutoseekOn = vb:checkbox {value = preferences.WipeSlicesAutoseek.value, notifier = function(checked) preferences.WipeSlicesAutoseek.value = checked; checkboxAutoseekOff.value = not checked; end}
+    checkboxAutoseekOff = vb:checkbox {value = not preferences.WipeSlicesAutoseek.value, notifier = function(checked) preferences.WipeSlicesAutoseek.value = not checked; checkboxAutoseekOn.value = not checked; end}
+
+    -- Construct the dialog with all elements
     local dialog_content = vb:column {
         margin = 10,
-        vb:row {
-            checkbox_0G01_Loader,
-            vb:text { text = "Enable 0G01 Loader" }
-        },
-        vb:row {
-            checkbox_RandomBPM,
-            vb:text { text = "Enable Random BPM Write to Master" }
-        },
-        vb:horizontal_aligner {
-            mode = "distribute",
-            vb:button {
-                text = "OK",
-                notifier = function()
-                    dialog:close()
-                end
-            },
-            vb:button {
-                text = "Cancel",
-                notifier = function()
-                    dialog:close()
-                end
-            }
-        }
+        vb:row {vb:checkbox {value = preferences._0G01_Loader.value, notifier = function(value) preferences._0G01_Loader.value = value; update_0G01_loader_menu_entries(); end}, vb:text {text = "Enable 0G01 Loader"}},
+        vb:row {vb:checkbox {value = preferences.RandomBPM.value, notifier = function(value) preferences.RandomBPM.value = value; update_random_bpm_preferences(); end}, vb:text {text = "Enable Random BPM Write to Master"}},
+        vb:row {vb:checkbox {value = preferences.loadPaleGreenTheme.value, notifier = function(value) preferences.loadPaleGreenTheme.value = value; update_loadPaleGreenTheme_preferences(); end}, vb:text {text = "Load Pale Green Theme"}},
+        vertical_space(10),
+        horizontal_rule(),
+        vb:text {style = "strong", text = "Wipe & Slices Settings"},
+        vertical_space(5),
+        vb:text {text = "Slice Loop Mode"},
+        vb:row {style = "group", margin = 10, spacing = 5, checkboxOff, vb:text {text = "Off"}, checkboxForward, vb:text {text = "Forwards"}, checkboxReverse, vb:text {text = "Reverse"}, checkboxPingPong, vb:text {text = "Ping-Pong"}},
+        vb:text {text = "Slice BeatSync Mode"},
+        vb:row {style = "group", margin = 10, spacing = 5, checkboxRepitch, vb:text {text = "Repitch"}, checkboxPercussion, vb:text {text = "Time-Stretch (Percussion)"}, checkboxTexture, vb:text {text = "Time-Stretch (Texture)"}},
+        vb:text {text = "Slice One-Shot"},
+        vb:row {style = "group", margin = 10, spacing = 5, checkboxOneShotOn, vb:text {text = "On"}, checkboxOneShotOff, vb:text {text = "Off"}},
+        vb:text {text = "Slice Autoseek"},
+        vb:row {style = "group", margin = 10, spacing = 5, checkboxAutoseekOn, vb:text {text = "On"}, checkboxAutoseekOff, vb:text {text = "Off"}},
+        vertical_space(5),
+        horizontal_rule(),
+        vb:horizontal_aligner {mode = "distribute", vb:button {text = "OK", width = "50%", notifier = function() dialog:close(); end}, vb:button {text = "Cancel", width = "50%", notifier = function() dialog:close(); end}}
     }
 
     dialog = renoise.app():show_custom_dialog("Paketti Preferences", dialog_content)
 end
+
+
+
 
 -- Add menu entry and keybinding for showing the preferences dialog
 renoise.tool():add_menu_entry{

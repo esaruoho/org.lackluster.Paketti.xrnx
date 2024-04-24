@@ -492,9 +492,6 @@ end}
 
 
 
-function launchApp(appName)
-os.execute(appName)
-end
 
 --renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:writeToClipboard",invoke=function() 
 --writeToClipboard(for key, value in ipairs (devices) do  print(key, value)
@@ -505,7 +502,15 @@ end
 
 
 --) end}
+function launchApp(appName)
+os.execute(appName)
+end
+
+renoise.tool():add_menu_entry{name="Disk Browser Files:Paketti..:Open macOS Terminal",invoke=function() launchApp("open -a 'Terminal.app'") end}
+
 renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Ableton Live..:Launch Ableton Live 12",invoke=function() launchApp("open -a 'Ableton\ Live\ 12\ Suite\.app'") end}
+
+
 
 --local command = 'open -a "/Applications\ Live\ 12\ Suite.app"' .. renoise.song().selected_instrument_sample .. "'
 --os.execute(command)
