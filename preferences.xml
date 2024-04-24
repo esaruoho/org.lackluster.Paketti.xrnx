@@ -3,7 +3,7 @@
   <WipeSlicesBeatSyncMode>3</WipeSlicesBeatSyncMode>
   <WipeSlicesLoopSetting>4</WipeSlicesLoopSetting>
   <loadPaleGreenTheme>false</loadPaleGreenTheme>
-  <WipeSlicesOneShot>true</WipeSlicesOneShot>
+  <WipeSlicesOneShot>false</WipeSlicesOneShot>
   <WipeSlicesAutoseek>true</WipeSlicesAutoseek>
   <_0G01_Loader>false</_0G01_Loader>
   <RandomBPM>false</RandomBPM>

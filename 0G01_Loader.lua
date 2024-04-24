@@ -122,6 +122,7 @@ local function safe_initialize()
 end
 
 safe_initialize()-- GUI for setting preferences
+-- GUI for setting preferences
 function show_paketti_preferences()
     if dialog and dialog.visible then return end
 
@@ -167,19 +168,26 @@ function show_paketti_preferences()
         vb:row {vb:checkbox {value = preferences.loadPaleGreenTheme.value, notifier = function(value) preferences.loadPaleGreenTheme.value = value; update_loadPaleGreenTheme_preferences(); end}, vb:text {text = "Load Pale Green Theme"}},
         vertical_space(10),
         horizontal_rule(),
-        vb:text {style = "strong", text = "Wipe & Slices Settings"},
-        vertical_space(5),
-        vb:text {text = "Slice Loop Mode"},
-        vb:row {style = "group", margin = 10, spacing = 5, checkboxOff, vb:text {text = "Off"}, checkboxForward, vb:text {text = "Forwards"}, checkboxReverse, vb:text {text = "Reverse"}, checkboxPingPong, vb:text {text = "Ping-Pong"}},
-        vb:text {text = "Slice BeatSync Mode"},
-        vb:row {style = "group", margin = 10, spacing = 5, checkboxRepitch, vb:text {text = "Repitch"}, checkboxPercussion, vb:text {text = "Time-Stretch (Percussion)"}, checkboxTexture, vb:text {text = "Time-Stretch (Texture)"}},
-        vb:text {text = "Slice One-Shot"},
-        vb:row {style = "group", margin = 10, spacing = 5, checkboxOneShotOn, vb:text {text = "On"}, checkboxOneShotOff, vb:text {text = "Off"}},
-        vb:text {text = "Slice Autoseek"},
-        vb:row {style = "group", margin = 10, spacing = 5, checkboxAutoseekOn, vb:text {text = "On"}, checkboxAutoseekOff, vb:text {text = "Off"}},
-        vertical_space(5),
-        horizontal_rule(),
-        vb:horizontal_aligner {mode = "distribute", vb:button {text = "OK", width = "50%", notifier = function() dialog:close(); end}, vb:button {text = "Cancel", width = "50%", notifier = function() dialog:close(); end}}
+        vb:column {
+            style = "group",
+            margin = 10,
+            vb:text {style = "strong", text = "Wipe & Slices Settings"},
+            vertical_space(5),
+            vb:text {text = "Slice Loop Mode"},
+            vb:row {checkboxOff, vb:text {text = "Off"}, checkboxForward, vb:text {text = "Forwards"}, checkboxReverse, vb:text {text = "Reverse"}, checkboxPingPong, vb:text {text = "Ping-Pong"}},
+            vb:text {text = "Slice BeatSync Mode"},
+            vb:row {checkboxRepitch, vb:text {text = "Repitch"}, checkboxPercussion, vb:text {text = "Time-Stretch (Percussion)"}, checkboxTexture, vb:text {text = "Time-Stretch (Texture)"}},
+            vb:text {text = "Slice One-Shot"},
+            vb:row {checkboxOneShotOn, vb:text {text = "On"}, checkboxOneShotOff, vb:text {text = "Off"}},
+            vb:text {text = "Slice Autoseek"},
+            vb:row {checkboxAutoseekOn, vb:text {text = "On"}, checkboxAutoseekOff, vb:text {text = "Off"}}
+        },
+        vb:space {height = 10},
+        vb:horizontal_aligner {
+            mode = "distribute",
+            vb:button {text = "OK", width = "50%", notifier = function() dialog:close(); end},
+            vb:button {text = "Cancel", width = "50%", notifier = function() dialog:close(); end}
+        }
     }
 
     dialog = renoise.app():show_custom_dialog("Paketti Preferences", dialog_content)
