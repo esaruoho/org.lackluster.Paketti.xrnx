@@ -772,6 +772,89 @@ function show_effect_details_gui()
 end
 
 
+function loadModulationDevice(devicename,device_target)
+
+local w=renoise.app().window
+local raw=renoise.ApplicationWindow
+
+w.active_middle_frame = raw.MIDDLE_FRAME_INSTRUMENT_SAMPLE_MODULATION
+
+local instr_index = renoise.song().selected_instrument_index
+local mod_set_index = 1
+
+-- renoise.SampleModulationDevice.TARGET_VOLUME **
+-- renoise.SampleModulationDevice.TARGET_PANNING **
+-- renoise.SampleModulationDevice.TARGET_PITCH ** 
+-- renoise.SampleModulationDevice.TARGET_CUTOFF **
+-- renoise.SampleModulationDevice.TARGET_RESONANCE
+-- renoise.SampleModulationDevice.TARGET_DRIVE
+
+local device_path = ("Modulation/" .. devicename)
+
+-- Define the position where the device should be added in the modulation chain
+local insert_index = 1
+
+-- Insert the device
+renoise.song().instruments[instr_index].sample_modulation_sets[mod_set_index]:insert_device_at(device_path, device_target, insert_index)
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Volume) AHDSR", invoke=function() loadModulationDevice("AHDSR",renoise.SampleModulationDevice.TARGET_VOLUME) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Volume) Envelope", invoke=function() loadModulationDevice("Envelope",renoise.SampleModulationDevice.TARGET_VOLUME) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Volume) Fader", invoke=function() loadModulationDevice("Fader",renoise.SampleModulationDevice.TARGET_VOLUME) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Volume) Key Tracking", invoke=function() loadModulationDevice("Key Tracking",renoise.SampleModulationDevice.TARGET_VOLUME) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Volume) LFO", invoke=function() loadModulationDevice("LFO",renoise.SampleModulationDevice.TARGET_VOLUME) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Volume) Operand", invoke=function() loadModulationDevice("Operand",renoise.SampleModulationDevice.TARGET_VOLUME) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Volume) Stepper", invoke=function() loadModulationDevice("Stepper",renoise.SampleModulationDevice.TARGET_VOLUME) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Volume) Velocity Tracking", invoke=function() loadModulationDevice("Velocity Tracking",renoise.SampleModulationDevice.TARGET_VOLUME) end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Panning) AHDSR", invoke=function() loadModulationDevice("AHDSR",renoise.SampleModulationDevice.TARGET_PANNING) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Panning) Envelope", invoke=function() loadModulationDevice("Envelope",renoise.SampleModulationDevice.TARGET_PANNING) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Panning) Fader", invoke=function() loadModulationDevice("Fader",renoise.SampleModulationDevice.TARGET_PANNING) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Panning) Key Tracking", invoke=function() loadModulationDevice("Key Tracking",renoise.SampleModulationDevice.TARGET_PANNING) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Panning) LFO", invoke=function() loadModulationDevice("LFO",renoise.SampleModulationDevice.TARGET_PANNING) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Panning) Operand", invoke=function() loadModulationDevice("Operand",renoise.SampleModulationDevice.TARGET_PANNING) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Panning) Stepper", invoke=function() loadModulationDevice("Stepper",renoise.SampleModulationDevice.TARGET_PANNING) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Panning) Velocity Tracking", invoke=function() loadModulationDevice("Velocity Tracking",renoise.SampleModulationDevice.TARGET_PANNING) end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Pitch) AHDSR", invoke=function() loadModulationDevice("AHDSR",renoise.SampleModulationDevice.TARGET_PITCH) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Pitch) Envelope", invoke=function() loadModulationDevice("Envelope",renoise.SampleModulationDevice.TARGET_PITCH) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Pitch) Fader", invoke=function() loadModulationDevice("Fader",renoise.SampleModulationDevice.TARGET_PITCH) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Pitch) Key Tracking", invoke=function() loadModulationDevice("Key Tracking",renoise.SampleModulationDevice.TARGET_PITCH) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Pitch) LFO", invoke=function() loadModulationDevice("LFO",renoise.SampleModulationDevice.TARGET_PITCH) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Pitch) Operand", invoke=function() loadModulationDevice("Operand",renoise.SampleModulationDevice.TARGET_PITCH) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Pitch) Stepper", invoke=function() loadModulationDevice("Stepper",renoise.SampleModulationDevice.TARGET_PITCH) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Pitch) Velocity Tracking", invoke=function() loadModulationDevice("Velocity Tracking",renoise.SampleModulationDevice.TARGET_PITCH) end}
+
+
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Cutoff) AHDSR", invoke=function() loadModulationDevice("AHDSR",renoise.SampleModulationDevice.TARGET_CUTOFF) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Cutoff) Envelope", invoke=function() loadModulationDevice("Envelope",renoise.SampleModulationDevice.TARGET_CUTOFF) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Cutoff) Fader", invoke=function() loadModulationDevice("Fader",renoise.SampleModulationDevice.TARGET_CUTOFF) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Cutoff) Key Tracking", invoke=function() loadModulationDevice("Key Tracking",renoise.SampleModulationDevice.TARGET_CUTOFF) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Cutoff) LFO", invoke=function() loadModulationDevice("LFO",renoise.SampleModulationDevice.TARGET_CUTOFF) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Cutoff) Operand", invoke=function() loadModulationDevice("Operand",renoise.SampleModulationDevice.TARGET_CUTOFF) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Cutoff) Stepper", invoke=function() loadModulationDevice("Stepper",renoise.SampleModulationDevice.TARGET_CUTOFF) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Cutoff) Velocity Tracking", invoke=function() loadModulationDevice("Velocity Tracking",renoise.SampleModulationDevice.TARGET_CUTOFF) end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Resonance) AHDSR", invoke=function() loadModulationDevice("AHDSR",renoise.SampleModulationDevice.TARGET_RESONANCE) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Resonance) Envelope", invoke=function() loadModulationDevice("Envelope",renoise.SampleModulationDevice.TARGET_RESONANCE) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Resonance) Fader", invoke=function() loadModulationDevice("Fader",renoise.SampleModulationDevice.TARGET_RESONANCE) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Resonance) Key Tracking", invoke=function() loadModulationDevice("Key Tracking",renoise.SampleModulationDevice.TARGET_RESONANCE) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Resonance) LFO", invoke=function() loadModulationDevice("LFO",renoise.SampleModulationDevice.TARGET_RESONANCE) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Resonance) Operand", invoke=function() loadModulationDevice("Operand",renoise.SampleModulationDevice.TARGET_RESONANCE) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Resonance) Stepper", invoke=function() loadModulationDevice("Stepper",renoise.SampleModulationDevice.TARGET_RESONANCE) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Resonance) Velocity Tracking", invoke=function() loadModulationDevice("Velocity Tracking",renoise.SampleModulationDevice.TARGET_RESONANCE) end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Drive) AHDSR", invoke=function() loadModulationDevice("AHDSR",renoise.SampleModulationDevice.TARGET_DRIVE) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Drive) Envelope", invoke=function() loadModulationDevice("Envelope",renoise.SampleModulationDevice.TARGET_DRIVE) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Drive) Fader", invoke=function() loadModulationDevice("Fader",renoise.SampleModulationDevice.TARGET_DRIVE) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Drive) Key Tracking", invoke=function() loadModulationDevice("Key Tracking",renoise.SampleModulationDevice.TARGET_DRIVE) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Drive) LFO", invoke=function() loadModulationDevice("LFO",renoise.SampleModulationDevice.TARGET_DRIVE) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Drive) Operand", invoke=function() loadModulationDevice("Operand",renoise.SampleModulationDevice.TARGET_DRIVE) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Drive) Stepper", invoke=function() loadModulationDevice("Stepper",renoise.SampleModulationDevice.TARGET_DRIVE) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device (Drive) Velocity Tracking", invoke=function() loadModulationDevice("Velocity Tracking",renoise.SampleModulationDevice.TARGET_DRIVE) end}
+
+
+
 
 
 

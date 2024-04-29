@@ -841,3 +841,13 @@ local start_time = os.clock()
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Play Current Line & Advance by EditStep", invoke=function() PlayCurrentLine() end}
+-----------------
+-- alt-f9 - solo / unsolo selected track. if not in Pattern Editor or in Mixer, transport to Pattern Editor.
+function impulseTrackerSoloKey()
+local s=renoise.song()
+  s.tracks[renoise.song().selected_track_index]:solo()
+    if renoise.app().window.active_middle_frame~=1 and renoise.app().window.active_middle_frame~=2 then renoise.app().window.active_middle_frame=1 end
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:ImpulseTracker ALT-F9 (Solo Toggle)", invoke=function() impulseTrackerSoloKey() end}
+

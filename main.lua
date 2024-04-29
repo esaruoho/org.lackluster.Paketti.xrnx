@@ -1,3 +1,13 @@
+------------------------------------------------------
+--[[ Thanks so much to everyone who helped. dblue, cortex, joule, avaruus, astu/flo, 
+mmd(mr mark dollin) syflom, protman, pandabot, Raul (ulneiz), ViZiON, ghostwerk, vV,
+Bantai, danoise, Snowrobot, mxb, jenoki, kmaki, mantrakid, aleksip, Connor_Bw and the whole 
+Renoise community.
+
+Biggest thanks to Brothomstates for suggesting that I could pick up and learn LUA, 
+that it would not be beyond me. Really appreciate you having faith in me.
+]]--
+-------------------------------------------------------
 require "Paketti0G01_Loader"
 require "PakettiExperimental_Verify"
 require "PakettiImpulseTracker"
@@ -11,14 +21,12 @@ require "PakettiPatternEditorCheatSheet"
 require "PakettiPatternMatrix"
 require "PakettiSamples"
 require "PakettiRecorder" 
-require "PakettiUtils"
-
--- These were requested via GitHub / Renoise Forum / Renoise Discord - always get in touch with me 
+-- These were requested via GitHub / Renoise Forum / Renoise Discord - always get in touch with me (esaruoho@icloud.com)
+-- Or post a feature on https://github.com/esaruoho/org.lackluster.Paketti.xrnx/issues/new
 require "PakettiRequests"
 
 -- Autoexec.bat
 -- everytime a new Renoise song is created, run this
---
 function startup()  
  local s=renoise.song()
  local t=s.transport
@@ -99,14 +107,6 @@ end
 --renoise.song().instruments[renoise.song().selected_instrument_index].active_tab=1 == Sampler
 --renoise.song().instruments[renoise.song().selected_instrument_index].active_tab=1 == Plugin
 --renoise.song().instruments[renoise.song().selected_instrument_index].active_tab=1 == Midi
-
--- auto-suspend plugin off:
-function autosuspendOFF()
---renoise.tool():add_menu_entry
-renoise.song().instruments[renoise.song().selected_instrument_index].plugin_properties.auto_suspend = false end
-
-renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Switch Plugin AutoSuspend Off",invoke=function() autosuspendOFF() end}
-
 function createPhrase()
 local s=renoise.song() 
   s.instruments[s.selected_instrument_index]:insert_phrase_at(1) 
@@ -1628,41 +1628,7 @@ end
 
 renoise.tool():add_keybinding{name="Global:Paketti:CapsLockChassis",invoke=function() PakettiCapsLockPattern() end}
 
---This script uncollapses everything (all tracks, master, send trax)
-function Uncollapser()
-local send_track_counter=nil
-local s=renoise.song()
 
-   send_track_counter=s.sequencer_track_count+1+s.send_track_count
-
-   for i=1,send_track_counter do
-   s.tracks[i].collapsed=false
-   end
-end
-
---This script collapses everything (all tracks, master, send trax)
-function Collapser()
-local send_track_counter=nil
-local s=renoise.song()
-   send_track_counter=s.sequencer_track_count+1+s.send_track_count
-
-   for i=1,send_track_counter do
-   s.tracks[i].collapsed=true end
-end
-
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor:Collapser",invoke=function() Collapser() end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Uncollapser",invoke=function() Uncollapser() end}
---Global keyboard shortcuts
-renoise.tool():add_keybinding{name="Global:Paketti:Uncollapser",invoke=function() Uncollapser() end}
-renoise.tool():add_keybinding{name="Global:Paketti:Collapser",invoke=function() Collapser() end}
---Menu entries for Pattern Editor and Mixer
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Uncollapser",invoke=function() Uncollapser() end}
-renoise.tool():add_menu_entry{name="Mixer:Paketti..:Uncollapser",invoke=function() Uncollapser() end}
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Collapser",invoke=function() Collapser() end}
-renoise.tool():add_menu_entry{name="Mixer:Paketti..:Collapser",invoke=function() Collapser() end}
---Midi Mapping for Expand/Collapse
-renoise.tool():add_midi_mapping{name="Global:Paketti:Uncollapser",invoke=function() Uncollapser() end}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Collapser",invoke=function() Collapser() end} 
 ---------------------------------------------------------------------------------------------------------
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Keep Sequence Sorted False",invoke=function() renoise.song().sequencer.keep_sequence_sorted=false end}
 
@@ -1691,13 +1657,4 @@ function dbug(msg)
  elseif type(msg) == 'table' then rprint(msg)  
  else print(msg) end  
 end  
-------------------------------------------------------
---[[ Thanks so much to everyone who helped. dblue, cortex, joule, avaruus, astu/flo, 
-mmd(mr mark dollin) syflom, protman, pandabot, Raul (ulneiz), ViZiON, ghostwerk, vV,
-Bantai, danoise, Snowrobot, mxb, jenoki, kmaki, mantrakid, aleksip, Connor_Bw and the whole 
-Renoise community.
 
-Biggest thanks to Brothomstates for suggesting that I could pick up and learn LUA, 
-that it would not be beyond me. Really appreciate you having faith in me.
-]]--
--------------------------------------------------------

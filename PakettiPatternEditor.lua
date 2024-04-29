@@ -8,8 +8,50 @@
 
 
 
+---------------------------
+function soloKey()
+local s=renoise.song()
+  s.tracks[renoise.song().selected_track_index]:solo()
+    if s.transport.playing==false then renoise.song().transport.playing=true end
+  s.transport.follow_player=true  
+    if renoise.app().window.active_middle_frame~=1 then renoise.app().window.active_middle_frame=1 end
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Solo Channel + Play + Follow", invoke=function() soloKey() end}
 
 
+--This script uncollapses everything (all tracks, master, send trax)
+function Uncollapser()
+local send_track_counter=nil
+local s=renoise.song()
+
+   send_track_counter=s.sequencer_track_count+1+s.send_track_count
+
+   for i=1,send_track_counter do
+   s.tracks[i].collapsed=false
+   end
+end
+
+--This script collapses everything (all tracks, master, send trax)
+function Collapser()
+local send_track_counter=nil
+local s=renoise.song()
+   send_track_counter=s.sequencer_track_count+1+s.send_track_count
+
+   for i=1,send_track_counter do
+   s.tracks[i].collapsed=true end
+end
+
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor:Collapser",invoke=function() Collapser() end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Uncollapser",invoke=function() Uncollapser() end}
+--Global keyboard shortcuts
+renoise.tool():add_keybinding{name="Global:Paketti:Uncollapser",invoke=function() Uncollapser() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Collapser",invoke=function() Collapser() end}
+--Menu entries for Pattern Editor and Mixer
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Uncollapser",invoke=function() Uncollapser() end}
+renoise.tool():add_menu_entry{name="Mixer:Paketti..:Uncollapser",invoke=function() Uncollapser() end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Collapser",invoke=function() Collapser() end}
+renoise.tool():add_menu_entry{name="Mixer:Paketti..:Collapser",invoke=function() Collapser() end}
 
 -- Toggle CapsLock Note Off "===" On / Off.
 function CapsLok()

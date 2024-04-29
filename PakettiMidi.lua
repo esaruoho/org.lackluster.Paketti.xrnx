@@ -60,8 +60,11 @@ renoise.song().selected_note_column.delay_value = math.max(0, math.min(257, midi
 -- end
 
 end}
+-------------------------------------------------------------------------------------------------------------------------------------
 
-
+--Midi Mapping for Expand/Collapse
+renoise.tool():add_midi_mapping{name="Global:Paketti:Uncollapser",invoke=function() Uncollapser() end}
+renoise.tool():add_midi_mapping{name="Global:Paketti:Collapser",invoke=function() Collapser() end} 
 -------------------------------------------------------------------------------------------------------------------------------------
 --- Show or hide pattern matrix
 function showhidepatternmatrix()
