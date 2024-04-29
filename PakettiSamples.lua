@@ -1,5 +1,3 @@
-
-
 function pitchBendSampleLoader()
  
   local selected_sample_filename = renoise.app():prompt_for_filename_to_read({"*.wav", "*.aif", "*.flac", "*.mp3", "*.aiff"}, "Paketti PitchBend Single Sample Loader")
@@ -8,6 +6,10 @@ function pitchBendSampleLoader()
     
     local current_instrument_index = renoise.song().selected_instrument_index
       pitchedInstrument(12)
+      if #renoise.song().instruments[renoise.song().selected_instrument_index].samples == 0 then
+        renoise.song().instruments[renoise.song().selected_instrument_index]:insert_sample_at(1)
+      end
+      
     local sample_buffer = renoise.song().instruments[current_instrument_index].samples[1].sample_buffer
     local samplefilename = selected_sample_filename:match("^.+[/\\](.+)$")
     
@@ -57,6 +59,10 @@ function pitchBendMultipleSampleLoader()
       renoise.song().selected_instrument_index = renoise.song().selected_instrument_index + 1
       -- Adjust pitch here if necessary
       pitchedInstrument(12) -- Ensure this function exists and is correct
+      if #renoise.song().instruments[renoise.song().selected_instrument_index].samples == 0 then
+        renoise.song().instruments[renoise.song().selected_instrument_index]:insert_sample_at(1)
+      end
+        renoise.song().selected_sample_index=1
       
       -- Extract just the file name from each path
       local filename_only = filename:match("^.+[/\\](.+)$")
@@ -67,13 +73,6 @@ function pitchBendMultipleSampleLoader()
       
           renoise.song().selected_instrument.name=("12st_" .. filename_only)
       
-     -- Ensure there is at least one sample slot in the instrument
-      if #renoise.song().instruments[renoise.song().selected_instrument_index].samples == 0 then
-        renoise.song().instruments[renoise.song().selected_instrument_index]:insert_sample_at(1)
-      end
-        -- some sort of weird protection for Windows
-        renoise.song().selected_sample_index=1
-        
       if renoise.song().selected_sample.sample_buffer:load_from(filename) then
         renoise.app():show_status("Sample " .. filename_only .. " loaded successfully.")
         current_sample.name = "12st_" .. filename_only -- Set the sample name
@@ -102,6 +101,12 @@ renoise.tool():add_menu_entry{name="Disk Browser Files:Paketti..:Paketti PitchBe
 renoise.tool():add_keybinding{name="Global:Paketti:Paketti PitchBend Multiple Sample Loader", invoke=function() pitchBendMultipleSampleLoader() end}
 
 
+renoise.tool():add_menu_entry{name="--Sample Editor:Paketti..:Sample Preferences - Autofade True, Interpolation 4, Oversample True",invoke=function() 
+  renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].autofade=true
+  renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].interpolation_mode=4
+  renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].oversample_enabled=true
+
+end}
 
 
 function selectedSampleInit()
@@ -125,6 +130,24 @@ end
 renoise.tool():add_keybinding{name="Global:Paketti:Add Sample Slot to Instrument", invoke=function() addSampleSlot(1) end}
 renoise.tool():add_keybinding{name="Global:Paketti:Add 84 Sample Slots to Instrument", invoke=function() addSampleSlot(84) end}
 -------------------------------------------------------------------------------------------------------------------------------
+
+function oneshotcontinue()
+  local s=renoise.song()
+  local sli=s.selected_instrument_index
+  local ssi=s.selected_sample_index
+
+  if s.instruments[sli].samples[ssi].oneshot
+then s.instruments[sli].samples[ssi].oneshot=false
+     s.instruments[sli].samples[ssi].new_note_action=1
+else s.instruments[sli].samples[ssi].oneshot=true
+     s.instruments[sli].samples[ssi].new_note_action=3 end end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Set Sample to One-Shot + NNA Continue",invoke=function() oneshotcontinue() end}
+
+
+
+
+
 function LoopState(number)
 renoise.song().selected_sample.loop_mode=number
 end

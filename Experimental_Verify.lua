@@ -708,6 +708,35 @@ end
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Delete Combined", invoke=function() PakettiDeleteCombined() end}
 
 
+------------------------------------------------------------------------------------------------------------------------------------
+function PakettiCapsLockPattern()
+  local s=renoise.song()
+  local currLine=s.selected_line_index
+  local currPatt=s.selected_pattern_index
+  local currTrak=s.selected_track_index
+  local snci=s.selected_note_column_index
+  
+  currLine=currLine+2
+    s.patterns[currPatt].tracks[currTrak].lines[currLine].note_columns[snci].note_string="OFF"
+    s.patterns[currPatt].tracks[currTrak].lines[currLine+3].note_columns[snci].note_string="OFF"
+    s.patterns[currPatt].tracks[currTrak].lines[currLine+5].note_columns[snci].note_string="OFF"
+    s.patterns[currPatt].tracks[currTrak].lines[currLine+8].note_columns[snci].note_string="OFF"
+  currLine=currLine+8
+    s.patterns[currPatt].tracks[currTrak].lines[currLine].note_columns[snci].note_string="OFF"
+    s.patterns[currPatt].tracks[currTrak].lines[currLine+3].note_columns[snci].note_string="OFF"
+    s.patterns[currPatt].tracks[currTrak].lines[currLine+5].note_columns[snci].note_string="OFF"
+    s.patterns[currPatt].tracks[currTrak].lines[currLine+8].note_columns[snci].note_string="OFF"
+  currLine=currLine+8
+    s.patterns[currPatt].tracks[currTrak].lines[currLine].note_columns[snci].note_string="OFF"
+    s.patterns[currPatt].tracks[currTrak].lines[currLine+3].note_columns[snci].note_string="OFF"
+    s.patterns[currPatt].tracks[currTrak].lines[currLine+5].note_columns[snci].note_string="OFF"
+    s.patterns[currPatt].tracks[currTrak].lines[currLine+8].note_columns[snci].note_string="OFF"
+    s.patterns[currPatt].tracks[currTrak].lines[currLine+11].note_columns[snci].note_string="OFF"
+    s.patterns[currPatt].tracks[currTrak].lines[currLine+13].note_columns[snci].note_string="OFF"
+  s.transport.edit_step=3
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:CapsLockChassis",invoke=function() PakettiCapsLockPattern() end}
 
 
 ---------------------------

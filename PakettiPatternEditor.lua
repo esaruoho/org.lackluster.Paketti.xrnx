@@ -480,8 +480,70 @@ renoise.tool():add_keybinding {
         end
     end
 }
+-------------------------
+function WipeEfxFromSelection()
+--thanks to joule for assistance1+2(2018)!
+local s = renoise.song()
 
+if s.selection_in_pattern==nil then return end
 
+local ecvisible = s:track(s.selected_track_index).visible_effect_columns
+local pattern_track = s:pattern(s.selected_pattern_index):track(s.selected_track_index)
+
+for line_index = s.selection_in_pattern.start_line, s.selection_in_pattern.end_line do
+    local line = pattern_track:line(line_index)
+    if not line.is_empty then
+      for effect_column_index = 1, ecvisible do
+        line:effect_column(effect_column_index):clear()
+      end
+    end
+  end
+end
+renoise.tool():add_keybinding{name="Global:Paketti:Wipe Effects From Selection",invoke=function() WipeEfxFromSelection() end}
+----------------
+--rescued from ImpulseBuddy by Protman! I have no idea how many of these were originally a part of Paketti, or something else, but
+--hey, more crosspollination, more features.
+function delete_effect_column()
+local s=renoise.song()
+local currTrak = s.selected_track_index
+local currPatt = s.selected_pattern_index
+
+local iter = s.pattern_iterator:effect_columns_in_pattern_track(currPatt,currTrak)
+  for _,line in iter do
+   if not line.is_empty then
+   line:clear()
+   end
+  end 
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Delete/Wipe/Clear Effect Column Content from Current Track",invoke=function() delete_effect_column() end}
+---------------------------
+function GenerateDelayValue() 
+local counter=nil
+local s=renoise.song()
+s.tracks[s.selected_track_index].delay_column_visible=true
+
+for i=1,s.tracks[s.selected_track_index].visible_note_columns do
+counter=256/s.tracks[s.selected_track_index].visible_note_columns*(i-1)
+DEC_HEX(counter)
+print (counter)
+s.patterns[s.selected_pattern_index].tracks[s.selected_track_index].lines[s.selected_line_index].note_columns[i].delay_value=counter end
+s.selected_note_column_index=1 end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Generate Delay Value on Note Columns",invoke=function() GenerateDelayValue() end}
+----------------------------------------------------------------------------------------------------------------------------------------
+--from http://lua-users.org/lists/lua-l/2004-09/msg00054.html thax!
+function DEC_HEX(IN)
+    local B,K,OUT,I,D=16,"0123456789ABCDEF","",0
+    while IN>0 do
+        I=I+1
+        IN,D=math.floor(IN/B),math.mod(IN,B)+1
+        OUT=string.sub(K,D,D)..OUT
+    end
+    return OUT
+end
+--from http://lua-users.org/lists/lua-l/2004-09/msg00054.html thax!
+----------------------------------------------------------------------------------------------------------------------------------------
 
 
 -- originally created by joule + danoise
@@ -796,4 +858,271 @@ resize_pattern(pattern, pattern.number_of_lines * 0.5,1 ) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:dblue Expand + Resize Pattern",invoke=function()
 local pattern = renoise.song().selected_pattern
 resize_pattern(pattern, pattern.number_of_lines * 2,1) end}
+-------------------
+
+
+function bend(amount)
+local counter=nil 
+local s=renoise.song()
+
+for i=s.selection_in_pattern.start_line,s.selection_in_pattern.end_line 
+do 
+counter=s.patterns[s.selected_pattern_index].tracks[s.selected_track_index].lines[i].effect_columns[1].amount_value+amount 
+
+if counter > 255 then counter=255 end
+if counter < 1 then counter=0 end
+s.patterns[s.selected_pattern_index].tracks[s.selected_track_index].lines[i].effect_columns[1].amount_value=counter end
+end
+
+function effectamount(amount,effectname)
+-- massive thanks to pandabot for the optimization tricks!
+local s=renoise.song()
+local counter=nil
+for i=s.selection_in_pattern.start_line,s.selection_in_pattern.end_line 
+do 
+s:pattern(s.selected_pattern_index):track(s.selected_track_index):line(i):effect_column(1).number_string=effectname
+counter=s:pattern(s.selected_pattern_index):track(s.selected_track_index):line(i):effect_column(1).amount_value+amount 
+if counter > 255 then counter=255 end
+if counter < 1 then counter=0 end
+s:pattern(s.selected_pattern_index):track(s.selected_track_index):line(i):effect_column(1).amount_value=counter 
+  end
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Bend -1",invoke=function() bend(-1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Bend -10",invoke=function() bend(-10) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Bend -1 (2nd)",invoke=function() bend(-1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Bend -10 (2nd)",invoke=function() bend(-10) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Bend -1 (3rd)",invoke=function() bend(-1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Bend -10 (3rd)",invoke=function() bend(-10) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Bend +1",invoke=function() bend(1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Bend +10",invoke=function() bend(10) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Bend +1 (2nd)",invoke=function() bend(1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Bend +10 (2nd)",invoke=function() bend(10) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Bend +1 (3rd)",invoke=function() bend(1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Bend +10 (3rd)",invoke=function() bend(10) end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Glide Amount -1",invoke=function() effectamount(-1,"0G") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Glide Amount +1",invoke=function() effectamount(1,"0G") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Glide Amount -10",invoke=function() effectamount(-10,"0G") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Glide Amount 10",invoke=function() effectamount(10,"0G") end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Uxx Slide Pitch Up +1",invoke=function() effectamount(1,"0U") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Uxx Slide Pitch Up -1",invoke=function() effectamount(-1,"0U") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Uxx Slide Pitch Up +10",invoke=function() effectamount(10,"0U") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Uxx Slide Pitch Up -10",invoke=function() effectamount(-10,"0U") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Dxx Slide Pitch Down +1",invoke=function() effectamount(1,"0D") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Dxx Slide Pitch Down -1",invoke=function() effectamount(-1,"0D") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Dxx Slide Pitch Down +10",invoke=function() effectamount(10,"0D") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Dxx Slide Pitch Down -10",invoke=function() effectamount(-10,"0D") end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Uxx Slide Pitch Up +1 (2nd)",invoke=function() effectamount(1,"0U") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Uxx Slide Pitch Up -1 (2nd)",invoke=function() effectamount(-1,"0U") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Uxx Slide Pitch Up +10 (2nd)",invoke=function() effectamount(10,"0U") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Uxx Slide Pitch Up -10 (2nd)",invoke=function() effectamount(-10,"0U") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Dxx Slide Pitch Down +1 (2nd)",invoke=function() effectamount(1,"0D") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Dxx Slide Pitch Down -1 (2nd)",invoke=function() effectamount(-1,"0D") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Dxx Slide Pitch Down +10 (2nd)",invoke=function() effectamount(10,"0D") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Dxx Slide Pitch Down -10 (2nd)",invoke=function() effectamount(-10,"0D") end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Uxx Slide Pitch Up +1 (3rd)",invoke=function() effectamount(1,"0U") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Uxx Slide Pitch Up -1 (3rd)",invoke=function() effectamount(-1,"0U") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Uxx Slide Pitch Up +10 (3rd)",invoke=function() effectamount(10,"0U") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Uxx Slide Pitch Up -10 (3rd)",invoke=function() effectamount(-10,"0U") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Dxx Slide Pitch Down +1 (3rd)",invoke=function() effectamount(1,"0D") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Dxx Slide Pitch Down -1 (3rd)",invoke=function() effectamount(-1,"0D") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Dxx Slide Pitch Down +10 (3rd)",invoke=function() effectamount(10,"0D") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Dxx Slide Pitch Down -10 (3rd)",invoke=function() effectamount(-10,"0D") end}
+
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Effect Columns..:Clear Effect Columns",invoke=function() delete_effect_column() end}
+renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Effect Columns..:(Uxx) Selection Slide Pitch Up +1",invoke=function() effectamount(1,"0U") end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Effect Columns..:(Uxx) Selection Slide Pitch Up +10",invoke=function() effectamount(10,"0U") end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Effect Columns..:(Uxx) Selection Slide Pitch Up -1",invoke=function() effectamount(-1,"0U") end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Effect Columns..:(Uxx) Selection Slide Pitch Up -10",invoke=function() effectamount(-10,"0U") end}
+renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Effect Columns..:(Dxx) Selection Slide Pitch Down +1",invoke=function() effectamount(1,"0D") end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Effect Columns..:(Dxx) Selection Slide Pitch Down +10",invoke=function() effectamount(10,"0D") end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Effect Columns..:(Dxx) Selection Slide Pitch Down -1",invoke=function() effectamount(-1,"0D") end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Effect Columns..:(Dxx) Selection Slide Pitch Down -10",invoke=function() effectamount(-10,"0D") end}
+renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Effect Columns..:(Gxx) Selection Glide +1",invoke=function() effectamount(1,"0G") end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Effect Columns..:(Gxx) Selection Glide +10",invoke=function() effectamount(10,"0G") end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Effect Columns..:(Gxx) Selection Glide -1",invoke=function() effectamount(-1,"0G") end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Effect Columns..:(Gxx) Selection Glide -10",invoke=function() effectamount(-10,"0G") end}
+
+--Switch between Effect and Note Column
+function switchcolumns()
+  local s = renoise.song()
+  local w = renoise.app().window
+if s.selected_note_column_index==nil then return end
+
+  if s.selected_note_column_index==nil then return
+    else if s.selected_effect_column_index==1 then s.selected_note_column_index=1
+          w.active_middle_frame=1
+          w.lock_keyboard_focus=true
+          else s.selected_effect_column_index=1
+           w.active_middle_frame=1
+             w.lock_keyboard_focus=true end
+  end
+end
+renoise.tool():add_keybinding{name="Global:Paketti:Switch Effect Column/Note Column",invoke=function() switchcolumns() end}
+--------
+function ClearRow()
+ local s=renoise.song()
+ local currTrak=s.selected_track_index
+ local currPatt=s.selected_pattern_index
+ local currLine=s.selected_line_index
+ 
+ -- Check if phrase editor is visible to avoid unintended clearing
+ if renoise.app().window.active_middle_frame ~= 1 or not s.instruments[s.selected_instrument_index].phrase_editor_visible then
+  if currLine < 1 then currLine = 1 end
+  for i=1,8 do
+   s.patterns[currPatt].tracks[currTrak].lines[currLine].effect_columns[i]:clear()
+  end
+  for i=1,12 do
+   s.patterns[currPatt].tracks[currTrak].lines[currLine].note_columns[i]:clear()
+  end
+ end
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Clear Current Row", invoke=function() ClearRow() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Clear Current Row 2nd", invoke=function() ClearRow() end}
+-------------
+--Select specific track:
+
+function select_specific_track(number)
+  if number > renoise.song().sequencer_track_count  then 
+     number=renoise.song().sequencer_track_count
+     renoise.song().selected_track_index=number
+  else renoise.song().selected_track_index=number  end
+end
+
+for st=1,16 do
+  renoise.tool():add_keybinding{
+    name = "Global:Paketti:Select Specific Track " .. st, 
+    invoke=function() select_specific_track(st) end}
+end
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+function JumpToNextRow()
+local LineGoTo = nil
+
+LineGoTo = renoise.song().selected_line_index
+
+
+renoise.song().tracks[get_master_track_index()].visible_effect_columns = 4
+if renoise.song().selected_pattern.tracks[get_master_track_index()].lines[renoise.song().selected_line_index].effect_columns[3].number_string == "ZB"
+then
+renoise.song().selected_pattern.tracks[get_master_track_index()].lines[renoise.song().selected_line_index].effect_columns[3].number_string = ""
+renoise.song().selected_pattern.tracks[get_master_track_index()].lines[renoise.song().selected_line_index].effect_columns[3].amount_string  = ""
+return
+end
+
+
+renoise.song().selected_pattern.tracks[get_master_track_index()].lines[renoise.song().selected_line_index].effect_columns[3].number_string = "ZB"
+
+if renoise.song().selected_line_index > 255 then LineGoTo = 00 end
+
+renoise.song().selected_pattern.tracks[get_master_track_index()].lines[renoise.song().selected_line_index].effect_columns[3].amount_value  = LineGoTo
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Write Jump To Next Row (ZBxx)", invoke=function() JumpToNextRow() end}
+--------------------
+--Clone Current Pattern to Current Sequence and maintain pattern line index.
+--Heaps of help from KMaki
+function clonePTN()
+local rs=renoise.song()
+local currline=rs.selected_line_index
+local n_patterns = #rs.patterns
+local src_pat_i = rs.selected_pattern_index
+local src_pat = rs:pattern(src_pat_i)
+rs.selected_pattern_index = n_patterns + 1
+rs.patterns[rs.selected_pattern_index].number_of_lines=renoise.song().patterns[rs.selected_pattern_index-1].number_of_lines
+rs.selected_pattern:copy_from(src_pat)
+rs.selected_line_index=currline
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Clone Current Pattern to Current Sequence",invoke=function() clonePTN() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Clone Current Pattern to Current Sequence (2nd)",invoke=function() clonePTN() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Clone Current Pattern to Current Sequence (3rd)",invoke=function() clonePTN() end}
+------------------------------
+-- Destructive 0B01 adder/disabler
+function revnoter()
+local s = renoise.song()
+local efc = s.selected_effect_column
+
+if efc==nil then
+  return
+  else
+  if efc.number_value==11 then
+     efc.number_value=00
+     efc.amount_value=00
+  else
+     efc.number_value=11
+     efc.amount_value=01
+  end
+end
+end
+
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Reverse Sample effect 0B01 on/off",invoke=function()
+local s=renoise.song()
+local nci=s.selected_note_column_index 
+s.selected_effect_column_index=1
+revnoter() 
+if s.selected_track.name=="Mst" then 
+  return
+else 
+s.selected_note_column_index=nci
+--s.selected_note_column_index=1 
+end end}
+
+
+-- Destructive 0B00 adder/disabler
+function revnote()
+local s = renoise.song()
+local efc = s.selected_effect_column
+
+if efc==nil then
+  return
+  else
+  if efc.number_value==11 then
+     efc.number_value=00
+     efc.amount_value=00
+  else
+     efc.number_value=11
+     efc.amount_value=00
+  end
+end
+end
+
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Reverse Sample effect 0B00 on/off",invoke=function()
+local nci=renoise.song().selected_note_column_index 
+renoise.song().selected_effect_column_index=1
+revnote() 
+if renoise.song().selected_track.name=="Mst" then return
+else renoise.song().selected_note_column_index=nci
+--renoise.song().selected_note_column_index=1 
+end end}
+
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Reverse Sample effect 0B00 on/off (2nd)",invoke=function() 
+renoise.song().selected_effect_column_index=1
+revnote() 
+if renoise.song().selected_track.name=="Mst" then return
+else renoise.song().selected_note_column_index=1 end end}
+
+
+renoise.tool():add_midi_mapping{name="Pattern Editor:Paketti:Reverse Sample effect 0B00 on/off",invoke=function() 
+renoise.song().selected_effect_column_index=1
+revnote() 
+if renoise.song().selected_track.name=="Mst" then return
+else renoise.song().selected_note_column_index=1 end end}
+----------------------------------------------------------------------------------------------------------------------------------
+function displayEffectColumn(number) local rs=renoise.song() rs.tracks[rs.selected_track_index].visible_effect_columns=number end
+
+for dec=1,8 do
+  renoise.tool():add_keybinding{name="Global:Paketti:Display Effect Column " .. dec,invoke=function() displayEffectColumn(dec) end}
+end
+-- Display user-specific amount of note columns or effect columns:
+function displayNoteColumn(number) local rs=renoise.song() if rs.tracks[rs.selected_track_index].visible_note_columns == 0 then return else rs.tracks[rs.selected_track_index].visible_note_columns=number end end
+
+for dnc=1,12 do
+  renoise.tool():add_keybinding{name="Global:Paketti:Display Note Column " .. dnc,invoke=function() displayNoteColumn(dnc) end}
+end
 

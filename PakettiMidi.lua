@@ -61,7 +61,8 @@ renoise.song().selected_note_column.delay_value = math.max(0, math.min(257, midi
 
 end}
 -------------------------------------------------------------------------------------------------------------------------------------
-
+--Midi Mapping for Metronome On/Off Toggle
+renoise.tool():add_midi_mapping{name="Global:Paketti:Metronome On/Off x[Toggle]",invoke=function() MetronomeOff() end}
 --Midi Mapping for Expand/Collapse
 renoise.tool():add_midi_mapping{name="Global:Paketti:Uncollapser",invoke=function() Uncollapser() end}
 renoise.tool():add_midi_mapping{name="Global:Paketti:Collapser",invoke=function() Collapser() end} 
@@ -95,6 +96,22 @@ else end
       t.follow_player = false
     end
 end}
+---------------------------------------------------------------------------------------------------------------------------
+--Record Quantize On/Off for Midi_Mapping
+renoise.tool():add_midi_mapping{
+name = "Global:Paketti:Record Quantize On/Off x[Toggle]",
+invoke=function()
+  if renoise.song().transport.record_quantize_enabled==true then
+     renoise.song().transport.record_quantize_enabled=false
+  else
+     renoise.song().transport.record_quantize_enabled=true
+   end
+end}
+
+
+
+
+
 -----------------------------------------------------------------------------------------------------------------------------------------
 -- //TODO check that these work
 renoise.tool():add_midi_mapping{name="Global:Paketti:Start Playback from Cursor Row x[Toggle]",  invoke=function() ImpulseTrackerPlaySong() end}

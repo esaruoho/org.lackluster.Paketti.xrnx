@@ -503,14 +503,57 @@ end}
 
 --) end}
 
+----------------------
+function OpenSelectedEffectExternalEditor()
+local s=renoise.song()
+local devices=s.selected_track.devices
+if not devices[s.selected_device_index].external_editor_visible then
+       devices[s.selected_device_index].external_editor_visible=true
+  else devices[s.selected_device_index].external_editor_visible=false
+end
+end
 
+renoise.tool():add_keybinding{name="Global:Paketti:Open Ext.Editor of Selected Effect",invoke=function() OpenSelectedEffectExternalEditor() end}
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+renoise.tool():add_keybinding{name="Global:Paketti:Hide Track DSP Devices",invoke=function()
+  if table.count(renoise.song().selected_track.devices) >1 then
+     for i=2,(table.count(renoise.song().selected_track.devices)) do 
+      if renoise.song().selected_track.devices[i].external_editor_available==true
+       then
+       renoise.song().selected_track.devices[i].external_editor_visible=false
+      end
+     end
+  end
+end}
+--------------------------
+function inspectPlugin()
+local s=renoise.song()
+local plugin=renoise.song().selected_instrument.plugin_properties.plugin_device
 
+for i=1,(table.count(plugin.parameters)) 
+do oprint (plugin.name .. ": " .. i .. ": " .. plugin.parameters[i].name .. ": " .. "renoise.song().selected_instrument.plugin_properties.plugin_device.parameters[" .. i .. "].value=" .. plugin.parameters[i].value) 
+--oprint (renoise.song().selected_instrument.plugin_properties.plugin_device.parameters[i].value)
+end end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Inspect Plugin",invoke=function() inspectPlugin() end}
+
+function inspectEffect()
+local devices=renoise.song().selected_track.devices
+oprint("Effect Displayname: " .. devices[2].display_name)
+oprint("Effect Name: " .. devices[2].name)
+oprint("Effect Path: " .. devices[2].device_path)
+for i=1,(table.count(devices[2].parameters)) 
+do oprint (devices[2].name .. ": " .. i .. ": " .. devices[2].parameters[i].name .. ": " .. "renoise.song().selected_track.devices[" .. i .. "].value=" .. devices[2].parameters[i].value) end
+ end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Inspect Device in Slot 2",invoke=function() inspectEffect() end}
+------------------------------------------------------------------------------------------------------------------------------------
 -- Required to interact with Renoise's main API
 renoise.tool():add_menu_entry {
   name = "--Main Menu:Tools:Paketti..:Plugins/Devices:Show Plugin Details",
   invoke = function() show_plugin_details_gui() end
 }
-
+-----------------------------------
 -- Utility function to fetch, sort, and group available plugins by type
 function get_sorted_and_grouped_plugin_infos()
   local audio_units = {}

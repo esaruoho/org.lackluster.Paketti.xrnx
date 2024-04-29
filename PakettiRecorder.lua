@@ -158,7 +158,7 @@ function search_empty_instrument()
   return #proc.instruments
 end
 --------------------------------------------------------------------------------------------------------
---This records to currently selected track and outputs 0G01 and c-4 and selected_instrument
+--This records to currently selected track and outputs 0G01 and C-4 and selected_instrument
 function recordtocurrenttrack()
 renoise.song().transport.edit_mode=false
  local s=renoise.song()
@@ -292,7 +292,6 @@ renoise.tool():add_keybinding{name="Global:Paketti:Record to Current Track", inv
   renoise.app().window.active_lower_frame=2
 end}
 
-
  renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Instruments:Start Sampling (Record)", invoke=function()
 local s=renoise.song()
 local t=s.transport
@@ -332,19 +331,7 @@ s.selected_instrument_index = search_empty_instrument()
  t.follow_player=true
  renoise.app().window.lower_frame_is_visible=true
  renoise.app().window.active_lower_frame=2 end}
-
-
-
-
-
-
+ 
 renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Record to Current Track", invoke=function() recordtocurrenttrack() end}
 renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Start Sampling (Record)", invoke=function() sample_and_to_sample_editor()
 renoise.app().window.sample_record_dialog_is_visible=true end}  
-
-
-
-
-
-
-

@@ -8,6 +8,7 @@ w.lock_keyboard_focus=true
 if w.active_middle_frame==raw.MIDDLE_FRAME_PATTERN_EDITOR and w.lower_frame_is_visible then
 --renoise.app().window:select_preset(8)
   w.lower_frame_is_visible=false
+    renoise.app().window.pattern_advanced_edit_is_visible=false
   w.upper_frame_is_visible=false
   w.pattern_advanced_edit_is_visible=false
   w.instrument_box_is_visible=true
@@ -16,6 +17,7 @@ if w.active_middle_frame==raw.MIDDLE_FRAME_PATTERN_EDITOR and w.lower_frame_is_v
 else w.active_middle_frame=raw.MIDDLE_FRAME_PATTERN_EDITOR
   w.lower_frame_is_visible=true
   w.upper_frame_is_visible=true
+    renoise.app().window.pattern_advanced_edit_is_visible=false
   w.active_lower_frame=raw.LOWER_FRAME_TRACK_DSPS
 --w.pattern_advanced_edit_is_visible=true
   w.instrument_box_is_visible=true
@@ -29,6 +31,8 @@ if w.disk_browser_is_visible then
   w.upper_frame_is_visible=false
   w.pattern_advanced_edit_is_visible=false
   w.disk_browser_is_visible=false
+    renoise.app().window.pattern_advanced_edit_is_visible=true
+
 --renoise.app().window:select_preset(8)
 return end end
 renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker F2 Pattern Editor", invoke=function() F2() end}
@@ -849,5 +853,5 @@ local s=renoise.song()
     if renoise.app().window.active_middle_frame~=1 and renoise.app().window.active_middle_frame~=2 then renoise.app().window.active_middle_frame=1 end
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:ImpulseTracker ALT-F9 (Solo Toggle)", invoke=function() impulseTrackerSoloKey() end}
+renoise.tool():add_keybinding{name="Global:Paketti:ImpulseTracker ALT-F10 (Solo Toggle)", invoke=function() impulseTrackerSoloKey() end}
 

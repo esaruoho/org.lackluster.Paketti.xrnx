@@ -1,6 +1,15 @@
 
 
 
+function DuplicateInstrumentAndSelectNewInstrument()
+local rs=renoise.song()
+local i=rs.selected_instrument_index;rs:insert_instrument_at(i+1):copy_from(rs.selected_instrument);rs.selected_instrument_index=i+1
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Duplicate Instrument and Select New Instrument",invoke=function() DuplicateInstrumentAndSelectNewInstrument() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Duplicate Instrument and Select New Instrument (2nd)",invoke=function() DuplicateInstrumentAndSelectNewInstrument() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Duplicate Instrument and Select New Instrument (3rd)",invoke=function() DuplicateInstrumentAndSelectNewInstrument() end}
+renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Duplicate Instrument and Select New Instrument",invoke=function() DuplicateInstrumentAndSelectNewInstrument() end}
 
 
 -- auto-suspend plugin off:
@@ -61,5 +70,69 @@ renoise.tool():add_keybinding{name="Global:Paketti:Numpad SelectPlay 9",invoke=f
 --renoise.tool():add_midi_mapping{name="Global:Paketti:Numpad SelectPlay 6 x[Toggle]",  invoke=function() selectplay(6) end}
 --renoise.tool():add_midi_mapping{name="Global:Paketti:Numpad SelectPlay 7 x[Toggle]",  invoke=function() selectplay(7) end}
 --renoise.tool():add_midi_mapping{name="Global:Paketti:Numpad SelectPlay 8 x[Toggle]",  invoke=function() selectplay(8) end}
+
+------------------------------------------------------------------------------------------------------
+--cortex.scripts.CaptureOctave
+--[[
+program: CaptureOctave v1.1
+author: cortex
+]]--
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Capture Nearest Instrument and Octave", invoke=function(repeated) capture_ins_oct() end}
+renoise.tool():add_keybinding{name="Mixer:Paketti:Capture Nearest Instrument and Octave", invoke=function(repeated) capture_ins_oct() end}
+renoise.tool():add_midi_mapping{name="Global:Paketti:Capture Nearest Instrument and Octave", invoke=function(repeated) capture_ins_oct() end} 
+
+function capture_ins_oct()
+   local closest_note = {}  
+   local current_track=renoise.song().selected_track_index
+   local current_pattern=renoise.song().selected_pattern_index
+   
+   for pos,line in renoise.song().pattern_iterator:lines_in_pattern_track(current_pattern,current_track) do
+      if (not line.is_empty) then
+   local t={}
+   if (renoise.song().selected_note_column_index==0) then
+      for i=1,renoise.song().tracks[current_track].visible_note_columns do
+         table.insert(t,i) end
+   else table.insert(t,renoise.song().selected_note_column_index)   end  
+   
+   for i,v in ipairs(t) do local notecol=line.note_columns[v]
+      
+      if ( (not notecol.is_empty) and (notecol.note_string~="OFF")) then
+         if (closest_note.oct==nil) then
+      closest_note.oct=math.min(math.floor(notecol.note_value/12),8)
+      closest_note.line=pos.line
+      closest_note.ins=notecol.instrument_value+1
+         elseif ( math.abs(pos.line-renoise.song().transport.edit_pos.line) < math.abs(closest_note.line-renoise.song().transport.edit_pos.line)  ) then
+      closest_note.oct=math.min(math.floor(notecol.note_value/12),8)
+      closest_note.line=pos.line
+      closest_note.ins=notecol.instrument_value+1
+         end         
+      end end end end      
+   if (closest_note.oct~=nil) then 
+      renoise.song().selected_instrument_index=closest_note.ins
+      renoise.song().transport.octave=closest_note.oct end
+   
+local w = renoise.app().window
+-- w.lower_frame_is_visible=true
+w.active_middle_frame=1
+-- w.active_lower_frame=1 
+-- w.upper_frame_is_visible=false
+end
+
+-----------------------------------------------------------------------------------------------------------
+function emptyslices()
+local w=renoise.app().window
+local si=renoise.song().selected_instrument
+local ss=renoise.song().selected_sample
+local ssi=renoise.song().selected_sample_index
+  ssi=1
+   for i=1,64 do si:insert_sample_at(i) end
+
+   for i=1,64 do renoise.song().selected_instrument.samples[i].name="empty_sampleslot" .. i end
+
+ renoise.song().selected_instrument.name=("multiloopersampler_instrument" .. renoise.song().selected_instrument_index)
+ w.active_middle_frame= 2 end
+
+renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Create Empty Sample Slices", invoke=function() emptyslices() end}
+--------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
