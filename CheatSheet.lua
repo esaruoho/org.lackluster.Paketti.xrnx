@@ -193,50 +193,109 @@ vb:text{text=stopalltooltip},
 vb:text{text=wikitooltip}
 }
 
+local vb = renoise.ViewBuilder()
+
+local s = renoise.song()
+
 local effect_slider = vb:column {
---  vb:button {width=100},
---  vb:button {width="50%"},
---  vb:slider {width=30,height=127},
-vb:minislider{ id="delayslider", width=30,height=127, min=0, max=0xFF, notifier=function(v1) 
-s.selected_track.delay_column_visible=true
-if s.selected_note_column then s.selected_note_column.delay_value=v1 end end},
+    vb:horizontal_aligner {
+        mode = "center",
+        vb:text {
+        style = "Strong",
+            text = "Volume"
+        },
+        vb:minislider{
+            id="volumeslider",
+            width=30,
+            height=127,
+            min=0,
+            max=0x80,
+            notifier=function(v3) 
+                s.selected_track.volume_column_visible = true
+                if s.selected_note_column then
+                    s.selected_note_column.volume_value = v3
+                end
+            end
+        },
+    },
 
-vb:minislider{ id="panningslider", width=30,height=127, min=0, max=0x80, notifier=function(v2) 
-s.selected_track.panning_column_visible=true
-if s.selected_note_column then s.selected_note_column.panning_value=v2 end end},
+    vb:horizontal_aligner {
+        mode = "center",
+        vb:text {
+        style="Strong",
+            text = "Panning"
+        },
+        vb:minislider{
+            id="panningslider",
+            width=30,
+            height=127,
+            min=0,
+            max=0x80,
+            notifier=function(v2) 
+                s.selected_track.panning_column_visible = true
+                if s.selected_note_column then
+                    s.selected_note_column.panning_value = v2
+                end
+            end
+        },
+    },
+    vb:horizontal_aligner {
+        mode = "center",
+        vb:text {
+        style="Strong",
+            text = "Delay"
+        },
+        vb:minislider{
+            id="delayslider",
+            width=30,
+            height=127,
+            min=0,
+            max=0xFF,
+            notifier=function(v1) 
+                s.selected_track.delay_column_visible = true
+                if s.selected_note_column then
+                    s.selected_note_column.delay_value = v1
+                end
+            end
+        },
+    },
 
-vb:minislider{ id="volumeslider", width=30,height=127, min=0, max=0x80, notifier=function(v3) 
-s.selected_track.volume_column_visible=true
-if s.selected_note_column then s.selected_note_column.volume_value=v3 end end},
 
-vb:minislider{ id="effectslider", width=30,height=127, min=0, max=0xFF, notifier=function(v4) 
-local s=renoise.song()
---s.selected_track.volume_column_visible=true
-local nc=s.selected_note_column
-local ec=s.selected_effect_column
-local nci=s.selected_note_column_index
-if nc == nil then 
--- Protect user if notecolumn is nil
-  if ec == nil then return false
--- Also protect user if effect column is nil  
-  else 
-       s.selected_effect_column.amount_value=v4
--- If effectcolumn does exist, just write to it
-return end end
 
-local writenc=nil
-writenc=nci
--- Store current note column index into a local variable
 
-s.selected_effect_column_index=1
--- Set the selection location to effect column index 1
+    vb:horizontal_aligner {
+        mode = "center",
+        vb:text {
+        style="Strong",
+            text = "Effect"
+        },
+        vb:minislider{
+            id="effectslider",
+            width=30,
+            height=127,
+            min=0,
+            max=0xFF,
+            notifier=function(v4) 
+                local nc = s.selected_note_column
+                local ec = s.selected_effect_column
+                if nc == nil then 
+                    -- Protect user if note column is nil
+                    if ec == nil then 
+                        return false  -- Also protect user if effect column is nil  
+                    else 
+                        ec.amount_value = v4
+                        return
+                    end
+                end
 
-s.selected_effect_column.amount_value=v4
--- Write to the amount value of the selected effect column - receive this from effectslider.
-
-s.selected_note_column_index=writenc
--- Return back to previous note column index.
-end} }
+                local writenc = s.selected_note_column_index
+                s.selected_effect_column_index = 1
+                ec.amount_value = v4
+                s.selected_note_column_index = writenc
+            end
+        },
+    }
+}
 
 local dialog_content = vb:row {effect_buttons, effect_desc, effect_slider}
 local vb=renoise.ViewBuilder()

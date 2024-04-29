@@ -322,12 +322,12 @@ end
 
 
 -- Add menu entries and keybindings for the tool
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Paketti Pattern Doubler", invoke=pakettiPatternDoubler}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor:Paketti Pattern Doubler", invoke=pakettiPatternDoubler}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Paketti Pattern Doubler", invoke=pakettiPatternDoubler}
 renoise.tool():add_keybinding{name="Mixer:Paketti:Paketti Pattern Doubler", invoke=pakettiPatternDoubler}
 
 -- The function can be bound to a menu item or a keybinding within Renoise to make it easily accessible
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Paketti Pattern Halver", invoke = pakettiPatternHalver}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Paketti Pattern Halver", invoke = pakettiPatternHalver}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Paketti Pattern Halver", invoke = pakettiPatternHalver}
 renoise.tool():add_keybinding{name="Mixer:Paketti:Paketti Pattern Halver", invoke = pakettiPatternHalver}
 

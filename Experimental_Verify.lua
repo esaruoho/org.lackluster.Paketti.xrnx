@@ -1,23 +1,25 @@
-function experimental()
 
--- Select the instrument and modulation set index
+
+
+function Experimental()
+renoise.app():show_status("You did something..")
+
+end
+
+renoise.tool():add_menu_entry {name = "Main Menu:Tools:Experimental",invoke = function() Experimental() end}
+
+function loadModulationDevice(devicename,device_target)
 local instr_index = renoise.song().selected_instrument_index
 local mod_set_index = 1
 
--- Define the device path (adjust this as needed)
--- "Modulation/Operand"
--- "Modulation/Key Tracking"
--- "Modulation/Velocity Tracking"
--- "Modulation/AHDSR"
--- "Modulation/Envelope"
--- "Modulation/Stepper"
--- "Modulation/LFO"
--- "Modulation/Fader"
+-- renoise.SampleModulationDevice.TARGET_VOLUME **
+-- renoise.SampleModulationDevice.TARGET_PANNING **
+-- renoise.SampleModulationDevice.TARGET_PITCH ** 
+-- renoise.SampleModulationDevice.TARGET_CUTOFF **
+-- renoise.SampleModulationDevice.TARGET_RESONANCE
+-- renoise.SampleModulationDevice.TARGET_DRIVE
 
-local device_path = "Modulation/LFO"
-
--- Specify the target for the modulation
-local device_target = renoise.SampleModulationDevice.TARGET_PITCH
+local device_path = ("Modulation/" .. devicename)
 
 -- Define the position where the device should be added in the modulation chain
 local insert_index = 1
@@ -26,155 +28,67 @@ local insert_index = 1
 renoise.song().instruments[instr_index].sample_modulation_sets[mod_set_index]:insert_device_at(device_path, device_target, insert_index)
 end
 
-renoise.tool():add_menu_entry {
-  name = "Main Menu:Tools:Experimental",
-  invoke = function() experimental() end
-}
+
+
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device AHDSR (Pitch)", invoke=function() loadModulationDevice("AHDSR",renoise.SampleModulationDevice.TARGET_PITCH) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device Envelope (Pitch)", invoke=function() loadModulationDevice("Envelope",renoise.SampleModulationDevice.TARGET_PITCH) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device Fader (Pitch)", invoke=function() loadModulationDevice("Fader",renoise.SampleModulationDevice.TARGET_PITCH) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device KeyTracking (Pitch)", invoke=function() loadModulationDevice("Key Tracking",renoise.SampleModulationDevice.TARGET_PITCH) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device LFO (Pitch)", invoke=function() loadModulationDevice("LFO",renoise.SampleModulationDevice.TARGET_PITCH) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device Operand (Pitch)", invoke=function() loadModulationDevice("Operand",renoise.SampleModulationDevice.TARGET_PITCH) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device Stepper (Pitch)", invoke=function() loadModulationDevice("Stepper",renoise.SampleModulationDevice.TARGET_PITCH) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device VelocityTracking (Pitch)", invoke=function() loadModulationDevice("Velocity Tracking",renoise.SampleModulationDevice.TARGET_PITCH) end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device AHDSR (Volume)", invoke=function() loadModulationDevice("AHDSR",renoise.SampleModulationDevice.TARGET_VOLUME) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device Envelope (Volume)", invoke=function() loadModulationDevice("Envelope",renoise.SampleModulationDevice.TARGET_VOLUME) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device Fader (Volume)", invoke=function() loadModulationDevice("Fader",renoise.SampleModulationDevice.TARGET_VOLUME) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device KeyTracking (Volume)", invoke=function() loadModulationDevice("Key Tracking",renoise.SampleModulationDevice.TARGET_VOLUME) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device LFO (Volume)", invoke=function() loadModulationDevice("LFO",renoise.SampleModulationDevice.TARGET_VOLUME) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device Operand (Volume)", invoke=function() loadModulationDevice("Operand",renoise.SampleModulationDevice.TARGET_VOLUME) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device Stepper (Volume)", invoke=function() loadModulationDevice("Stepper",renoise.SampleModulationDevice.TARGET_VOLUME) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device VelocityTracking (Volume)", invoke=function() loadModulationDevice("Velocity Tracking",renoise.SampleModulationDevice.TARGET_VOLUME) end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device AHDSR (Panning)", invoke=function() loadModulationDevice("AHDSR",renoise.SampleModulationDevice.TARGET_PANNING) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device Envelope (Panning)", invoke=function() loadModulationDevice("Envelope",renoise.SampleModulationDevice.TARGET_PANNING) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device Fader (Panning)", invoke=function() loadModulationDevice("Fader",renoise.SampleModulationDevice.TARGET_PANNING) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device KeyTracking (Panning)", invoke=function() loadModulationDevice("Key Tracking",renoise.SampleModulationDevice.TARGET_PANNING) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device LFO (Panning)", invoke=function() loadModulationDevice("LFO",renoise.SampleModulationDevice.TARGET_PANNING) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device Operand (Panning)", invoke=function() loadModulationDevice("Operand",renoise.SampleModulationDevice.TARGET_PANNING) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device Stepper (Panning)", invoke=function() loadModulationDevice("Stepper",renoise.SampleModulationDevice.TARGET_PANNING) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device VelocityTracking (Panning)", invoke=function() loadModulationDevice("Velocity Tracking",renoise.SampleModulationDevice.TARGET_PANNING) end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device AHDSR (Cutoff)", invoke=function() loadModulationDevice("AHDSR",renoise.SampleModulationDevice.TARGET_CUTOFF) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device Envelope (Cutoff)", invoke=function() loadModulationDevice("Envelope",renoise.SampleModulationDevice.TARGET_CUTOFF) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device Fader (Cutoff)", invoke=function() loadModulationDevice("Fader",renoise.SampleModulationDevice.TARGET_CUTOFF) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device KeyTracking (Cutoff)", invoke=function() loadModulationDevice("Key Tracking",renoise.SampleModulationDevice.TARGET_CUTOFF) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device LFO (Cutoff)", invoke=function() loadModulationDevice("LFO",renoise.SampleModulationDevice.TARGET_CUTOFF) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device Operand (Cutoff)", invoke=function() loadModulationDevice("Operand",renoise.SampleModulationDevice.TARGET_CUTOFF) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device Stepper (Cutoff)", invoke=function() loadModulationDevice("Stepper",renoise.SampleModulationDevice.TARGET_CUTOFF) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device VelocityTracking (Cutoff)", invoke=function() loadModulationDevice("Velocity Tracking",renoise.SampleModulationDevice.TARGET_CUTOFF) end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device AHDSR (Resonance)", invoke=function() loadModulationDevice("AHDSR",renoise.SampleModulationDevice.TARGET_RESONANCE) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device Envelope (Resonance)", invoke=function() loadModulationDevice("Envelope",renoise.SampleModulationDevice.TARGET_RESONANCE) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device Fader (Resonance)", invoke=function() loadModulationDevice("Fader",renoise.SampleModulationDevice.TARGET_RESONANCE) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device KeyTracking (Resonance)", invoke=function() loadModulationDevice("Key Tracking",renoise.SampleModulationDevice.TARGET_RESONANCE) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device LFO (Resonance)", invoke=function() loadModulationDevice("LFO",renoise.SampleModulationDevice.TARGET_RESONANCE) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device Operand (Resonance)", invoke=function() loadModulationDevice("Operand",renoise.SampleModulationDevice.TARGET_RESONANCE) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device Stepper (Resonance)", invoke=function() loadModulationDevice("Stepper",renoise.SampleModulationDevice.TARGET_RESONANCE) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device VelocityTracking (Resonance)", invoke=function() loadModulationDevice("Velocity Tracking",renoise.SampleModulationDevice.TARGET_RESONANCE) end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device AHDSR (Drive)", invoke=function() loadModulationDevice("AHDSR",renoise.SampleModulationDevice.TARGET_DRIVE) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device Envelope (Drive)", invoke=function() loadModulationDevice("Envelope",renoise.SampleModulationDevice.TARGET_DRIVE) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device Fader (Drive)", invoke=function() loadModulationDevice("Fader",renoise.SampleModulationDevice.TARGET_DRIVE) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device KeyTracking (Drive)", invoke=function() loadModulationDevice("Key Tracking",renoise.SampleModulationDevice.TARGET_DRIVE) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device LFO (Drive)", invoke=function() loadModulationDevice("LFO",renoise.SampleModulationDevice.TARGET_DRIVE) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device Operand (Drive)", invoke=function() loadModulationDevice("Operand",renoise.SampleModulationDevice.TARGET_DRIVE) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device Stepper (Drive)", invoke=function() loadModulationDevice("Stepper",renoise.SampleModulationDevice.TARGET_DRIVE) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Modulation Device VelocityTracking (Drive)", invoke=function() loadModulationDevice("Velocity Tracking",renoise.SampleModulationDevice.TARGET_DRIVE) end}
 
 
 
 
 
 
-
-
-
-
-
-
-
-
--- Required to interact with Renoise's main API
-renoise.tool():add_menu_entry {
-  name = "Main Menu:Tools:Show Plugin Details",
-  invoke = function() show_plugin_details_gui() end
-}
-
--- Utility function to fetch, sort, and group available plugins by type
-function get_sorted_and_grouped_plugin_infos()
-  local audio_units = {}
-  local vsts = {}
-  local vst3s = {}
-  local instrument = renoise.song().instruments[renoise.song().selected_instrument_index]
-
-  if instrument.plugin_properties and #instrument.plugin_properties.available_plugin_infos > 0 then
-    for _, plugin_info in ipairs(instrument.plugin_properties.available_plugin_infos) do
-      local plugin_type = determine_plugin_type(plugin_info.path)
-      local entry = {
-        name = plugin_type .. ": " .. (plugin_info.name or "Unnamed Plugin"),
-        details = plugin_info
-      }
-      if plugin_type == "AU" then
-        table.insert(audio_units, entry)
-      elseif plugin_type == "VST3" then
-        table.insert(vst3s, entry)
-      else
-        table.insert(vsts, entry)
-      end
-    end
-  end
-
-  -- Sort each group alphabetically by name
-  local sorter = function(a, b) return a.name < b.name end
-  table.sort(audio_units, sorter)
-  table.sort(vsts, sorter)
-  table.sort(vst3s, sorter)
-
-  -- Combine groups in order: Audio Units, VSTs, VST3s
-  return table_concat(audio_units, vsts, vst3s)
-end
-
-function determine_plugin_type(path)
-  if path and path:lower():find("/au/") then
-    return "AU"
-  elseif path and path:lower():find("/vst3/") then
-    return "VST3"
-  elseif path and path:lower():find("/vst/") then
-    return "VST"
-  else
-    return "Unknown Type"
-  end
-end
-
-function table_concat(...)
-  local result = {}
-  for _, list in ipairs({...}) do
-    for _, v in ipairs(list) do
-      table.insert(result, v)
-    end
-  end
-  return result
-end
-
--- Function to display selected plugin details
-function display_selected_plugin_details(index, available_plugin_infos)
-  local plugin_info = available_plugin_infos[index - 1]  -- Adjust for the placeholder
-  if plugin_info then
-    local details = {
-      "Name: " .. plugin_info.details.name,
-      "Path: " .. plugin_info.details.path,
-      "Favorite: " .. (plugin_info.details.is_favorite and "Yes" or "No")
-    }
-    return table.concat(details, "\n")
-  else
-    return "Please select a plugin to see details."
-  end
-end
-
-function show_plugin_details_gui()
-  local vb = renoise.ViewBuilder()
-  local available_plugin_infos = get_sorted_and_grouped_plugin_infos()
-
-  local dialog_content = vb:column {
-    margin = 10,
-    spacing = 5,
-    vb:row {
-      vb:column {
-        width = 300,
-        vb:text {
-          text = "Available Plugins:"
-        },
-        vb:popup {
-          id = "plugins_list",
-          items = {"--Select a Plugin--"}, -- Placeholder at index 1
-          width = 300,
-          notifier = function(index)
-            vb.views.plugin_details.text = display_selected_plugin_details(index, available_plugin_infos)
-          end
-        }
-      },
-      vb:column {
-        spacing = 5,
-        vb:text {
-          text = "Plugin Details:"
-        },
-        vb:multiline_textfield {
-          id = "plugin_details",
-          text = "After you select a Plugin Instrument, you will get some additional data here for said Plugin.", -- Default text
-          font = "mono",
-          width = 400,
-          height = 300
-        },
-      },
-    },
-    vb:button {
-      text = "Close",
-      released = function()
-        renoise.app():close_custom_dialog()
-      end
-    }
-  }
-
-  -- Fetch and sort plugin infos, then update the popup list
-  local popup_items = vb.views.plugins_list.items
-  for _, plugin_info in ipairs(available_plugin_infos) do
-    table.insert(popup_items, plugin_info.name)
-  end
-  vb.views.plugins_list.items = popup_items
-
-  -- Dialog management
-  local dialog = renoise.app():show_custom_dialog("Plugin Details", dialog_content)
-end
 
 
 
@@ -220,7 +134,7 @@ renoise.tool():add_menu_entry{name="Mixer:Paketti..:Enable All Devices on Channe
 
 --Wipes the pattern data, but not the samples or instruments.
 --WARNING: Does not reset current filename.
-function wipesong()
+function wipeSongPattern()
 local s=renoise.song()
   for i=1,300 do
     if s.patterns[i].is_empty==false then
@@ -232,7 +146,7 @@ local s=renoise.song()
     end
   end
 end
-renoise.tool():add_keybinding{name="Global:Paketti:WipeSong", invoke=function() wipesong() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Wipe Song Patterns", invoke=function() wipeSongPattern() end}
 
 
 

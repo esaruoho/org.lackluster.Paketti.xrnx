@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ScriptingToolPreferences doc_version="0">
-  <WipeSlicesBeatSyncMode>3</WipeSlicesBeatSyncMode>
-  <WipeSlicesLoopSetting>4</WipeSlicesLoopSetting>
-  <loadPaleGreenTheme>false</loadPaleGreenTheme>
-  <WipeSlicesOneShot>false</WipeSlicesOneShot>
-  <WipeSlicesAutoseek>true</WipeSlicesAutoseek>
-  <_0G01_Loader>false</_0G01_Loader>
+  <WipeSlicesBeatSyncMode>2</WipeSlicesBeatSyncMode>
   <RandomBPM>false</RandomBPM>
+  <WipeSlicesNNA>1.0</WipeSlicesNNA>
+  <WipeSlicesBeatSyncGlobal>false</WipeSlicesBeatSyncGlobal>
+  <WipeSlicesMuteGroup>1.0</WipeSlicesMuteGroup>
+  <loadPaleGreenTheme>false</loadPaleGreenTheme>
+  <WipeSlicesLoopMode>2</WipeSlicesLoopMode>
+  <WipeSlicesAutoseek>false</WipeSlicesAutoseek>
+  <_0G01_Loader>false</_0G01_Loader>
+  <WipeSlicesOneShot>false</WipeSlicesOneShot>
 </ScriptingToolPreferences>

@@ -293,7 +293,7 @@ renoise.tool():add_keybinding{name="Global:Paketti:Record to Current Track", inv
 end}
 
 
- renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Start Sampling (Record)", invoke=function()
+ renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Instruments:Start Sampling (Record)", invoke=function()
 local s=renoise.song()
 local t=s.transport
 if not t.playing then t.playing=true end

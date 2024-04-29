@@ -24,7 +24,7 @@ writeToClipboard("∿")
 writeToClipboard("∿")
 delay(5)
 writeToClipboard("∿") end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:∿ Squiggly Sinewave to Clipboard (macOS)", invoke=function() 
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:∿ Squiggly Sinewave to Clipboard (macOS)", invoke=function() 
 writeToClipboard("∿")
 writeToClipboard("∿")
 writeToClipboard("∿")

@@ -694,6 +694,7 @@ renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Record+Follow Off",inv
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 function emptyslices()
+local w=renoise.app().window
 local si=renoise.song().selected_instrument
 local ss=renoise.song().selected_sample
 local ssi=renoise.song().selected_sample_index
@@ -703,7 +704,7 @@ local ssi=renoise.song().selected_sample_index
    for i=1,64 do renoise.song().selected_instrument.samples[i].name="empty_sampleslot" .. i end
 
  renoise.song().selected_instrument.name=("multiloopersampler_instrument" .. renoise.song().selected_instrument_index)
- w.active_middle_frame= 3 end
+ w.active_middle_frame= 2 end
 
 renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Create Empty Sample Slices", invoke=function() emptyslices() end}
 --------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1651,8 +1652,8 @@ local s=renoise.song()
    s.tracks[i].collapsed=true end
 end
 
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Collapser",invoke=function() Collapser() end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Uncollapser",invoke=function() Uncollapser() end}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor:Collapser",invoke=function() Collapser() end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Uncollapser",invoke=function() Uncollapser() end}
 --Global keyboard shortcuts
 renoise.tool():add_keybinding{name="Global:Paketti:Uncollapser",invoke=function() Uncollapser() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Collapser",invoke=function() Collapser() end}

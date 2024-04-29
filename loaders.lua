@@ -502,6 +502,294 @@ end}
 
 
 --) end}
+
+
+
+-- Required to interact with Renoise's main API
+renoise.tool():add_menu_entry {
+  name = "--Main Menu:Tools:Paketti..:Plugins/Devices:Show Plugin Details",
+  invoke = function() show_plugin_details_gui() end
+}
+
+-- Utility function to fetch, sort, and group available plugins by type
+function get_sorted_and_grouped_plugin_infos()
+  local audio_units = {}
+  local vsts = {}
+  local vst3s = {}
+  local instrument = renoise.song().instruments[renoise.song().selected_instrument_index]
+
+  if instrument.plugin_properties and #instrument.plugin_properties.available_plugin_infos > 0 then
+    for _, plugin_info in ipairs(instrument.plugin_properties.available_plugin_infos) do
+      local plugin_type = determine_plugin_type(plugin_info.path)
+      local entry = {
+        name = plugin_type .. ": " .. (plugin_info.name or "Unnamed Plugin"),
+        details = plugin_info
+      }
+      if plugin_type == "AU" then
+        table.insert(audio_units, entry)
+      elseif plugin_type == "VST3" then
+        table.insert(vst3s, entry)
+      else
+        table.insert(vsts, entry)
+      end
+    end
+  end
+
+  -- Sort each group alphabetically by name
+  local sorter = function(a, b) return a.name < b.name end
+  table.sort(audio_units, sorter)
+  table.sort(vsts, sorter)
+  table.sort(vst3s, sorter)
+
+  -- Combine groups in order: Audio Units, VSTs, VST3s
+  return table_concat(audio_units, vsts, vst3s)
+end
+
+function determine_plugin_type(path)
+  if path and path:lower():find("/au/") then
+    return "AU"
+  elseif path and path:lower():find("/vst3/") then
+    return "VST3"
+  elseif path and path:lower():find("/vst/") then
+    return "VST"
+  else
+    return "Unknown Type"
+  end
+end
+
+function table_concat(...)
+  local result = {}
+  for _, list in ipairs({...}) do
+    for _, v in ipairs(list) do
+      table.insert(result, v)
+    end
+  end
+  return result
+end
+
+-- Function to display selected plugin details
+function display_selected_plugin_details(index, available_plugin_infos)
+  local plugin_info = available_plugin_infos[index - 1]  -- Adjust for the placeholder
+  if plugin_info then
+    local details = {
+      "Name: " .. plugin_info.details.name,
+      "Path: " .. plugin_info.details.path,
+      "Favorite: " .. (plugin_info.details.is_favorite and "Yes" or "No")
+    }
+    return table.concat(details, "\n")
+  else
+    return "Please select a plugin to see details."
+  end
+end
+
+function show_plugin_details_gui()
+  local vb = renoise.ViewBuilder()
+  local available_plugin_infos = get_sorted_and_grouped_plugin_infos()
+
+  local dialog_content = vb:column {
+    margin = 10,
+    spacing = 5,
+    vb:row {
+      vb:column {
+        width = 300,
+        vb:text {
+          text = "Available Plugins:"
+        },
+        vb:popup {
+          id = "plugins_list",
+          items = {"--Select a Plugin--"}, -- Placeholder at index 1
+          width = 300,
+          notifier = function(index)
+            vb.views.plugin_details.text = display_selected_plugin_details(index, available_plugin_infos)
+          end
+        }
+      },
+      vb:column {
+        spacing = 5,
+        vb:text {
+          text = "Plugin Details:"
+        },
+        vb:multiline_textfield {
+          id = "plugin_details",
+          text = "After you select a Plugin Instrument, you will get some additional data here for said Plugin.", -- Default text
+          font = "mono",
+          width = 400,
+          height = 300
+        },
+      },
+    },
+    vb:button {
+      text = "Close",
+      released = function()
+        renoise.app():close_custom_dialog()
+      end
+    }
+  }
+
+  -- Fetch and sort plugin infos, then update the popup list
+  local popup_items = vb.views.plugins_list.items
+  for _, plugin_info in ipairs(available_plugin_infos) do
+    table.insert(popup_items, plugin_info.name)
+  end
+  vb.views.plugins_list.items = popup_items
+
+  -- Dialog management
+  local dialog = renoise.app():show_custom_dialog("Plugin Details", dialog_content)
+end
+
+
+renoise.tool():add_menu_entry {
+  name = "Main Menu:Tools:Paketti..:Plugins/Devices:Show Effect Details",
+  invoke = function() show_effect_details_gui() end
+}
+
+-- Utility function to fetch, sort, and group available device effects by type
+function get_sorted_and_grouped_device_infos()
+  local audio_units = {}
+  local vsts = {}
+  local vst3s = {}
+  local unique_devices = {}
+  local tracks = renoise.song().tracks
+
+  for _, track in ipairs(tracks) do
+    for _, device_info in ipairs(track.available_device_infos) do
+      if not unique_devices[device_info.name .. device_info.path] and not device_info.path:lower():find("/native/") then
+        unique_devices[device_info.name .. device_info.path] = true
+        local device_type = determine_device_type(device_info.path)
+        local entry = {
+          name = device_type .. ": " .. (device_info.name or "Unnamed Device"),
+          details = device_info
+        }
+        if device_type == "AU" then
+          table.insert(audio_units, entry)
+        elseif device_type == "VST3" then
+          table.insert(vst3s, entry)
+        else
+          table.insert(vsts, entry)
+        end
+      end
+    end
+  end
+
+  -- Sort each group alphabetically by name
+  local sorter = function(a, b) return a.name < b.name end
+  table.sort(audio_units, sorter)
+  table.sort(vsts, sorter)
+  table.sort(vst3s, sorter)
+
+  -- Combine groups in order: Audio Units, VSTs, VST3s
+  return table_concat(audio_units, vsts, vst3s)
+end
+
+function determine_device_type(path)
+  if path and path:lower():find("/au/") then
+    return "AU"
+  elseif path and path:lower():find("/vst3/") then
+    return "VST3"
+  elseif path and path:lower():find("/vst/") then
+    return "VST"
+  else
+    return "Unknown Type"
+  end
+end
+
+function table_concat(...)
+  local result = {}
+  for _, list in ipairs({...}) do
+    for _, v in ipairs(list) do
+      table.insert(result, v)
+    end
+  end
+  return result
+end
+
+-- Function to display selected device details
+function display_selected_device_details(index, available_device_infos)
+  local device_info = available_device_infos[index]  -- Use the correct index without adjustment
+  if device_info then
+    local details = {
+      "Name: " .. device_info.details.name,
+      "Path: " .. device_info.details.path,
+      "Bridged: " .. (device_info.details.is_bridged and "Yes" or "No"),
+      "Favorite: " .. (device_info.details.is_favorite and "Yes" or "No")
+    }
+    return table.concat(details, "\n")
+  else
+    return "Please select a device to see details."
+  end
+end
+
+function show_effect_details_gui()
+  local vb = renoise.ViewBuilder()
+  local available_device_infos = get_sorted_and_grouped_device_infos()
+  local device_names = {}
+  for _, info in ipairs(available_device_infos) do
+    table.insert(device_names, info.name)
+  end
+
+  local dialog_content = vb:column {
+    margin = 10,
+    spacing = 5,
+    vb:row {
+      vb:column {
+        width = 300,
+        vb:text {
+          text = "Available Devices:"
+        },
+        vb:popup {
+          id = "devices_list",
+          items = {"--Select a Device--", unpack(device_names)},
+          width = 300,
+          notifier = function(index)
+            vb.views.device_details.text = display_selected_device_details(index - 1, available_device_infos)
+          end
+        }
+      },
+      vb:column {
+        spacing = 5,
+        vb:text {
+          text = "Device Details:"
+        },
+        vb:multiline_textfield {
+          id = "device_details",
+          text = "Select a Device to see its details.", -- Default text
+          font = "mono",
+          width = 400,
+          height = 300
+        }
+      },
+    },
+    vb:button {
+      text = "Close",
+      released = function()
+        renoise.app():close_custom_dialog()
+      end
+    }
+  }
+
+  -- Show dialog
+  local dialog = renoise.app():show_custom_dialog("Effect Details", dialog_content)
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function launchApp(appName)
 os.execute(appName)
 end

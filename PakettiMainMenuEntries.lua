@@ -5,7 +5,7 @@ renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:In
 
 
 renoise.tool():add_menu_entry{
-    name = "--Main Menu:Tools:Paketti..:Random BPM (60-180)",
+    name = "--Main Menu:Tools:Paketti..:Pattern Editor:Random BPM (60-180)",
    invoke = function()
         -- Define a list of possible BPM values
         local bpmList = {80, 100, 115, 123, 128, 132, 135, 138, 160}
@@ -41,13 +41,13 @@ renoise.tool():add_menu_entry{
 
 
 --renoise.song().transport.bpm=math.random(60,180) end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Write Current BPM&LPB to Master column",invoke=function() write_bpm() end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Write Current BPM&LPB to Master column",invoke=function() write_bpm() end}
 renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Bypass All Devices on Channel", invoke=function() effectbypass() end}
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Enable All Devices on Channel", invoke=function() effectenable() end}
 renoise.tool():add_menu_entry{name="---Main Menu:Tools:Paketti..:Available Routings for Track",invoke=function() showAvailableRoutings() end}
 
 
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Effect Column CheatSheet", invoke=function() CheatSheet() end}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor:Effect Column CheatSheet", invoke=function() CheatSheet() end}
 
 
 

@@ -156,8 +156,19 @@ renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Beatsync 
 renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Beatsync 3 (Time-Stretch Texture)",invoke=function() selectedSampleBeatsync(3) end }
 
 function selectedSampleBeatsyncAndToggleOn(number)
+if renoise.song().selected_sample.beat_sync_enabled and renoise.song().selected_sample.beat_sync_mode ~= number then
 renoise.song().selected_sample.beat_sync_mode = number
+return end
+renoise.song().selected_sample.beat_sync_mode = number
+
+
+if renoise.song().selected_sample.beat_sync_enabled == false then
 renoise.song().selected_sample.beat_sync_enabled = true
+renoise.song().selected_sample.beat_sync_mode = number
+else 
+renoise.song().selected_sample.beat_sync_enabled = false
+end
+
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Beatsync On/Off 1 (Repitch)",invoke=function() selectedSampleBeatsyncAndToggleOn(1) end }
@@ -586,9 +597,150 @@ renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument All A
 renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument All Autofade On",invoke=function() selectedInstrumentAllAutofadeControl(1) end}
 renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument All Autofade Off",invoke=function() selectedInstrumentAllAutofadeControl(0) end}
 
+function halveBeatSyncLines()
+    local s = renoise.song()
+    local currInst = s.selected_instrument_index
+    local samples = s.instruments[currInst].samples
+    if #samples < 2 then
+        print("Not enough samples to perform operation.")
+        return
+    end
+
+    -- Starting the check from the second sample
+    local reference_sync_lines = samples[2].beat_sync_lines
+    for i = 2, #samples do
+        if samples[i].beat_sync_lines ~= reference_sync_lines then
+            print("Not all samples (excluding the first) have the same beat_sync_lines.")
+            return
+        end
+    end
+
+    local new_sync_lines = reference_sync_lines * 2
+    new_sync_lines = math.min(new_sync_lines, 512)  -- Ensure it does not exceed 512
+    for i = 2, #samples do
+        samples[i].beat_sync_lines = new_sync_lines
+    end
+
+    renoise.app():show_status("Beat sync lines halved for all samples (excluding the first) from " .. reference_sync_lines .. " to " .. new_sync_lines)
+end
+
+
+
+function doubleBeatSyncLines()
+    local s = renoise.song()
+    local currInst = s.selected_instrument_index
+    local samples = s.instruments[currInst].samples
+    if #samples < 2 then
+        print("Not enough samples to perform operation.")
+        return
+    end
+
+    -- Starting the check from the second sample
+    local reference_sync_lines = samples[2].beat_sync_lines
+    for i = 2, #samples do
+        if samples[i].beat_sync_lines ~= reference_sync_lines then
+            print("Not all samples (excluding the first) have the same beat_sync_lines.")
+            return
+        end
+    end
+
+    local new_sync_lines = reference_sync_lines / 2
+    new_sync_lines = math.max(new_sync_lines, 1)  -- Ensure it does not fall below 1
+    for i = 2, #samples do
+        samples[i].beat_sync_lines = new_sync_lines
+    end
+
+    renoise.app():show_status("Beat sync lines doubled for all samples (excluding the first) from " .. reference_sync_lines .. " to " .. new_sync_lines)
+end
 
 
 
 
 
+renoise.tool():add_keybinding{name="Global:Paketti:Halve Beat Sync Lines",invoke=function() halveBeatSyncLines() end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Double Beat Sync Lines",invoke=function() doubleBeatSyncLines() end}
+
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Instruments:Beat Sync Lines Halve",invoke=function() halveBeatSyncLines() end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments:Beat Sync Lines Double",invoke=function() doubleBeatSyncLines() end}
+
+
+
+function pitchedInstrument(st)
+renoise.app():load_instrument("Presets/" .. st .. "st_Pitchbend.xrni")
+renoise.song().selected_instrument.name=(st .. "st_Pitchbend Instrument")
+renoise.song().instruments[renoise.song().selected_instrument_index].macros_visible = true
+renoise.song().instruments[renoise.song().selected_instrument_index].sample_modulation_sets[1].name=(st .. "st_Pitchbend")
+end
+
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Instruments:12st PitchBend Instrument Init",invoke=function() pitchedInstrument(12) end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments:24st PitchBend Instrument Init",invoke=function() pitchedInstrument(24) end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments:36st PitchBend Instrument Init",invoke=function() pitchedInstrument(36) end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments:48st PitchBend Instrument Init",invoke=function() pitchedInstrument(48) end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments:64st PitchBend Instrument Init",invoke=function() pitchedInstrument(64) end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments:96st PitchBend Instrument Init",invoke=function() pitchedInstrument(96) end}
+
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:12st PitchBend Instrument Init",invoke=function() pitchedInstrument(12) end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:24st PitchBend Instrument Init",invoke=function() pitchedInstrument(24) end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:36st PitchBend Instrument Init",invoke=function() pitchedInstrument(36) end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:48st PitchBend Instrument Init",invoke=function() pitchedInstrument(48) end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:64st PitchBend Instrument Init",invoke=function() pitchedInstrument(64) end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:96st PitchBend Instrument Init",invoke=function() pitchedInstrument(96) end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:12st PitchBend Instrument Init", invoke=function() pitchedInstrument(12) end}
+renoise.tool():add_keybinding{name="Global:Paketti:24st PitchBend Instrument Init", invoke=function() pitchedInstrument(24) end}
+renoise.tool():add_keybinding{name="Global:Paketti:36st PitchBend Instrument Init", invoke=function() pitchedInstrument(36) end}
+renoise.tool():add_keybinding{name="Global:Paketti:48st PitchBend Instrument Init", invoke=function() pitchedInstrument(48) end}
+renoise.tool():add_keybinding{name="Global:Paketti:64st PitchBend Instrument Init", invoke=function() pitchedInstrument(64) end}
+renoise.tool():add_keybinding{name="Global:Paketti:96st PitchBend Instrument Init", invoke=function() pitchedInstrument(96) end}
+
+
+function transposeAllSamplesInInstrument(amount)
+    -- Access the currently selected instrument in Renoise
+    local instrument = renoise.song().selected_instrument
+    -- Iterate through all samples in the instrument
+    for i = 1, #instrument.samples do
+        -- Access each sample's transpose property
+        local currentTranspose = instrument.samples[i].transpose
+        local newTranspose = currentTranspose + amount
+        -- Clamp the transpose value to be within the valid range of -120 to 120
+        if newTranspose > 120 then
+            newTranspose = 120
+        elseif newTranspose < -120 then
+            newTranspose = -120
+        end
+        -- Apply the new transpose value to the sample
+        instrument.samples[i].transpose = newTranspose
+    end
+end
+
+renoise.tool():add_keybinding {
+    name = "Global:Paketti:Set Selected Instrument Samples Transpose -1",
+    invoke = function() transposeAllSamplesInInstrument(-1) end}
+
+renoise.tool():add_keybinding {
+    name = "Global:Paketti:Set Selected Instrument Samples Transpose +1",
+    invoke = function() transposeAllSamplesInInstrument(1) end}
+
+renoise.tool():add_keybinding {
+    name = "Global:Paketti:Set Selected Instrument Samples Transpose -12",
+    invoke = function() transposeAllSamplesInInstrument(-12) end}
+
+renoise.tool():add_keybinding {
+    name = "Global:Paketti:Set Selected Instrument Samples Transpose +12",
+    invoke = function() transposeAllSamplesInInstrument(12) end}
+
+function resetInstrumentTranspose(amount)
+    -- Access the currently selected instrument in Renoise
+    local instrument = renoise.song().selected_instrument
+    -- Iterate through all samples in the instrument
+    for i = 1, #instrument.samples do
+        -- Apply the new transpose value to the sample
+        instrument.samples[i].transpose = 0
+    end
+end
+
+renoise.tool():add_keybinding {
+    name = "Global:Paketti:Set Selected Instrument Samples Transpose 0 (Reset)",
+    invoke = function() resetInstrumentTranspose(0) end}
 
