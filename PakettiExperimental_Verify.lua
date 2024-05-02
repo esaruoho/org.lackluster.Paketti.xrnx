@@ -2,6 +2,61 @@
 
 
 function Experimental()
+    local function read_file(path)
+        local file = io.open(path, "r")  -- Open the file in read mode
+        if not file then
+            print("Failed to open file")
+            return nil
+        end
+        local content = file:read("*a")  -- Read the entire content
+        file:close()
+        return content
+    end
+
+    local function check_and_execute(xml_path, bash_script)
+        local xml_content = read_file(xml_path)
+        if not xml_content then
+            return
+        end
+
+        local pattern = "<ShowScriptingDevelopmentTools>(.-)</ShowScriptingDevelopmentTools>"
+        local current_value = xml_content:match(pattern)
+
+        if current_value == "false" then  -- Check if the value is false
+            print("Scripting tools are disabled. Executing the bash script to enable...")
+            local command = 'open -a Terminal "' .. bash_script .. '"'
+            os.execute(command)
+        elseif current_value == "true" then
+            print("Scripting tools are already enabled. No need to execute the bash script.")
+          local bash_script = "/Users/esaruoho/macOS_DisableScriptingTools.sh"
+            local command = 'open -a Terminal "' .. bash_script .. '"'
+            os.execute(command)
+        else
+            print("Could not find the <ShowScriptingDevelopmentTools> tag in the XML.")
+        end
+    end
+
+    local config_path = "/Users/esaruoho/Library/Preferences/Renoise/V3.4.3/Config.xml"
+    local bash_script = "/Users/esaruoho/macOS_EnableScriptingTools.sh" -- Ensure this path is correct
+
+    check_and_execute(config_path, bash_script)
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function Experimental2()
 renoise.app():show_status("You did something..")
 
 end
@@ -817,35 +872,138 @@ show_manual (
   )
 end}
 
--- :::::Automation ExpCurve
--- For some strange reason this keeps putting the information into the channel, not in the automation
-function drawVol()
-local pos = renoise.song().transport.edit_pos
-local pos1 = renoise.song().transport.edit_pos
-local edit = renoise.song().transport.edit_mode
-local length = renoise.song().selected_pattern.number_of_lines
-local curve = 1.105
-loadnative("Audio/Effects/Native/Gainer")
-renoise.song().selected_track.devices[2].is_maximized=false
-for i=1, length do
-renoise.song().transport.edit_mode = true
-pos.line = i
-renoise.song().transport.edit_pos = pos
-renoise.song().selected_track.devices[2].parameters[1]:record_value(math.pow(curve, i) / math.pow(curve, length))
+renoise.tool():add_keybinding{
+name="Pattern Editor:Paketti:Show Automation", invoke = function()   renoise.app().window.active_lower_frame = renoise.ApplicationWindow.LOWER_FRAME_TRACK_AUTOMATION
+ end}
+ 
+renoise.tool():add_keybinding{
+name="Mixer:Paketti:Show Automation", invoke = function()   renoise.app().window.active_lower_frame = renoise.ApplicationWindow.LOWER_FRAME_TRACK_AUTOMATION
+ end}
+
+renoise.tool():add_keybinding{
+name="Instrument Box:Paketti:Show Automation", invoke = function()   renoise.app().window.active_lower_frame = renoise.ApplicationWindow.LOWER_FRAME_TRACK_AUTOMATION
+ end}
+
+-------------------------------------------------------
+function expCurveVol()
+  local song = renoise.song()
+  local length = song.patterns[song.selected_pattern_index].number_of_lines
+  local curve = 1.105
+  
+  loadnative("Audio/Effects/Native/Gainer")
+  local gainer = song.selected_track.devices[2]
+  local gain_parameter = gainer.parameters[1]  -- Gain parameter
+  local track_index = song.selected_track_index
+  local envelope = song.patterns[song.selected_pattern_index].tracks[track_index]:create_automation(gain_parameter)
+  envelope:clear()
+
+  -- Define the number of points based on the pattern length
+  local total_points = length <= 16 and 16 or length  -- If pattern length is 16 or fewer, use 16 points; otherwise, use the length
+
+  local max_exp_value = math.pow(curve, length - 1)  -- Calculate the maximum value for normalization
+
+  -- Insert points for detailed automation
+  for i = 0, total_points - 1 do
+    local position = i / (total_points - 1) * (length - 1)  -- Scale position in the range of 0 to length-1
+    local expValue = math.pow(curve, position)
+    local normalizedValue = (expValue - 1) / (max_exp_value - 1)
+    envelope:add_point_at(math.floor(position + 1), math.max(0, normalizedValue))  -- Ensure the point is within valid range
+  end
+
+  song.transport.edit_mode = false
+  renoise.app().window.active_lower_frame = renoise.ApplicationWindow.LOWER_FRAME_TRACK_AUTOMATION
 end
 
-renoise.song().transport.edit_mode = edit
-renoise.song().transport.edit_pos = pos1
-end
-renoise.tool():add_keybinding {name = "Global:Paketti:ExpCurveVol", invoke=function() drawVol() end}
-renoise.tool():add_menu_entry {name = "Pattern Editor:Paketti..:ExpCurveVol", invoke=function() drawVol() end}
-renoise.tool():add_menu_entry {name = "Pattern Matrix:Paketti..:ExpCurveVol", invoke=function() drawVol() end}
---renoise.tool():add_keybinding {name = "Global:Paketti:ExpCurveVol", invoke=function() drawVol() end}
 
--- Track Automation
-renoise.tool():add_menu_entry{name="Track Automation:Paketti..:ExpCurveVol", invoke=function() drawVol() end}
-renoise.tool():add_menu_entry{name="Track Automation List:Paketti..:ExpCurveVol", invoke=function() drawVol() end}
+function expReverseCurveVol()
+  local song = renoise.song()
+  local length = song.patterns[song.selected_pattern_index].number_of_lines
+  local curve = 1.105
+  
+  loadnative("Audio/Effects/Native/Gainer")
+  local gainer = song.selected_track.devices[2]
+  local gain_parameter = gainer.parameters[1]  -- Gain parameter
+  local track_index = song.selected_track_index
+  local envelope = song.patterns[song.selected_pattern_index].tracks[track_index]:create_automation(gain_parameter)
+  envelope:clear()
+
+  -- Define the number of points based on the pattern length
+  local total_points = length <= 16 and 16 or length  -- Use 16 points for patterns of 16 rows or fewer
+
+  local max_exp_value = math.pow(curve, length - 1)  -- Calculate the maximum value for normalization
+
+  -- Insert points for detailed automation
+  for i = 0, total_points - 1 do
+    local position = i / (total_points - 1) * (length - 1)  -- Scale position in the range of 0 to length-1
+    local expValue = math.pow(curve, (length - 1) - position)  -- Reverse the curve calculation
+    local normalizedValue = (expValue - 1) / (max_exp_value - 1)
+    envelope:add_point_at(math.floor(position + 1), math.max(0, normalizedValue))  -- Ensure the point is within valid range
+  end
+
+  song.transport.edit_mode = false
+  renoise.app().window.active_lower_frame = renoise.ApplicationWindow.LOWER_FRAME_TRACK_AUTOMATION
+end
+
+
+renoise.tool():add_keybinding{name="Global:Paketti:ExpCurveVol", invoke = function() expCurveVol() end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:ExpCurveVol", invoke=function() expCurveVol() end}
+renoise.tool():add_menu_entry{name="Pattern Matrix:Paketti..:ExpCurveVol", invoke=function() expCurveVol() end}
+renoise.tool():add_menu_entry{name="Track Automation:Paketti..:ExpCurveVol", invoke=function() expCurveVol() end}
+renoise.tool():add_menu_entry{name="Track Automation List:Paketti..:ExpCurveVol", invoke=function() expCurveVol() end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:ExpReverseCurveVol", invoke=function() expReverseCurveVol() end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:ExpReverseCurveVol", invoke=function() expReverseCurveVol() end}
+renoise.tool():add_menu_entry{name="Pattern Matrix:Paketti..:ExpReverseCurveVol", invoke=function() expReverseCurveVol() end}
+renoise.tool():add_menu_entry{name="Track Automation:Paketti..:ExpReverseCurveVol", invoke=function() expReverseCurveVol() end}
+renoise.tool():add_menu_entry{name="Track Automation List:Paketti..:ExpReverseCurveVol", invoke=function() expReverseCurveVol() end}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ---------------------------
+renoise.tool():add_keybinding{name="Sample Editor:Paketti:Disk Browser Focus",invoke=function()
+renoise.app().window.lock_keyboard_focus=false
+renoise.app().window:select_preset(7) end}
+
+renoise.tool():add_midi_mapping{name="Sample Editor:Paketti:Disk Browser Focus",invoke=function()
+renoise.app().window.lock_keyboard_focus=false
+renoise.app().window:select_preset(7) end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Disk Browser Focus",invoke=function()
+renoise.app().window.lock_keyboard_focus=false
+renoise.app().window:select_preset(8) end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Disk Browser Focus (2nd)",invoke=function()
+renoise.app().window.lock_keyboard_focus=false
+renoise.app().window:select_preset(8) end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Contour Shuttle Disk Browser Focus",invoke=function() renoise.app().window:select_preset(8) end}
+renoise.tool():add_midi_mapping{name="Pattern Editor:Paketti:Disk Browser Focus",invoke=function() renoise.app().window:select_preset(8) end}
+
+
+
+
+
+
 ------------------------------------------------------------------------------------------------
 --- Keybinds
 --vV's wonderful sample keyzone noteon/noteoff copier + octave transposition for note-off:
@@ -975,6 +1133,64 @@ function writeToClipboard(text)
         print("Failed to copy to clipboard:", exit_reason, "(exit code " .. tostring(exit_code) .. ")")
     end
 end
+---------
+--Note, does not currently work because Phrase Line Index is not read.
+function Phrplusdelay(chg)
+ local d = renoise.song().selected_note_column.delay_value
+ local nc = renoise.song().selected_note_column
+ local currTrak = renoise.song().selected_track_index
+ local currInst = renoise.song().selected_instrument_index
+ local currPhra = renoise.song().selected_phrase_index
+ local sli = renoise.song().selected_line_index
+ local snci = renoise.song().selected_note_column_index
+renoise.song().instruments[currInst].phrases[currPhra].delay_column_visible=true
+ local Phrad = renoise.song().selected_instrument:phrase(currPhra):line(sli):note_column(snci).delay_value
+ renoise.song().tracks[currTrak].delay_column_visible=true
+renoise.song().selected_instrument:phrase(currPhra):line(sli):note_column(snci).delay_value = math.max(0, math.min(255, Phrad + chg))
+
+ --[[nc.delay_value=(d+chg)
+ if nc.delay_value == 0 and chg < 0 then
+  move_up(chg)
+ elseif nc.delay_value == 255 and chg > 0 then
+  move_down(chg)
+ else
+ end--]]
+end
+
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Increase Delay +1",invoke=function() Phrplusdelay(1) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Decrease Delay -1",invoke=function() Phrplusdelay(-1) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Increase Delay +10",invoke=function() Phrplusdelay(10) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Decrease Delay -10",invoke=function() Phrplusdelay(-10) end}
+-----------------------------
+-- // TODO: requires fixing (WipeRetain no longer works)
+local tmpvariable=nil
+
+function WipeRetain()
+tmpvariable=os.tmpname("wav")
+local s=renoise.song()
+
+s.instruments[s.selected_instrument_index].samples[1].sample_buffer:save_as(tmpvariable, "wav")
+
+if not renoise.tool().app_new_document_observable:has_notifier(WipeRetainFinish)
+  then renoise.tool().app_new_document_observable:add_notifier(WipeRetainFinish)
+  else renoise.tool().app_new_document_observable:remove_notifier(WipeRetainFinish) end
+renoise.app():new_song()
+end
+
+function WipeRetainFinish()
+local s=renoise.song()
+
+s.instruments[s.selected_instrument_index].samples[1].sample_buffer:load_from(tmpvariable)
+renoise.app().window.active_middle_frame=4
+renoise.app():show_status(tmpvariable)
+os.remove(tmpvariable)
+renoise.tool().app_new_document_observable:remove_notifier(WipeRetainFinish)
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Wipe Song Retain Sample",invoke=function() WipeRetain() end}
+---------------------------------------------------------------------------------------------------------
+
+----------
 
 function delay(seconds)
     local command = "sleep " .. tonumber(seconds)
@@ -995,6 +1211,7 @@ writeToClipboard("∿")
 delay(5)
 writeToClipboard("∿") end}
 
+----------
 
 
 ---------------------------

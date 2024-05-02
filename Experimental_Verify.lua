@@ -1,7 +1,56 @@
 
-
+function terminalApp(scriptPath)
+local command = 'open -a Terminal.app'
+-- local command = 'open -a Terminal "' .. scriptPath .. '"'
+    os.execute(command)
+end
 
 function Experimental()
+    local function read_file(path)
+        local file = io.open(path, "r")  -- Open the file in read mode
+        if not file then
+            print("Failed to open file")
+            return nil
+        end
+        local content = file:read("*a")  -- Read the entire content
+        file:close()
+        return content
+    end
+
+    local function check_and_execute(xml_path, bash_script)
+        local xml_content = read_file(xml_path)
+        if not xml_content then
+            return
+        end
+
+        local pattern = "<ShowScriptingDevelopmentTools>(.-)</ShowScriptingDevelopmentTools>"
+        local current_value = xml_content:match(pattern)
+
+        if current_value == "true" then  -- Corrected from "true" to "false"
+            print("Scripting tools are disabled. Executing the bash script to enable...")
+ terminalApp("chmod +x /Users/esaruoho/macOS_EnableScriptingTools.sh")
+ 
+--   local bash_script = "/Users/esaruoho/macOS_EnableScriptingTools.sh"  -- Adjust this path as necessary
+ 
+       --   local bash_command_prepare = 'open -a Terminal chmod +x "' .. bash_script .. '"'
+ --           local bash_command = 'open -a Terminal "' .. bash_script .. '"'
+      --      os.execute(bash_command_prepare)  -- Make the script executable
+   --         os.execute(bash_command)  -- Execute the script in a new terminal window
+        elseif current_value == "false" then
+            print("Scripting tools are already enabled. No need to execute the bash script.")
+        else
+            print("Could not find the <ShowScriptingDevelopmentTools> tag in the XML.")
+        end
+    end
+
+    -- Example usage
+    local config_path = "/Users/esaruoho/Library/Preferences/Renoise/V3.4.3/Config.xml"
+    local bash_script = "/Users/esaruoho/macOS_EnableScriptingTools.sh"  -- Adjust this path as necessary
+    check_and_execute(config_path, bash_script)
+end
+
+
+function Experimental2()
 renoise.app():show_status("You did something..")
 
 end

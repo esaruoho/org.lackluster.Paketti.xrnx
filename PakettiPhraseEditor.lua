@@ -1,3 +1,37 @@
+
+
+
+
+
+function RecordFollowOffPhrase()
+local t=renoise.song().transport
+t.follow_player=false
+if t.edit_mode == false then 
+t.edit_mode=true else
+t.edit_mode=false end end
+
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Record+Follow Off",invoke=function() RecordFollowOffPhrase() end}
+
+
+function createPhrase()
+local s=renoise.song() 
+  s.instruments[s.selected_instrument_index]:insert_phrase_at(1) 
+  renoise.app().window.active_middle_frame=3
+  s.instruments[s.selected_instrument_index].phrase_editor_visible=true
+  s.selected_phrase_index=1
+  
+--  renoise.song().instruments[renoise.song().selected_instrument_index].phrases[renoise.song().selected_phrase_index].instrument_column_visible=true
+s.instruments[s.selected_instrument_index].phrases[s.selected_phrase_index].volume_column_visible=true
+s.instruments[s.selected_instrument_index].phrases[s.selected_phrase_index].panning_column_visible=true
+s.instruments[s.selected_instrument_index].phrases[s.selected_phrase_index].delay_column_visible=true
+s.instruments[s.selected_instrument_index].phrases[s.selected_phrase_index].sample_effects_column_visible=true
+end
+
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Create Phrase",invoke=function() createPhrase() end}
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Create Phrase",invoke=function() createPhrase() end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Create Phrase",invoke=function() createPhrase() end}
+
+--------
 function phraseEditorVisible()
   local s=renoise.song()
 --If no Phrase in instrument, create phrase, otherwise do nothing.
@@ -17,7 +51,17 @@ renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAM
 end end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Phrase Editor Visible",invoke=function() phraseEditorVisible() end}
+renoise.tool():add_keybinding{name="Sample Editor:Paketti:Phrase Editor Visible",invoke=function() phraseEditorVisible() end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Phrase Editor Visible",invoke=function() phraseEditorVisible() end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Phrase Editor Visible",invoke=function() phraseEditorVisible() end}
 
+function phraseadd()
+renoise.song().instruments[renoise.song().selected_instrument_index]:insert_phrase_at(1)
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Add New Phrase",invoke=function()  phraseadd() end}
+
+----
 renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Init Phrase Settings",invoke=function()
 local selphra=renoise.song().selected_phrase
 selphra.visible_note_columns=1

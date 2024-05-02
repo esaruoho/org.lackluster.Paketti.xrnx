@@ -2,11 +2,118 @@
 
 
 
+function voloff()
+local s = renoise.song()
+local currColumn = renoise.song().selected_note_column_index
+
+if renoise.song().selected_effect_column == nil 
+then renoise.song().selected_effect_column_index=1
+else end
+
+local efc = s.selected_effect_column
+local currTrak=s.selected_track_index
+local currLine=s.selected_line_index
+local currPatt=s.selected_pattern_index
+
+local ns=efc.number_string
+local as=efc.amount_string
+if renoise.song().selected_track.type==2 or renoise.song().selected_track.type==3 or renoise.song().selected_track.type==4 then 
+  return
+  else
+ --     if s.selected_effect_column=="" then
+if renoise.song().selected_effect_column.number_string=="0L" then
+renoise.song().selected_effect_column.number_string ="00"
+else
+renoise.song().selected_effect_column.number_string ="0L"
+renoise.song().selected_effect_column.amount_string ="00"
+     end
+end
+renoise.song().selected_note_column_index = 1
+end
+renoise.tool():add_keybinding{name="Global:Paketti:Insert 0L00 to Pattern Editor",invoke=function() voloff() end}
+
+---------------
+function RecordFollowOffPattern()
+local t=renoise.song().transport
+local w = renoise.app().window
+--w.active_middle_frame = 1
+if t.edit_mode == false then t.edit_mode=true else t.edit_mode=false end
+if t.follow_player == false then return else t.follow_player=false end end
+
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Record+Follow Off",invoke=function() RecordFollowOffPattern() end}
 
 
+-- Set Delay +1 / -1 / +10 / -10 on current_row, display delay column
+function delay(chg)
+ local s=renoise.song()
+ local d=s.selected_note_column.delay_value
+ local nc=s.selected_note_column
+ local currTrak=s.selected_track_index
+
+ s.tracks[currTrak].delay_column_visible=true
+ --nc.delay_value=(d+chg)
+ --if nc.delay_value == 0 and chg < 0 then
+  --move_up(chg)
+ --elseif nc.delay_value == 255 and chg > 0 then
+  --move_down(chg)
+ --else
+ -- nc.delay_value 
+ nc.delay_value = math.max(0, math.min(255, d + chg))
+ --end
+end
+
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Increase Delay +1",invoke=function() delay(1) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Decrease Delay -1",invoke=function() delay(-1) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Increase Delay +10",invoke=function() delay(10) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Decrease Delay -10",invoke=function() delay(-10) end}
 
 
+----
+--Quantize +1 / -1
+function adjust_quantize(quant_delta)
+  local t = renoise.song().transport
+  local counted = nil
+  counted=t.record_quantize_lines+quant_delta
+  if counted == 0 then
+  t.record_quantize_enabled=false return end
+  
+  if t.record_quantize_enabled==false and t.record_quantize_lines == 1 then
+  t.record_quantize_lines = 1
+  t.record_quantize_enabled=true
+  return end  
+    t.record_quantize_lines=math.max(1, math.min(32, t.record_quantize_lines + quant_delta))
+    t.record_quantize_enabled=true
+renoise.app():show_status("Record Quantize Lines : " .. t.record_quantize_lines)
+end
+renoise.tool():add_keybinding{name="Global:Paketti:Quantization Decrease (-1)",invoke=function() adjust_quantize(-1, 0) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Quantization Increase (+1)",invoke=function() adjust_quantize(1, 0) end}
+-------
+-- +1/-1 on Metronome LPB and Metronome BPB (loads of help from dblue)
+function adjust_metronome(lpb_delta, bpb_delta)
+  -- Local reference to transport
+  local t = renoise.song().transport
+  t.metronome_lines_per_beat = math.max(1, math.min(16, t.metronome_lines_per_beat + lpb_delta))
+  t.metronome_beats_per_bar = math.max(1, math.min(16, t.metronome_beats_per_bar + bpb_delta))
+-- Show status
+  t.metronome_enabled = true
+  renoise.app():show_status("Metronome LPB: " .. t.metronome_lines_per_beat .. " BPB : " .. t.metronome_beats_per_bar) end
 
+--dblue modified to be lpb/tpl  
+function adjust_lpb_bpb(lpb_delta, tpl_delta)
+  local t = renoise.song().transport
+  t.lpb = math.max(1, math.min(256, t.lpb + lpb_delta))
+  t.tpl = math.max(1, math.min(16, t.tpl + tpl_delta))
+--  renoise.song().transport.metronome_enabled = true
+  renoise.app():show_status("LPB: " .. t.lpb .. " TPL : " .. t.tpl) end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Metronome LPB Decrease (-1)",invoke=function() adjust_metronome(-1, 0) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Metronome LPB Increase (+1)",invoke=function() adjust_metronome(1, 0) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Metronome BPB Decrease (-1)",invoke=function() adjust_metronome(0, -1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Metronome BPB Increase (+1)",invoke=function() adjust_metronome(0, 1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:LPB Decrease (-1)",invoke=function() adjust_lpb_bpb(-1, 0) end}
+renoise.tool():add_keybinding{name="Global:Paketti:LPB Increase (+1)",invoke=function() adjust_lpb_bpb(1, 0) end}
+renoise.tool():add_keybinding{name="Global:Paketti:TPL Decrease (-1)",invoke=function() adjust_lpb_bpb(0, -1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:TPL Increase (+1)",invoke=function() adjust_lpb_bpb(0, 1) end}
 
 ---------------------------
 function soloKey()
@@ -1066,7 +1173,7 @@ local s=renoise.song()
 local nci=s.selected_note_column_index 
 s.selected_effect_column_index=1
 revnoter() 
-if s.selected_track.name=="Mst" then 
+if renoise.song().selected_track.type==2 or renoise.song().selected_track.type==3 or renoise.song().selected_track.type==4 then 
   return
 else 
 s.selected_note_column_index=nci
@@ -1096,7 +1203,7 @@ renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Reverse Sample effect
 local nci=renoise.song().selected_note_column_index 
 renoise.song().selected_effect_column_index=1
 revnote() 
-if renoise.song().selected_track.name=="Mst" then return
+if renoise.song().selected_track.type==2 or renoise.song().selected_track.type==3 or renoise.song().selected_track.type==4 then return
 else renoise.song().selected_note_column_index=nci
 --renoise.song().selected_note_column_index=1 
 end end}
@@ -1104,14 +1211,14 @@ end end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Reverse Sample effect 0B00 on/off (2nd)",invoke=function() 
 renoise.song().selected_effect_column_index=1
 revnote() 
-if renoise.song().selected_track.name=="Mst" then return
+if renoise.song().selected_track.type==2 or renoise.song().selected_track.type==3 or renoise.song().selected_track.type==4 then return
 else renoise.song().selected_note_column_index=1 end end}
 
 
 renoise.tool():add_midi_mapping{name="Pattern Editor:Paketti:Reverse Sample effect 0B00 on/off",invoke=function() 
 renoise.song().selected_effect_column_index=1
 revnote() 
-if renoise.song().selected_track.name=="Mst" then return
+if renoise.song().selected_track.type==2 or renoise.song().selected_track.type==3 or renoise.song().selected_track.type==4 then return
 else renoise.song().selected_note_column_index=1 end end}
 ----------------------------------------------------------------------------------------------------------------------------------
 function displayEffectColumn(number) local rs=renoise.song() rs.tracks[rs.selected_track_index].visible_effect_columns=number end
@@ -1125,4 +1232,290 @@ function displayNoteColumn(number) local rs=renoise.song() if rs.tracks[rs.selec
 for dnc=1,12 do
   renoise.tool():add_keybinding{name="Global:Paketti:Display Note Column " .. dnc,invoke=function() displayNoteColumn(dnc) end}
 end
+---------
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Reset Panning in Current Column & Row",invoke=function()
+local s=renoise.song()
+local nc=s.selected_note_column
+local currTrak=s.selected_track_index
+s.selected_track.panning_column_visible=true
+if renoise.song().selected_note_column == nil then return else 
+renoise.song().selected_note_column.panning_value = 0xFF
+end
+end}
+
+function write_effect(incoming)
+  local s = renoise.song()
+  local efc = s.selected_effect_column
+
+    if efc==nil then
+         s.selected_effect_column.number_string=incoming
+         s.selected_effect_column.amount_value=00
+      else
+      if efc.number_string==incoming and efc.amount_string=="00" then
+         s.selected_effect_column.number_string=incoming
+         s.selected_effect_column.amount_string="C0"
+      else
+         s.selected_effect_column.number_string=incoming
+         s.selected_effect_column.amount_value=00
+      end
+    end
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Volume effect 0L00 On/Off", invoke=function() 
+renoise.song().selected_effect_column_index=1
+write_effect("0L") 
+
+  if renoise.song().selected_track.type==2 or renoise.song().selected_track.type==3 or renoise.song().selected_track.type==4 then return
+else renoise.song().selected_note_column_index=1 end end} 
+------------------------------
+function writeretrig()
+  local s = renoise.song()
+  local efc = s.selected_effect_column
+  local av = renoise.song().transport.lpb * 2
+    if efc==nil then
+         renoise.song().selected_effect_column.number_string="0R"
+         renoise.song().selected_effect_column.amount_value=av
+      else
+      if efc.number_string=="0R" and efc.amount_value==av then
+         renoise.song().selected_effect_column.number_string="00"
+         renoise.song().selected_effect_column.amount_string="00"
+      else
+         renoise.song().selected_effect_column.number_string="00"
+         renoise.song().selected_effect_column.amount_value=00 end end end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Retrig 0RLPB On/Off", invoke=function() 
+renoise.song().selected_effect_column_index=1
+writeretrig() 
+  if renoise.song().selected_track.type==2 or renoise.song().selected_track.type==3 or renoise.song().selected_track.type==4 then return
+else renoise.song().selected_note_column_index=1 end end} 
+
+
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+renoise.tool():add_keybinding{name="Global:Paketti:Clone and Expand Pattern to LPB*2",invoke=function()
+local number=nil
+local numbertwo=nil
+local rs=renoise.song()
+write_bpm()
+clonePTN()
+local nol=nil
+      nol=renoise.song().selected_pattern.number_of_lines+renoise.song().selected_pattern.number_of_lines
+      renoise.song().selected_pattern.number_of_lines=nol
+
+number=renoise.song().transport.lpb*2
+if number == 1 then number = 2 end
+if number > 128 then number=128 
+renoise.song().transport.lpb=number
+  write_bpm()
+  Deselect_All()
+  MarkTrackMarkPattern()
+  MarkTrackMarkPattern()
+  ExpandSelection()
+  Deselect_All()
+  return end
+renoise.song().transport.lpb=number
+  write_bpm()
+  Deselect_All()
+  MarkTrackMarkPattern()
+  MarkTrackMarkPattern()
+  ExpandSelection()
+  Deselect_All()
+end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Clone and Shrink Pattern to LPB/2",invoke=function()
+local number=nil
+local numbertwo=nil
+local rs=renoise.song()
+write_bpm()
+clonePTN()
+Deselect_All()
+MarkTrackMarkPattern()
+MarkTrackMarkPattern()
+ShrinkSelection()
+Deselect_All()
+local nol=nil
+      nol=renoise.song().selected_pattern.number_of_lines/2
+      renoise.song().selected_pattern.number_of_lines=nol
+
+number=renoise.song().transport.lpb/2
+if number == 1 then number = 2 end
+if number > 128 then number=128 
+renoise.song().transport.lpb=number
+  write_bpm()
+return end
+renoise.song().transport.lpb=number
+  write_bpm()
+end}
+-----------------
+
+-- Columnizer, +1 / -1 / +10 / -10 on current_row, display needed column
+function columns(chg,thing)
+local song=renoise.song()
+local s=renoise.song()
+local snci=song.selected_note_column_index
+local seci=song.selected_effect_column_index
+local sst=s.selected_track
+local columns={}
+
+if ( snci > 0 ) then 
+columns[1] = s.selected_note_column.delay_value
+columns[2] = s.selected_note_column.panning_value
+columns[3] = s.selected_note_column.volume_value
+elseif ( seci > 0 ) then
+columns[4] = s.selected_effect_column.number_value
+columns[5] = s.selected_effect_column.amount_value
+end
+
+ local nc = s.selected_note_column
+ local nci = s.selected_note_column_index
+ local currPatt = s.selected_pattern_index
+ local currTrak = s.selected_track_index
+ local currLine = s.selected_line_index
+ 
+if thing == 1 then --if delay columning
+        sst.delay_column_visible=true
+        nc.delay_value = math.max(0, math.min(255, columns[thing] + chg))
+elseif thing == 2 then --if panning
+        local center_out_of_bounds=false
+        changepan(chg, center_out_of_bounds)
+elseif thing == 3 then --if volume columning
+        sst.volume_column_visible=true
+        nc.volume_value = math.max(0, math.min(128, columns[thing] + chg))
+elseif thing == 4 then --if effect number columning
+        s.selected_line.effect_columns[seci].number_value = math.max(0, math.min(255, columns[thing] + chg)) 
+elseif thing == 5 then --if effect amount columning
+        -- renoise.song().tracks[currTrak].sample_effects_column_visible=true
+        s.selected_line.effect_columns[seci].amount_value = math.max(0, math.min(255, columns[thing] + chg)) 
+else
+-- default, shows panning, delay, volume columns.
+        sst.delay_column_visible=true
+        sst.panning_column_visible=true
+        sst.volume_column_visible=true
+end
+ --nc.delay_value=(d+chg)
+ --if nc.delay_value == 0 and chg < 0 then
+  --move_up(chg)
+ --elseif nc.delay_value == 255 and chg > 0 then
+  --move_down(chg)
+ --else
+ -- nc.delay_value
+--end
+end
+
+----------
+--Shortcut for setting Panning +1/+10/-10/-1 on current_row - automatically displays the panning column.
+--Lots of help from Joule, Raul/ulneiz, Ledger, dblue! 
+function changepan(change,center_out_of_bounds)
+-- Set the behaviour when going out of bounds.
+-- If centering (to 0x40) then pan < 0 or > 0x80 will reset the new value back to center.
+-- Else just clip to the valid pan range 0x00 to 0x80. (Default behaviour)
+center_out_of_bounds = center_out_of_bounds or false
+ 
+-- Local reference to the song.
+local s = renoise.song()
+  
+-- Local reference to the selected note column.
+local nc = s.selected_note_column
+  
+-- If no valid note column is selected...
+if nc == nil then return false end
+  
+-- When triggering the function - always make panning column visible.
+s.selected_track.panning_column_visible=true
+  
+-- Store the current pan value
+local pan = nc.panning_value
+  
+-- If the pan value is empty, set the default center value (0x40)
+if pan == renoise.PatternLine.EMPTY_PANNING then pan=0x40 end
+  
+-- Apply the pan change.
+pan = pan + change
+
+-- If wrapping to center and out of bounds, reset to center.
+if center_out_of_bounds and (pan < 0x00 or pan > 0x80) then pan=0x40
+  
+-- Else...
+  else
+
+-- Clip to valid pan range.
+pan=math.min(0x80, math.max(0x00, pan))    
+end
+  
+-- If the final value ends up back at exact center then show an empty panning column instead.
+if pan==0x40 then
+   pan = renoise.PatternLine.EMPTY_PANNING end  
+  
+-- Finally shove the new value back into the note column.
+nc.panning_value = pan 
+end
+
+function columnspart2(chg,thing)
+local columns = {[4] = renoise.song().selected_effect_column.number_value,
+                 [5] = renoise.song().selected_effect_column.amount_value}
+
+ local nc = renoise.song().selected_note_column
+ local nci = renoise.song().selected_note_column_index
+
+ local currPatt = renoise.song().selected_pattern_index
+ local currTrak = renoise.song().selected_track_index
+ local currLine = renoise.song().selected_line_index
+
+if thing == 4 then --effect number column
+ renoise.song().patterns[currPatt].tracks[currTrak].lines[currLine].effect_columns[1].number_value = math.max(0, math.min(255, columns[thing] + chg)) 
+elseif thing == 5 then --effect amount column
+ renoise.song().patterns[currPatt].tracks[currTrak].lines[currLine].effect_columns[1].amount_value = math.max(0, math.min(255, columns[thing] + chg)) 
+else end
+end
+
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Increase Delay +1",invoke=function() columns(1,1) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Decrease Delay -1",invoke=function() columns(-1,1) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Increase Delay +10",invoke=function() columns(10,1) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Decrease Delay -10",invoke=function() columns(-10,1) end}
+
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Increase Delay +1 (2nd)",invoke=function() columns(1,1) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Decrease Delay -1 (2nd)",invoke=function() columns(-1,1) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Increase Delay +10 (2nd)",invoke=function() columns(10,1) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Decrease Delay -10 (2nd)",invoke=function() columns(-10,1) end}
+
+renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Increase Delay +1 x[Toggle]",invoke=function() columns(1,1) end}
+renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Decrease Delay -1 x[Toggle]",invoke=function() columns(-1,1) end}
+
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Increase Panning +1",invoke=function() columns(1,2) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Decrease Panning -1",invoke=function() columns(-1,2) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Increase Panning +10",invoke=function() columns(10,2) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Decrease Panning -10",invoke=function() columns(-10,2) end}
+
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Increase Panning +1 (2nd)",invoke=function() columns(1,2) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Decrease Panning -1 (2nd)",invoke=function() columns(-1,2) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Increase Panning +10 (2nd)",invoke=function() columns(10,2) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Decrease Panning -10 (2nd)",invoke=function() columns(-10,2) end}
+
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Increase Volume +1",invoke=function() columns(1,3) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Decrease Volume -1",invoke=function() columns(-1,3) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Increase Volume +10",invoke=function() columns(10,3) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Decrease Volume -10",invoke=function() columns(-10,3) end}
+
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Increase Effect Number +1",invoke=function() columns(1,4) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Decrease Effect Number -1",invoke=function() columnspart2(-1,4) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Increase Effect Number +10",invoke=function() columnspart2(10,4) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Decrease Effect Number -10",invoke=function() columnspart2(-10,4) end}
+
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Increase Effect Amount +1",invoke=function() columnspart2(1,5) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Decrease Effect Amount -1",invoke=function() columnspart2(-1,5) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Increase Effect Amount +10",invoke=function() columnspart2(10,5) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Decrease Effect Amount -10",invoke=function() columnspart2(-10,5) end}
+
+renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Increase Panning +1 x[Toggle]",invoke=function() columns(1,2) end}
+renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Decrease Panning -1 x[Toggle]",invoke=function() columns(-1,2) end}
+renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Increase Volume +1 x[Toggle]",invoke=function() columns(1,3) end}
+renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Decrease Volume -1 x[Toggle]",invoke=function() columns(-1,3) end}
+renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Increase Effect Number +1 x[Toggle]",invoke=function() columnspart2(1,4) end}
+renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Decrease Effect Number -1 x[Toggle]",invoke=function() columnspart2(-1,4) end}
+renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Increase Effect Amount +1 x[Toggle]",invoke=function() columnspart2(1,5) end}
+renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Decrease Effect Amount -1 x[Toggle]",invoke=function() columnspart2(-1,5) end}
+
+
 

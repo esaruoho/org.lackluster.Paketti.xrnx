@@ -273,4 +273,12 @@ renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Halve BeatSync Line"
 
 
 renoise.tool():add_menu_entry{name="--Sample Editor:Paketti..:Wipe Slices",invoke=function() wipeslices() end}
+--------------
+
+function DSPFXChain()
+renoise.app().window.active_middle_frame=renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EFFECTS end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Show DSP FX Chain",invoke=function() DSPFXChain() end}
+
+---
 
