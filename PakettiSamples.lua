@@ -1,5 +1,4 @@
 function pitchBendSampleLoader()
- 
   local selected_sample_filename = renoise.app():prompt_for_filename_to_read({"*.wav", "*.aif", "*.flac", "*.mp3", "*.aiff"}, "Paketti PitchBend Single Sample Loader")
   if selected_sample_filename ~= "" then
     -- print("File selected: " .. selected_sample_filename)
@@ -28,14 +27,18 @@ function pitchBendSampleLoader()
   end
         renoise.song().selected_sample.oversample_enabled=true
         renoise.song().selected_sample.autofade=true
-        renoise.song().selected_sample.autoseek=true
+        --renoise.song().selected_sample.autoseek=true
         renoise.song().selected_sample.interpolation_mode = 4
-        renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
+        loadnative("Audio/Effects/Native/*Instr. Macros")
+        renoise.song().selected_track.devices[2].is_maximized=false
+        on_sample_count_change()
+        --renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
+        showAutomation()
 end
 
 renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Instruments:Paketti PitchBend Single Sample Loader",invoke=function() pitchBendSampleLoader() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Paketti PitchBend Single Sample Loader", invoke=function() pitchBendSampleLoader() end}
-
+-------------
 function pitchBendMultipleSampleLoader()
   local selected_sample_filenames = renoise.app():prompt_for_multiple_filenames_to_read({"*.wav", "*.aif", "*.flac", "*.mp3", "*.aiff"}, "Paketti PitchBend Multiple Sample Loader")
   
@@ -80,11 +83,14 @@ function pitchBendMultipleSampleLoader()
         -- Set sample properties
         current_sample.oversample_enabled = true
         current_sample.autofade = true
-        current_sample.autoseek = true
+        loadnative("Audio/Effects/Native/*Instr. Macros")
+        renoise.song().selected_track.devices[2].is_maximized=false
+        --current_sample.autoseek = true
         current_sample.interpolation_mode = 4
-
+--        showAutomation()
         -- Focus on the sample editor
-        renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
+       renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
+       G01()
       else
         renoise.app():show_status("Failed to load the sample " .. filename_only)
       end
@@ -97,18 +103,16 @@ end
 
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments:Paketti PitchBend Multiple Sample Loader",invoke=function() pitchBendMultipleSampleLoader() end}
 renoise.tool():add_menu_entry{name="Disk Browser Files:Paketti..:Paketti PitchBend Multiple Sample Loader",invoke=function() pitchBendMultipleSampleLoader() end}
-
 renoise.tool():add_keybinding{name="Global:Paketti:Paketti PitchBend Multiple Sample Loader", invoke=function() pitchBendMultipleSampleLoader() end}
-
-
-renoise.tool():add_menu_entry{name="--Sample Editor:Paketti..:Sample Preferences - Autofade True, Interpolation 4, Oversample True",invoke=function() 
+-----------
+renoise.tool():add_menu_entry{name="--Sample Editor:Paketti..:Selected Sample: Autofade True, Interpolation Sinc, Oversample True",invoke=function() 
   renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].autofade=true
   renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].interpolation_mode=4
   renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].oversample_enabled=true
 
 end}
 
-
+-----------
 function selectedSampleInit()
 renoise.song().instruments[renoise.song().selected_instrument_index].macros_visible=true
 renoise.song().instruments[renoise.song().selected_instrument_index].macros[1].name="PitchCtrl"
@@ -119,8 +123,7 @@ end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Init Selected Sample (Autofade,Interpolation,Oversample)", invoke=function() 
 selectedSampleInit() end}
-
-
+---------
 function addSampleSlot(amount)
 for i=1,amount do
 renoise.song().instruments[renoise.song().selected_instrument_index]:insert_sample_at(i)
@@ -130,7 +133,6 @@ end
 renoise.tool():add_keybinding{name="Global:Paketti:Add Sample Slot to Instrument", invoke=function() addSampleSlot(1) end}
 renoise.tool():add_keybinding{name="Global:Paketti:Add 84 Sample Slots to Instrument", invoke=function() addSampleSlot(84) end}
 -------------------------------------------------------------------------------------------------------------------------------
-
 function oneshotcontinue()
   local s=renoise.song()
   local sli=s.selected_instrument_index
@@ -143,11 +145,7 @@ else s.instruments[sli].samples[ssi].oneshot=true
      s.instruments[sli].samples[ssi].new_note_action=3 end end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Set Sample to One-Shot + NNA Continue",invoke=function() oneshotcontinue() end}
-
-
-
-
-
+----------------
 function LoopState(number)
 renoise.song().selected_sample.loop_mode=number
 end
@@ -260,6 +258,7 @@ renoise.tool():add_keybinding{name="Global:Paketti:Wipe&Create Slices (64)",invo
 renoise.tool():add_keybinding{name="Global:Paketti:Wipe&Create Slices (128)",invoke=function() slicerough(128) end}
 renoise.tool():add_keybinding{name="Global:Paketti:Wipe Slices",invoke=function() wipeslices() end}
 
+renoise.tool():add_menu_entry{name="--Sample Editor:Paketti..:Wipe Slices",invoke=function() wipeslices() end}
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Wipe&Create Slices (2)",invoke=function() slicerough(2) end}
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Wipe&Create Slices (4)",invoke=function() slicerough(4) end}
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Wipe&Create Slices (8)",invoke=function() slicerough(8) end}
@@ -270,15 +269,10 @@ renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Wipe&Create Slices (
 
 renoise.tool():add_menu_entry{name="--Sample Editor:Paketti..:Double BeatSync Line",invoke=function() doubleBeatSyncLines() end}
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Halve BeatSync Line",invoke=function() halveBeatSyncLines() end}
-
-
-renoise.tool():add_menu_entry{name="--Sample Editor:Paketti..:Wipe Slices",invoke=function() wipeslices() end}
 --------------
-
 function DSPFXChain()
 renoise.app().window.active_middle_frame=renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EFFECTS end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Show DSP FX Chain",invoke=function() DSPFXChain() end}
-
 ---
 
