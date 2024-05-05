@@ -1,10 +1,11 @@
 # org.lackluster.Paketti.xrnx
-Renoise tool made with LUA scripting - multiple shortcuts + midi. Serious work in progress. 
+A suite of workflow tweaks, shortcuts, midimappings, menu entries that improve Renoise usage with keyboard, introducing new features with optimized combinations, loaders (VST,VST3,AudioUnit, Renoise Native Devices), OS-specific loaders with PitchBend Macros + PitchBend automation, Note-On to Note-Off sample copying.. Impulse Tracker features.. And so on.
 
+Always open for Requests - since they give me ideas.
 
-If you want to see screenshots or animated GIFs, check out https://imgur.com/a/JTLnZ
+Here are some outdated screenshots or animated GIFs, check out https://imgur.com/a/JTLnZ
 
-The tool is at http://renoise.com/tools/paketti
+Click on Releases to find the newest public version.
 
 The forum for discussion is at http://forum.renoise.com/index.php/topic/34661-new-tool-31-pakettir3/
 
