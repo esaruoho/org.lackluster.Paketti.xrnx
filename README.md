@@ -14,7 +14,8 @@ https://www.youtube.com/watch?v=nzbTJPvek_w
 
 ### Thanks
 
-Thanks so much to everyone who helped. There's probably tons more, but: dblue, cortex, pandabot, ffx, joule, avaruus, astu/flo, mmd(mr mark dollin) syflom, protman, ViZiON, ghostwerk, vV, Bantai, danoise, taktik, Snowrobot, mxb, jenoki, kmaki, mantrakid, aleksip and the whole Renoise community.
+Thanks so much to everyone who helped. There's probably tons more, but: 
+dBlue, cortex, joule, avaruus, astu/flo, mmd(mr mark dollin), syflom, protman, pandabot, Raul (ulneiz), ViZiON, ghostwerk, vV, Bantai, danoise, Snowrobot, ffx, taktik, mxb, jenoki, kmaki, mantrakid, aleksip, Connor_Bw, Casiino, tkna91, James_Britt, Satoi and the whole Renoise community.
 
 ### Who made it possible
 
