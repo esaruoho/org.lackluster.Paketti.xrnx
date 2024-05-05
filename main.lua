@@ -42,8 +42,13 @@ local s=renoise.song()
   local currPatt=s.selected_pattern_index
 local rightinstrument=nil
 local rightinstrument=renoise.song().selected_instrument_index-1
-s.patterns[currPatt].tracks[currTrak].lines[1].effect_columns[1].number_string="0G"
-s.patterns[currPatt].tracks[currTrak].lines[1].effect_columns[1].amount_string="01"
+  if not preferences._0G01_Loader.value then return end
+
+local line=s.patterns[currPatt].tracks[currTrak].lines[1]
+    line.note_columns[1].note_string="C-4"
+    line.note_columns[1].instrument_value=rightinstrument
+    s.patterns[currPatt].tracks[currTrak].lines[1].effect_columns[1].number_string="0G"
+    s.patterns[currPatt].tracks[currTrak].lines[1].effect_columns[1].amount_string="01"
 end
 ----
 ----------------------------------------------------------------------------------------------------------------------------------------
