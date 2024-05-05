@@ -15,7 +15,8 @@ w.lower_frame_is_visible=false
 renoise.app():show_status("Current BPM: " .. t.bpm .. " Current LPB: " .. t.lpb .. ". You are feeling fine. Playback started.")
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:EZ Maximize Spectrum", invoke=function() EZMaximizeSpectrum() end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:EZ Maximize Spectrum", invoke=function() EZMaximizeSpectrum() end}
-renoise.tool():add_menu_entry{name="Mixer:EZ Maximize Spectrum", invoke=function() EZMaximizeSpectrum() end}
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:EZ Maximize Spectrum", invoke=function() EZMaximizeSpectrum() end}
+renoise.tool():add_keybinding{name="Global:Paketti:EZ Maximize Spectrum",invoke=function() EZMaximizeSpectrum() end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:EZ Maximize Spectrum",invoke=function() EZMaximizeSpectrum() end}
+renoise.tool():add_menu_entry{name="Mixer:EZ Maximize Spectrum",invoke=function() EZMaximizeSpectrum() end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:EZ Maximize Spectrum",invoke=function() EZMaximizeSpectrum() end}
+
