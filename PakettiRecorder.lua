@@ -335,3 +335,77 @@ s.selected_instrument_index = search_empty_instrument()
 renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Record to Current Track", invoke=function() recordtocurrenttrack() end}
 renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Start Sampling (Record)", invoke=function() sample_and_to_sample_editor()
 renoise.app().window.sample_record_dialog_is_visible=true end}  
+-------------
+function recordfollow()
+local w=renoise.app().window
+local t=renoise.song().transport
+local pe=renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
+local raw=renoise.ApplicationWindow
+
+if t.playing == false then t.playing = true else end
+
+w.active_middle_frame=raw.MIDDLE_FRAME_PATTERN_EDITOR
+
+if t.edit_mode==false and t.follow_player
+then t.edit_mode=true
+t.follow_player=false
+return
+else end
+
+if t.edit_mode and t.follow_player
+then t.follow_player=false
+return
+else t.edit_mode=true
+t.follow_player=true
+w.active_middle_frame=raw.MIDDLE_FRAME_PATTERN_EDITOR
+w.lower_frame_is_visible=true
+w.upper_frame_is_visible=true
+return
+end
+
+if t.follow_player then t.follow_player=false t.edit_mode=true
+w.active_middle_frame=raw.MIDDLE_FRAME_PATTERN_EDITOR
+w.lower_frame_is_visible=true
+w.upper_frame_is_visible=true
+
+else
+t.follow_player=true
+t.edit_mode=true
+w.active_middle_frame=raw.MIDDLE_FRAME_PATTERN_EDITOR
+w.lower_frame_is_visible=true
+w.upper_frame_is_visible=true
+
+end
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Record Follow",invoke=function() recordfollow() end}
+-------------
+function simpleplayrecordfollow()
+local w=renoise.app().window
+local t=renoise.song().transport
+local pe=renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
+-- w.upper_frame_is_visible=false
+-- w.active_middle_frame=1
+-- w.lower_frame_is_visible=true  -- if lower frame is hidden, don't reshow it. 
+
+  if t.playing and t.follow_player and t.edit_mode and w.active_middle_frame==pe
+then t.follow_player=false
+     t.edit_mode=false return
+else t.follow_player=true
+     t.edit_mode=true
+     w.active_middle_frame=pe end
+
+  if t.playing==true -- if playback is on, continue playback and follow player, toggle edit, display pattern editor
+then t.follow_player=true
+     t.edit_mode=true
+     w.active_middle_frame=pe
+else t.playing=true -- if playback is off, start playback and follow player, toggle edit, display pattern editor
+     t.follow_player=true
+     t.edit_mode=true
+     w.active_middle_frame=pe end
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Simple Play Record Follow",invoke=function() simpleplayrecordfollow() end}
+renoise.tool():add_midi_mapping{name="Global:Paketti:Simple Play Record Follow",invoke=function() simpleplayrecordfollow() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Simple Play Record Follow (2nd)",invoke=function() simpleplayrecordfollow() end}
+
