@@ -361,7 +361,6 @@ else raw.lower_frame_is_visible=true end
      s.selected_track.devices[checkline].parameters[7].show_in_mixer=true
      s.selected_track.devices[checkline].is_maximized=false
   end 
- 
   if s.selected_track.devices[checkline].name=="VST: FabFilter: Pro-Q" then 
      s.selected_track.devices[checkline].parameters[206].value=1 
   end 
