@@ -1,5 +1,33 @@
+function noteOnToNoteOff(noteoffPitch)
+  -- Check if the instrument has no samples and return if so
+  if #renoise.song().instruments[renoise.song().selected_instrument_index].samples == 0 then
+    return
+  end
+
+renoise.song().instruments[renoise.song().selected_instrument_index]:insert_sample_at(2)
+renoise.song().selected_sample_index = 2
+renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index]:copy_from(renoise.song().instruments[renoise.song().selected_instrument_index].samples[1])
+renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].sample_mapping.layer=2
+renoise.song().instruments[renoise.song().selected_instrument_index].sample_mappings[2][1].sample.transpose=noteoffPitch
+renoise.song().instruments[renoise.song().selected_instrument_index].sample_mappings[2][1].sample.name = renoise.song().instruments[renoise.song().selected_instrument_index].sample_mappings[1][1].sample.name
+
+renoise.song().selected_sample_index=1
+end
+
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy Sample in Note-On to Note-Off Layer +24",invoke=function() noteOnToNoteOff(24) end}
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy Sample in Note-On to Note-Off Layer +12",invoke=function() noteOnToNoteOff(12) end}
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy Sample in Note-On to Note-Off Layer",invoke=function() noteOnToNoteOff(0) end}
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy Sample in Note-On to Note-Off Layer -12",invoke=function() noteOnToNoteOff(-12) end}
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy Sample in Note-On to Note-Off Layer -24",invoke=function() noteOnToNoteOff(-24) end}
+
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Copy Sample in Note-On to Note-Off Layer +24",invoke=function() noteOnToNoteOff(24) end}
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Copy Sample in Note-On to Note-Off Layer +12",invoke=function() noteOnToNoteOff(12) end}
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Copy Sample in Note-On to Note-Off Layer",invoke=function() noteOnToNoteOff(0) end}
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Copy Sample in Note-On to Note-Off Layer -12",invoke=function() noteOnToNoteOff(-12) end}
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Copy Sample in Note-On to Note-Off Layer -24",invoke=function() noteOnToNoteOff(-24) end}
 
 
+--------
 
 function Experimental()
     local function read_file(path)
@@ -42,25 +70,6 @@ function Experimental()
     check_and_execute(config_path, bash_script)
 end
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-function Experimental2()
-renoise.app():show_status("You did something..")
-
-end
-
 renoise.tool():add_menu_entry {name = "Main Menu:Tools:Experimental",invoke = function() Experimental() end}
 
 
@@ -81,10 +90,8 @@ renoise.song().selected_track.devices[i].is_active=true
 end
 end
 
-renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Bypass all Devices on Channel", invoke=function() effectbypass() end}
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Enable all Devices on Channel", invoke=function() effectenable() end}
-renoise.tool():add_menu_entry{name="Pattern Matrix:Paketti..:Bypass all Devices on Channel", invoke=function() effectbypass() end}
-renoise.tool():add_menu_entry{name="Pattern Matrix:Paketti..:Enable all Devices on Channel", invoke=function() effectenable() end}
+renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Bypass All Devices on Channel", invoke=function() effectbypass() end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Enable All Devices on Channel", invoke=function() effectenable() end}
 renoise.tool():add_menu_entry{name="Mixer:Paketti..:Bypass All Devices on Channel", invoke=function() effectbypass() end}
 renoise.tool():add_menu_entry{name="Mixer:Paketti..:Enable All Devices on Channel", invoke=function() effectenable() end}
 
@@ -404,8 +411,6 @@ end
 
 -- Menu Entries
 -- Pattern Matrix
-renoise.tool():add_menu_entry{name="Pattern Matrix:Paketti..:Bypass EFX (Write to Pattern)", invoke=function() effectbypasspattern()  end}
-renoise.tool():add_menu_entry{name="Pattern Matrix:Paketti..:Enable EFX (Write to Pattern)", invoke=function() effectenablepattern() end}
 -- Pattern Sequencer
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Bypass EFX (Write to Pattern)", invoke=function() effectbypasspattern() end}
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Enable EFX (Write to Pattern)", invoke=function() effectenablepattern()  end}
@@ -706,16 +711,6 @@ end end end}
 
 renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Record To Current", invoke=function() recordtocurrenttrack() end}
 ----------------------------------------------------------------------------------------------------------
-function soloKey()
-local s=renoise.song()
-  s.tracks[renoise.song().selected_track_index]:solo()
-    if s.transport.playing==false then renoise.song().transport.playing=true
-    end
-
-    s.transport.follow_player=true
-    if renoise.app().window.active_middle_frame~=1 then renoise.app().window.active_middle_frame=1 end
-end
-
 --esa- 2nd keybind for Record Toggle ON/OFF  with effect_column reading
 function RecordToggle()
  local a=renoise.app()
@@ -724,7 +719,7 @@ function RecordToggle()
  local currentstep=t.edit_step
 --if has notifier, dump notifier, if no notifier, add notifier
  if t.edit_mode then
-    t.edit_mode = false
+    t.edit_mode=false
  if t.edit_step==0 then
     t.edit_step=1
  else
@@ -872,112 +867,6 @@ show_manual (
   )
 end}
 
-renoise.tool():add_keybinding{
-name="Pattern Editor:Paketti:Show Automation", invoke = function()   renoise.app().window.active_lower_frame = renoise.ApplicationWindow.LOWER_FRAME_TRACK_AUTOMATION
- end}
- 
-renoise.tool():add_keybinding{
-name="Mixer:Paketti:Show Automation", invoke = function()   renoise.app().window.active_lower_frame = renoise.ApplicationWindow.LOWER_FRAME_TRACK_AUTOMATION
- end}
-
-renoise.tool():add_keybinding{
-name="Instrument Box:Paketti:Show Automation", invoke = function()   renoise.app().window.active_lower_frame = renoise.ApplicationWindow.LOWER_FRAME_TRACK_AUTOMATION
- end}
-
--------------------------------------------------------
-function expCurveVol()
-  local song = renoise.song()
-  local length = song.patterns[song.selected_pattern_index].number_of_lines
-  local curve = 1.105
-  
-  loadnative("Audio/Effects/Native/Gainer")
-  local gainer = song.selected_track.devices[2]
-  local gain_parameter = gainer.parameters[1]  -- Gain parameter
-  local track_index = song.selected_track_index
-  local envelope = song.patterns[song.selected_pattern_index].tracks[track_index]:create_automation(gain_parameter)
-  envelope:clear()
-
-  -- Define the number of points based on the pattern length
-  local total_points = length <= 16 and 16 or length  -- If pattern length is 16 or fewer, use 16 points; otherwise, use the length
-
-  local max_exp_value = math.pow(curve, length - 1)  -- Calculate the maximum value for normalization
-
-  -- Insert points for detailed automation
-  for i = 0, total_points - 1 do
-    local position = i / (total_points - 1) * (length - 1)  -- Scale position in the range of 0 to length-1
-    local expValue = math.pow(curve, position)
-    local normalizedValue = (expValue - 1) / (max_exp_value - 1)
-    envelope:add_point_at(math.floor(position + 1), math.max(0, normalizedValue))  -- Ensure the point is within valid range
-  end
-
-  song.transport.edit_mode = false
-  renoise.app().window.active_lower_frame = renoise.ApplicationWindow.LOWER_FRAME_TRACK_AUTOMATION
-end
-
-
-function expReverseCurveVol()
-  local song = renoise.song()
-  local length = song.patterns[song.selected_pattern_index].number_of_lines
-  local curve = 1.105
-  
-  loadnative("Audio/Effects/Native/Gainer")
-  local gainer = song.selected_track.devices[2]
-  local gain_parameter = gainer.parameters[1]  -- Gain parameter
-  local track_index = song.selected_track_index
-  local envelope = song.patterns[song.selected_pattern_index].tracks[track_index]:create_automation(gain_parameter)
-  envelope:clear()
-
-  -- Define the number of points based on the pattern length
-  local total_points = length <= 16 and 16 or length  -- Use 16 points for patterns of 16 rows or fewer
-
-  local max_exp_value = math.pow(curve, length - 1)  -- Calculate the maximum value for normalization
-
-  -- Insert points for detailed automation
-  for i = 0, total_points - 1 do
-    local position = i / (total_points - 1) * (length - 1)  -- Scale position in the range of 0 to length-1
-    local expValue = math.pow(curve, (length - 1) - position)  -- Reverse the curve calculation
-    local normalizedValue = (expValue - 1) / (max_exp_value - 1)
-    envelope:add_point_at(math.floor(position + 1), math.max(0, normalizedValue))  -- Ensure the point is within valid range
-  end
-
-  song.transport.edit_mode = false
-  renoise.app().window.active_lower_frame = renoise.ApplicationWindow.LOWER_FRAME_TRACK_AUTOMATION
-end
-
-
-renoise.tool():add_keybinding{name="Global:Paketti:ExpCurveVol", invoke = function() expCurveVol() end}
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:ExpCurveVol", invoke=function() expCurveVol() end}
-renoise.tool():add_menu_entry{name="Pattern Matrix:Paketti..:ExpCurveVol", invoke=function() expCurveVol() end}
-renoise.tool():add_menu_entry{name="Track Automation:Paketti..:ExpCurveVol", invoke=function() expCurveVol() end}
-renoise.tool():add_menu_entry{name="Track Automation List:Paketti..:ExpCurveVol", invoke=function() expCurveVol() end}
-
-renoise.tool():add_keybinding{name="Global:Paketti:ExpReverseCurveVol", invoke=function() expReverseCurveVol() end}
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:ExpReverseCurveVol", invoke=function() expReverseCurveVol() end}
-renoise.tool():add_menu_entry{name="Pattern Matrix:Paketti..:ExpReverseCurveVol", invoke=function() expReverseCurveVol() end}
-renoise.tool():add_menu_entry{name="Track Automation:Paketti..:ExpReverseCurveVol", invoke=function() expReverseCurveVol() end}
-renoise.tool():add_menu_entry{name="Track Automation List:Paketti..:ExpReverseCurveVol", invoke=function() expReverseCurveVol() end}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ---------------------------
 renoise.tool():add_keybinding{name="Sample Editor:Paketti:Disk Browser Focus",invoke=function()
@@ -998,127 +887,8 @@ renoise.app().window:select_preset(8) end}
 
 renoise.tool():add_keybinding{name="Global:Paketti:Contour Shuttle Disk Browser Focus",invoke=function() renoise.app().window:select_preset(8) end}
 renoise.tool():add_midi_mapping{name="Pattern Editor:Paketti:Disk Browser Focus",invoke=function() renoise.app().window:select_preset(8) end}
-
-
-
-
-
-
 ------------------------------------------------------------------------------------------------
---- Keybinds
---vV's wonderful sample keyzone noteon/noteoff copier + octave transposition for note-off:
-local NOTE_ON = renoise.Instrument.LAYER_NOTE_ON
-local NOTE_OFF = renoise.Instrument.LAYER_NOTE_OFF
-
-local function copy_note_layers(source_layer,target_layer,offset)
-  local instrument = renoise.song().selected_instrument_index
-  
-  --delete target layers prior to copying (to prevent overlays)
-  if #renoise.song().instruments[instrument].sample_mappings[target_layer] > 0 then
-    --Note that when using the delete_sample_mapping, the index is changing on-the-fly
-    --So you have to remove the mappings from the last to the first entry instead of vice versa.
-    --Else you get errors half-way.
-    for i = #renoise.song().instruments[instrument].sample_mappings[target_layer],1,-1  do
-      renoise.song().instruments[instrument]:delete_sample_mapping_at(target_layer, i)
-    end
-  end
-  
-  for i = 1,#renoise.song().instruments[instrument].sample_mappings[source_layer] do
-
-    local base_note = renoise.song().instruments[instrument].sample_mappings[source_layer][i].base_note
-    local map_velocity_to_volume = renoise.song().instruments[instrument].sample_mappings[source_layer][i].map_velocity_to_volume
-    local note_range = renoise.song().instruments[instrument].sample_mappings[source_layer][i].note_range
-    local sample_index = renoise.song().instruments[instrument].sample_mappings[source_layer][i].sample
---    local use_envelopes = renoise.song().instruments[instrument].sample_mappings[source_layer][i].use_envelopes
-    local velocity_range = renoise.song().instruments[instrument].sample_mappings[source_layer][i].velocity_range
-    local oct_base_note=nil
-    oct_base_note=base_note+offset
-    renoise.song().instruments[instrument]:insert_sample_mapping(target_layer, sample_index,oct_base_note,note_range,velocity_range)
-   end
-end
-
-local function norm() copy_note_layers(NOTE_ON, NOTE_OFF, 0) end
-local function octdn() copy_note_layers(NOTE_ON, NOTE_OFF, 12) end
-local function octup() copy_note_layers(NOTE_ON, NOTE_OFF, -12) end
-local function octdntwo() copy_note_layers(NOTE_ON, NOTE_OFF, 24) end
-local function octuptwo() copy_note_layers(NOTE_ON, NOTE_OFF, -24) end
-
-renoise.tool():add_menu_entry{name="--Sample Mappings:Paketti..:Copy Note-On to Note-Off Layer +12", invoke = octup}
-renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy Note-On to Note-Off Layer +24", invoke = octuptwo}
-renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy Note-On to Note-Off Layer", invoke = norm}
-renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy Note-On to Note-Off Layer -12", invoke = octdn}
-renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy Note-On to Note-Off Layer -24", invoke = octdntwo}
-
-
-
-local NOTE_ON = renoise.Instrument.LAYER_NOTE_ON
-local NOTE_OFF = renoise.Instrument.LAYER_NOTE_OFF
-
-local function copy_note_layers(source_layer, target_layer, offset)
-  local instrument_index = renoise.song().selected_instrument_index
-  local instrument = renoise.song():instrument(instrument_index) -- Get the instrument object
-  
-  -- Delete target layers prior to copying
-  if #instrument.sample_mappings[target_layer] > 0 then
-    for i = #instrument.sample_mappings[target_layer], 1, -1 do
-      instrument:delete_sample_mapping_at(target_layer, i)
-    end
-  end
-  
-  -- Copy mappings from source to target layer
-  for _, mapping in ipairs(instrument.sample_mappings[source_layer]) do
-    local oct_base_note = mapping.base_note + offset
-    instrument:insert_sample_mapping(target_layer, mapping.sample, oct_base_note, mapping.note_range, mapping.velocity_range)
-  end
-end
-
--- Utility functions for different offsets
-function norm() copy_note_layers(NOTE_ON, NOTE_OFF, 0) end
-function octdn() copy_note_layers(NOTE_ON, NOTE_OFF, 12) end
-function octup() copy_note_layers(NOTE_ON, NOTE_OFF, -12) end
-function octdntwo() copy_note_layers(NOTE_ON, NOTE_OFF, 24) end
-function octuptwo() copy_note_layers(NOTE_ON, NOTE_OFF, -24) end
-
--- Adding menu entries
-renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy1 Note-On to Note-Off Layer", invoke = function() norm() 
-end}
-renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy1 Note-On to Note-Off Layer +12", invoke = function() octup() 
-end}
-renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy1 Note-On to Note-Off Layer +24", invoke = function() octuptwo() end}
-renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy1 Note-On to Note-Off Layer -12", invoke = function() octdn() end}
-renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy1 Note-On to Note-Off Layer -24", invoke = function() octdntwo() end}
-
-
 ------ inspect
-function inspectLayers()
-print("InspectLayers function called")
-local instrument_index = renoise.song().selected_instrument_index
-local instrument = renoise.song():instrument(instrument_index)
-
--- Iterate over all sample mappings in the instrument
-for _, mapping in ipairs(instrument.sample_mappings) do
-    -- Check if the mapping is for the NOTE_ON layer
-    if mapping.layer == renoise.Instrument.LAYER_NOTE_ON then
-        print("Found a NOTE_ON mapping:")
-        print("  Sample Index: " .. mapping.sample_index)
-        print("  Base Note: " .. mapping.base_note)
-        print("  Note Range: " .. table.concat(mapping.note_range, ", "))
-        print("  Velocity Range: " .. table.concat(mapping.velocity_range, ", "))
-    end
-    
-    -- Check if the mapping is for the NOTE_OFF layer
-    if mapping.layer == renoise.Instrument.LAYER_NOTE_OFF then
-        print("Found a NOTE_OFF mapping:")
-        print("  Sample Index: " .. mapping.sample_index)
-        print("  Base Note: " .. mapping.base_note)
-        print("  Note Range: " .. table.concat(mapping.note_range, ", "))
-        print("  Velocity Range: " .. table.concat(mapping.velocity_range, ", "))
-    end
-end
-end
-renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Inspect NoteON NoteOFF", invoke = function() inspectLayers()
-end
-}
 
 function writeToClipboard(text)
     -- Using AppleScript to handle clipboard operations
@@ -1212,7 +982,73 @@ delay(5)
 writeToClipboard("∿") end}
 
 ----------
+function pattern_line_notifier(pos) --here
+  local colnumber=nil
+  local countline=nil
+  local count=nil
+--  print (pos.pattern)
+--  print (pos.track)
+--  print (pos.line)
 
+local s=renoise.song() 
+local t=s.transport
+if t.edit_step==0 then 
+count=s.selected_note_column_index+1
+
+if count == s.tracks[s.selected_track_index].visible_note_columns then s.selected_note_column_index=count return end
+if count > s.tracks[s.selected_track_index].visible_note_columns then 
+local slicount=nil
+slicount=s.selected_line_index+1 
+if slicount > s.patterns[s.selected_pattern_index].number_of_lines
+then 
+s.selected_line_index=s.patterns[s.selected_pattern_index].number_of_lines end
+count=1 
+s.selected_note_column_index=count return
+else s.selected_note_column_index=count return end
+end
+
+countline=s.selected_line_index+1---1+renoise.song().transport.edit_step
+   if t.edit_step>1 then
+   countline=countline-1
+   else countline=s.selected_line_index end
+   --print ("countline is selected line index +1" .. countline)
+   --print ("editstep" .. renoise.song().transport.edit_step)
+   if countline > s.patterns[s.selected_pattern_index].number_of_lines
+   then countline=1
+   end
+   s.selected_line_index=countline
+ 
+   colnumber=s.selected_note_column_index+1
+   if colnumber > s.tracks[s.selected_track_index].visible_note_columns then
+   s.selected_note_column_index=1
+   return end
+  s.selected_note_column_index=colnumber end
+  
+function startcolumncycling(number) -- here
+local s=renoise.song()
+  if s.patterns[s.selected_pattern_index]:has_line_notifier(pattern_line_notifier) 
+then s.patterns[s.selected_pattern_index]:remove_line_notifier(pattern_line_notifier)
+ renoise.app():show_status(number .. " Column Cycle Keyjazz Off")
+else s.patterns[s.selected_pattern_index]:add_line_notifier(pattern_line_notifier)
+ renoise.app():show_status(number .. " Column Cycle Keyjazz On") end
+end
+
+for cck=1,12 do
+renoise.tool():add_keybinding{name="Global:Paketti:Column Cycle Keyjazz " .. cck,invoke=function() displayNoteColumn(cck) startcolumncycling(cck) end}
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Start/Stop Column Cycling",invoke=function() startcolumncycling() 
+  if renoise.song().patterns[renoise.song().selected_pattern_index]:has_line_notifier(pattern_line_notifier)
+then renoise.app():show_status("Column Cycle Keyjazz On")
+else renoise.app():show_status("Column Cycle Keyjazz Off") end end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Column Cycle Keyjazz 01_Special",invoke=function() 
+displayNoteColumn(12) 
+GenerateDelayValue()
+renoise.song().transport.edit_mode=true
+renoise.song().transport.edit_step=0
+renoise.song().selected_note_column_index=1
+startcolumncycling(12) end}
 
 ---------------------------
 function Ding()
