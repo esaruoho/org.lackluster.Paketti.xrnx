@@ -257,23 +257,6 @@ function finalrecord()
   end
   end
 
-renoise.tool():add_midi_mapping{name="Paketti:Record to Current Track x[Toggle]", invoke=function() 
-  recordtocurrenttrack()
-  local t=renoise.song().transport
-  if t.playing==false then t.playing=true end
-  t.loop_block_enabled=false
-  t.follow_player=true
-  renoise.app().window.active_lower_frame=2
-  renoise.app().window.lower_frame_is_visible=true
-  -- Uncomment and refine these for specific playback position control if needed:
-  -- local startpos = t.playback_pos  
-  -- startpos.line = renoise.song().selected_line_index
-  -- startpos.sequence = renoise.song().selected_sequence_index
-  -- t.playback_pos = startpos
-  -- t:start(renoise.Transport.PLAYMODE_CONTINUE_PATTERN)
-end}
-
-
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Record to Current Track", invoke=function() recordtocurrenttrack() end}
 renoise.tool():add_menu_entry{name="Mixer:Paketti..:Record to Current Track", invoke=function() recordtocurrenttrack() end}
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Record to Current Track", invoke=function() recordtocurrenttrack() end}
@@ -406,6 +389,5 @@ else t.playing=true -- if playback is off, start playback and follow player, tog
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Simple Play Record Follow",invoke=function() simpleplayrecordfollow() end}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Simple Play Record Follow",invoke=function() simpleplayrecordfollow() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Simple Play Record Follow (2nd)",invoke=function() simpleplayrecordfollow() end}
 

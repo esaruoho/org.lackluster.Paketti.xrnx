@@ -1480,9 +1480,6 @@ renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Decrease D
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Increase Delay +10 (2nd)",invoke=function() columns(10,1) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Decrease Delay -10 (2nd)",invoke=function() columns(-10,1) end}
 
-renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Increase Delay +1 x[Toggle]",invoke=function() columns(1,1) end}
-renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Decrease Delay -1 x[Toggle]",invoke=function() columns(-1,1) end}
-
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Increase Panning +1",invoke=function() columns(1,2) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Decrease Panning -1",invoke=function() columns(-1,2) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Increase Panning +10",invoke=function() columns(10,2) end}
@@ -1507,15 +1504,4 @@ renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Increase E
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Decrease Effect Amount -1",invoke=function() columnspart2(-1,5) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Increase Effect Amount +10",invoke=function() columnspart2(10,5) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Decrease Effect Amount -10",invoke=function() columnspart2(-10,5) end}
-
-renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Increase Panning +1 x[Toggle]",invoke=function() columns(1,2) end}
-renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Decrease Panning -1 x[Toggle]",invoke=function() columns(-1,2) end}
-renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Increase Volume +1 x[Toggle]",invoke=function() columns(1,3) end}
-renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Decrease Volume -1 x[Toggle]",invoke=function() columns(-1,3) end}
-renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Increase Effect Number +1 x[Toggle]",invoke=function() columnspart2(1,4) end}
-renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Decrease Effect Number -1 x[Toggle]",invoke=function() columnspart2(-1,4) end}
-renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Increase Effect Amount +1 x[Toggle]",invoke=function() columnspart2(1,5) end}
-renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Decrease Effect Amount -1 x[Toggle]",invoke=function() columnspart2(-1,5) end}
-
-
 

@@ -1,6 +1,5 @@
 -- Shortcuts 2nd / 3rds
 -- 
-
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Keep Sequence Sorted False",invoke=function() renoise.song().sequencer.keep_sequence_sorted=false end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Keep Sequence Sorted True",invoke=function() renoise.song().sequencer.keep_sequence_sorted=true end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Keep Sequence Sorted Toggle",invoke=function() 
@@ -108,7 +107,6 @@ then renoise.song().transport.playing = false
 else renoise.song().transport.playing = true end end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Simple Play",invoke=function() simpleplay() end}
-renoise.tool():add_midi_mapping  {name="Global:Paketti:Simple Play",invoke=function() simpleplay() end}
 ---------
 -- Metronome On/Off for keyboard shortcut and midibind.
 function MetronomeOff()

@@ -27,14 +27,6 @@ renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Switch to Automation"
 renoise.tool():add_keybinding{name="Pattern Matrix:Paketti:Switch to Automation",invoke=function() showAutomation() end}
 renoise.tool():add_keybinding{name="Mixer:Paketti:Switch to Automation",invoke=function() showAutomation() end}
 
-renoise.tool():add_midi_mapping{name="Global:Paketti:Switch to Automation",invoke=function() 
-  local w=renoise.app().window
-  local raw=renoise.ApplicationWindow
-if raw.MIDDLE_FRAME_MIXER == false and w.active_lower_frame == raw.LOWER_FRAME_TRACK_AUTOMATION 
-then w.active_middle_frame=raw.MIDDLE_FRAME_MIXER return
-else w.active_middle_frame=raw.MIDDLE_FRAME_MIXER end
-showAutomation() end}
-
 renoise.tool():add_keybinding{
 name="Pattern Editor:Paketti:Show Automation",invoke=function() renoise.app().window.active_lower_frame=renoise.ApplicationWindow.LOWER_FRAME_TRACK_AUTOMATION
  end}

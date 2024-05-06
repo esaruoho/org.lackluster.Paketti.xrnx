@@ -190,8 +190,6 @@ t.loop_pattern = false
 t.loop_block_enabled=false
 t:start(renoise.Transport.PLAYMODE_RESTART_PATTERN)
 end
---renoise.tool():add_midi_mapping{name="Global:Paketti:Start Playback from Cursor Row x[Toggle]",  invoke=function() ImpulseTrackerPlaySong() end}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Start Playback x[Toggle]",  invoke=function() ImpulseTrackerPlaySong() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker F5 Start Playback", invoke=function() ImpulseTrackerPlaySong() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker F5 Start Playback (2nd)", invoke=function() ImpulseTrackerPlaySong() end}
 
@@ -239,7 +237,6 @@ t.loop_pattern=false
 t.loop_block_enabled=false
 end
 
-renoise.tool():add_midi_mapping{name="Global:Paketti:Impulse Tracker F8 Stop Playback (Panic) x[Toggle]",  invoke=function() ImpulseTrackerStop() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker F8 Stop Playback (Panic)", invoke=function() ImpulseTrackerStop()  end}
 renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker F8 Stop Playback (Panic) (2nd)", invoke=function() ImpulseTrackerStop() end}
 
@@ -342,9 +339,6 @@ else
 t:trigger_sequence(s.selected_sequence_index-1) end
   end
 end
-
-renoise.tool():add_midi_mapping{name="Global:Paketti:Impulse Tracker Next Pattern x[Toggle]", invoke=function() ImpulseTrackerNextPattern() end}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Impulse Tracker Previous Pattern x[Toggle]", invoke=function() ImpulseTrackerPrevPattern() end}
 
 renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker Next Pattern", invoke=function() ImpulseTrackerNextPattern() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker Previous Pattern", invoke=function() ImpulseTrackerPrevPattern() end}

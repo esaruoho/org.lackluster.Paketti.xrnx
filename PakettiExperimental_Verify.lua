@@ -501,18 +501,6 @@ renoise.song().patterns[renoise.song().selected_pattern_index].tracks[renoise.so
 end
 end
 
-function ploo()
-local rs=renoise.song()
-local n_instruments = #rs.instruments
-local src_inst_i = rs.selected_instrument_index
-local src_inst = rs:instrument(src_inst_i)
-
-rs:insert_instrument_at(n_instruments)
-rs.selected_instrument_index = n_instruments
-
-rs.selected_instrument:copy_from(src_inst)
-end
-
 --This makes sure that when you start Renoise, it switches to preset#1. 
 --You will have to actually feed information to Config.XML to get to the specified settings. The settings go like this
 --Upper Layer = visible.
@@ -548,7 +536,6 @@ if not renoise.tool().app_new_document_observable:has_notifier(startup_)
    else renoise.tool().app_new_document_observable:remove_notifier(startup_)
 end
 --------------------------------------------------------------------------------
-
 function PakettiCapsLockNoteOffNextPtn()   
 local s=renoise.song()
 local wrapping=s.transport.wrapped_pattern_edit
@@ -733,6 +720,40 @@ function RecordToggle()
 end
 end
 ----------------------------------------
+function cycle_upper_frame()
+  -- dBlue's cycle middle frame -explanation system thing
+  -- Populate this table with all the frames you wish to cycle through.
+  -- Reference: Renoise.Application.API.lua
+  local frames = {
+    renoise.ApplicationWindow.UPPER_FRAME_TRACK_SCOPES,
+    renoise.ApplicationWindow.UPPER_FRAME_MASTER_SPECTRUM
+  }
+  -- Get the active frame ID.
+  local active_frame = renoise.app().window.active_upper_frame
+  
+  -- Try to locate the frame ID within our table.
+  local index = -1
+  for i = 1, #frames do
+    if frames[i] == active_frame then
+      index = i
+      break
+    end
+  end
+  
+  -- If the frame ID is in our list, cycle to the next one.
+  if index > -1 then
+    index = index + 1
+    if index > #frames then
+      index = 1
+    end
+  -- Else, default to the first one.
+  else
+    index = 1
+  end
+  
+  renoise.app().window.active_upper_frame = frames[index]
+end
+----------------------------------------
 function cycle_middle_frame()
   -- dBlue's cycle middle frame -explanation system thing
   -- Populate this table with all the frames you wish to cycle through.
@@ -771,44 +792,7 @@ function cycle_middle_frame()
     index = 1
   end
   
-  -- Show the frame.
   renoise.app().window.active_middle_frame = frames[index]
-end
-----------------------------------------
-
-function cycle_upper_frame()
-  -- dBlue's cycle middle frame -explanation system thing
-  -- Populate this table with all the frames you wish to cycle through.
-  -- Reference: Renoise.Application.API.lua
-  local frames = {
-    renoise.ApplicationWindow.UPPER_FRAME_TRACK_SCOPES,
-    renoise.ApplicationWindow.UPPER_FRAME_MASTER_SPECTRUM
-  }
-  -- Get the active frame ID.
-  local active_frame = renoise.app().window.active_upper_frame
-  
-  -- Try to locate the frame ID within our table.
-  local index = -1
-  for i = 1, #frames do
-    if frames[i] == active_frame then
-      index = i
-      break
-    end
-  end
-  
-  -- If the frame ID is in our list, cycle to the next one.
-  if index > -1 then
-    index = index + 1
-    if index > #frames then
-      index = 1
-    end
-  -- Else, default to the first one.
-  else
-    index = 1
-  end
-  
-  -- Show the frame.
-  renoise.app().window.active_upper_frame = frames[index]
 end
 ----------------------------------------
 function cycle_lower_frame()
@@ -842,38 +826,33 @@ function cycle_lower_frame()
     index = 1
   end
   
-  -- Show the frame.
   renoise.app().window.active_lower_frame = frames[index]
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:dBlue Cycle Middle Frame", invoke=function() cycle_middle_frame() end}
-renoise.tool():add_keybinding{name="Global:Paketti:dBlue Cycle Upper Frame", invoke=function() cycle_upper_frame() end}
-renoise.tool():add_keybinding{name="Global:Paketti:dBlue Cycle Lower Frame", invoke=function() cycle_lower_frame() end}
+renoise.tool():add_keybinding{name="Global:Paketti:dBlue Cycle 1 Upper Frame", invoke=function() cycle_upper_frame() end}
+renoise.tool():add_keybinding{name="Global:Paketti:dBlue Cycle 2 Middle Frame", invoke=function() cycle_middle_frame() end}
+renoise.tool():add_keybinding{name="Global:Paketti:dBlue Cycle 3 Lower Frame", invoke=function() cycle_lower_frame() end}
 --------------------------------------------------------------------------------------------
-require "FormulaDeviceManual"
+require "Research/FormulaDeviceManual"
 
 renoise.tool():add_keybinding{name="Global:Paketti:FormulaDevice", invoke=function()  
 renoise.app().window.lower_frame_is_visible=true
 renoise.app().window.active_lower_frame=1
 renoise.song().tracks[renoise.song().selected_track_index]:insert_device_at("Audio/Effects/Native/*Formula", 2)  
-local infile = io.open( "FormulaDeviceXML.txt", "rb" )
+local infile = io.open( "Research/FormulaDeviceXML.txt", "rb" )
 local indata = infile:read( "*all" )
 renoise.song().tracks[renoise.song().selected_track_index].devices[2].active_preset_data = indata
 infile:close()
 
 show_manual (
     "Formula Device Documentation", -- manual dialog title
-    "FormulaDevice.txt" -- the textfile which contains the manual
+    "Research/FormulaDevice.txt" -- the textfile which contains the manual
   )
 end}
 
 
 ---------------------------
 renoise.tool():add_keybinding{name="Sample Editor:Paketti:Disk Browser Focus",invoke=function()
-renoise.app().window.lock_keyboard_focus=false
-renoise.app().window:select_preset(7) end}
-
-renoise.tool():add_midi_mapping{name="Sample Editor:Paketti:Disk Browser Focus",invoke=function()
 renoise.app().window.lock_keyboard_focus=false
 renoise.app().window:select_preset(7) end}
 
@@ -886,8 +865,25 @@ renoise.app().window.lock_keyboard_focus=false
 renoise.app().window:select_preset(8) end}
 
 renoise.tool():add_keybinding{name="Global:Paketti:Contour Shuttle Disk Browser Focus",invoke=function() renoise.app().window:select_preset(8) end}
-renoise.tool():add_midi_mapping{name="Pattern Editor:Paketti:Disk Browser Focus",invoke=function() renoise.app().window:select_preset(8) end}
 ------------------------------------------------------------------------------------------------
+function G01()
+local s=renoise.song()
+  local currTrak=s.selected_track_index
+  local currPatt=s.selected_pattern_index
+local rightinstrument=nil
+local rightinstrument=renoise.song().selected_instrument_index-1
+  if not preferences._0G01_Loader.value then return end
+
+local line=s.patterns[currPatt].tracks[currTrak].lines[1]
+    line.note_columns[1].note_string="C-4"
+    line.note_columns[1].instrument_value=rightinstrument
+    s.patterns[currPatt].tracks[currTrak].lines[1].effect_columns[1].number_string="0G"
+    s.patterns[currPatt].tracks[currTrak].lines[1].effect_columns[1].amount_string="01"
+end
+----
+
+
+
 ------ inspect
 
 function writeToClipboard(text)
@@ -904,6 +900,26 @@ function writeToClipboard(text)
     end
 end
 ---------
+function move_up(chg)
+local sindex=renoise.song().selected_line_index
+local s= renoise.song()
+local note=s.selected_note_column
+--This switches currently selected row but doesn't 
+--move the note
+--s.selected_line_index = (sindex+chg)
+-- moving note up, applying correct delay value and moving cursor up goes here
+end
+--movedown
+function move_down(chg)
+local sindex=renoise.song().selected_line_index
+local s= renoise.song()
+--This switches currently selected row but doesn't 
+--move the note
+--s.selected_line_index = (sindex+chg)
+-- moving note down, applying correct delay value and moving cursor down goes here
+end
+
+
 --Note, does not currently work because Phrase Line Index is not read.
 function Phrplusdelay(chg)
  local d = renoise.song().selected_note_column.delay_value
