@@ -98,20 +98,21 @@ w.upper_frame_is_visible=true
 w.active_upper_frame=2
 return else  end
 
-if w.upper_frame_is_visible == true then w.active_upper_frame = raw.UPPER_FRAME_TRACK_SCOPES 
+if w.upper_frame_is_visible == true then 
+-- w.active_upper_frame = raw.UPPER_FRAME_TRACK_SCOPES 
 else return end
 
 if w.active_middle_frame==raw.MIDDLE_FRAME_PATTERN_EDITOR and w.lower_frame_is_visible==false and w.pattern_advanced_edit_is_visible==false and w.upper_frame_is_visible==false then
 w.upper_frame_is_visible=true
-w.active_upper_frame=raw.UPPER_FRAME_TRACK_SCOPES
+--w.active_upper_frame=raw.UPPER_FRAME_TRACK_SCOPES
 w.disk_browser_is_visible=true return
 else end
 
-if w.active_upper_frame == raw.UPPER_FRAME_TRACK_SCOPES and w.upper_frame_is_visible==true then 
---w.active_upper_frame = renoise.ApplicationWindow.UPPER_FRAME_MASTER_SPECTRUM 
---switching between trackscopes + master spectrum is not preferred anymore by this user
-return 
-else w.active_upper_frame = raw.UPPER_FRAME_TRACK_SCOPES end
+--if w.active_upper_frame == raw.UPPER_FRAME_TRACK_SCOPES and w.upper_frame_is_visible==true then 
+----w.active_upper_frame = renoise.ApplicationWindow.UPPER_FRAME_MASTER_SPECTRUM 
+----switching between trackscopes + master spectrum is not preferred anymore by this user
+--return 
+--else w.active_upper_frame = raw.UPPER_FRAME_TRACK_SCOPES end
 
 s.selected_instrument.active_tab=1
 --w.active_upper_frame =renoise.ApplicationWindow.UPPER_FRAME_TRACK_SCOPES
@@ -149,7 +150,7 @@ local raw=renoise.ApplicationWindow
 --end
 --w.lower_frame_is_visible=true
 --w.upper_frame_is_visible=true
-w.active_upper_frame=1 -- Set to Disk Browser
+--w.active_upper_frame=1 -- Force-sets to Track Scopes.
 --w.active_lower_frame =3 -- Set to Instrument Settings
 --w.lock_keyboard_focus=true
 --w.pattern_matrix_is_visible=false
@@ -271,7 +272,7 @@ w.active_lower_frame=raw.LOWER_FRAME_TRACK_AUTOMATION -- Set to Automation.
 else w.pattern_matrix_is_visible=false
 w.active_lower_frame=raw.LOWER_FRAME_TRACK_DSPS -- Set to Track DSPs.
 end
-w.active_upper_frame=raw.UPPER_FRAME_TRACK_SCOPES -- Set to Track Scopes
+--w.active_upper_frame=raw.UPPER_FRAME_TRACK_SCOPES -- Set to Track Scopes
 w.active_middle_frame=raw.MIDDLE_FRAME_MIXER -- Set to Mixer
 w.lower_frame_is_visible=true
 w.upper_frame_is_visible=true
