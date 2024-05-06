@@ -11,6 +11,20 @@ renoise.tool():add_keybinding{name="Global:Paketti:Duplicate Instrument and Sele
 renoise.tool():add_keybinding{name="Global:Paketti:Duplicate Instrument and Select New Instrument (3rd)",invoke=function() DuplicateInstrumentAndSelectNewInstrument() end}
 renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Duplicate Instrument and Select New Instrument",invoke=function() DuplicateInstrumentAndSelectNewInstrument() end}
 
+function duplicateSelectInstrumentToLastInstrument()
+local rs=renoise.song()
+local n_instruments = #rs.instruments
+local src_inst_i = rs.selected_instrument_index
+local src_inst = rs:instrument(src_inst_i)
+
+rs:insert_instrument_at(n_instruments)
+rs.selected_instrument_index = n_instruments
+
+rs.selected_instrument:copy_from(src_inst)
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Duplicate Instrument and Select Last Instrument",invoke=function() duplicateSelectInstrumentToLastInstrument() end}
+
 
 -- auto-suspend plugin off:
 function autosuspendOFF()
