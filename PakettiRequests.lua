@@ -156,6 +156,8 @@ renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Beatsync 
 renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Beatsync 3 (Time-Stretch Texture)",invoke=function() selectedSampleBeatsync(3) end }
 
 function selectedSampleBeatsyncAndToggleOn(number)
+if renoise.song().selected_sample == nil then return else
+
 if renoise.song().selected_sample.beat_sync_enabled and renoise.song().selected_sample.beat_sync_mode ~= number then
 renoise.song().selected_sample.beat_sync_mode = number
 return end
@@ -168,7 +170,7 @@ renoise.song().selected_sample.beat_sync_mode = number
 else 
 renoise.song().selected_sample.beat_sync_enabled = false
 end
-
+end
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Beatsync On/Off 1 (Repitch)",invoke=function() selectedSampleBeatsyncAndToggleOn(1) end }
@@ -177,10 +179,12 @@ renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Beatsync 
 
 
 renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Beatsync On/Off",invoke=function()
+if renoise.song().selected_sample == nil then return else
+
 if renoise.song().selected_sample.beat_sync_enabled then
  renoise.song().selected_sample.beat_sync_enabled = false else
  renoise.song().selected_sample.beat_sync_enabled = true
-end end }
+end end end}
 
 function selectedSampleBeatsyncLine(number)
 local currentBeatsyncLine = renoise.song().selected_sample.beat_sync_lines
@@ -740,7 +744,89 @@ function resetInstrumentTranspose(amount)
     end
 end
 
-renoise.tool():add_keybinding {
-    name = "Global:Paketti:Set Selected Instrument Samples Transpose 0 (Reset)",
-    invoke = function() resetInstrumentTranspose(0) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Samples Transpose 0 (Reset)",
+invoke=function() resetInstrumentTranspose(0) end}
+
+---
+--another from casiino:
+-- Access the Renoise song API
+-- Jump to Group experimental
+
+
+--another from casiino
+-- Velocity Tracking On/Off for each Sample in the Instrument:
+function selectedInstrumentVelocityTracking(enable)
+  -- Access the selected instrument
+  local instrument = renoise.song().instruments[renoise.song().selected_instrument_index]
+
+  -- Determine the new state based on the passed argument
+  local newState = (enable == 1)
+
+  -- Iterate over all sample mapping groups
+  for group_index, sample_mapping_group in ipairs(instrument.sample_mappings) do
+    -- Iterate over each mapping in the group
+    for mapping_index, mapping in ipairs(sample_mapping_group) do
+      -- Set the map_velocity_to_volume based on newState
+      mapping.map_velocity_to_volume = newState
+      -- Optionally output the change to the terminal for confirmation
+      print(string.format("Mapping Group %d, Mapping %d: map_velocity_to_volume set to %s", group_index, mapping_index, tostring(mapping.map_velocity_to_volume)))
+    end
+  end
+end
+
+
+
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Velocity Tracking Off",
+invoke=function() selectedInstrumentVelocityTracking(0) end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Velocity Tracking On",
+invoke=function() selectedInstrumentVelocityTracking(1) end}
+
+function selectedSampleVelocityTracking(enable)
+  -- Access the selected instrument
+  local instrument = renoise.song().instruments[renoise.song().selected_instrument_index]
+  -- Get the selected sample index
+  local selected_sample_index = renoise.song().selected_sample_index
+
+  -- Determine the new state based on the passed argument
+  local newState = (enable == 1)
+
+  -- Iterate over all mappings in the selected instrument
+  for _, mapping in ipairs(instrument.sample_mappings[1]) do  -- Assuming [1] is the correct layer, adjust if needed
+    -- Check if the mapping corresponds to the selected sample
+    if mapping.sample_index == selected_sample_index then
+      -- Set the map_velocity_to_volume based on newState
+      mapping.map_velocity_to_volume = newState
+      -- Optionally output the change to the terminal for confirmation
+      print(string.format("Mapping for Sample %d: map_velocity_to_volume set to %s", selected_sample_index, tostring(mapping.map_velocity_to_volume)))
+    end
+  end
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Toggle Selected Sample Velocity Tracking",
+invoke=function() 
+if
+renoise.song().instruments[renoise.song().selected_instrument_index].sample_mappings[1][renoise.song().selected_sample_index].map_velocity_to_volume==true
+then renoise.song().instruments[renoise.song().selected_instrument_index].sample_mappings[1][renoise.song().selected_sample_index].map_velocity_to_volume=false
+else renoise.song().instruments[renoise.song().selected_instrument_index].sample_mappings[1][renoise.song().selected_sample_index].map_velocity_to_volume=true
+ end
+ end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Velocity Tracking On",
+invoke=function() 
+renoise.song().instruments[renoise.song().selected_instrument_index].sample_mappings[1][renoise.song().selected_sample_index].map_velocity_to_volume=true
+end}
+
+
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Velocity Tracking Off",
+invoke=function() 
+renoise.song().instruments[renoise.song().selected_instrument_index].sample_mappings[1][renoise.song().selected_sample_index].map_velocity_to_volume=false
+end}
+
+
+
+
+
+
+
 
