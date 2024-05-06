@@ -30,7 +30,7 @@ end
 local dialog
 
 -- Function to handle creation of a new track and inputting notes/effects upon sample change
-local function on_sample_count_change()
+function on_sample_count_change()
     if not preferences._0G01_Loader.value then return end
     local song=renoise.song()
     if not song or #song.tracks == 0 or song.selected_track.type ~= renoise.Track.TRACK_TYPE_SEQUENCER then return end
