@@ -1,21 +1,33 @@
+-- Define render state (initialized when starting to render)
+render_context = {
+  source_track = 0,
+  target_track = 0,
+  target_instrument = 0,
+  temp_file_path = ""
+}
+
 -- Function to initiate rendering
 function start_rendering()
   -- Set up rendering options
   
-  -- TODO// Detect #Line-In then use realtime otherwise high
+  -- TODO: Detect #Line-In then use realtime otherwise high
   local render_options = {
     sample_rate = 88200,
     bit_depth = 32,
     interpolation = "precise",
     priority = "high",
-    -- Optionally, set start_pos and end_pos if you want to render a specific part of the song
+    start_pos = renoise.SongPos(renoise.song().selected_sequence_index, 1),
+    end_pos = renoise.SongPos(renoise.song().selected_sequence_index, renoise.song().patterns[renoise.song().selected_pattern_index].number_of_lines),
   }
   
-  -- Define a temporary path for the rendered audio
-  local temp_file_path = "/tmp/rendered_sample.wav"
+  -- Set render context
+  render_context.source_track = renoise.song().selected_track_index
+  render_context.target_track = render_context.source_track + 1
+  render_context.target_instrument = renoise.song().selected_instrument_index + 1
+  render_context.temp_file_path = os.tmpname() .. ".wav"
 
   -- Start rendering with the correct function call
-  local success, error_message = renoise.song():render(render_options, temp_file_path, rendering_done_callback)
+  local success, error_message = renoise.song():render(render_options, render_context.temp_file_path, rendering_done_callback)
   if not success then
     print("Rendering failed: " .. error_message)
   else
@@ -26,43 +38,62 @@ end
 
 -- Callback function that gets called when rendering is complete
 function rendering_done_callback()
-local renderTrack = renoise.song().selected_track_index
-local renderedTrack = renderTrack+1
-local renderTrack2 = renderedTrack-1
-local renderedInstrument = renoise.song().selected_instrument_index+1
+  local song = renoise.song()
+  local renderTrack = render_context.source_track
+  local renderedTrack = renderTrack + 1
+  local renderedInstrument = render_context.target_instrument
 
   -- Remove the monitoring timer
   renoise.tool():remove_timer(monitor_rendering)
--- Un-Solo Selected Track
-renoise.song().tracks[renderTrack]:solo()
 
--- Turn All Render Track Note Columns to "Off"
-for i=1,12 do
-renoise.song().tracks[renoise.song().selected_track_index]:set_column_is_muted(i, true)
-end
--- Collapse Render Track
-renoise.song().tracks[renoise.song().selected_track_index].collapsed=true
+  -- Un-Solo Selected Track
+  song.tracks[renderTrack]:solo()
 
--- Add Sample Slot to New Instrument
-renoise.song().instruments[renoise.song().selected_instrument_index]:insert_sample_at(1)
--- Load Sample into New Instrument Sample Buffer
-renoise.song().instruments[renoise.song().selected_instrument_index].samples[1].sample_buffer:load_from("/tmp/rendered_sample.wav")
--- Insert New Track Next to Render Track
-renoise.song():insert_track_at(renoise.song().selected_track_index+1)
-local renderName = renoise.song().tracks[renoise.song().selected_track_index].name
--- Rename Sample Slot to Render Track
-renoise.song().instruments[renoise.song().selected_instrument_index].samples[1].name=(renderName .. " (Rendered)")
--- Select New Track
-renoise.song().selected_track_index=renoise.song().selected_track_index+1
--- Rename New Track using Render Track Name
-renoise.song().selected_track.name=(renderName .. " (Rendered)")
--- Insert C-4 + Rendered Instrument number to Rendered Track
-renoise.song().selected_pattern.tracks[renoise.song().selected_track_index].lines[1].note_columns[1].note_string="C-4"
-renoise.song().selected_pattern.tracks[renoise.song().selected_track_index].lines[1].note_columns[1].instrument_value=renoise.song().selected_instrument_index-1
-renoise.song().selected_instrument.name=(renderName .. " (Rendered)")
-renoise.song().instruments[renoise.song().selected_instrument_index].samples[1].autofade = true
-renoise.song().instruments[renoise.song().selected_instrument_index].samples[1].autoseek = true
+  -- Turn All Render Track Note Columns to "Off"
+  for i = 1, song.tracks[renderTrack].max_note_columns do
+    song.tracks[renderTrack]:set_column_is_muted(i, true)
+  end
 
+  -- Collapse Render Track
+  song.tracks[renderTrack].collapsed = true
+
+  -- Add Sample Slot to New Instrument
+  song:insert_instrument_at(renderedInstrument)
+  local new_instrument = song:instrument(renderedInstrument)
+  new_instrument:insert_sample_at(1)
+
+  -- Load Sample into New Instrument Sample Buffer
+  new_instrument.samples[1].sample_buffer:load_from(render_context.temp_file_path)
+  os.remove(render_context.temp_file_path)
+
+  -- Print the current selected_instrument_index
+  print("Before setting the selected instrument index: " .. song.selected_instrument_index)
+
+  -- Set the selected_instrument_index to the newly created instrument
+  song.selected_instrument_index = renderedInstrument
+
+  -- Print the current selected_instrument_index
+  print("After setting the selected instrument index: " .. song.selected_instrument_index)
+
+  -- Insert New Track Next to Render Track
+  song:insert_track_at(renderedTrack)
+  local renderName = song.tracks[renderTrack].name
+  -- Rename Sample Slot to Render Track
+  new_instrument.samples[1].name = renderName .. " (Rendered)"
+  
+  -- Select New Track
+  song.selected_track_index = renderedTrack
+  
+  -- Rename New Track using Render Track Name
+  song.tracks[renderedTrack].name = renderName .. " (Rendered)"
+  
+  -- Insert C-4 + Rendered Instrument number to Rendered Track
+  song.selected_pattern.tracks[renderedTrack].lines[1].note_columns[1].note_string = "C-4"
+  song.selected_pattern.tracks[renderedTrack].lines[1].note_columns[1].instrument_value = renderedInstrument - 1
+
+  new_instrument.name = renderName .. " (Rendered)"
+  new_instrument.samples[1].autofade = true
+  new_instrument.samples[1].autoseek = true
 end
 
 -- Function to monitor rendering progress
@@ -78,25 +109,32 @@ function monitor_rendering()
 end
 
 function pakettiCleanRenderSelection()
-local renderTrack = renoise.song().selected_track_index
-local renderedTrack = renderTrack+1
-local renderTrack2 = renderedTrack-1
-local renderedInstrument = renoise.song().selected_instrument_index+1
--- Create New Instrument
-renoise.song():insert_instrument_at(renoise.song().selected_instrument_index+1)
--- Select New Instrument
-renoise.song().selected_instrument_index=renderedInstrument
+  local song = renoise.song()
+  local renderTrack = song.selected_track_index
+  local renderedTrack = renderTrack + 1
+  local renderedInstrument = song.selected_instrument_index + 1
 
--- Solo Selected Track
-renoise.song().tracks[renderTrack]:solo()
--- Render Selected Track
-start_rendering()
+  -- Print the initial selected_instrument_index
+  print("Initial selected_instrument_index: " .. song.selected_instrument_index)
+
+  -- Create New Instrument
+  song:insert_instrument_at(renderedInstrument)
+  
+  -- Select New Instrument
+  song.selected_instrument_index = renderedInstrument
+
+  -- Print the selected_instrument_index after creating new instrument
+  print("selected_instrument_index after creating new instrument: " .. song.selected_instrument_index)
+
+  -- Solo Selected Track
+  song.tracks[renderTrack]:solo()
+
+  -- Render Selected Track
+  start_rendering()
 end
 
-renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Clean Render Selection",invoke = function() pakettiCleanRenderSelection() end}
-renoise.tool():add_menu_entry{name="Mixer:Paketti..:Clean Render Selection",invoke = function() pakettiCleanRenderSelection() end}
-
-
+renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Clean Render Selection",invoke=function() pakettiCleanRenderSelection() end}
+renoise.tool():add_menu_entry{name="Mixer:Paketti..:Clean Render Selection",invoke=function() pakettiCleanRenderSelection() end}
 
 
 -- Function to adjust a slice marker based on MIDI input
