@@ -1,34 +1,417 @@
-function noteOnToNoteOff(noteoffPitch)
-  -- Check if the instrument has no samples and return if so
-  if #renoise.song().instruments[renoise.song().selected_instrument_index].samples == 0 then
+-- Function to initiate rendering
+function start_rendering()
+  -- Set up rendering options
+  
+  -- TODO// Detect #Line-In then use realtime otherwise high
+  local render_options = {
+    sample_rate = 88200,
+    bit_depth = 32,
+    interpolation = "precise",
+    priority = "high",
+    -- Optionally, set start_pos and end_pos if you want to render a specific part of the song
+  }
+  
+  -- Define a temporary path for the rendered audio
+  local temp_file_path = "/tmp/rendered_sample.wav"
+
+  -- Start rendering with the correct function call
+  local success, error_message = renoise.song():render(render_options, temp_file_path, rendering_done_callback)
+  if not success then
+    print("Rendering failed: " .. error_message)
+  else
+    -- Start a timer to monitor rendering progress
+    renoise.tool():add_timer(monitor_rendering, 500)
+  end
+end
+
+-- Callback function that gets called when rendering is complete
+function rendering_done_callback()
+local renderTrack = renoise.song().selected_track_index
+local renderedTrack = renderTrack+1
+local renderTrack2 = renderedTrack-1
+local renderedInstrument = renoise.song().selected_instrument_index+1
+
+  -- Remove the monitoring timer
+  renoise.tool():remove_timer(monitor_rendering)
+-- Un-Solo Selected Track
+renoise.song().tracks[renderTrack]:solo()
+
+-- Turn All Render Track Note Columns to "Off"
+for i=1,12 do
+renoise.song().tracks[renoise.song().selected_track_index]:set_column_is_muted(i, true)
+end
+-- Collapse Render Track
+renoise.song().tracks[renoise.song().selected_track_index].collapsed=true
+
+-- Add Sample Slot to New Instrument
+renoise.song().instruments[renoise.song().selected_instrument_index]:insert_sample_at(1)
+-- Load Sample into New Instrument Sample Buffer
+renoise.song().instruments[renoise.song().selected_instrument_index].samples[1].sample_buffer:load_from("/tmp/rendered_sample.wav")
+-- Insert New Track Next to Render Track
+renoise.song():insert_track_at(renoise.song().selected_track_index+1)
+local renderName = renoise.song().tracks[renoise.song().selected_track_index].name
+-- Rename Sample Slot to Render Track
+renoise.song().instruments[renoise.song().selected_instrument_index].samples[1].name=(renderName .. " (Rendered)")
+-- Select New Track
+renoise.song().selected_track_index=renoise.song().selected_track_index+1
+-- Rename New Track using Render Track Name
+renoise.song().selected_track.name=(renderName .. " (Rendered)")
+-- Insert C-4 + Rendered Instrument number to Rendered Track
+renoise.song().selected_pattern.tracks[renoise.song().selected_track_index].lines[1].note_columns[1].note_string="C-4"
+renoise.song().selected_pattern.tracks[renoise.song().selected_track_index].lines[1].note_columns[1].instrument_value=renoise.song().selected_instrument_index-1
+renoise.song().selected_instrument.name=(renderName .. " (Rendered)")
+renoise.song().instruments[renoise.song().selected_instrument_index].samples[1].autofade = true
+renoise.song().instruments[renoise.song().selected_instrument_index].samples[1].autoseek = true
+
+end
+
+-- Function to monitor rendering progress
+function monitor_rendering()
+  if renoise.song().rendering then
+    local progress = renoise.song().rendering_progress
+    print("Rendering in progress: " .. (progress * 100) .. "% complete")
+  else
+    -- Remove the monitoring timer once rendering is complete or if it wasn't started
+    renoise.tool():remove_timer(monitor_rendering)
+    print("Rendering not in progress or already completed.")
+  end
+end
+
+function pakettiCleanRenderSelection()
+local renderTrack = renoise.song().selected_track_index
+local renderedTrack = renderTrack+1
+local renderTrack2 = renderedTrack-1
+local renderedInstrument = renoise.song().selected_instrument_index+1
+-- Create New Instrument
+renoise.song():insert_instrument_at(renoise.song().selected_instrument_index+1)
+-- Select New Instrument
+renoise.song().selected_instrument_index=renderedInstrument
+
+-- Solo Selected Track
+renoise.song().tracks[renderTrack]:solo()
+-- Render Selected Track
+start_rendering()
+end
+
+renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Clean Render Selection",invoke = function() pakettiCleanRenderSelection() end}
+renoise.tool():add_menu_entry{name="Mixer:Paketti..:Clean Render Selection",invoke = function() pakettiCleanRenderSelection() end}
+
+
+
+
+-- Function to adjust a slice marker based on MIDI input
+function adjustSlice(slice_index, midivalue)
+    local song = renoise.song()
+    local sample = song.selected_sample
+
+    -- Ensure there is a selected sample and enough slice markers
+    if not sample or #sample.slice_markers < slice_index then
+        return
+    end
+
+    local slice_markers = sample.slice_markers
+    local min_pos, max_pos
+
+    -- Calculate the bounds for the slice marker movement
+    if slice_index == 1 then
+        min_pos = 1
+        max_pos = (slice_markers[slice_index + 1] or sample.sample_buffer.number_of_frames) - 1
+    elseif slice_index == #slice_markers then
+        min_pos = slice_markers[slice_index - 1] + 1
+        max_pos = sample.sample_buffer.number_of_frames - 1
+    else
+        min_pos = slice_markers[slice_index - 1] + 1
+        max_pos = slice_markers[slice_index + 1] - 1
+    end
+
+    -- Scale MIDI input (0-127) to the range between min_pos and max_pos
+    local new_pos = min_pos + math.floor((max_pos - min_pos) * (midivalue / 127))
+
+    -- Move the slice marker
+    sample:move_slice_marker(slice_markers[slice_index], new_pos)
+end
+
+-- Create MIDI mappings for up to 16 slice markers
+for i = 1, 9 do
+    renoise.tool():add_midi_mapping{
+        name = "Global:Paketti:Midi Change Slice 0" .. i,
+        invoke = function(message)
+            if message:is_abs_value() then
+                adjustSlice(i, message.int_value)
+            end
+        end
+    }
+end
+
+for i = 10, 32 do
+    renoise.tool():add_midi_mapping{
+        name = "Global:Paketti:Midi Change Slice " .. i,
+        invoke = function(message)
+            if message:is_abs_value() then
+                adjustSlice(i, message.int_value)
+            end
+        end
+    }
+end
+
+
+
+renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change 02 Panning Value x[Knob]",
+  invoke = function(message)
+    if message:is_abs_value() then
+      midiValues(0, 128, renoise.song().selected_note_column, 'panning_value', message.int_value)
+    end
+end}
+
+renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change 03 Delay Value x[Knob]",
+  invoke = function(message)
+    if message:is_abs_value() then
+      midiValues(0, 255, renoise.song().selected_note_column, 'delay_value', message.int_value)
+    end
+end}
+
+renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change 04 Effect Value x[Knob]",
+  invoke = function(message)
+    if message:is_abs_value() then
+      midiValues(0, 255, renoise.song().selected_note_column, 'effect_amount_value', message.int_value)
+    end
+end}
+
+
+renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change 01 Volume Value x[Knob]",
+  invoke = function(message)
+    if message:is_abs_value() then
+      midiValues(0, 128, renoise.song().selected_note_column, 'volume_value', message.int_value)
+    end
+end}
+
+
+
+
+
+renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Octave x[Knob]",
+  invoke = function(message)
+    if message:is_abs_value() then
+      midiValues(0, 8, renoise.song().transport, 'octave', message.int_value)
+    end
+end}
+
+renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Selected Track x[Knob]",
+  invoke = function(message)
+    if message:is_abs_value() then
+    local trackCount = #renoise.song().tracks
+      midiValues(1, trackCount, renoise.song(), 'selected_track_index', message.int_value)
+    end
+end}
+renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Selected Track DSP Device x[Knob]",
+  invoke = function(message)
+    if message:is_abs_value() then
+    local deviceCount = #renoise.song().selected_track.devices
+    if deviceCount < 2 then 
+    renoise.app():show_status("There are no Track DSP Devices on this channel.")
+    else
+      midiValues(2, deviceCount, renoise.song(), 'selected_device_index', message.int_value)
+    end
+    end
+end}
+
+renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Selected Instrument x[Knob]",
+  invoke = function(message)
+    if message:is_abs_value() then
+    local instrumentCount = #renoise.song().instruments
+      midiValues(1, instrumentCount, renoise.song(), 'selected_instrument_index', message.int_value)
+    end
+end}
+
+
+
+function selectedInstrumentFinetune(amount)
+local currentSampleFinetune = renoise.song().selected_sample.fine_tune
+local changedSampleFinetune = currentSampleFinetune + amount
+if changedSampleFinetune > 127 then changedSampleFinetune = 127
+else if changedSampleFinetune < -127 then changedSampleFinetune = -127 end end
+renoise.song().selected_sample.fine_tune=changedSampleFinetune
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Finetune -1",invoke=function()  selectedInstrumentFinetune(-1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Finetune +1",invoke=function()  selectedInstrumentFinetune(1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Finetune -10",invoke=function() selectedInstrumentFinetune(-10) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Finetune +10",invoke=function() selectedInstrumentFinetune(10) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Finetune 0",invoke=function() renoise.song().selected_sample.fine_tune=0 end}
+
+
+
+
+
+
+renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Select Padded Slice Next",invoke=function(message)
+  if message.int_value == 127 then selectNextSliceInOriginalSample() end end}
+
+renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Select Padded Slice Previous",invoke=function(message)
+  if message.int_value == 127 then selectPreviousSliceInOriginalSample() end end}
+
+
+-- Function to select the next slice
+function selectNextSliceInOriginalSample()
+  local instrument = renoise.song().selected_instrument
+  local sample = instrument.samples[renoise.song().selected_sample_index]
+  local sliceMarkers = sample.slice_markers
+  local sampleLength = sample.sample_buffer.number_of_frames
+
+  if #sliceMarkers < 2 or not sample.sample_buffer.has_sample_data then
+    renoise.app():show_status("Not enough slice markers or sample data is unavailable.")
     return
   end
 
-renoise.song().instruments[renoise.song().selected_instrument_index]:insert_sample_at(2)
-renoise.song().selected_sample_index = 2
-renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index]:copy_from(renoise.song().instruments[renoise.song().selected_instrument_index].samples[1])
-renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].sample_mapping.layer=2
-renoise.song().instruments[renoise.song().selected_instrument_index].sample_mappings[2][1].sample.transpose=noteoffPitch
-renoise.song().instruments[renoise.song().selected_instrument_index].sample_mappings[2][1].sample.name = renoise.song().instruments[renoise.song().selected_instrument_index].sample_mappings[1][1].sample.name
+  local currentSliceIndex = preferences.sliceCounter.value
+  local nextSliceIndex = currentSliceIndex + 1
+  if nextSliceIndex > #sliceMarkers then
+    nextSliceIndex = 1
+  end
 
-renoise.song().selected_sample_index=1
+  local thisSlice = sliceMarkers[currentSliceIndex]
+  local nextSlice = sliceMarkers[nextSliceIndex]
+
+  local thisSlicePadding = (currentSliceIndex == 1 and thisSlice < 1000) and thisSlice or math.max(thisSlice - 1000, 1)
+  local nextSlicePadding = (nextSliceIndex == 1) and math.min(nextSlice + sampleLength, sampleLength) or math.min(nextSlice + 1354, sampleLength)
+
+  renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
+  sample.sample_buffer.display_range = {thisSlicePadding, nextSlicePadding}
+  sample.sample_buffer.display_length = nextSlicePadding - thisSlicePadding
+
+  renoise.app():show_status(string.format("Slice Info - Current index: %d, Next index: %d, Slice Start: %d, Slice End: %d", currentSliceIndex, nextSliceIndex, thisSlicePadding, nextSlicePadding))
+  
+  preferences.sliceCounter.value = nextSliceIndex
 end
 
-renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy Sample in Note-On to Note-Off Layer +24",invoke=function() noteOnToNoteOff(24) end}
-renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy Sample in Note-On to Note-Off Layer +12",invoke=function() noteOnToNoteOff(12) end}
-renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy Sample in Note-On to Note-Off Layer",invoke=function() noteOnToNoteOff(0) end}
-renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy Sample in Note-On to Note-Off Layer -12",invoke=function() noteOnToNoteOff(-12) end}
-renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy Sample in Note-On to Note-Off Layer -24",invoke=function() noteOnToNoteOff(-24) end}
 
-renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Copy Sample in Note-On to Note-Off Layer +24",invoke=function() noteOnToNoteOff(24) end}
-renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Copy Sample in Note-On to Note-Off Layer +12",invoke=function() noteOnToNoteOff(12) end}
-renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Copy Sample in Note-On to Note-Off Layer",invoke=function() noteOnToNoteOff(0) end}
-renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Copy Sample in Note-On to Note-Off Layer -12",invoke=function() noteOnToNoteOff(-12) end}
-renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Copy Sample in Note-On to Note-Off Layer -24",invoke=function() noteOnToNoteOff(-24) end}
+-- Function to select the previous slice with proper handling of slice wrapping
+function selectPreviousSliceInOriginalSample()
+  local instrument = renoise.song().selected_instrument
+  local sample = instrument.samples[renoise.song().selected_sample_index]
+  local sliceMarkers = sample.slice_markers
+  local sampleLength = sample.sample_buffer.number_of_frames
+  
+  if #sliceMarkers < 2 or not sample.sample_buffer.has_sample_data then
+    renoise.app():show_status("Not enough slice markers or sample data is unavailable.")
+    return
+  end
+  
+  local currentSliceIndex = preferences.sliceCounter.value
+  local previousSliceIndex = currentSliceIndex - 1
+  
+  if previousSliceIndex < 1 then
+    previousSliceIndex = #sliceMarkers  -- Wrap to the last slice
+  end
+
+  local previousSlice = sliceMarkers[previousSliceIndex]
+  local nextSliceIndex = previousSliceIndex == #sliceMarkers and 1 or previousSliceIndex + 1
+  local nextSlice = sliceMarkers[nextSliceIndex]
+
+  -- Calculate the padding for display
+  local previousSlicePadding = math.max(previousSlice - 1000, 1)
+  local nextSlicePadding = math.min(nextSlice + 1354, sampleLength)
+
+  -- Adjust for wraparound display issue when navigating from first to last slice
+  if previousSliceIndex == #sliceMarkers and currentSliceIndex == 1 then
+    nextSlicePadding = sampleLength
+  end
+
+  -- Set display parameters in the sample editor
+  renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
+  sample.sample_buffer.display_range = {previousSlicePadding, nextSlicePadding}
+  sample.sample_buffer.display_length = nextSlicePadding - previousSlicePadding
+
+  -- Show status and update slice counter
+  renoise.app():show_status(string.format("Slice Info - Previous index: %d, Current index: %d, Slice Start: %d, Slice End: %d",
+                                          previousSliceIndex, nextSliceIndex, previousSlicePadding, nextSlicePadding))
+  
+  preferences.sliceCounter.value = previousSliceIndex
+end
+
+-- Function to reset the slice counter
+function resetSliceCounter()
+  preferences.sliceCounter.value = 1
+  renoise.app():show_status("Slice counter reset to 1. Will start from the first slice.")
+  selectNextSliceInOriginalSample()
+end
+
+-- Keybindings
+renoise.tool():add_keybinding{name="Global:Paketti:Select Padded Slice Next Slice", invoke=selectNextSliceInOriginalSample}
+renoise.tool():add_keybinding{name="Global:Paketti:Select Padded Slice Previous", invoke=function() selectPreviousSliceInOriginalSample() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Reset Slice Counter", invoke=resetSliceCounter}
+
+
+
+------
+function makeMonoBeginning()
+    local track = renoise.song().selected_track
+    local mono_device = nil
+
+    -- Check for existing "Mono" device in the track
+    for i, device in ipairs(track.devices) do
+        if device.display_name == "Mono" then
+            mono_device = device
+            break
+        end
+    end
+
+    if mono_device then
+        mono_device.is_active = not mono_device.is_active
+    else
+        local device = track:insert_device_at("Audio/Effects/Native/Stereo Expander", 2)
+        device.display_name = "Mono"
+        device.parameters[1].value = 0
+        device.is_maximized = false
+    end
+end
+--
+function makeMonoEnd()
+    local track = renoise.song().selected_track
+    local mono_device = nil
+
+    -- Check for existing "Mono" device in the track
+    for i, device in ipairs(track.devices) do
+        if device.display_name == "Mono" then
+            mono_device = device
+            break
+        end
+    end
+
+    if mono_device then
+        mono_device.is_active = not mono_device.is_active
+    else
+        local device = track:insert_device_at("Audio/Effects/Native/Stereo Expander", #track.devices + 1)
+        device.display_name = "Mono"
+        device.parameters[1].value = 0
+        device.is_maximized = false
+    end
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Insert Stereo -> Mono device to Beginning of DSP Chain",invoke=function() makeMonoBeginning() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Insert Stereo -> Mono device to End of DSP Chain",invoke=function() makeMonoEnd() end}
+
+--
+function pakettiSaveSample(format)
+if renoise.song().selected_sample == nil then return else
+
+local filename = renoise.app():prompt_for_filename_to_write(format, "Paketti Save Selected Sample in ." .. format .. " Format")
+if filename == "" then return else 
+renoise.song().selected_sample.sample_buffer:save_as(filename, format)
+end 
+end
+end
+renoise.tool():add_keybinding{name="Global:Paketti:Paketti Save Selected Sample .WAV",invoke=function() pakettiSaveSample("wav") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Paketti Save Selected Sample .FLAC",invoke=function() pakettiSaveSample("flac") end}
+
+renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Paketti Save Selected Sample .WAV", invoke=function(message)
+  if message.int_value > 1 then pakettiSaveSample("wav") end end}
+renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Paketti Save Selected Sample .FLAC", invoke=function(message)
+  if message.int_value > 1 then pakettiSaveSample("flac") end end}
+
 
 
 --------
-
 function Experimental()
     local function read_file(path)
         local file = io.open(path, "r")  -- Open the file in read mode
@@ -92,7 +475,7 @@ end
 
 renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Bypass All Devices on Channel", invoke=function() effectbypass() end}
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Enable All Devices on Channel", invoke=function() effectenable() end}
-renoise.tool():add_menu_entry{name="Mixer:Paketti..:Bypass All Devices on Channel", invoke=function() effectbypass() end}
+renoise.tool():add_menu_entry{name="--Mixer:Paketti..:Bypass All Devices on Channel", invoke=function() effectbypass() end}
 renoise.tool():add_menu_entry{name="Mixer:Paketti..:Enable All Devices on Channel", invoke=function() effectenable() end}
 
 
@@ -215,8 +598,8 @@ end
  --program_observable  
  --transpose  
  --transpose_observable  
-renoise.tool():add_keybinding{name="Global:Impulse:Next/Prev Midi Program +1", invoke=function() midiprogram(1) end}  
-renoise.tool():add_keybinding{name="Global:Impulse:Next/Prev Midi Program -1", invoke=function() midiprogram(-1) end}  
+renoise.tool():add_keybinding{name="Global:Paketti:Next/Prev Midi Program +1", invoke=function() midiprogram(1) end}  
+renoise.tool():add_keybinding{name="Global:Paketti:Next/Prev Midi Program -1", invoke=function() midiprogram(-1) end}  
 
 renoise.tool():add_keybinding{name="Global:Track Devices:Load TOGU Audioline Reverb", invoke=function() loadvst("Audio/Effects/AU/aumf:676v:TOGU") end}
 renoise.tool():add_keybinding{name="Global:Track Devices:Load TOGU Audioline Chorus", invoke=function() loadvst("Audio/Effects/AU/aufx:Chor:Togu") end}
@@ -983,19 +1366,31 @@ function delay(seconds)
     os.execute(command)
 end
 
+
+
 -- Add keybinding and menu entry in a more compact format
-renoise.tool():add_keybinding{name="Global:Paketti:∿ Squiggly Sinewave to Clipboard (macOS)", invoke=function() writeToClipboard("∿") 
-writeToClipboard("∿")
-writeToClipboard("∿")
-writeToClipboard("∿")
-delay(5)
-writeToClipboard("∿") end}
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:∿ Squiggly Sinewave to Clipboard (macOS)", invoke=function() 
-writeToClipboard("∿")
-writeToClipboard("∿")
-writeToClipboard("∿")
-delay(5)
-writeToClipboard("∿") end}
+
+-- Function to create and show the dialog with a text field.
+function squigglerdialog()
+  local vb = renoise.ViewBuilder()
+  local content = vb:column {
+    margin = 10,
+    vb:textfield {
+      value = "∿",
+      edit_mode = true
+    }
+  }
+  
+  -- Using a local variable for 'dialog' to limit its scope to this function.
+  local dialog = renoise.app():show_custom_dialog("Copy the Squiggler to your clipboard", content)
+end
+
+
+
+
+renoise.tool():add_keybinding{name="Global:Paketti:∿ Squiggly Sinewave to Clipboard (macOS)", invoke=function() squigglerdialog() end}
+ 
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:∿ Squiggly Sinewave to Clipboard", invoke=function() squigglerdialog() end}
 
 ----------
 function pattern_line_notifier(pos) --here

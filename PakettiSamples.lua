@@ -103,8 +103,47 @@ end
 
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments:Paketti PitchBend Multiple Sample Loader",invoke=function() pitchBendMultipleSampleLoader() end}
 renoise.tool():add_menu_entry{name="Disk Browser Files:Paketti..:Paketti PitchBend Multiple Sample Loader",invoke=function() pitchBendMultipleSampleLoader() end}
-renoise.tool():add_keybinding{name="Global:Paketti:Paketti PitchBend Multiple Sample Loader", invoke=function() pitchBendMultipleSampleLoader() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Paketti PitchBend Multiple Sample Loader",invoke=function() pitchBendMultipleSampleLoader() end}
+renoise.tool():add_midi_mapping{name="Global:Paketti:Midi PakettiPitchBend Multiple Sample Loader", invoke=function(message)
+  if message.int_value > 1 then pitchBendMultipleSampleLoader() end end}
 -----------
+
+
+function noteOnToNoteOff(noteoffPitch)
+-- // TODO: need to clear note-off-layer
+-- // TODO: need to be able to copy the whole sample-space from note-on layer to note-off layer.
+
+  if #renoise.song().instruments[renoise.song().selected_instrument_index].samples == 0 then
+    return
+  end
+
+renoise.song().instruments[renoise.song().selected_instrument_index]:insert_sample_at(2)
+renoise.song().selected_sample_index = 2
+renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index]:copy_from(renoise.song().instruments[renoise.song().selected_instrument_index].samples[1])
+renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].sample_mapping.layer=2
+renoise.song().instruments[renoise.song().selected_instrument_index].sample_mappings[2][1].sample.transpose=noteoffPitch
+renoise.song().instruments[renoise.song().selected_instrument_index].sample_mappings[2][1].sample.name = renoise.song().instruments[renoise.song().selected_instrument_index].sample_mappings[1][1].sample.name
+
+renoise.song().selected_sample_index=1
+end
+
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy Sample in Note-On to Note-Off Layer +24",invoke=function() noteOnToNoteOff(24) end}
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy Sample in Note-On to Note-Off Layer +12",invoke=function() noteOnToNoteOff(12) end}
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy Sample in Note-On to Note-Off Layer",invoke=function() noteOnToNoteOff(0) end}
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy Sample in Note-On to Note-Off Layer -12",invoke=function() noteOnToNoteOff(-12) end}
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy Sample in Note-On to Note-Off Layer -24",invoke=function() noteOnToNoteOff(-24) end}
+
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Copy Sample in Note-On to Note-Off Layer +24",invoke=function() noteOnToNoteOff(24) end}
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Copy Sample in Note-On to Note-Off Layer +12",invoke=function() noteOnToNoteOff(12) end}
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Copy Sample in Note-On to Note-Off Layer",invoke=function() noteOnToNoteOff(0) end}
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Copy Sample in Note-On to Note-Off Layer -12",invoke=function() noteOnToNoteOff(-12) end}
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Copy Sample in Note-On to Note-Off Layer -24",invoke=function() noteOnToNoteOff(-24) end}
+
+
+
+
+
+------------
 renoise.tool():add_menu_entry{name="--Sample Editor:Paketti..:Selected Sample: Autofade True, Interpolation Sinc, Oversample True",invoke=function() 
   renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].autofade=true
   renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].interpolation_mode=4
@@ -175,7 +214,7 @@ function slicerough(changer)
 
     -- Determine the appropriate beatsync lines from the table or use a default value
     local beatsynclines = beatsync_lines[changer] or 64  -- Default to 32 if no match found
-    
+    local currentTranspose = renoise.song().selected_sample.transpose
     
     -- Assuming that preferences are defined somewhere globally accessible in your script
     local prefs = {
@@ -184,6 +223,7 @@ function slicerough(changer)
         oneshot = preferences.WipeSlicesOneShot.value,
         autofade = true,
         autoseek = preferences.WipeSlicesAutoseek.value,
+        transpose = currentTranspose,
         mute_group = preferences.WipeSlicesMuteGroup.value,
         interpolation_mode = 4,  -- High Quality Interpolation
         beat_sync_mode = preferences.WipeSlicesBeatSyncMode.value,
@@ -209,6 +249,7 @@ function slicerough(changer)
         sample.oneshot = prefs.oneshot
         sample.autofade = prefs.autofade
         sample.autoseek = prefs.autoseek
+        sample.transpose = prefs.transpose
         sample.mute_group = prefs.mute_group
         sample.interpolation_mode = prefs.interpolation_mode
         sample.beat_sync_mode = prefs.beat_sync_mode

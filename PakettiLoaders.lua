@@ -119,11 +119,11 @@ end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Load Rhino 2.1 AU", invoke=function() LoadRhino() end}
 ------------------------------------------------------------------------------------------------------------
-renoise.tool():add_keybinding{name = "Global:Paketti:Load FabFilter One", invoke=function() renoise.song().instruments[renoise.song().selected_instrument_index].plugin_properties:load_plugin("Audio/Generators/AU/aumu:FOne:FabF")
+renoise.tool():add_keybinding{name="Global:Paketti:Load FabFilter One", invoke=function() renoise.song().instruments[renoise.song().selected_instrument_index].plugin_properties:load_plugin("Audio/Generators/AU/aumu:FOne:FabF")
 local pd=renoise.song().selected_instrument.plugin_properties.plugin_device
  if pd.external_editor_visible==false then pd.external_editor_visible=true end end}
 ------------------------------------------------------------------------------------------------------------
-renoise.tool():add_keybinding{name = "Global:Paketti:Load Surge (VST)", invoke=function() renoise.song().instruments[renoise.song().selected_instrument_index].plugin_properties:load_plugin("Audio/Generators/VST/Surge")
+renoise.tool():add_keybinding{name="Global:Paketti:Load Surge (VST)", invoke=function() renoise.song().instruments[renoise.song().selected_instrument_index].plugin_properties:load_plugin("Audio/Generators/VST/Surge")
 local pd=renoise.song().selected_instrument.plugin_properties.plugin_device
  if pd.external_editor_visible==false then pd.external_editor_visible=true end 
  
@@ -473,6 +473,35 @@ renoise.song().selected_track.devices[2].parameters[2].value=1
 end}
 
 
+nativeDevices = {
+  "Analog Filter", "Bus Compressor", "Cabinet Simulator", "Chorus", "Chorus 2",
+  "Comb Filter 2", "Compressor", "Convolver", "DC Offset", "Delay", "Digital Filter",
+  "Distortion 2", "Doofer", "EQ 5", "EQ 10", "Exciter", "Flanger 2", "Gainer", 
+  "Gate 2", "LofiMat 2", "Maximizer", "Mixer EQ", "mpReverb 2", "Multitap",
+  "Phaser 2", "Repeater", "Reverb", "RingMod 2", "Stereo Expander", "#Line Input",
+  "#Multiband Send", "#ReWire Input", "#Send", "*Formula", "*Hydra", "*Instr. Automation",
+  "*Instr. Macros", "*Instr. MIDI Control", "*Key Tracker", "*LFO", "*Meta Mixer",
+  "*Signal Follower", "*Velocity Tracker", "*XY Pad"
+}
+
+-- Generate menu entries
+for i, device in ipairs(nativeDevices) do
+  local device_path = "Audio/Effects/Native/" .. device:gsub(" ", " ")
+  renoise.tool():add_menu_entry{
+    name = "DSP Device:Paketti..:Load Renoise Native:" .. device,
+    invoke = function() loadnative(device_path) end
+  }
+end
+
+-- Generate menu entries
+for i, device in ipairs(nativeDevices) do
+  local device_path = "Audio/Effects/Native/" .. device:gsub(" ", " ")
+  renoise.tool():add_menu_entry{
+    name = "Mixer:Paketti..:Load Renoise Native:" .. device,
+    invoke = function() loadnative(device_path) end
+  }
+end
+
 
 
 --renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:writeToClipboard",invoke=function() 
@@ -498,6 +527,13 @@ end
 renoise.tool():add_keybinding{name="Global:Paketti:Open Ext.Editor of Selected Effect",invoke=function() OpenSelectedEffectExternalEditor() end}
 -----------------------------------------------------------------------------------------------------
 renoise.tool():add_keybinding{name="Global:Paketti:Hide Track DSP Devices",invoke=function()
+
+if renoise.song().selected_instrument.plugin_properties.plugin_device == nil then else
+local pd=renoise.song().selected_instrument.plugin_properties.plugin_device
+
+     if pd.external_editor_visible==false then pd.external_editor_visible=true else pd.external_editor_visible=false end
+end
+
   if table.count(renoise.song().selected_track.devices) >1 then
      for i=2,(table.count(renoise.song().selected_track.devices)) do 
       if renoise.song().selected_track.devices[i].external_editor_available==true
@@ -530,10 +566,8 @@ do oprint (devices[2].name .. ": " .. i .. ": " .. devices[2].parameters[i].name
 
 renoise.tool():add_keybinding{name="Global:Paketti:Inspect Device in Slot 2",invoke=function() inspectEffect() end}
 ------------------------------------------------------------------------------------------------------
-renoise.tool():add_menu_entry {
-  name = "--Main Menu:Tools:Paketti..:Plugins/Devices:Show Plugin Details",
-  invoke = function() show_plugin_details_gui() end
-}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Show Plugin Details",
+  invoke = function() show_plugin_details_gui() end}
 -----------------------------------
 -- Utility function to fetch, sort, and group available plugins by type
 function get_sorted_and_grouped_plugin_infos()
@@ -546,7 +580,7 @@ function get_sorted_and_grouped_plugin_infos()
     for _, plugin_info in ipairs(instrument.plugin_properties.available_plugin_infos) do
       local plugin_type = determine_plugin_type(plugin_info.path)
       local entry = {
-        name = plugin_type .. ": " .. (plugin_info.name or "Unnamed Plugin"),
+        name=plugin_type .. ": " .. (plugin_info.name or "Unnamed Plugin"),
         details = plugin_info
       }
       if plugin_type == "AU" then
@@ -662,10 +696,8 @@ function show_plugin_details_gui()
 end
 
 
-renoise.tool():add_menu_entry {
-  name = "Main Menu:Tools:Paketti..:Plugins/Devices:Show Effect Details",
-  invoke = function() show_effect_details_gui() end
-}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Show Effect Details",
+  invoke = function() show_effect_details_gui() end}
 
 -- Utility function to fetch, sort, and group available device effects by type
 function get_sorted_and_grouped_device_infos()
@@ -801,47 +833,115 @@ local moddevices = {
   "AHDSR", "Envelope", "Fader", "Key Tracking", "LFO", "Operand", "Stepper", "Velocity Tracking"}
 
 local modtargets = {
-  {name = "01 Volume", target = renoise.SampleModulationDevice.TARGET_VOLUME},
-  {name = "02 Panning", target = renoise.SampleModulationDevice.TARGET_PANNING},
-  {name = "03 Pitch", target = renoise.SampleModulationDevice.TARGET_PITCH},
-  {name = "04 Cutoff", target = renoise.SampleModulationDevice.TARGET_CUTOFF},
-  {name = "05 Resonance", target = renoise.SampleModulationDevice.TARGET_RESONANCE},
-  {name = "06 Drive", target = renoise.SampleModulationDevice.TARGET_DRIVE}}
+  {name= "01 Volume", target = renoise.SampleModulationDevice.TARGET_VOLUME},
+  {name= "02 Panning", target = renoise.SampleModulationDevice.TARGET_PANNING},
+  {name= "03 Pitch", target = renoise.SampleModulationDevice.TARGET_PITCH},
+  {name= "04 Cutoff", target = renoise.SampleModulationDevice.TARGET_CUTOFF},
+  {name= "05 Resonance", target = renoise.SampleModulationDevice.TARGET_RESONANCE},
+  {name= "06 Drive", target = renoise.SampleModulationDevice.TARGET_DRIVE}}
 
 function loadModulationDevice(devicename, device_target)
   local w = renoise.app().window
   w.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_MODULATION
   
   local i = renoise.song().selected_instrument_index
-  local mod_set_index = 1
+  local mod_set_index = renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].modulation_set_index
   local insert_index = 1
   
-if renoise.song().instruments[renoise.song().selected_instrument_index].sample_modulation_sets[1].filter_type == "None" then  
+if renoise.song().instruments[renoise.song().selected_instrument_index].sample_modulation_sets[renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].modulation_set_index].filter_type == "None" then  
   
 if device_target == renoise.SampleModulationDevice.TARGET_CUTOFF or device_target == renoise.SampleModulationDevice.TARGET_RESONANCE or device_target == renoise.SampleModulationDevice.TARGET_DRIVE
-then renoise.song().instruments[renoise.song().selected_instrument_index].sample_modulation_sets[1].filter_type="LP Clean"
+then renoise.song().instruments[renoise.song().selected_instrument_index].sample_modulation_sets[renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].modulation_set_index].filter_type="LP Clean"
 else end
 else end
 
-  renoise.song().instruments[i].sample_modulation_sets[mod_set_index]:insert_device_at(
+  renoise.song().instruments[i].sample_modulation_sets[renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].modulation_set_index]:insert_device_at(
     "Modulation/" .. devicename, device_target, insert_index)
 end
 
 for _, device in ipairs(moddevices) do
   for _, target in ipairs(modtargets) do
-    local keybinding_name = string.format("Global:Paketti:Load Modulation Device (%s) %s", target.name, device)
-    renoise.tool():add_keybinding{
-      name = keybinding_name,
-      invoke = function()
-        loadModulationDevice(device, target.target)
+    local keybinding_name=string.format("Global:Paketti:Load Modulation Device (%s) %s", target.name, device)
+    renoise.tool():add_keybinding{name=keybinding_name, invoke = function() loadModulationDevice(device, target.target)
       end
     }
   end
 end
+local targets = {
+  {number = "01", display = "Volume", target = renoise.SampleModulationDevice.TARGET_VOLUME},
+  {number = "02", display = "Panning", target = renoise.SampleModulationDevice.TARGET_PANNING},
+  {number = "03", display = "Pitch", target = renoise.SampleModulationDevice.TARGET_PITCH},
+  {number = "04", display = "Cutoff", target = renoise.SampleModulationDevice.TARGET_CUTOFF},
+  {number = "05", display = "Resonance", target = renoise.SampleModulationDevice.TARGET_RESONANCE},
+  {number = "06", display = "Drive", target = renoise.SampleModulationDevice.TARGET_DRIVE}
+}
+-- Generate menu entries dynamically with numbering and structure
+for _, target in ipairs(targets) do
+  for _, device in ipairs(moddevices) do
+    -- Check if target.display and device are not nil
+    if target.display and device then
+      local menu_entry_name = string.format("Sample Modulation Matrix:Paketti..:%s %s:%s", target.number, target.display, device)
+      renoise.tool():add_menu_entry{
+        name = menu_entry_name,
+        invoke = function()
+          loadModulationDevice(device, target.target)
+        end
+      }
+    else
+      print("Error: Missing display name or device for target")
+    end
+  end
+end
 
+renoise.tool():add_menu_entry{name="Modulation Matrix:Paketti..:Bla",invoke= function() jaa() end}
 
+--------------
+function exposeHideParametersInMixer()
 
+if renoise.song().selected_device == nil then return else
+local parameterCount=#renoise.song().selected_device.parameters
 
+if renoise.song().selected_device.parameters[1].show_in_mixer == true then
+
+for i=1,parameterCount do
+  renoise.song().selected_device.parameters[i].show_in_mixer=false
+end
+else 
+for i=1,parameterCount do
+  renoise.song().selected_device.parameters[i].show_in_mixer=true
+end
+end
+end
+end
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Expose/Hide Selected Device Parameters in Mixer",invoke = function() exposeHideParametersInMixer() end}
+renoise.tool():add_menu_entry{name="--Mixer:Paketti..:Expose/Hide Selected Device Parameters",invoke = function() exposeHideParametersInMixer() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Expose/Hide Selected Device Parameters in Mixer", invoke=function() exposeHideParametersInMixer() end}  
+
+function exposeHideAllParametersInMixer()
+
+--#renoise.song().selected_track.devices
+if #renoise.song().selected_track.devices == 1 then return
+else
+if renoise.song().selected_track.devices[2].parameters[1].show_in_mixer == true
+then 
+for i=2,#renoise.song().selected_track.devices do
+for y=1,#renoise.song().selected_track.devices[i].parameters do
+renoise.song().selected_track.devices[i].parameters[y].show_in_mixer=false
+end
+end
+
+else
+for i=2,#renoise.song().selected_track.devices do
+for y=1,#renoise.song().selected_track.devices[i].parameters do
+renoise.song().selected_track.devices[i].parameters[y].show_in_mixer=true
+end
+end
+end
+end
+end
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Expose/Hide Selected Track ALL Device Parameters",invoke = function() exposeHideParametersInMixer() end}
+renoise.tool():add_menu_entry{name="Mixer:Paketti..:Expose/Hide Selected Track ALL Device Parameters",invoke = function() exposeHideAllParametersInMixer() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Expose/Hide Selected Track ALL Device Parameters", invoke=function() exposeHideParametersInMixer() end}  
 
 
 

@@ -97,7 +97,7 @@ local function addAsShortcut()
 
                 -- Attempt to add the keybinding, using pcall to catch any errors gracefully
                 local success, err = pcall(function()
-                    renoise.tool():add_keybinding{name=keyBindingName, invoke=function() loadnative(cb_info.path) end}
+ renoise.tool():add_keybinding{name=keyBindingName, invoke=function() loadnative(cb_info.path) end}
                 end)
 
                 -- Check if the keybinding was added successfully

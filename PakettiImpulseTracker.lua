@@ -32,9 +32,14 @@ if w.disk_browser_is_visible then
   w.pattern_advanced_edit_is_visible=false
   w.disk_browser_is_visible=false
     renoise.app().window.pattern_advanced_edit_is_visible=true
-
 --renoise.app().window:select_preset(8)
-return end end
+return end 
+
+--if preferences.upperFramePreference ~= 0 then  w.active_upper_frame = preferences.upperFramePreference else end
+
+
+end
+
 renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker F2 Pattern Editor", invoke=function() F2() end}
 
 -- F2
@@ -47,7 +52,6 @@ w.upper_frame_is_visible=true
 w.active_lower_frame=raw.LOWER_FRAME_TRACK_DSPS
 end
 renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker F2 Pattern Editor ONLY", invoke=function() F2Only() end}
-
 ----------------------------------------------------------------------------------------------------------------
 function MixerToF2()
 local w=renoise.app().window
@@ -72,7 +76,6 @@ w.disk_browser_is_visible=false
 w.pattern_matrix_is_visible=false
 end
 renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker F2 Pattern Editor Mini", invoke=function() F2mini() end}
-
 ----------------------------------------------------------------------------------------------------------------
 --- F3
 function F3()
@@ -99,12 +102,14 @@ w.active_upper_frame=2
 return else  end
 
 if w.upper_frame_is_visible == true then 
--- w.active_upper_frame = raw.UPPER_FRAME_TRACK_SCOPES 
+
 else return end
 
 if w.active_middle_frame==raw.MIDDLE_FRAME_PATTERN_EDITOR and w.lower_frame_is_visible==false and w.pattern_advanced_edit_is_visible==false and w.upper_frame_is_visible==false then
 w.upper_frame_is_visible=true
---w.active_upper_frame=raw.UPPER_FRAME_TRACK_SCOPES
+
+
+
 w.disk_browser_is_visible=true return
 else end
 
@@ -115,7 +120,10 @@ else end
 --else w.active_upper_frame = raw.UPPER_FRAME_TRACK_SCOPES end
 
 s.selected_instrument.active_tab=1
---w.active_upper_frame =renoise.ApplicationWindow.UPPER_FRAME_TRACK_SCOPES
+--if preferences.upperFramePreference ~= 0.0 then 
+-- print (preferences.upperFramePreference)
+-- renoise.app().window.active_upper_frame = preferences.upperFramePreference
+--else end
 w.active_middle_frame=raw.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
 
 --renoise.app().window.active_middle_frame=renoise.ApplicationWindow.MIDDLE_FRAME_PHRASE_EDITOR
@@ -136,7 +144,6 @@ w.active_middle_frame=raw.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker F3 Sample Editor Only", invoke=function() F3Only() end}
-
 ----------------------------------------------------------------------------------------------------------------
 -- F4, or "Impulse Tracker Shortcut F4 display-change", "Instrument Editor".
 -- Hides Pattern Matrix, Hides Advanced Edit.
@@ -150,6 +157,10 @@ local raw=renoise.ApplicationWindow
 --end
 --w.lower_frame_is_visible=true
 --w.upper_frame_is_visible=true
+--if preferences.upperFramePreference ~= 0 then 
+-- w.active_upper_frame = preferences.upperFramePreference
+--else end
+
 --w.active_upper_frame=1 -- Force-sets to Track Scopes.
 --w.active_lower_frame =3 -- Set to Instrument Settings
 --w.lock_keyboard_focus=true
@@ -192,7 +203,6 @@ t:start(renoise.Transport.PLAYMODE_RESTART_PATTERN)
 end
 renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker F5 Start Playback", invoke=function() ImpulseTrackerPlaySong() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker F5 Start Playback (2nd)", invoke=function() ImpulseTrackerPlaySong() end}
-
 ----------------------------------------------------------------------------------------------------------------
 -- F6, or Impulse Tracker Play Pattern.
 -- There is currently no need for this, but if there one day is, this'll be where it will reside :)
@@ -265,12 +275,17 @@ local  w=renoise.app().window
 local raw=renoise.ApplicationWindow
 if w.upper_frame_is_visible==true and w.pattern_matrix_is_visible==false and w.active_middle_frame==2 and w.active_lower_frame==1 then
 w.pattern_matrix_is_visible=true
-w.active_lower_frame=raw.LOWER_FRAME_TRACK_AUTOMATION -- Set to Automation.
+w.active_lower_frame=raw.LOWER_FRAME_TRACK_AUTOMATION
 else w.pattern_matrix_is_visible=false
-w.active_lower_frame=raw.LOWER_FRAME_TRACK_DSPS -- Set to Track DSPs.
+w.active_lower_frame=raw.LOWER_FRAME_TRACK_DSPS
 end
---w.active_upper_frame=raw.UPPER_FRAME_TRACK_SCOPES -- Set to Track Scopes
-w.active_middle_frame=raw.MIDDLE_FRAME_MIXER -- Set to Mixer
+
+--    if preferences and preferences.upperFramePreference and preferences.upperFramePreference ~= 0 then 
+--        w.active_upper_frame = preferences.upperFramePreference
+--    end
+    
+--w.active_upper_frame=raw.UPPER_FRAME_TRACK_SCOPES
+w.active_middle_frame=raw.MIDDLE_FRAME_MIXER
 w.lower_frame_is_visible=true
 w.upper_frame_is_visible=true
 w.lock_keyboard_focus=true
@@ -313,7 +328,7 @@ w.pattern_advanced_edit_is_visible=false
 end
 renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker F12 Master", invoke=function() F12() end}
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
--- Impulse Tracker Next / Previous Pattern (keyboard + midi)
+-- Impulse Tracker Next / Previous Pattern (Keyboard + Midi)
 function ImpulseTrackerNextPattern()
 local s=renoise.song()
 if s.transport.follow_player==false then s.transport.follow_player=true end
@@ -401,8 +416,7 @@ function Octave(new_octave)
 end
 
 for oct=0,9 do
-  renoise.tool():add_keybinding{
-    name = "Pattern Editor:Paketti:Set Note to Octave " .. oct,
+  renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Set Note to Octave " .. oct,
     invoke=function() Octave(oct) end }
 end
 -------------------------------------------------------------------------------------------------------------------------------------

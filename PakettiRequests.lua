@@ -718,20 +718,16 @@ function transposeAllSamplesInInstrument(amount)
     end
 end
 
-renoise.tool():add_keybinding {
-    name = "Global:Paketti:Set Selected Instrument Samples Transpose -1",
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Samples Transpose -1",
     invoke = function() transposeAllSamplesInInstrument(-1) end}
 
-renoise.tool():add_keybinding {
-    name = "Global:Paketti:Set Selected Instrument Samples Transpose +1",
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Samples Transpose +1",
     invoke = function() transposeAllSamplesInInstrument(1) end}
 
-renoise.tool():add_keybinding {
-    name = "Global:Paketti:Set Selected Instrument Samples Transpose -12",
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Samples Transpose -12",
     invoke = function() transposeAllSamplesInInstrument(-12) end}
 
-renoise.tool():add_keybinding {
-    name = "Global:Paketti:Set Selected Instrument Samples Transpose +12",
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Samples Transpose +12",
     invoke = function() transposeAllSamplesInInstrument(12) end}
 
 function resetInstrumentTranspose(amount)
@@ -825,8 +821,65 @@ end}
 
 
 
+-------------
+function selectInstrumentShortcut(instrumentNumber)
+local instrument = renoise.song().instruments[renoise.song().selected_instrument_index]
+
+local instCount = #renoise.song().instruments
+  
+if  instCount < instrumentNumber then 
+renoise.app():show_status("This Instrument Number does not exist: " .. instrumentNumber)
+
+else
+renoise.song().selected_instrument_index = instrumentNumber
+end
+end
 
 
+for i = 0, 32 do 
+renoise.tool():add_keybinding{name="Global:Paketti:Select Instrument " .. i,invoke=function() selectInstrumentShortcut(i) end}
+end
+------
+function selectNextGroupTrack()
+    local song = renoise.song()
+    local current_index = song.selected_track_index
+    local num_tracks = #song.tracks
 
+    -- Start from the next track of the currently selected one and loop around if necessary
+    for i = current_index + 1, num_tracks + current_index do
+        -- Use modulo operation to wrap around the track index when it exceeds the number of tracks
+        local track_index = (i - 1) % num_tracks + 1
+        if song.tracks[track_index].type == renoise.Track.TRACK_TYPE_GROUP then
+            song.selected_track_index = track_index
+            print("Moved to next group track: " .. song.tracks[track_index].name)
+            return -- Exit after finding and moving to the next group track
+        end
+    end
+end
 
+function selectPreviousGroupTrack()
+    local song = renoise.song()
+    local current_index = song.selected_track_index
+    local num_tracks = #song.tracks
+
+    -- Start from the track just before the currently selected one and loop around if necessary
+    for i = current_index - 1, current_index - num_tracks, -1 do
+        -- Use modulo operation to wrap around the track index when it goes below 1
+        local track_index = (i - 1) % num_tracks + 1
+        if song.tracks[track_index].type == renoise.Track.TRACK_TYPE_GROUP then
+            song.selected_track_index = track_index
+            print("Moved to previous group track: " .. song.tracks[track_index].name)
+            return -- Exit after finding and moving to the previous group track
+        end
+    end
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Select Group Next", invoke=function() selectNextGroupTrack()
+end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Select Group Previous", invoke=function() selectPreviousGroupTrack()
+end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Delete / Clear / Wipe Entire Row", invoke=function()
+renoise.song().selected_line:clear() end}
 

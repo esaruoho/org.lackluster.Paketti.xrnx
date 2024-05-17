@@ -23,9 +23,10 @@ require "PakettiRequests"
 function startup()  
    local s=renoise.song()
    local t=s.transport
-      renoise.app().window:select_preset(1)
+     -- renoise.app().window:select_preset(1)
       s.sequencer.keep_sequence_sorted=false
       t.groove_enabled=true
+      renoise.app():show_status("I'm a notifier and I just rangg")
 end
 
 if not renoise.tool().app_new_document_observable:has_notifier(startup)   

@@ -3,6 +3,7 @@ local vb=renoise.ViewBuilder()
 
 -- Define Preferences
 preferences = renoise.Document.create("ScriptingToolPreferences") {
+    upperFramePreference = 0,
     _0G01_Loader = false,
     RandomBPM = false,
     loadPaleGreenTheme = false,
@@ -13,9 +14,19 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
     WipeSlicesMuteGroup = 1, -- Default is Mute Group 1
     WipeSlicesNNA = 1,
     WipeSlicesBeatSyncGlobal = false, -- Default is Off
+    sliceCounter = 1,
+    slicePreviousDirection = 1,
 }
 
 renoise.tool().preferences=preferences
+
+-- Function to load the preferences
+local function load_preferences()
+  renoise.tool().preferences = preferences
+  if io.exists("preferences.xml") then -- Check if the preference file exists
+    preferences:load_from("preferences.xml")
+  end
+end
 
 -- Function to update Random BPM and its dependent functions
 local function update_random_bpm_preferences()
@@ -72,8 +83,7 @@ local function update_dynamic_menu_entries()
             renoise.tool():remove_menu_entry(enableMenuEntryName)
         end
         if not renoise.tool():has_menu_entry(disableMenuEntryName) then
-            renoise.tool():add_menu_entry{
-                name=disableMenuEntryName,
+            renoise.tool():add_menu_entry{name=disableMenuEntryName,
                 invoke=function()
                     preferences._0G01_Loader.value=false
                     update_dynamic_menu_entries()
@@ -90,8 +100,7 @@ local function update_dynamic_menu_entries()
             renoise.tool():remove_menu_entry(disableMenuEntryName)
         end
         if not renoise.tool():has_menu_entry(enableMenuEntryName) then
-            renoise.tool():add_menu_entry{
-                name=enableMenuEntryName,
+            renoise.tool():add_menu_entry{name=enableMenuEntryName,
                 invoke=function()
                     preferences._0G01_Loader.value=true
                     update_dynamic_menu_entries()
@@ -119,9 +128,10 @@ end
 
 -- Ensure initialization occurs safely when a Renoise song is available
 local function safe_initialize()
-    if not renoise.tool().app_idle_observable:has_notifier(initialize_tool) then
-        renoise.tool().app_idle_observable:add_notifier(initialize_tool)
-    end
+  if not renoise.tool().app_idle_observable:has_notifier(initialize_tool) then
+    renoise.tool().app_idle_observable:add_notifier(initialize_tool)
+  end
+  load_preferences() -- Load preferences before initializing
 end
 
 safe_initialize()
@@ -129,7 +139,7 @@ safe_initialize()
 function show_paketti_preferences()
 local vb=renoise.ViewBuilder()
     if dialog and dialog.visible then return end
-
+    local checkboxUpperFrameOff, checkboxUpperFrameScopes, checkboxUpperFrameSpectrum
     local checkboxBeatSyncGlobalOff, checkboxBeatSyncGlobalOn
     -- Define all checkbox variables at the start to ensure they are accessible throughout the function
     local checkboxOff, checkboxForward, checkboxReverse, checkboxPingPong
@@ -168,7 +178,42 @@ checkboxBeatSyncGlobalOn = vb:checkbox {
         end
     end
 }
-    
+
+checkboxUpperFrameOff = vb:checkbox {
+  value = preferences.upperFramePreference.value == 0,
+  notifier = function(checked)
+    if checked then
+      preferences.upperFramePreference.value = 0
+      checkboxUpperFrameScopes.value = false
+      checkboxUpperFrameSpectrum.value = false
+    end
+  end
+}
+
+checkboxUpperFrameScopes = vb:checkbox {
+  value = preferences.upperFramePreference.value == 1,
+  notifier = function(checked)
+    if checked then
+      preferences.upperFramePreference.value = 1
+      checkboxUpperFrameOff.value = false
+      checkboxUpperFrameSpectrum.value = false
+    end
+  end
+}
+
+checkboxUpperFrameSpectrum = vb:checkbox {
+  value = preferences.upperFramePreference.value == 2,
+  notifier = function(checked)
+    if checked then
+      preferences.upperFramePreference.value = 2
+      checkboxUpperFrameOff.value = false
+      checkboxUpperFrameScopes.value = false
+    end
+  end
+
+}
+
+---------    
     
     checkboxOff = vb:checkbox {value = preferences.WipeSlicesLoopMode.value == 1, notifier = function(checked) if checked then preferences.WipeSlicesLoopMode.value = 1; checkboxForward.value = false; checkboxReverse.value = false; checkboxPingPong.value = false; end end}
     checkboxForward = vb:checkbox {value = preferences.WipeSlicesLoopMode.value == 2, notifier = function(checked) if checked then preferences.WipeSlicesLoopMode.value = 2; checkboxOff.value = false; checkboxReverse.value = false; checkboxPingPong.value = false; end end}
@@ -247,6 +292,38 @@ end
     -- Construct the dialog with all elements
     local dialog_content = vb:column {
         margin = 10,
+
+  -- Title of the control section
+  vb:text {
+    text = "UpperFrame Control F2 F3 F4 F11",
+    font = "bold"
+  },
+
+  -- Row layout for checkboxes and their labels
+  vb:row {
+
+    -- Off Checkbox and its label
+    checkboxUpperFrameOff,
+    vb:text {
+      text = "Off"
+    },
+
+    -- Scopes Checkbox and its label
+    checkboxUpperFrameScopes,
+    vb:text {
+      text = "Scopes"
+    },
+
+    -- Spectrum Checkbox and its label
+    checkboxUpperFrameSpectrum,
+    vb:text {
+      text = "Spectrum"
+    },
+},
+    horizontal_rule(),      
+        
+        
+        
         vb:row {vb:checkbox {value = preferences._0G01_Loader.value, notifier = function(value) preferences._0G01_Loader.value = value; update_0G01_loader_menu_entries(); end}, vb:text {text = "Enable 0G01 Loader"}},
         vb:row {vb:checkbox {value = preferences.RandomBPM.value, notifier = function(value) preferences.RandomBPM.value = value; update_random_bpm_preferences(); end}, vb:text {text = "Enable Random BPM Write to Master"}},
         vb:row {vb:checkbox {value = preferences.loadPaleGreenTheme.value, notifier = function(value) preferences.loadPaleGreenTheme.value = value; update_loadPaleGreenTheme_preferences(); end}, vb:text {text = "Load Pale Green Theme"}},
@@ -322,14 +399,7 @@ vb:row {
     dialog = renoise.app():show_custom_dialog("Paketti Preferences", dialog_content)
 end
 
-
 -- Add menu entry and keybinding for showing the preferences dialog
-renoise.tool():add_menu_entry{
-    name="Main Menu:Tools:Paketti..:!Preferences:Paketti Preferences...",
-    invoke=show_paketti_preferences
-}
-renoise.tool():add_keybinding{
-    name="Global:Paketti:Show Paketti Preferences...",
-    invoke=show_paketti_preferences
-}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:!Preferences:Paketti Preferences...",invoke=show_paketti_preferences}
+renoise.tool():add_keybinding{name="Global:Paketti:Show Paketti Preferences...",invoke=show_paketti_preferences}
 

@@ -1,8 +1,7 @@
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Inspect Plugin",invoke=function() inspectPlugin() end}
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Inspect Device in Slot 2",invoke=function() inspectEffect() end}
 
-renoise.tool():add_menu_entry{
-    name = "--Main Menu:Tools:Paketti..:Pattern Editor:Random BPM (60-180)",
+renoise.tool():add_menu_entry{name = "--Main Menu:Tools:Paketti..:Pattern Editor:Random BPM (60-180)",
    invoke = function()
         -- Define a list of possible BPM values
         local bpmList = {80, 100, 115, 123, 128, 132, 135, 138, 160}
@@ -44,27 +43,20 @@ renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor:E
 
 -------- Plugins/Devices
 -- Adding menu entries for listing available plugins by type
-renoise.tool():add_menu_entry {
-    name="--Main Menu:Tools:Paketti..:Plugins/Devices:Load Native Devices Dialog",
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Load Native Devices Dialog",
     invoke=function() show_plugin_list_dialog() end}
-renoise.tool():add_menu_entry {
-    name="--Main Menu:Tools:Paketti..:Plugins/Devices:List Available VST Plugins",
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:List Available VST Plugins",
     invoke=function() listByPluginType("VST") end}
-renoise.tool():add_menu_entry {
-    name="Main Menu:Tools:Paketti..:Plugins/Devices:List Available AU Plugins",
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:List Available AU Plugins",
     invoke=function() listByPluginType("AU") end}
-renoise.tool():add_menu_entry {
-    name="Main Menu:Tools:Paketti..:Plugins/Devices:List Available VST3 Plugins",
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:List Available VST3 Plugins",
     invoke=function() listByPluginType("VST3") end}
 -- Adding menu entries for listing available devices (effects) by type
-renoise.tool():add_menu_entry {
-    name="Main Menu:Tools:Paketti..:Plugins/Devices:List Available VST Effects",
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:List Available VST Effects",
     invoke=function() listDevicesByType("VST") end}
-renoise.tool():add_menu_entry {
-    name="Main Menu:Tools:Paketti..:Plugins/Devices:List Available AU Effects",
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:List Available AU Effects",
     invoke=function() listDevicesByType("AU") end}
-renoise.tool():add_menu_entry {
-    name="Main Menu:Tools:Paketti..:Plugins/Devices:List Available VST3 Effects",
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:List Available VST3 Effects",
     invoke=function() listDevicesByType("VST3") end}
 renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Dump VST/VST3/AU/Native Effects to Console", invoke=function() 
 local devices=renoise.song().tracks[renoise.song().selected_track_index].available_devices

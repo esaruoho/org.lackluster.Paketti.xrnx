@@ -177,6 +177,28 @@ function midi_imm()
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Pattern Editor <-> Midi Editor Switcher",invoke=function() midi_imm() end}
+-----------
+function selectNextTrack()
+local nextTrack= renoise.song().selected_track_index+1
+if nextTrack > #renoise.song().tracks then
+nextTrack=1 else end
+renoise.song().selected_track_index=nextTrack
+end
+
+function selectPreviousTrack()
+local previousTrack= renoise.song().selected_track_index-1
+if previousTrack < 1
+then previousTrack=#renoise.song().tracks 
+renoise.song().selected_track_index=previousTrack return else
+
+if previousTrack > #renoise.song().tracks then
+previousTrack=1 else end
+end
+renoise.song().selected_track_index=previousTrack
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Select Next Track", invoke=function() selectNextTrack() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Select Previous Track", invoke=function() selectPreviousTrack() end}
 
 
 

@@ -391,35 +391,30 @@ function pakettiPatternDoubler()
 
     -- Loop through each track in the selected pattern
     for track_index, pattern_track in ipairs(song.selected_pattern.tracks) do
+      -- Copy notes in the pattern
       if not pattern_track.is_empty then
-        -- Copy notes in the pattern
         for line_index = 1, old_patternlength do
           local line = pattern_track:line(line_index)
           local new_line = pattern_track:line(line_index + old_patternlength)
-          if not line.is_empty then
-            new_line:copy_from(line)
-          else
-            new_line:clear()
-          end
+          new_line:copy_from(line)
         end
       end
 
-      -- Handle automation duplication with detailed debug output
+      -- Handle automation duplication
       local track_automations = song.patterns[pattern_index].tracks[track_index].automation
-      if next(track_automations) ~= nil then -- Check if there's any automation
-        for param, automation in pairs(track_automations) do
-          print("Processing automation for parameter:", param)
-          local points = automation.points
-          for i, point in ipairs(points) do
-            local new_time = point.time + old_patternlength
-            if new_time <= new_patternlength then
-              automation:add_point_at(new_time, point.value)
-              print("Duplicating point:", point.time, point.value, "to", new_time)
-            end
-          end
+      for param, automation in pairs(track_automations) do
+        local points = automation.points
+        local new_points = {} -- Store new points to be added
+
+        -- Collect new points to add, adjusting time by old pattern length
+        for _, point in ipairs(points) do
+          table.insert(new_points, {time = point.time + old_patternlength, value = point.value})
         end
-      else
-        print("No automation found in track", track_index)
+
+        -- Add the new points to the automation
+        for _, new_point in ipairs(new_points) do
+          automation:add_point_at(new_point.time, new_point.value)
+        end
       end
     end
 
@@ -429,6 +424,7 @@ function pakettiPatternDoubler()
     print("New pattern length exceeds 512 lines, operation cancelled.")
   end
 end
+
 
 function pakettiPatternHalver()
   local s = renoise.song()
@@ -518,8 +514,7 @@ local randombpm = {80, 100, 115, 123, 128, 132, 135, 138, 160}
     end
 end
 
-renoise.tool():add_keybinding{
-    name = "Pattern Editor:Paketti..:Renoise Random BPM & Write BPM/LPB to Master",
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti..:Renoise Random BPM & Write BPM/LPB to Master",
     invoke = function()
         local randombpm = {80, 100, 115, 123, 128, 132, 135, 138, 160}
         math.randomseed(os.time())
@@ -554,8 +549,7 @@ renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Play at 75% Speed (
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Play at 100% Speed (Song BPM)", invoke=function() returnbackto100()  end}
 
 
-renoise.tool():add_keybinding {
-    name = "Global:Paketti:Random BPM from List",
+renoise.tool():add_keybinding{name="Global:Paketti:Random BPM from List",
     invoke = function()
         -- Define a list of possible BPM values
         local bpmList = {80, 100, 115, 123, 128, 132, 135, 138, 160}
@@ -1102,8 +1096,7 @@ function select_specific_track(number)
 end
 
 for st=1,16 do
-  renoise.tool():add_keybinding{
-    name = "Global:Paketti:Select Specific Track " .. st, 
+  renoise.tool():add_keybinding{name="Global:Paketti:Select Specific Track " .. st, 
     invoke=function() select_specific_track(st) end}
 end
 
@@ -1290,6 +1283,117 @@ writeretrig()
 else renoise.song().selected_note_column_index=1 end end} 
 
 
+
+----------
+
+
+
+function previousEffectColumn()
+  -- Fetch the currently selected track
+  local selected_track = renoise.song().selected_track
+  local num_effect_columns = selected_track.visible_effect_columns
+
+  -- Proceed only if there are visible effect columns
+  if num_effect_columns > 0 then
+    -- Check if there is a currently selected effect column
+    if renoise.song().selected_effect_column == nil then
+      -- No effect column selected, select the last one
+      renoise.song().selected_effect_column_index = num_effect_columns
+    else
+      -- Find the index of the currently selected effect column
+      local current_index = renoise.song().selected_effect_column_index
+
+      -- If the current column is the first one, or there's only one, go to the previous track's last column
+      if current_index == 1 or num_effect_columns == 1 then
+        -- Find and select the last track with visible effect columns
+        local song = renoise.song()
+        local current_track_index = song.selected_track_index
+        local track_count = #song.tracks
+
+        -- Loop through tracks starting from the previous track
+        local found = false
+        for i = current_track_index - 1, 1, -1 do
+          if song.tracks[i].visible_effect_columns > 0 then
+            song.selected_track_index = i
+            song.selected_effect_column_index = song.tracks[i].visible_effect_columns
+            found = true
+            break
+          end
+        end
+
+        -- If no previous track with visible columns was found, loop from the end
+        if not found then
+          for i = track_count, current_track_index + 1, -1 do
+            if song.tracks[i].visible_effect_columns > 0 then
+              song.selected_track_index = i
+              song.selected_effect_column_index = song.tracks[i].visible_effect_columns
+              break
+            end
+          end
+        end
+      else
+        -- Move to the previous effect column in the current track
+        renoise.song().selected_effect_column_index = current_index - 1
+      end
+    end
+  else
+    print("The selected track has no visible effect columns.")
+  end
+end
+
+
+
+function nextEffectColumn()
+  local selected_track = renoise.song().selected_track
+  local num_effect_columns = selected_track.visible_effect_columns
+
+  -- Proceed only if there are visible effect columns
+  if num_effect_columns > 0 then
+    -- Check if there is a currently selected effect column
+    if renoise.song().selected_effect_column == nil then
+      -- No effect column selected, select the first one
+      renoise.song().selected_effect_column_index = 1
+    else
+      -- Find the index of the currently selected effect column
+      local current_index = renoise.song().selected_effect_column_index
+      
+      -- If the current column is the last one, or there's only one, go to the next track's first column
+      if current_index == num_effect_columns or num_effect_columns == 1 then
+        -- Find and select the first track with visible effect columns
+        local song = renoise.song()
+        local current_track_index = song.selected_track_index
+        local track_count = #song.tracks
+
+        -- Loop through tracks starting from the next track
+        local found = false
+        for i = current_track_index + 1, track_count do
+          if song.tracks[i].visible_effect_columns > 0 then
+            song.selected_track_index = i
+            song.selected_effect_column_index = 1
+            found = true
+            break
+          end
+        end
+
+        if not found then
+          for i = 1, current_track_index - 1 do
+            if song.tracks[i].visible_effect_columns > 0 then
+              song.selected_track_index = i
+              song.selected_effect_column_index = 1
+              break
+            end
+          end
+        end
+      else
+        renoise.song().selected_effect_column_index = current_index + 1
+      end
+    end
+  else
+  end
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Select Previous Effect Column", invoke=function() previousEffectColumn() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Select Next Effect Column", invoke=function() nextEffectColumn() end}
 
 
 

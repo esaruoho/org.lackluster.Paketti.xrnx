@@ -64,16 +64,9 @@ resultant = renoise.song().selected_line_index+renoise.song().transport.edit_ste
 
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Numpad SelectPlay 0",invoke=function() selectplay(0) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Numpad SelectPlay 1",invoke=function() selectplay(1) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Numpad SelectPlay 2",invoke=function() selectplay(2) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Numpad SelectPlay 3",invoke=function() selectplay(3) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Numpad SelectPlay 4",invoke=function() selectplay(4) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Numpad SelectPlay 5",invoke=function() selectplay(5) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Numpad SelectPlay 6",invoke=function() selectplay(6) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Numpad SelectPlay 7",invoke=function() selectplay(7) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Numpad SelectPlay 8",invoke=function() selectplay(8) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Numpad SelectPlay 9",invoke=function() selectplay(9) end}
+for i = 0,9 do
+renoise.tool():add_keybinding{name="Global:Paketti:Numpad SelectPlay " .. i,invoke=function() selectPlay(i) end}
+end
 
 ------------------------------------------------------------------------------------------------------
 --cortex.scripts.CaptureOctave v1.1 by cortex
