@@ -1,142 +1,154 @@
+
 -- Define render state (initialized when starting to render)
 render_context = {
-  source_track = 0,
-  target_track = 0,
-  target_instrument = 0,
-  temp_file_path = ""
+    source_track = 0,
+    target_track = 0,
+    target_instrument = 0,
+    temp_file_path = ""
 }
 
 -- Function to initiate rendering
 function start_rendering()
-  -- Set up rendering options
-  
-  -- TODO: Detect #Line-In then use realtime otherwise high
-  local render_options = {
-    sample_rate = 88200,
-    bit_depth = 32,
-    interpolation = "precise",
-    priority = "high",
-    start_pos = renoise.SongPos(renoise.song().selected_sequence_index, 1),
-    end_pos = renoise.SongPos(renoise.song().selected_sequence_index, renoise.song().patterns[renoise.song().selected_pattern_index].number_of_lines),
-  }
-  
-  -- Set render context
-  render_context.source_track = renoise.song().selected_track_index
-  render_context.target_track = render_context.source_track + 1
-  render_context.target_instrument = renoise.song().selected_instrument_index + 1
-  render_context.temp_file_path = os.tmpname() .. ".wav"
+    -- Check for #Line Input device in the selected track
+    local render_priority = "high"
+    local selected_track = renoise.song().selected_track
 
-  -- Start rendering with the correct function call
-  local success, error_message = renoise.song():render(render_options, render_context.temp_file_path, rendering_done_callback)
-  if not success then
-    print("Rendering failed: " .. error_message)
-  else
-    -- Start a timer to monitor rendering progress
-    renoise.tool():add_timer(monitor_rendering, 500)
-  end
+    for _, device in ipairs(selected_track.devices) do
+        if device.name == "#Line Input" then
+            render_priority = "realtime"
+            break
+        end
+    end
+
+    -- Set up rendering options
+    local render_options = {
+        sample_rate = preferences.renderSampleRate.value,
+        bit_depth = preferences.renderBitDepth.value,
+        interpolation = "precise",
+        priority = render_priority,
+        start_pos = renoise.SongPos(renoise.song().selected_sequence_index, 1),
+        end_pos = renoise.SongPos(renoise.song().selected_sequence_index, renoise.song().patterns[renoise.song().selected_pattern_index].number_of_lines),
+    }
+
+    -- Set render context
+    render_context.source_track = renoise.song().selected_track_index
+    render_context.target_track = render_context.source_track + 1
+    render_context.target_instrument = renoise.song().selected_instrument_index + 1
+    render_context.temp_file_path = os.tmpname() .. ".wav"
+
+    -- Start rendering with the correct function call
+    local success, error_message = renoise.song():render(render_options, render_context.temp_file_path, rendering_done_callback)
+    if not success then
+        print("Rendering failed: " .. error_message)
+    else
+        -- Start a timer to monitor rendering progress
+        renoise.tool():add_timer(monitor_rendering, 500)
+    end
 end
 
 -- Callback function that gets called when rendering is complete
 function rendering_done_callback()
-  local song = renoise.song()
-  local renderTrack = render_context.source_track
-  local renderedTrack = renderTrack + 1
-  local renderedInstrument = render_context.target_instrument
+    local song = renoise.song()
+    local renderTrack = render_context.source_track
+    local renderedTrack = renderTrack + 1
+    local renderedInstrument = render_context.target_instrument
 
-  -- Remove the monitoring timer
-  renoise.tool():remove_timer(monitor_rendering)
+    -- Remove the monitoring timer
+    renoise.tool():remove_timer(monitor_rendering)
 
-  -- Un-Solo Selected Track
-  song.tracks[renderTrack]:solo()
+    -- Un-Solo Selected Track
+    song.tracks[renderTrack]:solo()
 
-  -- Turn All Render Track Note Columns to "Off"
-  for i = 1, song.tracks[renderTrack].max_note_columns do
-    song.tracks[renderTrack]:set_column_is_muted(i, true)
-  end
+    -- Turn All Render Track Note Columns to "Off"
+    for i = 1, song.tracks[renderTrack].max_note_columns do
+        song.tracks[renderTrack]:set_column_is_muted(i, true)
+    end
 
-  -- Collapse Render Track
-  song.tracks[renderTrack].collapsed = true
+    -- Collapse Render Track
+    song.tracks[renderTrack].collapsed = true
 
-  -- Add Sample Slot to New Instrument
-  song:insert_instrument_at(renderedInstrument)
-  local new_instrument = song:instrument(renderedInstrument)
-  new_instrument:insert_sample_at(1)
+    -- Add Sample Slot to New Instrument
+    song:insert_instrument_at(renderedInstrument)
+    local new_instrument = song:instrument(renderedInstrument)
+    new_instrument:insert_sample_at(1)
 
-  -- Load Sample into New Instrument Sample Buffer
-  new_instrument.samples[1].sample_buffer:load_from(render_context.temp_file_path)
-  os.remove(render_context.temp_file_path)
+    -- Load Sample into New Instrument Sample Buffer
+    new_instrument.samples[1].sample_buffer:load_from(render_context.temp_file_path)
+    os.remove(render_context.temp_file_path)
 
-  -- Print the current selected_instrument_index
-  print("Before setting the selected instrument index: " .. song.selected_instrument_index)
+    -- Print the current selected_instrument_index
+    print("Before setting the selected instrument index: " .. song.selected_instrument_index)
 
-  -- Set the selected_instrument_index to the newly created instrument
-  song.selected_instrument_index = renderedInstrument
+    -- Set the selected_instrument_index to the newly created instrument
+    song.selected_instrument_index = renderedInstrument
 
-  -- Print the current selected_instrument_index
-  print("After setting the selected instrument index: " .. song.selected_instrument_index)
+    -- Print the current selected_instrument_index
+    print("After setting the selected instrument index: " .. song.selected_instrument_index)
 
-  -- Insert New Track Next to Render Track
-  song:insert_track_at(renderedTrack)
-  local renderName = song.tracks[renderTrack].name
-  -- Rename Sample Slot to Render Track
-  new_instrument.samples[1].name = renderName .. " (Rendered)"
-  
-  -- Select New Track
-  song.selected_track_index = renderedTrack
-  
-  -- Rename New Track using Render Track Name
-  song.tracks[renderedTrack].name = renderName .. " (Rendered)"
-  
-  -- Insert C-4 + Rendered Instrument number to Rendered Track
-  song.selected_pattern.tracks[renderedTrack].lines[1].note_columns[1].note_string = "C-4"
-  song.selected_pattern.tracks[renderedTrack].lines[1].note_columns[1].instrument_value = renderedInstrument - 1
+    -- Insert New Track Next to Render Track
+    song:insert_track_at(renderedTrack)
+    local renderName = song.tracks[renderTrack].name
+    -- Rename Sample Slot to Render Track
+    new_instrument.samples[1].name = renderName .. " (Rendered)"
 
-  new_instrument.name = renderName .. " (Rendered)"
-  new_instrument.samples[1].autofade = true
-  new_instrument.samples[1].autoseek = true
+    -- Select New Track
+    song.selected_track_index = renderedTrack
+
+    -- Rename New Track using Render Track Name
+    song.tracks[renderedTrack].name = renderName .. " (Rendered)"
+
+    -- Insert C-4 + Rendered Instrument number to Rendered Track
+    song.selected_pattern.tracks[renderedTrack].lines[1].note_columns[1].note_string = "C-4"
+    song.selected_pattern.tracks[renderedTrack].lines[1].note_columns[1].instrument_value = renderedInstrument - 1
+
+    new_instrument.name = renderName .. " (Rendered)"
+    new_instrument.samples[1].autofade = true
+    new_instrument.samples[1].autoseek = true
 end
 
 -- Function to monitor rendering progress
 function monitor_rendering()
-  if renoise.song().rendering then
-    local progress = renoise.song().rendering_progress
-    print("Rendering in progress: " .. (progress * 100) .. "% complete")
-  else
-    -- Remove the monitoring timer once rendering is complete or if it wasn't started
-    renoise.tool():remove_timer(monitor_rendering)
-    print("Rendering not in progress or already completed.")
-  end
+    if renoise.song().rendering then
+        local progress = renoise.song().rendering_progress
+        print("Rendering in progress: " .. (progress * 100) .. "% complete")
+    else
+        -- Remove the monitoring timer once rendering is complete or if it wasn't started
+        renoise.tool():remove_timer(monitor_rendering)
+        print("Rendering not in progress or already completed.")
+    end
 end
 
 function pakettiCleanRenderSelection()
-  local song = renoise.song()
-  local renderTrack = song.selected_track_index
-  local renderedTrack = renderTrack + 1
-  local renderedInstrument = song.selected_instrument_index + 1
+    local song = renoise.song()
+    local renderTrack = song.selected_track_index
+    local renderedTrack = renderTrack + 1
+    local renderedInstrument = song.selected_instrument_index + 1
 
-  -- Print the initial selected_instrument_index
-  print("Initial selected_instrument_index: " .. song.selected_instrument_index)
+    -- Print the initial selected_instrument_index
+    print("Initial selected_instrument_index: " .. song.selected_instrument_index)
 
-  -- Create New Instrument
-  song:insert_instrument_at(renderedInstrument)
-  
-  -- Select New Instrument
-  song.selected_instrument_index = renderedInstrument
+    -- Create New Instrument
+    song:insert_instrument_at(renderedInstrument)
 
-  -- Print the selected_instrument_index after creating new instrument
-  print("selected_instrument_index after creating new instrument: " .. song.selected_instrument_index)
+    -- Select New Instrument
+    song.selected_instrument_index = renderedInstrument
 
-  -- Solo Selected Track
-  song.tracks[renderTrack]:solo()
+    -- Print the selected_instrument_index after creating new instrument
+    print("selected_instrument_index after creating new instrument: " .. song.selected_instrument_index)
 
-  -- Render Selected Track
-  start_rendering()
+    -- Solo Selected Track
+    song.tracks[renderTrack]:solo()
+
+    -- Render Selected Track
+    start_rendering()
 end
 
-renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Clean Render Selection",invoke=function() pakettiCleanRenderSelection() end}
-renoise.tool():add_menu_entry{name="Mixer:Paketti..:Clean Render Selection",invoke=function() pakettiCleanRenderSelection() end}
+renoise.tool():add_menu_entry{name = "Main Menu:Tools:Paketti..:Clean Render Selected Track", invoke = function() pakettiCleanRenderSelection() end}
+renoise.tool():add_menu_entry{name = "Pattern Editor:Paketti..:Clean Render Selected Track", invoke = function() pakettiCleanRenderSelection() end}
+renoise.tool():add_menu_entry{name = "Mixer:Paketti..:Clean Render Selected Track", invoke = function() pakettiCleanRenderSelection() end}
+renoise.tool():add_keybinding{name = "Global:Paketti..:Clean Render Selected Track", invoke = function() pakettiCleanRenderSelection() end}
 
-
+-------------
 -- Function to adjust a slice marker based on MIDI input
 function adjustSlice(slice_index, midivalue)
     local song = renoise.song()
@@ -1119,7 +1131,7 @@ end end end}
 
 renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Record To Current", invoke=function() recordtocurrenttrack() end}
 ----------------------------------------------------------------------------------------------------------
---esa- 2nd keybind for Record Toggle ON/OFF  with effect_column reading
+--esa- 2nd keybind for Record Toggle ON/OFF with effect_column reading
 function RecordToggle()
  local a=renoise.app()
  local s=renoise.song()
@@ -1141,119 +1153,6 @@ function RecordToggle()
 end
 end
 ----------------------------------------
-function cycle_upper_frame()
-  -- dBlue's cycle middle frame -explanation system thing
-  -- Populate this table with all the frames you wish to cycle through.
-  -- Reference: Renoise.Application.API.lua
-  local frames = {
-    renoise.ApplicationWindow.UPPER_FRAME_TRACK_SCOPES,
-    renoise.ApplicationWindow.UPPER_FRAME_MASTER_SPECTRUM
-  }
-  -- Get the active frame ID.
-  local active_frame = renoise.app().window.active_upper_frame
-  
-  -- Try to locate the frame ID within our table.
-  local index = -1
-  for i = 1, #frames do
-    if frames[i] == active_frame then
-      index = i
-      break
-    end
-  end
-  
-  -- If the frame ID is in our list, cycle to the next one.
-  if index > -1 then
-    index = index + 1
-    if index > #frames then
-      index = 1
-    end
-  -- Else, default to the first one.
-  else
-    index = 1
-  end
-  
-  renoise.app().window.active_upper_frame = frames[index]
-end
-----------------------------------------
-function cycle_middle_frame()
-  -- dBlue's cycle middle frame -explanation system thing
-  -- Populate this table with all the frames you wish to cycle through.
-  -- Reference: Renoise.Application.API.lua
-  local frames = {  
-    -- renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR,
-    -- renoise.ApplicationWindow.MIDDLE_FRAME_MIXER,
-    renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_PHRASE_EDITOR,
-    renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_KEYZONES,
-    renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR,
-    renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_MODULATION,
-    renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EFFECTS,
-    renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_PLUGIN_EDITOR,
-    renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_MIDI_EDITOR,
-  }
-  -- Get the active frame ID.
-  local active_frame = renoise.app().window.active_middle_frame
-  
-  -- Try to locate the frame ID within our table.
-  local index = -1
-  for i = 1, #frames do
-    if frames[i] == active_frame then
-      index = i
-      break
-    end
-  end
-  
-  -- If the frame ID is in our list, cycle to the next one.
-  if index > -1 then
-    index = index + 1
-    if index > #frames then
-      index = 1
-    end
-  -- Else, default to the first one.
-  else
-    index = 1
-  end
-  
-  renoise.app().window.active_middle_frame = frames[index]
-end
-----------------------------------------
-function cycle_lower_frame()
-  -- dBlue's cycle middle frame -explanation system thing
-  -- Populate this table with all the frames you wish to cycle through.
-  -- Reference: Renoise.Application.API.lua
-  local frames = {
-    renoise.ApplicationWindow.LOWER_FRAME_TRACK_DSPS,
-    renoise.ApplicationWindow.LOWER_FRAME_TRACK_AUTOMATION
-  }
-  -- Get the active frame ID.
-  local active_frame = renoise.app().window.active_lower_frame
-  
-  -- Try to locate the frame ID within our table.
-  local index = -1
-  for i = 1, #frames do
-    if frames[i] == active_frame then
-      index = i
-      break
-    end
-  end
-  
-  -- If the frame ID is in our list, cycle to the next one.
-  if index > -1 then
-    index = index + 1
-    if index > #frames then
-      index = 1
-    end
-  -- Else, default to the first one.
-  else
-    index = 1
-  end
-  
-  renoise.app().window.active_lower_frame = frames[index]
-end
-
-renoise.tool():add_keybinding{name="Global:Paketti:dBlue Cycle 1 Upper Frame", invoke=function() cycle_upper_frame() end}
-renoise.tool():add_keybinding{name="Global:Paketti:dBlue Cycle 2 Middle Frame", invoke=function() cycle_middle_frame() end}
-renoise.tool():add_keybinding{name="Global:Paketti:dBlue Cycle 3 Lower Frame", invoke=function() cycle_lower_frame() end}
---------------------------------------------------------------------------------------------
 require "Research/FormulaDeviceManual"
 
 renoise.tool():add_keybinding{name="Global:Paketti:FormulaDevice", invoke=function()  
@@ -1270,8 +1169,6 @@ show_manual (
     "Research/FormulaDevice.txt" -- the textfile which contains the manual
   )
 end}
-
-
 ---------------------------
 renoise.tool():add_keybinding{name="Sample Editor:Paketti:Disk Browser Focus",invoke=function()
 renoise.app().window.lock_keyboard_focus=false
@@ -1301,11 +1198,7 @@ local line=s.patterns[currPatt].tracks[currTrak].lines[1]
     s.patterns[currPatt].tracks[currTrak].lines[1].effect_columns[1].number_string="0G"
     s.patterns[currPatt].tracks[currTrak].lines[1].effect_columns[1].amount_string="01"
 end
-----
-
-
-
------- inspect
+--------- inspect
 
 function writeToClipboard(text)
     -- Using AppleScript to handle clipboard operations
@@ -1514,4 +1407,152 @@ renoise.song().instruments[renoise.song().selected_instrument_index].sample_enve
 end
 renoise.tool():add_menu_entry{name="Sample Editor:Ding", invoke=function() Ding() end}
 
+------------------- Define the dialog content
+-- Define the dialog content-- Define the dialog content
+-- Define the dialog content-- Define the dialog content
+local vb = renoise.ViewBuilder()
+
+-- Variables to store the state of each section
+local patterns_state = "Keep"
+local instruments_state = "Keep"
+local pattern_sequence_state = "Keep"
+
+-- Functions to clear patterns, instruments, and pattern sequence
+function patternClear()
+  local song = renoise.song()
+  for i = 1, #song.patterns do
+    song.patterns[i]:clear()
+  end
+  renoise.app():show_message("Patterns have been cleared.")
+end
+
+function instrumentsClear()
+  local song = renoise.song()
+  for i = 1, #song.instruments do
+    song.instruments[i]:clear()
+  end
+  renoise.app():show_message("Instruments have been cleared.")
+end
+
+function patternSequenceClear()
+  local song = renoise.song()
+  song.sequencer:clear()
+  renoise.app():show_message("Pattern Sequence has been cleared.")
+end
+
+-- Function to handle button clicks
+function handle_button_click(button, section)
+  if section == "Patterns" then
+    patterns_state = button
+    vb.views.Patterns_keep.color = button == "Keep" and {0, 0.8, 0} or {0.5, 0.5, 0.5}
+    vb.views.Patterns_clear.color = button == "Clear" and {0.8, 0, 0} or {0.5, 0.5, 0.5}
+  elseif section == "Instruments" then
+    instruments_state = button
+    vb.views.Instruments_keep.color = button == "Keep" and {0, 0.8, 0} or {0.5, 0.5, 0.5}
+    vb.views.Instruments_clear.color = button == "Clear" and {0.8, 0, 0} or {0.5, 0.5, 0.5}
+  elseif section == "Pattern Sequence" then
+    pattern_sequence_state = button
+    vb.views.Pattern_Sequence_keep.color = button == "Keep" and {0, 0.8, 0} or {0.5, 0.5, 0.5}
+    vb.views.Pattern_Sequence_clear.color = button == "Clear" and {0.8, 0, 0} or {0.5, 0.5, 0.5}
+  end
+end
+
+-- Function to handle the OK button click
+function handle_ok_click(dialog)
+  return function()
+    local message = "Instruments (" .. instruments_state .. ")\n" ..
+                    "Patterns (" .. patterns_state .. ")\n" ..
+                    "Pattern Sequence (" .. pattern_sequence_state .. ")"
+
+    renoise.app():show_message(message)
+
+    if patterns_state == "Clear" and instruments_state == "Clear" and pattern_sequence_state == "Clear" then
+      renoise.app():new_song()
+    else
+      if patterns_state == "Clear" then
+        patternClear()
+      end
+
+      if instruments_state == "Clear" then
+        instrumentsClear()
+      end
+
+      if pattern_sequence_state == "Clear" then
+        patternSequenceClear()
+      end
+    end
+
+    dialog:close()
+  end
+end
+
+-- Function to handle the Cancel button click
+function handle_cancel_click(dialog)
+  return function()
+    dialog:close()
+  end
+end
+
+-- Define the toggle button group content
+function toggle_button_group(section, state)
+  return vb:row {
+    vb:text { text = section, width = 120 },
+    vb:button {
+      id = section .. "_keep",
+      text = "Keep",
+      width = 70,
+      notifier = function() 
+        handle_button_click("Keep", section)
+      end,
+      color = state == "Keep" and {0, 0.8, 0} or {0.5, 0.5, 0.5}
+    },
+    vb:button {
+      id = section .. "_clear",
+      text = "Clear",
+      width = 70,
+      notifier = function() 
+        handle_button_click("Clear", section)
+      end,
+      color = state == "Clear" and {0.8, 0, 0} or {0.5, 0.5, 0.5}
+    }
+  }
+end
+
+-- Function to show the dialog
+function show_new_song_dialog()
+  local dialog_content = vb:column {
+    margin = 10,
+    vb:text {
+      text = "New Song",
+      font = "bold",
+      align = "center"
+    },
+    vb:space { height = 10 },
+    toggle_button_group("Patterns", patterns_state),
+    toggle_button_group("Instruments", instruments_state),
+    toggle_button_group("Pattern Sequence", pattern_sequence_state),
+    vb:space { height = 10 },
+    vb:row {
+      style = "group",
+      margin = 10,
+      vb:button {
+        text = "OK",
+        width = 100,
+        notifier = handle_ok_click(dialog)
+      },
+      vb:button {
+        text = "Cancel",
+        width = 100,
+        notifier = handle_cancel_click(dialog)
+      }
+    }
+  }
+  local dialog = renoise.app():show_custom_dialog("New Song", dialog_content)
+end
+
+-- Add menu entry to show the dialog
+renoise.tool():add_menu_entry {
+  name = "Main Menu:Tools:Show New Song Dialog...",
+  invoke = show_new_song_dialog
+}
 
