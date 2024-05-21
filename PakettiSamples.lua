@@ -144,12 +144,13 @@ renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Copy Sample in Note-
 
 
 ------------
-renoise.tool():add_menu_entry{name="--Sample Editor:Paketti..:Selected Sample: Autofade True, Interpolation Sinc, Oversample True",invoke=function() 
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Selected Sample:Autofade True, Interpolation Sinc, Oversample True",invoke=function() 
   renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].autofade=true
   renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].interpolation_mode=4
   renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].oversample_enabled=true
-
 end}
+
+
 
 -----------
 function selectedSampleInit()

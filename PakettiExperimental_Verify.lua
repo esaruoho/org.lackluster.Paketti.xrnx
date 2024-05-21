@@ -1,3 +1,45 @@
+renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Selected Sample Loop 01 Start x[Knob]",
+  invoke = function(message)
+    if message:is_abs_value() then
+    local sampleEndPosition = renoise.song().selected_sample.loop_end -1
+      midiValues(1, sampleEndPosition, renoise.song().selected_sample, 'loop_start', message.int_value)
+    end
+end}
+
+renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Selected Sample Loop 02 End x[Knob]",
+  invoke = function(message)
+    if message:is_abs_value() then
+    local loopStart = renoise.song().selected_sample.loop_start
+      midiValues(loopStart, renoise.song().selected_sample.sample_buffer.number_of_frames, renoise.song().selected_sample, 'loop_end', message.int_value)
+    end
+end}
+
+renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Sample Editor Selection 01 Start x[Knob]",
+  invoke = function(message)
+    if message:is_abs_value() then
+    local selectionEnd=renoise.song().selected_sample.sample_buffer.selection_end
+    local selectionStart=renoise.song().selected_sample.sample_buffer.selection_start
+    local range=renoise.song().selected_sample.sample_buffer.selection_range 
+      midiValues(1, renoise.song().selected_sample.sample_buffer.number_of_frames, renoise.song().selected_sample.sample_buffer, 'selection_start', message.int_value)
+    end
+end}
+
+renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Sample Editor Selection 02 End x[Knob]",
+  invoke = function(message)
+    if message:is_abs_value() then
+    local selectionEnd=renoise.song().selected_sample.sample_buffer.selection_end
+    local selectionStart=renoise.song().selected_sample.sample_buffer.selection_start
+    local range=renoise.song().selected_sample.sample_buffer.selection_range
+      midiValues(1, renoise.song().selected_sample.sample_buffer.number_of_frames, renoise.song().selected_sample.sample_buffer, 'selection_end', message.int_value)
+    end
+end}
+
+
+
+
+
+
+
 
 -- Define render state (initialized when starting to render)
 render_context = {
@@ -66,44 +108,46 @@ function rendering_done_callback()
 
     -- Collapse Render Track
     song.tracks[renderTrack].collapsed = true
-
-    -- Add Sample Slot to New Instrument
-    song:insert_instrument_at(renderedInstrument)
-    local new_instrument = song:instrument(renderedInstrument)
-    new_instrument:insert_sample_at(1)
+    -- Change Selected Track to Rendered Track
+    renoise.song().selected_track_index = renoise.song().selected_track_index+1
+    -- Load Pitched Instrument
+    pitchedInstrument(12)
+    -- Add *Instr. Macros to Rendered Track
+    --song:insert_instrument_at(renderedInstrument)
+    local new_instrument = song:instrument(renoise.song().selected_instrument_index)
 
     -- Load Sample into New Instrument Sample Buffer
     new_instrument.samples[1].sample_buffer:load_from(render_context.temp_file_path)
     os.remove(render_context.temp_file_path)
 
-    -- Print the current selected_instrument_index
-    print("Before setting the selected instrument index: " .. song.selected_instrument_index)
-
     -- Set the selected_instrument_index to the newly created instrument
-    song.selected_instrument_index = renderedInstrument
-
-    -- Print the current selected_instrument_index
-    print("After setting the selected instrument index: " .. song.selected_instrument_index)
+    song.selected_instrument_index = renderedInstrument -1
 
     -- Insert New Track Next to Render Track
     song:insert_track_at(renderedTrack)
     local renderName = song.tracks[renderTrack].name
+    song.selected_pattern.tracks[renderedTrack].lines[1].note_columns[1].note_string = "C-4"
+
+    song.selected_pattern.tracks[renderedTrack].lines[1].note_columns[1].instrument_value = renoise.song().selected_instrument_index-1
+--    song.selected_pattern.tracks[renderedTrack].lines[1].effect_columns[1].number_string = "0G"
+--    song.selected_pattern.tracks[renderedTrack].lines[1].effect_columns[1].amount_value = 01 
+    -- Add Instr* Macros to selected Track
+    loadnative("Audio/Effects/Native/*Instr. Macros")
+    renoise.song().selected_track.devices[2].is_maximized=false
+
+      
     -- Rename Sample Slot to Render Track
     new_instrument.samples[1].name = renderName .. " (Rendered)"
 
     -- Select New Track
+    print (renderedTrack .. " this was the track but is it really the track?")
     song.selected_track_index = renderedTrack
 
     -- Rename New Track using Render Track Name
     song.tracks[renderedTrack].name = renderName .. " (Rendered)"
-
-    -- Insert C-4 + Rendered Instrument number to Rendered Track
-    song.selected_pattern.tracks[renderedTrack].lines[1].note_columns[1].note_string = "C-4"
-    song.selected_pattern.tracks[renderedTrack].lines[1].note_columns[1].instrument_value = renderedInstrument - 1
-
     new_instrument.name = renderName .. " (Rendered)"
     new_instrument.samples[1].autofade = true
-    new_instrument.samples[1].autoseek = true
+--    new_instrument.samples[1].autoseek = true
 end
 
 -- Function to monitor rendering progress
@@ -203,77 +247,6 @@ for i = 10, 32 do
         end
     }
 end
-
-
-
-renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change 02 Panning Value x[Knob]",
-  invoke = function(message)
-    if message:is_abs_value() then
-      midiValues(0, 128, renoise.song().selected_note_column, 'panning_value', message.int_value)
-    end
-end}
-
-renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change 03 Delay Value x[Knob]",
-  invoke = function(message)
-    if message:is_abs_value() then
-      midiValues(0, 255, renoise.song().selected_note_column, 'delay_value', message.int_value)
-    end
-end}
-
-renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change 04 Effect Value x[Knob]",
-  invoke = function(message)
-    if message:is_abs_value() then
-      midiValues(0, 255, renoise.song().selected_note_column, 'effect_amount_value', message.int_value)
-    end
-end}
-
-
-renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change 01 Volume Value x[Knob]",
-  invoke = function(message)
-    if message:is_abs_value() then
-      midiValues(0, 128, renoise.song().selected_note_column, 'volume_value', message.int_value)
-    end
-end}
-
-
-
-
-
-renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Octave x[Knob]",
-  invoke = function(message)
-    if message:is_abs_value() then
-      midiValues(0, 8, renoise.song().transport, 'octave', message.int_value)
-    end
-end}
-
-renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Selected Track x[Knob]",
-  invoke = function(message)
-    if message:is_abs_value() then
-    local trackCount = #renoise.song().tracks
-      midiValues(1, trackCount, renoise.song(), 'selected_track_index', message.int_value)
-    end
-end}
-renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Selected Track DSP Device x[Knob]",
-  invoke = function(message)
-    if message:is_abs_value() then
-    local deviceCount = #renoise.song().selected_track.devices
-    if deviceCount < 2 then 
-    renoise.app():show_status("There are no Track DSP Devices on this channel.")
-    else
-      midiValues(2, deviceCount, renoise.song(), 'selected_device_index', message.int_value)
-    end
-    end
-end}
-
-renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Selected Instrument x[Knob]",
-  invoke = function(message)
-    if message:is_abs_value() then
-    local instrumentCount = #renoise.song().instruments
-      midiValues(1, instrumentCount, renoise.song(), 'selected_instrument_index', message.int_value)
-    end
-end}
-
-
 
 function selectedInstrumentFinetune(amount)
 local currentSampleFinetune = renoise.song().selected_sample.fine_tune

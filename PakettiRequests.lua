@@ -874,12 +874,14 @@ function selectPreviousGroupTrack()
     end
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Select Group Next", invoke=function() selectNextGroupTrack()
-end}
+renoise.tool():add_keybinding{name="Global:Paketti:Select Group Next", invoke=function() selectNextGroupTrack() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Select Group Previous", invoke=function() selectPreviousGroupTrack() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Delete / Clear / Wipe Entire Row", invoke=function() renoise.song().selected_line:clear() end}
+-----
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Set Selected Instrument Velocity Tracking Off",invoke=function() selectedInstrumentVelocityTracking(0) end}
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Set Selected Instrument Velocity Tracking On",invoke=function()  selectedInstrumentVelocityTracking(1) end}
 
-renoise.tool():add_keybinding{name="Global:Paketti:Select Group Previous", invoke=function() selectPreviousGroupTrack()
-end}
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Set Selected Instrument Velocity Tracking Off",invoke=function() selectedInstrumentVelocityTracking(0) end}
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Set Selected Instrument Velocity Tracking On",invoke=function()  selectedInstrumentVelocityTracking(1) end}
 
-renoise.tool():add_keybinding{name="Global:Paketti:Delete / Clear / Wipe Entire Row", invoke=function()
-renoise.song().selected_line:clear() end}
 

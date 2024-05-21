@@ -367,4 +367,70 @@ end
 
 
 renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Select Group Tracks x[Knob]", invoke=changeGroupTrackWithMidi}
+--------
+renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change 02 Panning Value x[Knob]",
+  invoke = function(message)
+    if message:is_abs_value() then
+    renoise.song().selected_track.panning_column_visible=true
+      midiValues(0, 128, renoise.song().selected_note_column, 'panning_value', message.int_value)
+    end
+end}
+
+renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change 03 Delay Value x[Knob]",
+  invoke = function(message)
+    if message:is_abs_value() then
+    renoise.song().selected_track.delay_column_visible=true
+      midiValues(0, 255, renoise.song().selected_note_column, 'delay_value', message.int_value)
+    end
+end}
+
+renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change 04 Effect Value x[Knob]",
+  invoke = function(message)
+    if message:is_abs_value() then
+      midiValues(0, 255, renoise.song().selected_note_column, 'effect_amount_value', message.int_value)
+    end
+end}
+
+renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change 01 Volume Value x[Knob]",
+  invoke = function(message)
+    if message:is_abs_value() then
+    renoise.song().selected_track.volume_column_visible=true
+      midiValues(0, 128, renoise.song().selected_note_column, 'volume_value', message.int_value)
+    end
+end}
+--
+renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Octave x[Knob]",
+  invoke = function(message)
+    if message:is_abs_value() then
+      midiValues(0, 8, renoise.song().transport, 'octave', message.int_value)
+    end
+end}
+
+renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Selected Track x[Knob]",
+  invoke = function(message)
+    if message:is_abs_value() then
+    local trackCount = #renoise.song().tracks
+      midiValues(1, trackCount, renoise.song(), 'selected_track_index', message.int_value)
+    end
+end}
+
+renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Selected Track DSP Device x[Knob]",
+  invoke = function(message)
+    if message:is_abs_value() then
+    local deviceCount = #renoise.song().selected_track.devices
+    if deviceCount < 2 then 
+    renoise.app():show_status("There are no Track DSP Devices on this channel.")
+    else
+      midiValues(2, deviceCount, renoise.song(), 'selected_device_index', message.int_value)
+    end
+    end
+end}
+
+renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Selected Instrument x[Knob]",
+  invoke = function(message)
+    if message:is_abs_value() then
+    local instrumentCount = #renoise.song().instruments
+      midiValues(1, instrumentCount, renoise.song(), 'selected_instrument_index', message.int_value)
+    end
+end}
 
