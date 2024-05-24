@@ -1,43 +1,158 @@
-function pitchBendSampleLoader()
-  local selected_sample_filename = renoise.app():prompt_for_filename_to_read({"*.wav", "*.aif", "*.flac", "*.mp3", "*.aiff"}, "Paketti PitchBend Single Sample Loader")
-  if selected_sample_filename ~= "" then
-    -- print("File selected: " .. selected_sample_filename)
-    
-    local current_instrument_index = renoise.song().selected_instrument_index
-      pitchedInstrument(12)
-      if #renoise.song().instruments[renoise.song().selected_instrument_index].samples == 0 then
-        renoise.song().instruments[renoise.song().selected_instrument_index]:insert_sample_at(1)
-      end
-      
-    local sample_buffer = renoise.song().instruments[current_instrument_index].samples[1].sample_buffer
-    local samplefilename = selected_sample_filename:match("^.+[/\\](.+)$")
-    
-    renoise.song().selected_instrument.name=("12st_" .. samplefilename)
-    renoise.song().instruments[renoise.song().selected_instrument_index].samples[1].name=("12st_" .. samplefilename)  
-    
-    if sample_buffer:load_from(selected_sample_filename) then
-      renoise.app():show_status("Sample " .. selected_sample_filename .. " loaded successfully.")
-    else
-      renoise.app():show_status("Failed to load the sample.")
-      
-    end
-  else
-    renoise.app():show_status("No file selected.")
-    return
-  end
-        renoise.song().selected_sample.oversample_enabled=true
-        renoise.song().selected_sample.autofade=true
-        --renoise.song().selected_sample.autoseek=true
-        renoise.song().selected_sample.interpolation_mode = 4
-        loadnative("Audio/Effects/Native/*Instr. Macros")
-        renoise.song().selected_track.devices[2].is_maximized=false
-        on_sample_count_change()
-        --renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
-        showAutomation()
+-- Function to load a pitchbend instrument
+function pitchedInstrument(st)
+  renoise.app():load_instrument("Presets/" .. st .. "st_Pitchbend.xrni")
+  local selected_instrument = renoise.song().selected_instrument
+  selected_instrument.name = st .. "st_Pitchbend Instrument"
+  selected_instrument.macros_visible = true
+  selected_instrument.sample_modulation_sets[1].name = st .. "st_Pitchbend"
 end
 
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Instruments:Paketti PitchBend Single Sample Loader",invoke=function() pitchBendSampleLoader() end}
-renoise.tool():add_keybinding{name="Global:Paketti:Paketti PitchBend Single Sample Loader", invoke=function() pitchBendSampleLoader() end}
+-- Function to create a new instrument from the selected sample buffer range
+function create_new_instrument_from_selection()
+  local song = renoise.song()
+  local selected_sample = song.selected_sample
+  local selected_instrument_index = song.selected_instrument_index
+  local selected_instrument = song.selected_instrument
+
+  -- Check if there's a valid sample buffer
+  if not selected_sample.sample_buffer.has_sample_data then
+    renoise.app():show_error("No sample buffer data found in the selected sample.")
+    return
+  end
+
+  local sample_buffer = selected_sample.sample_buffer
+
+  -- Check if there's a valid selection range
+  if sample_buffer.selection_range == nil or #sample_buffer.selection_range < 2 then
+    renoise.app():show_error("No valid selection range found.")
+    return
+  end
+
+  local selection_start = sample_buffer.selection_range[1]
+  local selection_end = sample_buffer.selection_range[2]
+  local selection_length = selection_end - selection_start
+
+  -- Retrieve properties of the selected sample
+  local bit_depth = sample_buffer.bit_depth
+  local sample_rate = sample_buffer.sample_rate
+  local num_channels = sample_buffer.number_of_channels
+
+  -- Insert a new instrument right below the current instrument
+  local new_instrument_index = selected_instrument_index + 1
+  song:insert_instrument_at(new_instrument_index)
+  song.selected_instrument_index = new_instrument_index
+
+  -- Load the pitchbend instrument into the new instrument slot
+  pitchedInstrument("12")
+
+  -- Get the newly loaded instrument
+  local new_instrument = song:instrument(new_instrument_index)
+  local new_sample = new_instrument:insert_sample_at(1)
+  
+  -- Create sample data and prepare to make changes
+  new_sample.sample_buffer:create_sample_data(sample_rate, bit_depth, num_channels, selection_length)
+  local new_sample_buffer = new_sample.sample_buffer
+  new_sample_buffer:prepare_sample_data_changes()
+
+  -- Copy the selection range to the new sample buffer
+  for channel = 1, num_channels do
+    for i = 1, selection_length do
+      new_sample_buffer:set_sample_data(channel, i, sample_buffer:sample_data(channel, selection_start + i - 1))
+    end
+  end
+
+  -- Finalize sample data changes
+  new_sample_buffer:finalize_sample_data_changes()
+
+  -- Set the loop mode to "Forward" (value 2)
+  new_sample.loop_mode = renoise.Sample.LOOP_MODE_FORWARD
+
+  -- Set the names for the new instrument and sample
+  new_instrument.name = selected_instrument.name .. " (Cut&Loop)"
+  new_sample.name = selected_sample.name .. " (Cut&Loop)"
+
+  -- Select the new instrument and sample
+  song.selected_instrument_index = new_instrument_index
+  song.selected_sample_index = 1
+
+  renoise.app():show_status("New instrument created from selection with loop mode set to 'Forward'.")
+end
+
+-- Add keybinding for the function
+renoise.tool():add_keybinding{name="Global:Paketti:Create New Instrument & Loop from Selection", invoke=create_new_instrument_from_selection}
+
+-- Add keybinding for the function
+renoise.tool():add_keybinding{name="Sample Editor:Paketti:Create New Instrument & Loop from Selection", invoke=create_new_instrument_from_selection}
+
+
+-- Add menu entry for the function
+renoise.tool():add_menu_entry{name="--Sample Editor:Paketti..:Create New Instrument & Loop from Selection", invoke=create_new_instrument_from_selection}
+
+
+
+
+
+function pitchBendDrumkitLoader()
+  -- Prompt the user to select multiple sample files to load
+  local selected_sample_filenames = renoise.app():prompt_for_multiple_filenames_to_read({"*.wav", "*.aif", "*.flac", "*.mp3", "*.aiff"}, "Paketti PitchBend Drumkit Sample Loader")
+  renoise.app():load_instrument("Presets/12st_Pitchbend_Drumkit_C0.xrni") -- Ensure this function exists and is correct
+
+  -- Check if files are selected
+  if #selected_sample_filenames > 0 then
+    local current_instrument_index = renoise.song().selected_instrument_index
+    local current_instrument = renoise.song().instruments[current_instrument_index]
+    
+    -- Limit the number of samples to 120
+    local max_samples = 119
+    local num_samples_to_load = math.min(#selected_sample_filenames, max_samples)
+
+    -- Iterate over each selected file
+    for i = 1, num_samples_to_load do
+      local selected_sample_filename = selected_sample_filenames[i]
+
+      -- Insert a new sample slot
+      current_instrument:insert_sample_at(#current_instrument.samples + 1)
+      local sample_index = #current_instrument.samples
+      local sample = current_instrument.samples[sample_index]
+      local sample_buffer = sample.sample_buffer
+      local samplefilename = selected_sample_filename:match("^.+[/\\](.+)$")
+
+      -- Set names for the instrument and sample
+      renoise.song().selected_instrument.name = ("12st_" .. samplefilename)
+      sample.name = ("12st_" .. samplefilename)
+
+      -- Load the sample file into the sample buffer
+      if sample_buffer:load_from(selected_sample_filename) then
+        renoise.app():show_status("Sample " .. selected_sample_filename .. " loaded successfully.")
+      else
+        renoise.app():show_status("Failed to load the sample.")
+      end
+
+      -- Set additional sample properties
+      sample.oversample_enabled = true
+      sample.autofade = true
+      sample.interpolation_mode = renoise.Sample.INTERPOLATE_CUBIC
+    end
+
+    -- Check if there are more samples than the limit
+    if #selected_sample_filenames > max_samples then
+      local not_loaded_count = #selected_sample_filenames - max_samples
+      renoise.app():show_status("Maximum Drumkit Zones is 120 - was not able to load " .. not_loaded_count .. " samples.")
+    end
+
+    -- Additional actions after loading samples
+    loadnative("Audio/Effects/Native/*Instr. Macros")
+    renoise.song().selected_track.devices[2].is_maximized = false
+    on_sample_count_change()
+    -- showAutomation()
+  else
+    renoise.app():show_status("No files selected.")
+  end
+end
+
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments:Paketti PitchBend Drumkit Sample Loader", invoke=function() pitchBendDrumkitLoader() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Paketti PitchBend Drumkit Sample Loader", invoke=function() pitchBendDrumkitLoader() end}
+
 -------------
 function pitchBendMultipleSampleLoader()
   local selected_sample_filenames = renoise.app():prompt_for_multiple_filenames_to_read({"*.wav", "*.aif", "*.flac", "*.mp3", "*.aiff"}, "Paketti PitchBend Multiple Sample Loader")
@@ -61,7 +176,6 @@ function pitchBendMultipleSampleLoader()
       renoise.song():insert_instrument_at(next_instrument)
       renoise.song().selected_instrument_index = renoise.song().selected_instrument_index + 1
       -- Adjust pitch here if necessary
-      pitchedInstrument(12) -- Ensure this function exists and is correct
       if #renoise.song().instruments[renoise.song().selected_instrument_index].samples == 0 then
         renoise.song().instruments[renoise.song().selected_instrument_index]:insert_sample_at(1)
       end

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ScriptingToolPreferences doc_version="0">
   <renderBitDepth>32</renderBitDepth>
-  <sliceCounter>36</sliceCounter>
+  <sliceCounter>3</sliceCounter>
   <WipeSlicesBeatSyncMode>2</WipeSlicesBeatSyncMode>
   <WipeSlicesMuteGroup>11</WipeSlicesMuteGroup>
   <slicePreviousDirection>0.0</slicePreviousDirection>

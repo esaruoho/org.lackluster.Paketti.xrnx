@@ -1,38 +1,113 @@
-renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Selected Sample Loop 01 Start x[Knob]",
-  invoke = function(message)
-    if message:is_abs_value() then
-    local sampleEndPosition = renoise.song().selected_sample.loop_end -1
-      midiValues(1, sampleEndPosition, renoise.song().selected_sample, 'loop_start', message.int_value)
-    end
-end}
+-- List of available automation curve functions
+local automation_curves = {
+  "apply_constant_automation_bottom_to_bottom", -- 0 to 0
+  "apply_selection_up_linear", -- line 0..1
+  "apply_exponential_automation_curveUP", -- curve 0..1
+  "apply_constant_automation_top_to_top", -- 1 to 1
+  "apply_selection_down_linear", -- line 1..0
+  "apply_exponential_automation_curveDOWN", -- exp 1..0
+  "apply_constant_automation_bottom_to_bottom", -- 0 to 0
+}
 
-renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Selected Sample Loop 02 End x[Knob]",
-  invoke = function(message)
-    if message:is_abs_value() then
-    local loopStart = renoise.song().selected_sample.loop_start
-      midiValues(loopStart, renoise.song().selected_sample.sample_buffer.number_of_frames, renoise.song().selected_sample, 'loop_end', message.int_value)
-    end
-end}
+-- Function to apply the selected automation curve based on index
+function apply_automation_curve_by_index(index, curves)
+  local curve_function_name = curves[index]
+  if curve_function_name and _G[curve_function_name] then
+    _G[curve_function_name]()
+  end
+end
 
-renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Sample Editor Selection 01 Start x[Knob]",
-  invoke = function(message)
+renoise.tool():add_midi_mapping{name="Track Automation:Paketti..:Midi Automation Curve Draw Selection x[Knob]",
+  invoke=function(message)
     if message:is_abs_value() then
-    local selectionEnd=renoise.song().selected_sample.sample_buffer.selection_end
-    local selectionStart=renoise.song().selected_sample.sample_buffer.selection_start
-    local range=renoise.song().selected_sample.sample_buffer.selection_range 
-      midiValues(1, renoise.song().selected_sample.sample_buffer.number_of_frames, renoise.song().selected_sample.sample_buffer, 'selection_start', message.int_value)
-    end
-end}
+      local selected_parameter = renoise.song().selected_automation_parameter
+      local curves_to_use = automation_curves
+      local num_curves = #automation_curves
 
-renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Sample Editor Selection 02 End x[Knob]",
-  invoke = function(message)
-    if message:is_abs_value() then
-    local selectionEnd=renoise.song().selected_sample.sample_buffer.selection_end
-    local selectionStart=renoise.song().selected_sample.sample_buffer.selection_start
-    local range=renoise.song().selected_sample.sample_buffer.selection_range
-      midiValues(1, renoise.song().selected_sample.sample_buffer.number_of_frames, renoise.song().selected_sample.sample_buffer, 'selection_end', message.int_value)
+      -- Check if the selected automation parameter is PitchBend, Pitch, or Panning
+      if selected_parameter and (
+        selected_parameter.name == "PitchBend" or
+        selected_parameter.name == "Pitch" or
+        selected_parameter.name == "Panning"
+      ) then
+        -- Filter the curves for the specific parameter
+        curves_to_use = {
+          "set_to_center",
+          "center_up_linear", -- line center->up 
+          "apply_exponential_automation_curve_center_to_top", -- curve center->up
+          "apply_constant_automation_top_to_top", -- max up
+          "up_center_linear", -- line up->center
+          "apply_exponential_automation_curve_top_to_center", -- curve up->center
+          "center_down_linear", -- line center->down
+          "apply_exponential_automation_curve_center_to_bottom", -- curve center->down
+          "apply_constant_automation_bottom_to_bottom", -- min bottom
+          "down_center_linear", -- line down->center
+          "apply_exponential_automation_curve_bottom_to_center", -- curve down->center
+          "set_to_center" -- set to center
+        }
+        num_curves = #curves_to_use
+      end
+
+      local step = 128 / num_curves
+      local index = math.floor(message.int_value / step) + 1
+      index = math.min(index, num_curves) -- Ensure the index is within bounds
+
+      apply_automation_curve_by_index(index, curves_to_use)
     end
-end}
+  end
+}
+
+
+
+
+-- Define the function to set the automation point value based on MIDI input
+function midiValuesAutomation(start_point, end_point, automation, property, value)
+  -- Convert MIDI value (0-127) to automation range (start_point to end_point)
+  local converted_value = start_point + (value / 127) * (end_point - start_point)
+  local selection_range = automation.selection_range
+
+  if property == 'selection_start' then
+    selection_range[1] = converted_value
+    if selection_range[2] < selection_range[1] then
+      selection_range[2] = selection_range[1]
+    end
+  elseif property == 'selection_end' then
+    selection_range[2] = converted_value
+    if selection_range[1] > selection_range[2] then
+      selection_range[1] = selection_range[2]
+    end
+  end
+
+  automation.selection_range = selection_range
+end
+
+-- MIDI mapping for changing the start point of the automation selection
+renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Automation Selection 01 Start x[Knob]",
+  invoke=function(message)
+    if message:is_abs_value() then
+      local automation = renoise.song().selected_pattern_track:find_automation(renoise.song().selected_automation_parameter)
+      if automation then
+        local start_point = 1
+        local end_point = automation.length + 1
+        midiValuesAutomation(start_point, end_point, automation, 'selection_start', message.int_value)
+      end
+    end
+  end
+}
+
+-- MIDI mapping for changing the end point of the automation selection
+renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Automation Selection 02 End x[Knob]",
+  invoke=function(message)
+    if message:is_abs_value() then
+      local automation = renoise.song().selected_pattern_track:find_automation(renoise.song().selected_automation_parameter)
+      if automation then
+        local start_point = 1
+        local end_point = automation.length + 1
+        midiValuesAutomation(start_point, end_point, automation, 'selection_end', message.int_value)
+      end
+    end
+  end
+}
 
 
 
@@ -292,8 +367,8 @@ function selectNextSliceInOriginalSample()
     nextSliceIndex = 1
   end
 
-  local thisSlice = sliceMarkers[currentSliceIndex]
-  local nextSlice = sliceMarkers[nextSliceIndex]
+  local thisSlice = sliceMarkers[currentSliceIndex] or 0
+  local nextSlice = sliceMarkers[nextSliceIndex] or sampleLength
 
   local thisSlicePadding = (currentSliceIndex == 1 and thisSlice < 1000) and thisSlice or math.max(thisSlice - 1000, 1)
   local nextSlicePadding = (nextSliceIndex == 1) and math.min(nextSlice + sampleLength, sampleLength) or math.min(nextSlice + 1354, sampleLength)
@@ -327,9 +402,9 @@ function selectPreviousSliceInOriginalSample()
     previousSliceIndex = #sliceMarkers  -- Wrap to the last slice
   end
 
-  local previousSlice = sliceMarkers[previousSliceIndex]
+  local previousSlice = sliceMarkers[previousSliceIndex] or 0
   local nextSliceIndex = previousSliceIndex == #sliceMarkers and 1 or previousSliceIndex + 1
-  local nextSlice = sliceMarkers[nextSliceIndex]
+  local nextSlice = sliceMarkers[nextSliceIndex] or sampleLength
 
   -- Calculate the padding for display
   local previousSlicePadding = math.max(previousSlice - 1000, 1)
@@ -363,7 +438,6 @@ end
 renoise.tool():add_keybinding{name="Global:Paketti:Select Padded Slice Next Slice", invoke=selectNextSliceInOriginalSample}
 renoise.tool():add_keybinding{name="Global:Paketti:Select Padded Slice Previous", invoke=function() selectPreviousSliceInOriginalSample() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Reset Slice Counter", invoke=resetSliceCounter}
-
 
 
 ------

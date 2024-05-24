@@ -415,6 +415,25 @@ for _, entry in ipairs(menu_entries) do
   })
 end
 
+-- Create the linear automation functions
+function center_up_linear()
+  apply_linear_automation_curveCenter("center_up_linear")
+end
+
+function center_down_linear()
+  apply_linear_automation_curveCenter("center_down_linear")
+end
+
+function up_center_linear()
+  apply_linear_automation_curveCenter("up_center_linear")
+end
+
+function down_center_linear()
+  apply_linear_automation_curveCenter("down_center_linear")
+end
+
+
+
 function apply_linear_automation_curveCenter(type)
   local song = renoise.song()
   local automation_parameter = song.selected_automation_parameter

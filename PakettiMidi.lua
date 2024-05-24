@@ -433,4 +433,40 @@ renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Selected Instr
       midiValues(1, instrumentCount, renoise.song(), 'selected_instrument_index', message.int_value)
     end
 end}
+----------------
+renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Selected Sample Loop 01 Start x[Knob]",
+  invoke = function(message)
+    if message:is_abs_value() then
+    local sampleEndPosition = renoise.song().selected_sample.loop_end -1
+      midiValues(1, sampleEndPosition, renoise.song().selected_sample, 'loop_start', message.int_value)
+    end
+end}
+
+renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Selected Sample Loop 02 End x[Knob]",
+  invoke = function(message)
+    if message:is_abs_value() then
+    local loopStart = renoise.song().selected_sample.loop_start
+      midiValues(loopStart, renoise.song().selected_sample.sample_buffer.number_of_frames, renoise.song().selected_sample, 'loop_end', message.int_value)
+    end
+end}
+
+renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Sample Editor Selection 01 Start x[Knob]",
+  invoke = function(message)
+    if message:is_abs_value() then
+    local selectionEnd=renoise.song().selected_sample.sample_buffer.selection_end
+    local selectionStart=renoise.song().selected_sample.sample_buffer.selection_start
+    local range=renoise.song().selected_sample.sample_buffer.selection_range 
+      midiValues(1, renoise.song().selected_sample.sample_buffer.number_of_frames, renoise.song().selected_sample.sample_buffer, 'selection_start', message.int_value)
+    end
+end}
+
+renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Sample Editor Selection 02 End x[Knob]",
+  invoke = function(message)
+    if message:is_abs_value() then
+    local selectionEnd=renoise.song().selected_sample.sample_buffer.selection_end
+    local selectionStart=renoise.song().selected_sample.sample_buffer.selection_start
+    local range=renoise.song().selected_sample.sample_buffer.selection_range
+      midiValues(1, renoise.song().selected_sample.sample_buffer.number_of_frames, renoise.song().selected_sample.sample_buffer, 'selection_end', message.int_value)
+    end
+end}
 
