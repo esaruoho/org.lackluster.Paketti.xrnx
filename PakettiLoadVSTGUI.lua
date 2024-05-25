@@ -2,23 +2,12 @@
 local vb = renoise.ViewBuilder()
 local checkboxes = {}
 local deviceReadableNames = {}
-local notAllowedInMaster = {
-    ["#Multiband Send"] = true,
-    ["#Send"] = true,
-    ["#Sidechain"] = true,
-    ["*Key Tracker"] = true,
-    ["*Velocity Tracker"] = true
-}
-local notAllowedInSend = {
-    ["*Key Tracker"] = true,
-    ["*Velocity Tracker"] = true
-}
 local addedKeyBindings = {}
 
-function addAsShortcut()
+function vstAddAsShortcut()
     for _, cb_info in ipairs(checkboxes) do
         if cb_info.checkbox.value then
-            local keyBindingName = "Global:Track Devices:Load " .. cb_info.name .. " (Native)"
+            local keyBindingName = ("Global:Track Devices:Load VST " .. cb_info.name .. " Device")
 
             -- Check if we've already attempted to add this keybinding
             if not addedKeyBindings[keyBindingName] then
@@ -26,7 +15,7 @@ function addAsShortcut()
 
                 -- Attempt to add the keybinding, using pcall to catch any errors gracefully
                 local success, err = pcall(function()
-                    renoise.tool():add_keybinding{name=keyBindingName, invoke=function() loadnative(cb_info.path) end}
+                    renoise.tool():add_keybinding{name=keyBindingName, invoke=function() loadvst(cb_info.path) end}
                 end)
 
                 -- Check if the keybinding was added successfully
@@ -42,76 +31,66 @@ function addAsShortcut()
     end
 end
 
-function create_scrollable_native_list()
-    local left_column = vb:column {}
-    local right_column = vb:column {}
+function vstCreateScrollableVSTList()
+    -- Sort the devices alphabetically, case-insensitive
+    table.sort(deviceReadableNames, function(a, b)
+        return a.name:lower() < b.name:lower()
+    end)
+
+    local columns = {
+        vb:column {},
+        vb:column {},
+        vb:column {},
+        vb:column {}
+    }
+
     local num_devices = #deviceReadableNames
-    local mid_point = math.ceil(num_devices / 2)
+    local num_columns = #columns
+    local devices_per_column = math.ceil(num_devices / num_columns)
 
     for i, device in ipairs(deviceReadableNames) do
-        local checkbox = vb:checkbox { value = false, id = "checkbox_native_" .. tostring(i) }
+        local column_index = math.floor((i - 1) / devices_per_column) + 1
+        local checkbox = vb:checkbox { value = false, id = "checkbox_vst_" .. tostring(i) }
         checkboxes[#checkboxes + 1] = { checkbox = checkbox, path = device.path, name = device.name }
         local device_row = vb:row {
             checkbox,
             vb:text { text = device.name }
         }
 
-        if i <= mid_point then
-            left_column:add_child(device_row)
-        else
-            right_column:add_child(device_row)
-        end
+        columns[column_index]:add_child(device_row)
     end
 
-    return vb:horizontal_aligner {
-        mode = "left",
-        spacing = 20,
-        left_column,
-        right_column
-    }
+    local column_container = vb:row {spacing = 20}
+    for _, column in ipairs(columns) do
+        column_container:add_child(column)
+    end
+
+    return column_container
 end
 
-function loadSelectedNativeDevices()
+function vstLoadSelectedVSTDevices()
     local track_index = renoise.song().selected_track_index
-    local track_type = renoise.song().tracks[track_index].type
-    local notAllowedDevices = {}
-
-    if track_type == renoise.Track.TRACK_TYPE_MASTER then
-        notAllowedDevices = notAllowedInMaster
-    elseif track_type == renoise.Track.TRACK_TYPE_SEND then
-        notAllowedDevices = notAllowedInSend
-    elseif track_type == renoise.Track.TRACK_TYPE_GROUP then
-        notAllowedDevices = notAllowedInGroup
-    end
-
     for _, cb_info in ipairs(checkboxes) do
         if cb_info.checkbox.value then
-            local canLoad = not notAllowedDevices[cb_info.name]
-            if canLoad then
-                local pluginPath = cb_info.path
-                print("Loading Native Device:", pluginPath)
-                loadnative(pluginPath)
-            else
-                print("Device not allowed on this track type:", cb_info.name)
-            end
+            local pluginPath = cb_info.path
+            print("Loading VST Device:", pluginPath)
+            loadvst(pluginPath)
         end
     end
 end
 
-function show_plugin_list_dialog()
+function vstShowPluginListDialog()
     checkboxes = {}  -- Reinitialize the checkboxes table to avoid carrying over previous states
     local track_index = renoise.song().selected_track_index
-    local available_devices = renoise.song().tracks[track_index].available_devices
+    local available_plugins = renoise.song().tracks[track_index].available_devices
     deviceReadableNames = {}
 
-    for i, device_path in ipairs(available_devices) do
-        if device_path:find("Native/") then
+    for i, device_path in ipairs(available_plugins) do
+        if device_path:find("VST") and not device_path:find("VST3") then
             local device_name = device_path:match("([^/]+)$")
             deviceReadableNames[#deviceReadableNames + 1] = {name = device_name, path = device_path}
         end
     end
-
-    table.sort(deviceReadableNames, function(a, b) return a.name < b.name end)
 
     local custom_dialog
 
@@ -127,7 +106,7 @@ function show_plugin_list_dialog()
                 width = "50%",
                 height = button_height,
                 notifier = function()
-                    loadSelectedNativeDevices()
+                    vstLoadSelectedVSTDevices()
                 end
             },
             vb:button {
@@ -135,7 +114,7 @@ function show_plugin_list_dialog()
                 width = "50%",
                 height = button_height,
                 notifier = function()
-                    loadSelectedNativeDevices()
+                    vstLoadSelectedVSTDevices()
                     custom_dialog:close()
                 end
             }
@@ -143,7 +122,7 @@ function show_plugin_list_dialog()
         vb:button {
             text = "Add Device(s) as Shortcut(s)",
             height = button_height,
-            notifier = addAsShortcut
+            notifier = vstAddAsShortcut
         },
         vb:button {
             text = "Cancel",
@@ -157,10 +136,12 @@ function show_plugin_list_dialog()
     local dialog_content = vb:column {
         margin = 10,
         spacing = 5,
-        create_scrollable_native_list(),
+        vstCreateScrollableVSTList(),
         action_buttons
     }
 
-    custom_dialog = renoise.app():show_custom_dialog("Load Native Device(s)", dialog_content)
+    custom_dialog = renoise.app():show_custom_dialog("Load VST Device(s)", dialog_content)
 end
+
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Load VST Devices Dialog",invoke=vstShowPluginListDialog}
 

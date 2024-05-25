@@ -52,7 +52,7 @@ renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Li
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:List Available VST3 Plugins",
     invoke=function() listByPluginType("VST3") end}
 -- Adding menu entries for listing available devices (effects) by type
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:List Available VST Effects",
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:List Available VST Effects",
     invoke=function() listDevicesByType("VST") end}
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:List Available AU Effects",
     invoke=function() listDevicesByType("AU") end}
