@@ -23,18 +23,18 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
 renoise.tool().preferences = preferences
 
 -- Function to load the preferences
-local function load_preferences()
+function load_preferences()
     if io.exists("preferences.xml") then -- Check if the preference file exists
         preferences:load_from("preferences.xml")
     end
 end
 
 -- Function to update Random BPM and its dependent functions
-local function update_random_bpm_preferences()
+function update_random_bpm_preferences()
     -- No additional actions needed here for now, could be expanded if needed
 end
 
-local function update_loadPaleGreenTheme_preferences()
+function update_loadPaleGreenTheme_preferences()
     renoise.app():load_theme("Presets/palegreen.xrnc")
 end
 
@@ -60,7 +60,7 @@ function on_sample_count_change()
 end
 
 -- Attach or remove observer based on the _0G01_Loader preference
-local function manage_sample_count_observer(attach)
+function manage_sample_count_observer(attach)
     local song = renoise.song()
     local instr = song.selected_instrument
     if attach then
@@ -75,7 +75,7 @@ local function manage_sample_count_observer(attach)
 end
 
 -- Function to update dynamic menu entries and synchronize with preferences GUI
-local function update_dynamic_menu_entries()
+function update_dynamic_menu_entries()
     local enableMenuEntryName = "Main Menu:Tools:Paketti..:!Preferences:0G01 Loader Enable"
     local disableMenuEntryName = "Main Menu:Tools:Paketti..:!Preferences:0G01 Loader Disable"
 
@@ -117,18 +117,18 @@ local function update_dynamic_menu_entries()
 end
 
 -- Function to update the 0G01 Loader setting and manage observer attachment based on preference
-local function update_0G01_loader_menu_entries()
+function update_0G01_loader_menu_entries()
     manage_sample_count_observer(preferences._0G01_Loader.value)
     update_dynamic_menu_entries()
 end
 
 -- Initialization and observer attachment
-local function initialize_tool()
+function initialize_tool()
     update_0G01_loader_menu_entries()
 end
 
 -- Ensure initialization occurs safely when a Renoise song is available
-local function safe_initialize()
+function safe_initialize()
     if not renoise.tool().app_idle_observable:has_notifier(initialize_tool) then
         renoise.tool().app_idle_observable:add_notifier(initialize_tool)
     end
@@ -146,14 +146,14 @@ function show_paketti_preferences()
     local checkboxSampleRates, checkboxBitDepths
 
     -- Functions to update sample rate and bit depth preferences
-    local function update_sample_rate(sample_rate)
+    function update_sample_rate(sample_rate)
         preferences.renderSampleRate.value = sample_rate
         for rate, checkbox in pairs(checkboxSampleRates) do
             checkbox.value = (rate == sample_rate)
         end
     end
 
-    local function update_bit_depth(bit_depth)
+    function update_bit_depth(bit_depth)
         preferences.renderBitDepth.value = bit_depth
         for depth, checkbox in pairs(checkboxBitDepths) do
             checkbox.value = (depth == bit_depth)
@@ -177,12 +177,12 @@ function show_paketti_preferences()
     }
 
     -- Helper function to create a horizontal rule
-    local function horizontal_rule()
+    function horizontal_rule()
         return vb:horizontal_aligner {mode = "justify", width = "100%", vb:space {width = 2}, vb:row {height = 2, style = "panel", width = "100%"}, vb:space {width = 2}}
     end
 
     -- Helper function to add vertical space
-    local function vertical_space(height)
+    function vertical_space(height)
         return vb:row {height = height}
     end
 

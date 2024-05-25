@@ -1,3 +1,60 @@
+-- Function to adjust the slice marker by a specified delta
+function adjustSliceKeyshortcut(slice_index, delta)
+    local song = renoise.song()
+    local sample = song.selected_sample
+
+    -- Ensure there is a selected sample and enough slice markers
+    if not sample or #sample.slice_markers < slice_index then
+        return
+    end
+
+    local slice_markers = sample.slice_markers
+    local min_pos, max_pos
+
+    -- Calculate the bounds for the slice marker movement
+    if slice_index == 1 then
+        min_pos = 1
+        max_pos = (slice_markers[slice_index + 1] or sample.sample_buffer.number_of_frames) - 1
+    elseif slice_index == #slice_markers then
+        min_pos = slice_markers[slice_index - 1] + 1
+        max_pos = sample.sample_buffer.number_of_frames - 1
+    else
+        min_pos = slice_markers[slice_index - 1] + 1
+        max_pos = slice_markers[slice_index + 1] - 1
+    end
+
+    -- Get the current position of the slice marker and calculate new position
+    local current_pos = slice_markers[slice_index]
+    local new_pos = current_pos + delta
+
+    -- Ensure the new position is within the allowed bounds
+    if new_pos < min_pos then
+        new_pos = min_pos
+    elseif new_pos > max_pos then
+        new_pos = max_pos
+    end
+
+    -- Move the slice marker
+    sample:move_slice_marker(slice_markers[slice_index], new_pos)
+end
+
+-- List of deltas with their corresponding keybinding names
+local deltas = {["+1"] = 1, ["-1"] = -1, ["+10"] = 10, ["-10"] = -10, ["+16"] = 16, ["-16"] = -16, ["+32"] = 32, ["-32"] = -32}
+
+-- Create key bindings for each slice and each delta
+for i = 1, 32 do
+    for name, delta in pairs(deltas) do
+        renoise.tool():add_keybinding{name="Sample Editor:Paketti:Nudge Slice " .. i .. " by " .. name,invoke=function() adjustSliceKeyshortcut(i, delta) end}
+    end
+end
+
+
+
+
+
+
+
+
 -- List of available automation curve functions
 local automation_curves = {
   "apply_constant_automation_bottom_to_bottom", -- 0 to 0
@@ -510,7 +567,7 @@ renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Paketti Save Selected 
 
 --------
 function Experimental()
-    local function read_file(path)
+    function read_file(path)
         local file = io.open(path, "r")  -- Open the file in read mode
         if not file then
             print("Failed to open file")
@@ -521,7 +578,7 @@ function Experimental()
         return content
     end
 
-    local function check_and_execute(xml_path, bash_script)
+    function check_and_execute(xml_path, bash_script)
         local xml_content = read_file(xml_path)
         if not xml_content then
             return
@@ -727,7 +784,7 @@ end
 
 
 -- Utility function to print a formatted list from the provided items
-local function printItems(items)
+function printItems(items)
     -- Sort items alphabetically by name
     table.sort(items, function(a, b) return a.name < b.name end)
     for _, item in ipairs(items) do
@@ -736,7 +793,7 @@ local function printItems(items)
 end
 
 -- Function to list available plugins by type
-local function listAvailablePluginsByType(typeFilter)
+function listAvailablePluginsByType(typeFilter)
     local availablePlugins = renoise.song().instruments[renoise.song().selected_instrument_index].plugin_properties.available_plugins
     local availablePluginInfos = renoise.song().instruments[renoise.song().selected_instrument_index].plugin_properties.available_plugin_infos
     local pluginItems = {}
@@ -760,14 +817,14 @@ local function listAvailablePluginsByType(typeFilter)
 end
 
 -- Adjusted function to handle only plugin listing
-local function listByPluginType(typeFilter)
+function listByPluginType(typeFilter)
     print(typeFilter .. " Plugins:")
     listAvailablePluginsByType(typeFilter)
 end
 
 
 -- Function to list devices (effects) by type, remains unchanged as it's working correctly
-local function listDevicesByType(typeFilter)
+function listDevicesByType(typeFilter)
     local devices = renoise.song().tracks[renoise.song().selected_track_index].available_device_infos
     local deviceItems = {}
      print(typeFilter .. " Devices:")
@@ -897,7 +954,7 @@ renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Enable EFX (Write t
 ----------------------------
 
 -- has-line-input + add-line-input
-local function has_line_input()
+function has_line_input()
 -- Write some code to find the line input in the correct place
 local tr = renoise.song().selected_track
  if tr.devices[2] and tr.devices[2].device_path=="Audio/Effects/Native/#Line Input" 
@@ -907,18 +964,18 @@ local tr = renoise.song().selected_track
  end
 end
 
-local function add_line_input()
+function add_line_input()
 -- Write some code to add the line input in the correct place
  loadnative("Audio/Effects/Native/#Line Input")
 end
 
-local function remove_line_input()
+function remove_line_input()
 -- Write some code to remove the line input if it's in the correct place
  renoise.song().selected_track:delete_device_at(2)
 end
 
 -- recordamajic
-local function recordamajic9000(running)
+function recordamajic9000(running)
     if running then
     renoise.song().transport.playing=true
         -- start recording code here

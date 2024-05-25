@@ -713,16 +713,16 @@ function transposeAllSamplesInInstrument(amount)
     end
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Samples Transpose -1",
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Transpose -1",
     invoke = function() transposeAllSamplesInInstrument(-1) end}
 
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Samples Transpose +1",
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Transpose +1",
     invoke = function() transposeAllSamplesInInstrument(1) end}
 
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Samples Transpose -12",
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Transpose -12",
     invoke = function() transposeAllSamplesInInstrument(-12) end}
 
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Samples Transpose +12",
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Transpose +12",
     invoke = function() transposeAllSamplesInInstrument(12) end}
 
 function resetInstrumentTranspose(amount)
@@ -735,7 +735,7 @@ function resetInstrumentTranspose(amount)
     end
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Samples Transpose 0 (Reset)",
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Transpose 0 (Reset)",
 invoke=function() resetInstrumentTranspose(0) end}
 
 ---
@@ -878,5 +878,77 @@ renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Set Selected Instrum
 
 renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Set Selected Instrument Velocity Tracking Off",invoke=function() selectedInstrumentVelocityTracking(0) end}
 renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Set Selected Instrument Velocity Tracking On",invoke=function()  selectedInstrumentVelocityTracking(1) end}
+
+function setInstrumentVolume(amount)
+    -- Access the currently selected instrument in Renoise
+    local instrument = renoise.song().selected_instrument
+
+    -- Iterate through all samples in the instrument
+    for i = 1, #instrument.samples do
+        -- Access each sample's volume property
+        local currentVolume = instrument.samples[i].volume
+        local newVolume = currentVolume + amount
+
+        -- Clamp the volume value to be within the valid range of 0.0 to 4.0
+        if newVolume > 4.0 then
+            newVolume = 4.0
+        elseif newVolume < 0.0 then
+            newVolume = 0.0
+        end
+
+        -- Apply the new volume value to the sample
+        instrument.samples[i].volume = newVolume
+    end
+end
+
+-- Keybindings to adjust the volume of all samples in the selected instrument
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Volume +0.01",invoke=function() setInstrumentVolume(0.01) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Volume -0.01",invoke=function() setInstrumentVolume(-0.01) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Volume Reset (0.0dB)",invoke=function()
+    local instrument = renoise.song().selected_instrument
+    for i = 1, #instrument.samples do
+        instrument.samples[i].volume = 1
+    end
+end}
+
+function setInstrumentPanning(amount)
+    -- Access the currently selected instrument in Renoise
+    local instrument = renoise.song().selected_instrument
+
+    -- Iterate through all samples in the instrument
+    for i = 1, #instrument.samples do
+        -- Access each sample's panning property
+        local currentPanning = instrument.samples[i].panning
+        local newPanning = currentPanning + amount
+
+        -- Clamp the panning value to be within the valid range of 0.0 to 1.0
+        if newPanning > 1.0 then
+            newPanning = 1.0
+        elseif newPanning < 0.0 then
+            newPanning = 0.0
+        end
+
+        -- Apply the new panning value to the sample
+        instrument.samples[i].panning = newPanning
+    end
+end
+
+function setInstrumentPanningValue(value)
+    -- Access the currently selected instrument in Renoise
+    local instrument = renoise.song().selected_instrument
+
+    -- Iterate through all samples in the instrument
+    for i = 1, #instrument.samples do
+        -- Set the panning value to the sample
+        instrument.samples[i].panning = value
+    end
+end
+
+-- Keybindings to adjust the panning of all samples in the selected instrument
+renoise.tool():add_keybinding{name="Sample Editor:Paketti:Set Selected Instrument Panning +0.01",invoke=function() setInstrumentPanning(0.01) end}
+renoise.tool():add_keybinding{name="Sample Editor:Paketti:Set Selected Instrument Panning -0.01",invoke=function() setInstrumentPanning(-0.01) end}
+renoise.tool():add_keybinding{name="Sample Editor:Paketti:Set Selected Instrument Panning Reset (Center)",invoke=function() setInstrumentPanningValue(0.5) end}
+renoise.tool():add_keybinding{name="Sample Editor:Paketti:Set Selected Instrument Panning 0.0 (Left)",invoke=function() setInstrumentPanningValue(0.0) end}
+renoise.tool():add_keybinding{name="Sample Editor:Paketti:Set Selected Instrument Panning 1.0 (Right)",invoke=function() setInstrumentPanningValue(1.0) end}
 
 

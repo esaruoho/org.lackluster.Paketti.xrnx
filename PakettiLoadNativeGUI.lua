@@ -15,7 +15,7 @@ function show_plugin_list_dialog()
 
     table.sort(deviceReadableNames, function(a, b) return a.name < b.name end)
 
-    local function create_scrollable_native_list()
+    function create_scrollable_native_list()
         local left_column = vb:column {}
         local right_column = vb:column {}
         local num_devices = #deviceReadableNames
@@ -57,7 +57,7 @@ function show_plugin_list_dialog()
         ["*Velocity Tracker"] = true
     }
 
-    local function loadSelectedNativeDevices()
+    function loadSelectedNativeDevices()
         local track_type = renoise.song().tracks[track_index].type
         local notAllowedDevices = {}
 
@@ -86,7 +86,7 @@ function show_plugin_list_dialog()
 -- Placeholder for tracking added keybindings
 local addedKeyBindings = {}
 
-local function addAsShortcut()
+function addAsShortcut()
     for _, cb_info in ipairs(checkboxes) do
         if cb_info.checkbox.value then
             local keyBindingName = "Global:Track Devices:Load " .. cb_info.name .. " (Native)"

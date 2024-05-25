@@ -1,4 +1,4 @@
-local function show_plugin_list_dialog()
+function show_plugin_list_dialog()
     local vb = renoise.ViewBuilder()
 
     local checkboxes = {}
@@ -32,7 +32,7 @@ local function show_plugin_list_dialog()
     }
 
     -- Categorize plugins for instruments and devices for effects, then sort alphabetically
-    local function sortAndCategorizePlugins()
+    function sortAndCategorizePlugins()
         for _, plugin in ipairs(available_plugins) do
             local name = pluginReadableNames[plugin] or plugin:match("([^/]+)$")
             if plugin:find("VSTi") or plugin:find("VST3") then
@@ -64,7 +64,7 @@ local function show_plugin_list_dialog()
     local pluginPathMap = {} -- Mapping table for short name to original path
     local auPluginPathMap = {} -- Dedicated map for AU plugins
     
-    local function populateMap()
+    function populateMap()
     for i, plugin_info in ipairs(available_plugin_infos) do
         local shortName = plugin_info.short_name
         local originalPath = available_plugins[i] -- Assuming this is the full path or a unique identifier you need
@@ -82,7 +82,7 @@ local function show_plugin_list_dialog()
     end
 
 -- Function to filter AU plugins and populate auPluginPathMap
-local function filterAUPlugins()
+function filterAUPlugins()
     for shortName, originalPath in pairs(pluginPathMap) do
         if string.find(originalPath, "AU") then
             auPluginPathMap[shortName] = originalPath
@@ -95,7 +95,7 @@ end
     populateMap()
     filterAUPlugins()
 
-    local function create_scrollable_plugin_list(title, plugins)
+    function create_scrollable_plugin_list(title, plugins)
         local columns = {vb:vertical_aligner {mode = "top", spacing = 2},
                          vb:vertical_aligner {mode = "top", spacing = 2},
                          vb:vertical_aligner {mode = "top", spacing = 2}} -- Three columns initialized
@@ -141,7 +141,7 @@ end
     
 
     
-    local function loadSelectedPlugin()
+    function loadSelectedPlugin()
         for _, cb_info in ipairs(checkboxes) do
             if cb_info.checkbox.value then
                 local path = cb_info.name 
