@@ -19,7 +19,7 @@ https://github.com/esaruoho/org.lackluster.Paketti.xrnx/releases
 The forum for discussion is at http://forum.renoise.com/index.php/topic/34661-new-tool-31-pakettir3/
 or hit me up on Discord as esaruoho
 
-### Thanks
+## Thanks
 
 Thanks so much to everyone who helped. There's probably tons more, but: dblue, cortex, pandabot, ffx, joule, avaruus, astu/flo, mmd(mr mark dollin) syflom, protman, ViZiON, ghostwerk, vV, Bantai, danoise, taktik, Snowrobot, mxb, jenoki, kmaki, mantrakid, aleksip and the whole Renoise community.
 
