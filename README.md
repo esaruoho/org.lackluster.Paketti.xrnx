@@ -1,15 +1,23 @@
-# org.lackluster.Paketti.xrnx
-Renoise tool made with LUA scripting - multiple shortcuts + midi. Serious work in progress. 
+# Paketti - a suite of macros, scripts, workflow improvements for Renoise.
 
+| Area            | Name | Description | KeyBind | Menu Entry | Midi Mapping |
+|-----------------|------|-------------|---------|------------|--------------|
+| Instrument Box  |      |             |         |            |      X        |
+| Sample Editor   |      |             |         |            |      X        |
+| Pattern Editor  |      |             |         |      X      |              |
+| Track DSPs      |      |             |         |            |              |
+| Mixer           |      |             |         |            |              |
+| Sample FX Chain |      |             |         |            |              |
+|                 |      |             |         |            |              |
 
-If you want to see screenshots or animated GIFs, check out https://imgur.com/a/JTLnZ
+## Releases
 
-The tool is at http://renoise.com/tools/paketti
+https://github.com/esaruoho/org.lackluster.Paketti.xrnx/releases
+
+## Discuss
 
 The forum for discussion is at http://forum.renoise.com/index.php/topic/34661-new-tool-31-pakettir3/
-
-An older YouTube video showing Paketti in use in Renoise 2.8 is available at:
-https://www.youtube.com/watch?v=nzbTJPvek_w
+or hit me up on Discord as esaruoho
 
 ### Thanks
 
