@@ -1,12 +1,13 @@
 require "Paketti0G01_Loader"
 require "PakettiAutomation"
 require "PakettiControls"
-require "PakettiExperimental_Verify"
 require "PakettiImpulseTracker"
 require "PakettiInstrumentBox"
 require "PakettiLoaders"
 require "PakettiLoadNativeGUI"
 require "PakettiLoadVSTGUI"
+require "PakettiLoadAUVST3GUI"
+require "PakettiLoadPlugins"
 require "PakettiMainMenuEntries"
 require "PakettiMidi"
 require "PakettiPatternEditor"
@@ -15,9 +16,12 @@ require "PakettiPatternMatrix"
 require "PakettiPhraseEditor"
 require "PakettiSamples"
 require "PakettiRecorder" 
+require "PakettiExperimental_Verify"
+
 -- These were requested via GitHub / Renoise Forum / Renoise Discord - always get in touch with me (esaruoho@icloud.com)
 -- Or post a feature on https://github.com/esaruoho/org.lackluster.Paketti.xrnx/issues/new
 require "PakettiRequests"
+
 ------------------------------------------------
 -- Autoexec.bat
 -- everytime a new Renoise song is created, run this

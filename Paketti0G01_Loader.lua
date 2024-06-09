@@ -1,47 +1,258 @@
--- 0G01 Loader.lua
+local dialog
 local vb = renoise.ViewBuilder()
 
--- Define Preferences
+local sample_rates = {22050, 44100, 48000, 88200, 96000, 192000}
+
+-- Function to find the index of the sample rate
+local function find_sample_rate_index(rate)
+    for i, v in ipairs(sample_rates) do
+        if v == rate then
+            return i
+        end
+    end
+    return 1 -- default to 22050 if not found
+end
+
 preferences = renoise.Document.create("ScriptingToolPreferences") {
     upperFramePreference = 0,
     _0G01_Loader = false,
     RandomBPM = false,
     loadPaleGreenTheme = false,
-    WipeSlicesLoopMode = 2,  -- Default is "Forward"
-    WipeSlicesBeatSyncMode = 1, -- Default is "Repitch"
-    WipeSlicesOneShot = false,  -- Default is Off
-    WipeSlicesAutoseek = false,  -- Default is Off
-    WipeSlicesMuteGroup = 1, -- Default is Mute Group 1
+    WipeSlicesLoopMode = 2,
+    WipeSlicesBeatSyncMode = 1,
+    WipeSlicesOneShot = false,
+    WipeSlicesAutoseek = false,
+    WipeSlicesMuteGroup = 1,
     WipeSlicesNNA = 1,
-    WipeSlicesBeatSyncGlobal = false, -- Default is Off
+    WipeSlicesBeatSyncGlobal = false,
     sliceCounter = 1,
     slicePreviousDirection = 1,
-    renderSampleRate = 88200,  -- Default sample rate
-    renderBitDepth = 32  -- Default bit depth
+    renderSampleRate = 88200,
+    renderBitDepth = 32,
+    pakettiEditMode = 2,
+    pakettiLoaderInterpolation = 1,
+    pakettiLoaderOverSampling = true,
+    pakettiLoaderAutoFade = true,
+    pakettiLoaderLoopMode = 1,
+    selectionNewInstrumentSelect = false,
+    selectionNewInstrumentLoop = 2,
+    shortcuts = renoise.Document.create("KeyBindings") {},
+    midimappings = renoise.Document.create("MidiMappings") {}
 }
 
 renoise.tool().preferences = preferences
 
--- Function to load the preferences
 function load_preferences()
-    if io.exists("preferences.xml") then -- Check if the preference file exists
+    if io.exists("preferences.xml") then
         preferences:load_from("preferences.xml")
     end
 end
 
--- Function to update Random BPM and its dependent functions
 function update_random_bpm_preferences()
-    -- No additional actions needed here for now, could be expanded if needed
 end
 
 function update_loadPaleGreenTheme_preferences()
     renoise.app():load_theme("Presets/palegreen.xrnc")
 end
 
--- Dialog reference, should be accessible globally within this script
-local dialog
+function loadPlaidZap()
+    renoise.app():load_instrument("Gifts/plaidzap.xrni")
+end
 
--- Function to handle creation of a new track and inputting notes/effects upon sample change
+function update_sample_rate(sample_rate)
+    preferences.renderSampleRate.value = sample_rate
+end
+
+function update_bit_depth(bit_depth)
+    preferences.renderBitDepth.value = bit_depth
+end
+
+function horizontal_rule()
+    return vb:horizontal_aligner{mode="justify", width="100%", vb:space{width=2}, vb:row{height=2, style="panel", width="100%"}, vb:space{width=2}}
+end
+
+function vertical_space(height)
+    return vb:row{height = height}
+end
+
+function update_interpolation_mode(value)
+    preferences.pakettiLoaderInterpolation.value = value
+    renoise.song().selected_sample.interpolation_mode = 5 - value -- Map 1-4 to 4-1
+end
+
+function update_loop_mode(loop_mode_pref, value)
+    loop_mode_pref.value = value
+    renoise.song().selected_sample.loop_mode = value - 1 -- Map 1-4 to 0-3
+end
+
+function create_loop_mode_switch(preference)
+    return vb:switch{
+        items = {"Off", "Forward", "Backward", "PingPong"},
+        value = preference.value,
+        width = 300,
+        notifier = function(value)
+            update_loop_mode(preference, value)
+        end
+    }
+end
+
+function show_paketti_preferences()
+    if dialog and dialog.visible then return end
+
+    local dialog_content = vb:column{margin = 10,
+        vb:text{text = "UpperFrame Control F2 F3 F4 F11", font = "bold"},
+        vb:row{vb:text{text = "Upper Frame", width = 120},
+            vb:switch{items = {"Off", "Scopes", "Spectrum"},
+                value = preferences.upperFramePreference.value + 1,
+                width = 200,
+                notifier = function(value)
+                    preferences.upperFramePreference.value = value - 1
+                end}},
+        horizontal_rule(),
+        vb:row{vb:text{text = "0G01 Loader", width = 120},
+            vb:switch{items = {"Off", "On"},
+                value = preferences._0G01_Loader.value and 2 or 1,
+                width = 200,
+                notifier = function(value)
+                    preferences._0G01_Loader.value = (value == 2)
+                    update_0G01_loader_menu_entries()
+                end}},
+        vb:row{vb:text{text = "Random BPM", width = 120},
+            vb:switch{items = {"Off", "On"},
+                value = preferences.RandomBPM.value and 2 or 1,
+                width = 200,
+                notifier = function(value)
+                    preferences.RandomBPM.value = (value == 2)
+                    update_random_bpm_preferences()
+                end}},
+        vb:row{
+            vb:text{text = "Pale Green Theme", width = 120},
+            vb:button{text = "Load", notifier = function() update_loadPaleGreenTheme_preferences() end}
+        },
+        vb:row{
+            vb:text{text = "Gifts: Plaid Zap Load", width = 120},
+            vb:button{text = "Load", notifier = function() loadPlaidZap() end}
+        },
+        vertical_space(10),
+        horizontal_rule(),
+        vb:column{style = "group", margin = 10,
+            vb:row{vb:text{text = "Create New Instrument & Loop from Selection", style = "strong"}},
+            vb:row{vb:text{text = "Select Newly Created Instrument", width = 200},
+                vb:switch{items = {"Off", "On"},
+                    value = preferences.selectionNewInstrumentSelect.value and 2 or 1,
+                    width = 200,
+                    notifier = function(value)
+                        preferences.selectionNewInstrumentSelect.value = (value == 2)
+                    end}},
+            vb:row{vb:text{text = "Loop on Newly Created Instrument", width = 200},
+                create_loop_mode_switch(preferences.selectionNewInstrumentLoop)}},
+        horizontal_rule(),
+        vb:column{style = "group", margin = 10,
+            vb:text{style = "strong", text = "Paketti Loader Settings"},
+            vertical_space(5),
+            vb:row{vb:text{text = "Sample Interpolation", width = 150},
+                vb:switch{items = {"None", "Linear", "Cubic", "Sinc"},
+                    value = preferences.pakettiLoaderInterpolation.value,
+                    width = 200,
+                    notifier = function(value)
+                        update_interpolation_mode(value)
+                    end}},
+            vb:row{vb:text{text = "Sample OverSampling", width = 150},
+                vb:switch{items = {"Off", "On"},
+                    value = preferences.pakettiLoaderOverSampling and 2 or 1,
+                    width = 200,
+                    notifier = function(value)
+                        preferences.pakettiLoaderOverSampling = (value == 2)
+                    end}},
+            vb:row{vb:text{text = "Sample AutoFade", width = 150},
+                vb:switch{items = {"Off", "On"},
+                    value = preferences.pakettiLoaderAutoFade and 2 or 1,
+                    width = 200,
+                    notifier = function(value)
+                        preferences.pakettiLoaderAutoFade = (value == 2)
+                    end}},
+            vb:row{vb:text{text = "Loop Mode", width = 150},
+                create_loop_mode_switch(preferences.pakettiLoaderLoopMode)}},
+        horizontal_rule(),
+        vb:column{style = "group", margin = 10,
+            vb:text{style = "strong", text = "Wipe & Slices Settings"},
+            vertical_space(5),
+            vb:row{vb:text{text = "Slice Loop Mode", width = 150},
+                create_loop_mode_switch(preferences.WipeSlicesLoopMode)},
+            vb:row{vb:text{text = "Slice BeatSync Mode", width = 150},
+                vb:switch{items = {"Repitch", "Time-Stretch (Percussion)", "Time-Stretch (Texture)"},
+                    value = preferences.WipeSlicesBeatSyncMode.value,
+                    width = 400,
+                    notifier = function(value)
+                        preferences.WipeSlicesBeatSyncMode.value = value
+                    end}},
+            vb:row{vb:text{text = "Slice One-Shot", width = 150},
+                vb:switch{items = {"Off", "On"},
+                    value = preferences.WipeSlicesOneShot.value and 2 or 1,
+                    width = 200,
+                    notifier = function(value)
+                        preferences.WipeSlicesOneShot.value = (value == 2)
+                    end}},
+            vb:row{vb:text{text = "Slice Autoseek", width = 150},
+                vb:switch{items = {"Off", "On"},
+                    value = preferences.WipeSlicesAutoseek.value and 2 or 1,
+                    width = 200,
+                    notifier = function(value)
+                        preferences.WipeSlicesAutoseek.value = (value == 2)
+                    end}},
+            vb:row{vb:text{text = "New Note Action (NNA) Mode", width = 150},
+                vb:switch{items = {"Cut", "Note-Off", "Continue"},
+                    value = preferences.WipeSlicesNNA.value,
+                    width = 300,
+                    notifier = function(value)
+                        preferences.WipeSlicesNNA.value = value
+                    end}},
+            vb:row{vb:text{text = "Mute Group", width = 150},
+                vb:switch{items = {"Off", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"},
+                    value = preferences.WipeSlicesMuteGroup.value + 1,
+                    width = 400,
+                    notifier = function(value)
+                        preferences.WipeSlicesMuteGroup.value = value - 1
+                    end}}},
+        horizontal_rule(),
+        vb:column{style = "group", margin = 10,
+            vb:text{style = "strong", text = "Render Settings"},
+            vertical_space(5),
+            vb:row{vb:text{text = "Sample Rate", width = 150},
+                vb:switch{
+                    items = {"22050", "44100", "48000", "88200", "96000", "192000"},
+                    value = find_sample_rate_index(preferences.renderSampleRate.value),
+                    width = 300,
+                    notifier = function(value)
+                        preferences.renderSampleRate.value = sample_rates[value]
+                    end}},
+            vb:row{vb:text{text = "Bit Depth", width = 150},
+                vb:switch{items = {"16", "24", "32"},
+                    value = preferences.renderBitDepth.value == 16 and 1 or preferences.renderBitDepth.value == 24 and 2 or 3,
+                    width = 300,
+                    notifier = function(value)
+                        preferences.renderBitDepth.value = (value == 1 and 16 or value == 2 and 24 or 32)
+                    end}}},
+        horizontal_rule(),
+        vb:column{style = "group", margin = 10,
+            vb:text{style = "strong", text = "Edit Mode Colouring"},
+            vertical_space(5),
+            vb:row{vb:text{text = "Edit Mode", width = 150},
+                vb:switch{
+                    items = {"None", "Selected Track", "All Tracks"},
+                    value = preferences.pakettiEditMode.value,
+                    width = 300,
+                    notifier = function(value)
+                        preferences.pakettiEditMode.value = value
+                    end}}},
+        vb:space{height = 10},
+        vb:horizontal_aligner{mode = "distribute",
+            vb:button{text = "OK", width = "50%", notifier = function() preferences:save_as("preferences.xml"); dialog:close() end},
+            vb:button{text = "Cancel", width = "50%", notifier = function() dialog:close() end}}}
+    
+    dialog = renoise.app():show_custom_dialog("Paketti Preferences", dialog_content)
+end
+
 function on_sample_count_change()
     if not preferences._0G01_Loader.value then return end
     local song = renoise.song()
@@ -59,7 +270,6 @@ function on_sample_count_change()
     line.effect_columns[1].amount_value = 01
 end
 
--- Attach or remove observer based on the _0G01_Loader preference
 function manage_sample_count_observer(attach)
     local song = renoise.song()
     local instr = song.selected_instrument
@@ -74,7 +284,6 @@ function manage_sample_count_observer(attach)
     end
 end
 
--- Function to update dynamic menu entries and synchronize with preferences GUI
 function update_dynamic_menu_entries()
     local enableMenuEntryName = "Main Menu:Tools:Paketti..:!Preferences:0G01 Loader Enable"
     local disableMenuEntryName = "Main Menu:Tools:Paketti..:!Preferences:0G01 Loader Disable"
@@ -88,13 +297,11 @@ function update_dynamic_menu_entries()
                 invoke = function()
                     preferences._0G01_Loader.value = false
                     update_dynamic_menu_entries()
-                    -- Ensure GUI is updated (if open)
                     if dialog and dialog.visible then
-                        dialog:close() -- Close the dialog to reset state
-                        show_paketti_preferences() -- Reopen with updated values
+                        dialog:close()
+                        show_paketti_preferences()
                     end
-                end
-            }
+                end}
         end
     else
         if renoise.tool():has_menu_entry(disableMenuEntryName) then
@@ -105,427 +312,33 @@ function update_dynamic_menu_entries()
                 invoke = function()
                     preferences._0G01_Loader.value = true
                     update_dynamic_menu_entries()
-                    -- Ensure GUI is updated (if open)
                     if dialog and dialog.visible then
-                        dialog:close() -- Close the dialog to reset state
-                        show_paketti_preferences() -- Reopen with updated values
+                        dialog:close()
+                        show_paketti_preferences()
                     end
-                end
-            }
+                end}
         end
     end
 end
 
--- Function to update the 0G01 Loader setting and manage observer attachment based on preference
 function update_0G01_loader_menu_entries()
     manage_sample_count_observer(preferences._0G01_Loader.value)
     update_dynamic_menu_entries()
 end
 
--- Initialization and observer attachment
 function initialize_tool()
     update_0G01_loader_menu_entries()
 end
 
--- Ensure initialization occurs safely when a Renoise song is available
 function safe_initialize()
     if not renoise.tool().app_idle_observable:has_notifier(initialize_tool) then
         renoise.tool().app_idle_observable:add_notifier(initialize_tool)
     end
-    load_preferences() -- Load preferences before initializing
+    load_preferences()
 end
 
 safe_initialize()
 
--- GUI for setting preferences
-function show_paketti_preferences()
-    local vb = renoise.ViewBuilder()
-    if dialog and dialog.visible then return end
-
-    -- Declare tables for checkboxes
-    local checkboxSampleRates, checkboxBitDepths
-
-    -- Functions to update sample rate and bit depth preferences
-    function update_sample_rate(sample_rate)
-        preferences.renderSampleRate.value = sample_rate
-        for rate, checkbox in pairs(checkboxSampleRates) do
-            checkbox.value = (rate == sample_rate)
-        end
-    end
-
-    function update_bit_depth(bit_depth)
-        preferences.renderBitDepth.value = bit_depth
-        for depth, checkbox in pairs(checkboxBitDepths) do
-            checkbox.value = (depth == bit_depth)
-        end
-    end
-
-    -- Initialize the checkboxes for sample rate and bit depth
-    checkboxSampleRates = {
-        [22050] = vb:checkbox {value = preferences.renderSampleRate.value == 22050, notifier = function(checked) if checked then update_sample_rate(22050) end end},
-        [44100] = vb:checkbox {value = preferences.renderSampleRate.value == 44100, notifier = function(checked) if checked then update_sample_rate(44100) end end},
-        [48000] = vb:checkbox {value = preferences.renderSampleRate.value == 48000, notifier = function(checked) if checked then update_sample_rate(48000) end end},
-        [88200] = vb:checkbox {value = preferences.renderSampleRate.value == 88200, notifier = function(checked) if checked then update_sample_rate(88200) end end},
-        [96000] = vb:checkbox {value = preferences.renderSampleRate.value == 96000, notifier = function(checked) if checked then update_sample_rate(96000) end end},
-        [192000] = vb:checkbox {value = preferences.renderSampleRate.value == 192000, notifier = function(checked) if checked then update_sample_rate(192000) end end}
-    }
-
-    checkboxBitDepths = {
-        [16] = vb:checkbox {value = preferences.renderBitDepth.value == 16, notifier = function(checked) if checked then update_bit_depth(16) end end},
-        [24] = vb:checkbox {value = preferences.renderBitDepth.value == 24, notifier = function(checked) if checked then update_bit_depth(24) end end},
-        [32] = vb:checkbox {value = preferences.renderBitDepth.value == 32, notifier = function(checked) if checked then update_bit_depth(32) end end}
-    }
-
-    -- Helper function to create a horizontal rule
-    function horizontal_rule()
-        return vb:horizontal_aligner {mode = "justify", width = "100%", vb:space {width = 2}, vb:row {height = 2, style = "panel", width = "100%"}, vb:space {width = 2}}
-    end
-
-    -- Helper function to add vertical space
-    function vertical_space(height)
-        return vb:row {height = height}
-    end
-
-    -- Initialize the checkboxes with their specific settings and notifiers
-    local checkboxBeatSyncGlobalOff = vb:checkbox {
-        value = preferences.WipeSlicesBeatSyncGlobal.value == false,
-        notifier = function(checked)
-            if checked then
-                preferences.WipeSlicesBeatSyncGlobal.value = false
-                checkboxBeatSyncGlobalOn.value = false -- Set the 'On' checkbox to false
-            end
-        end
-    }
-
-    local checkboxBeatSyncGlobalOn = vb:checkbox {
-        value = preferences.WipeSlicesBeatSyncGlobal.value == true,
-        notifier = function(checked)
-            if checked then
-                preferences.WipeSlicesBeatSyncGlobal.value = true
-                checkboxBeatSyncGlobalOff.value = false -- Set the 'Off' checkbox to false
-            end
-        end
-    }
-
-    local checkboxUpperFrameOff = vb:checkbox {
-        value = preferences.upperFramePreference.value == 0,
-        notifier = function(checked)
-            if checked then
-                preferences.upperFramePreference.value = 0
-                checkboxUpperFrameScopes.value = false
-                checkboxUpperFrameSpectrum.value = false
-            end
-        end
-    }
-
-    local checkboxUpperFrameScopes = vb:checkbox {
-        value = preferences.upperFramePreference.value == 1,
-        notifier = function(checked)
-            if checked then
-                preferences.upperFramePreference.value = 1
-                checkboxUpperFrameOff.value = false
-                checkboxUpperFrameSpectrum.value = false
-            end
-        end
-    }
-
-    local checkboxUpperFrameSpectrum = vb:checkbox {
-        value = preferences.upperFramePreference.value == 2,
-        notifier = function(checked)
-            if checked then
-                preferences.upperFramePreference.value = 2
-                checkboxUpperFrameOff.value = false
-                checkboxUpperFrameScopes.value = false
-            end
-        end
-    }
-
-    local checkboxOff = vb:checkbox {
-        value = preferences.WipeSlicesLoopMode.value == 1,
-        notifier = function(checked)
-            if checked then
-                preferences.WipeSlicesLoopMode.value = 1
-                checkboxForward.value = false
-                checkboxReverse.value = false
-                checkboxPingPong.value = false
-            end
-        end
-    }
-
-    local checkboxForward = vb:checkbox {
-        value = preferences.WipeSlicesLoopMode.value == 2,
-        notifier = function(checked)
-            if checked then
-                preferences.WipeSlicesLoopMode.value = 2
-                checkboxOff.value = false
-                checkboxReverse.value = false
-                checkboxPingPong.value = false
-            end
-        end
-    }
-
-    local checkboxReverse = vb:checkbox {
-        value = preferences.WipeSlicesLoopMode.value == 3,
-        notifier = function(checked)
-            if checked then
-                preferences.WipeSlicesLoopMode.value = 3
-                checkboxOff.value = false
-                checkboxForward.value = false
-                checkboxPingPong.value = false
-            end
-        end
-    }
-
-    local checkboxPingPong = vb:checkbox {
-        value = preferences.WipeSlicesLoopMode.value == 4,
-        notifier = function(checked)
-            if checked then
-                preferences.WipeSlicesLoopMode.value = 4
-                checkboxOff.value = false
-                checkboxForward.value = false
-                checkboxReverse.value = false
-            end
-        end
-    }
-
-    local checkboxRepitch = vb:checkbox {
-        value = preferences.WipeSlicesBeatSyncMode.value == 1,
-        notifier = function(checked)
-            if checked then
-                preferences.WipeSlicesBeatSyncMode.value = 1
-                checkboxPercussion.value = false
-                checkboxTexture.value = false
-            end
-        end
-    }
-
-    local checkboxPercussion = vb:checkbox {
-        value = preferences.WipeSlicesBeatSyncMode.value == 2,
-        notifier = function(checked)
-            if checked then
-                preferences.WipeSlicesBeatSyncMode.value = 2
-                checkboxRepitch.value = false
-                checkboxTexture.value = false
-            end
-        end
-    }
-
-    local checkboxTexture = vb:checkbox {
-        value = preferences.WipeSlicesBeatSyncMode.value == 3,
-        notifier = function(checked)
-            if checked then
-                preferences.WipeSlicesBeatSyncMode.value = 3
-                checkboxRepitch.value = false
-                checkboxPercussion.value = false
-            end
-        end
-    }
-
-    local checkboxOneShotOn = vb:checkbox {
-        value = preferences.WipeSlicesOneShot.value,
-        notifier = function(checked)
-            preferences.WipeSlicesOneShot.value = checked
-            checkboxOneShotOff.value = not checked
-        end
-    }
-
-    local checkboxOneShotOff = vb:checkbox {
-        value = not preferences.WipeSlicesOneShot.value,
-        notifier = function(checked)
-            preferences.WipeSlicesOneShot.value = not checked
-            checkboxOneShotOn.value = not checked
-        end
-    }
-
-    local checkboxAutoseekOn = vb:checkbox {
-        value = preferences.WipeSlicesAutoseek.value,
-        notifier = function(checked)
-            preferences.WipeSlicesAutoseek.value = checked
-            checkboxAutoseekOff.value = not checked
-        end
-    }
-
-    local checkboxAutoseekOff = vb:checkbox {
-        value = not preferences.WipeSlicesAutoseek.value,
-        notifier = function(checked)
-            preferences.WipeSlicesAutoseek.value = not checked
-            checkboxAutoseekOn.value = not checked
-        end
-    }
-
-    local checkboxNNACut = vb:checkbox {
-        value = preferences.WipeSlicesNNA.value == 1,
-        notifier = function(checked)
-            if checked then
-                preferences.WipeSlicesNNA.value = 1
-                checkboxNNANoteOff.value = false
-                checkboxNNAContinue.value = false
-            end
-        end
-    }
-
-    local checkboxNNANoteOff = vb:checkbox {
-        value = preferences.WipeSlicesNNA.value == 2,
-        notifier = function(checked)
-            if checked then
-                preferences.WipeSlicesNNA.value = 2
-                checkboxNNACut.value = false
-                checkboxNNAContinue.value = false
-            end
-        end
-    }
-
-    local checkboxNNAContinue = vb:checkbox {
-        value = preferences.WipeSlicesNNA.value == 3,
-        notifier = function(checked)
-            if checked then
-                preferences.WipeSlicesNNA.value = 3
-                checkboxNNACut.value = false
-                checkboxNNANoteOff.value = false
-            end
-        end
-    }
-
-    -- Define the array to hold checkboxes for Mute Group settings including Off (0)
-    local checkboxMuteGroup = {}
-    local labels = {"Off", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"}
-
-    -- Initialize checkboxes with a loop
-    for i = 0, 15 do
-        checkboxMuteGroup[i] = vb:checkbox {
-            value = preferences.WipeSlicesMuteGroup.value == i,
-            notifier = function(checked)
-                if checked then
-                    preferences.WipeSlicesMuteGroup.value = i
-                    -- Uncheck all other checkboxes
-                    for j = 0, 15 do
-                        if j ~= i then
-                            checkboxMuteGroup[j].value = false
-                        end
-                    end
-                end
-            end
-        }
-    end
-
-    -- Construct the dialog with all elements
-    local dialog_content = vb:column {
-        margin = 10,
-
-        -- Title of the control section
-        vb:text {
-            text = "UpperFrame Control F2 F3 F4 F11",
-            font = "bold"
-        },
-
-        -- Row layout for checkboxes and their labels
-        vb:row {
-            -- Off Checkbox and its label
-            checkboxUpperFrameOff,
-            vb:text {
-                text = "Off"
-            },
-
-            -- Scopes Checkbox and its label
-            checkboxUpperFrameScopes,
-            vb:text {
-                text = "Scopes"
-            },
-
-            -- Spectrum Checkbox and its label
-            checkboxUpperFrameSpectrum,
-            vb:text {
-                text = "Spectrum"
-            }
-        },
-        horizontal_rule(),
-
-        vb:row {vb:checkbox {value = preferences._0G01_Loader.value, notifier = function(value) preferences._0G01_Loader.value = value; update_0G01_loader_menu_entries(); end}, vb:text {text = "Enable 0G01 Loader"}},
-        vb:row {vb:checkbox {value = preferences.RandomBPM.value, notifier = function(value) preferences.RandomBPM.value = value; update_random_bpm_preferences(); end}, vb:text {text = "Enable Random BPM Write to Master"}},
-        vb:row {vb:checkbox {value = preferences.loadPaleGreenTheme.value, notifier = function(value) preferences.loadPaleGreenTheme.value = value; update_loadPaleGreenTheme_preferences(); end}, vb:text {text = "Load Pale Green Theme"}},
-        vertical_space(10),
-        horizontal_rule(),
-        vb:column {
-            style = "group",
-            margin = 10,
-            vb:text {style = "strong", text = "Wipe & Slices Settings"},
-            vertical_space(5),
-
-            vb:text {text = "Slice Loop Mode"},
-            vb:row {checkboxOff, vb:text {text = "Off"}, checkboxForward, vb:text {style = "strong", text = "Forwards"}, checkboxReverse, vb:text {text = "Reverse"}, checkboxPingPong, vb:text {text = "Ping-Pong"}},
-            vb:text {text = "Slice BeatSync Mode"},
-            vb:row {checkboxRepitch, vb:text {text = "Repitch"}, checkboxPercussion, vb:text {style = "strong", text = "Time-Stretch (Percussion)"}, checkboxTexture, vb:text {text = "Time-Stretch (Texture)"}},
-            vb:text {text = "Slice One-Shot"},
-            vb:row {checkboxOneShotOff, vb:text {style = "strong", text = "Off"}, checkboxOneShotOn, vb:text {text = "On"}},
-            vb:text {text = "Slice Autoseek"},
-            vb:row {checkboxAutoseekOff, vb:text {style = "strong", text = "Off"}, checkboxAutoseekOn, vb:text {text = "On"}},
-            vb:text {text = "New Note Action (NNA) Mode"},
-            vb:row {
-                checkboxNNACut,
-                vb:text {style = "strong", text = "Cut"},
-                checkboxNNANoteOff,
-                vb:text {text = "Note-Off"},
-                checkboxNNAContinue,
-                vb:text {text = "Continue"}
-            },
-            -- GUI definition for displaying the Mute Group checkboxes
-            vb:text {text = "Mute Group"},
-            vb:row {
-                checkboxMuteGroup[0], vb:text {text = "Off"},
-                checkboxMuteGroup[1], vb:text {style = "strong", text = "1"},
-                checkboxMuteGroup[2], vb:text {text = "2"},
-                checkboxMuteGroup[3], vb:text {text = "3"},
-                checkboxMuteGroup[4], vb:text {text = "4"},
-                checkboxMuteGroup[5], vb:text {text = "5"},
-                checkboxMuteGroup[6], vb:text {text = "6"},
-                checkboxMuteGroup[7], vb:text {text = "7"},
-                checkboxMuteGroup[8], vb:text {text = "8"},
-                checkboxMuteGroup[9], vb:text {text = "9"},
-                checkboxMuteGroup[10], vb:text {text = "A"},
-                checkboxMuteGroup[11], vb:text {text = "B"},
-                checkboxMuteGroup[12], vb:text {text = "C"},
-                checkboxMuteGroup[13], vb:text {text = "D"},
-                checkboxMuteGroup[14], vb:text {text = "E"},
-                checkboxMuteGroup[15], vb:text {text = "F"}
-            }
-        },
-
-        horizontal_rule(),
-        vb:column {
-            style = "group",
-            margin = 10,
-            vb:text {style = "strong", text = "Render Settings"},
-            vertical_space(5),
-            vb:text {text = "Sample Rate"},
-            vb:row {
-                checkboxSampleRates[22050], vb:text {text = "22050"},
-                checkboxSampleRates[44100], vb:text {text = "44100"},
-                checkboxSampleRates[48000], vb:text {text = "48000"},
-                checkboxSampleRates[88200], vb:text {style = "strong", text = "88200"},
-                checkboxSampleRates[96000], vb:text {text = "96000"},
-                checkboxSampleRates[192000], vb:text {text = "192000"}
-            },
-            vertical_space(5),
-            vb:text {text = "Bit Depth"},
-            vb:row {
-                checkboxBitDepths[16], vb:text {text = "16"},
-                checkboxBitDepths[24], vb:text {text = "24"},
-                checkboxBitDepths[32], vb:text {style = "strong", text = "32"}
-            }
-        },
-
-        vb:space {height = 10},
-        vb:horizontal_aligner {
-            mode = "distribute",
-            vb:button {text = "OK", width = "50%", notifier = function() preferences:save_as("preferences.xml"); dialog:close(); end},
-            vb:button {text = "Cancel", width = "50%", notifier = function() dialog:close(); end}
-        }
-    }
-
-    dialog = renoise.app():show_custom_dialog("Paketti Preferences", dialog_content)
-end
-
--- Add menu entry and keybinding for showing the preferences dialog
 renoise.tool():add_menu_entry{name = "Main Menu:Tools:Paketti..:!Preferences:Paketti Preferences...", invoke = show_paketti_preferences}
 renoise.tool():add_keybinding{name = "Global:Paketti:Show Paketti Preferences...", invoke = show_paketti_preferences}
 

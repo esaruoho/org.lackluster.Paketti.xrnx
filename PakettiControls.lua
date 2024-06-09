@@ -30,16 +30,63 @@ renoise.tool():add_keybinding{name="Global:Paketti:Record+Follow Toggle (2nd)",i
 renoise.tool():add_keybinding{name="Global:Paketti:Record+Follow Toggle (3rd)",invoke=function() RecordFollowToggle() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Record+Follow Toggle (4th)",invoke=function() RecordFollowToggle() end}
 --------------------------------------------------------------------------------------------------------------------------------------------------------
-function RecordToggle()
-local t=renoise.song().transport
-local w=renoise.app().window
-w.active_middle_frame=1
+--esa- 2nd keybind for Record Toggle ON/OFF with effect_column reading
+previous_edit_step = nil
 
-if not t.edit_mode then t.edit_mode=true else t.edit_mode=false end
-if not t.follow_player then return else t.follow_player=false end end
+function RecordToggleg()
+  local s = renoise.song()
+  local t = s.transport
 
-renoise.tool():add_keybinding{name="Global:Paketti:Toggle EditMode (2nd)",invoke=function() RecordToggle() end}
-renoise.tool():add_keybinding{name="Global:Paketti:Toggle EditMode (3rd)",invoke=function() RecordToggle() end}
+  -- Output the current edit_step
+  print("Current edit_step: " .. t.edit_step)
+
+  -- Toggle edit mode
+  t.edit_mode = not t.edit_mode
+
+  if t.edit_mode then
+    -- If turning edit_mode on
+    if s.selected_effect_column_index and s.selected_effect_column_index > 0 then
+      -- Store current edit_step before changing it to 0
+      previous_edit_step = t.edit_step
+      print("Stored previous_edit_step: " .. previous_edit_step)
+      t.edit_step = 0
+    else
+      -- If no effect column is selected, do nothing with edit_step
+      print("No effect column selected")
+    end
+  else
+    -- If turning edit_mode off
+    if s.selected_effect_column_index and s.selected_effect_column_index > 0 then
+      -- Restore previous edit_step if it was saved
+      if previous_edit_step then
+        t.edit_step = previous_edit_step
+        print("Restored edit_step to: " .. t.edit_step)
+        previous_edit_step = nil
+      else
+        print("No previous_edit_step saved")
+      end
+    else
+      -- If no effect column is selected and we are in note column
+      if not s.selected_effect_column_index or s.selected_effect_column_index == 0 then
+        -- Restore previous edit_step if edit_step is 0 and previous_edit_step is not 0
+        if t.edit_step == 0 and previous_edit_step and previous_edit_step ~= 0 then
+          t.edit_step = previous_edit_step
+          print("Restored edit_step to: " .. t.edit_step)
+          previous_edit_step = nil
+        end
+      else
+        print("No effect column selected and not in note column")
+      end
+    end
+  end
+
+ -- -- Toggle follow_player mode
+--  t.follow_player = not t.follow_player
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Toggle EditMode (2nd)",invoke=function() RecordToggleg() end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Toggle EditMode (3rd)",invoke=function() RecordToggleg() end}
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function RecordFollowMetronomeToggle()
 local w=renoise.app().window
@@ -200,6 +247,11 @@ end
 renoise.tool():add_keybinding{name="Global:Paketti:Select Next Track", invoke=function() selectNextTrack() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Select Previous Track", invoke=function() selectPreviousTrack() end}
 
+
+function createNewTrack()
+renoise.song():insert_track_at(renoise.song().selected_track_index)
+end
+renoise.tool():add_keybinding{name="Global:Paketti:Insert Track (2nd)", invoke=function() createNewTrack() end}
 
 
 

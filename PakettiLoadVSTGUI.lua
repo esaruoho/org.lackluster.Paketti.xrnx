@@ -5,30 +5,35 @@ local deviceReadableNames = {}
 local addedKeyBindings = {}
 
 function vstAddAsShortcut()
-    for _, cb_info in ipairs(checkboxes) do
-        if cb_info.checkbox.value then
-            local keyBindingName = ("Global:Track Devices:Load VST " .. cb_info.name .. " Device")
+  for _, cb_info in ipairs(checkboxes) do
+    if cb_info.checkbox.value then
+      local keyBindingName = "Global:Track Devices:Load Device (VST) " .. cb_info.name
+      local midiMappingName = "Tools:Track Devices:Load Device (VST) " .. cb_info.name
 
-            -- Check if we've already attempted to add this keybinding
-            if not addedKeyBindings[keyBindingName] then
-                print("Adding shortcut for: " .. cb_info.name)
+      -- Check if we've already attempted to add this keybinding
+      if not addedKeyBindings[keyBindingName] then
+        print("Adding shortcut for: " .. cb_info.name)
 
-                -- Attempt to add the keybinding, using pcall to catch any errors gracefully
-                local success, err = pcall(function()
-                    renoise.tool():add_keybinding{name=keyBindingName, invoke=function() loadvst(cb_info.path) end}
-                end)
+        -- Attempt to add the keybinding, using pcall to catch any errors gracefully
+        local success, err = pcall(function()
+          renoise.tool():add_keybinding{name=keyBindingName, invoke=function() loadvst(cb_info.path) end}
+          renoise.tool():add_midi_mapping{name=midiMappingName, invoke=function() loadvst(cb_info.path) end}
+        end)
 
-                -- Check if the keybinding was added successfully
-                if success then
-                    addedKeyBindings[keyBindingName] = true
-                else
-                    print("Could not add keybinding for " .. cb_info.name .. ". It might already exist.")
-                end
-            else
-                print("Keybinding for " .. cb_info.name .. " already added.")
-            end
+        -- Check if the keybinding was added successfully
+        if success then
+          addedKeyBindings[keyBindingName] = true
+          saveToPreferencesFile(keyBindingName, midiMappingName, cb_info.path)
+        else
+          print("Could not add keybinding for " .. cb_info.name .. ". It might already exist.")
         end
+      else
+        print("Keybinding for " .. cb_info.name .. " already added.")
+      end
     end
+  end
+
+ -- renoise.app():show_status("Added " .. #checkboxes .. " shortcuts for opening devices")
 end
 
 function vstCreateScrollableVSTList()
@@ -44,13 +49,12 @@ function vstCreateScrollableVSTList()
         vb:column {}
     }
 
-    local num_devices = #deviceReadableNames
-    local num_columns = #columns
-    local devices_per_column = math.ceil(num_devices / num_columns)
+    local max_devices_per_column = 22
 
     for i, device in ipairs(deviceReadableNames) do
-        local column_index = math.floor((i - 1) / devices_per_column) + 1
-        local checkbox = vb:checkbox { value = false, id = "checkbox_vst_" .. tostring(i) }
+        local column_index = math.floor((i - 1) / max_devices_per_column) + 1
+        local checkbox_id = "checkbox_vst_" .. tostring(i) .. "_" .. tostring(math.random(1000000))
+        local checkbox = vb:checkbox { value = false, id = checkbox_id }
         checkboxes[#checkboxes + 1] = { checkbox = checkbox, path = device.path, name = device.name }
         local device_row = vb:row {
             checkbox,
@@ -76,6 +80,12 @@ function vstLoadSelectedVSTDevices()
             print("Loading VST Device:", pluginPath)
             loadvst(pluginPath)
         end
+    end
+end
+
+function vstResetSelection()
+    for _, cb_info in ipairs(checkboxes) do
+        cb_info.checkbox.value = false
     end
 end
 
@@ -125,6 +135,13 @@ function vstShowPluginListDialog()
             notifier = vstAddAsShortcut
         },
         vb:button {
+            text = "Reset Selection",
+            height = button_height,
+            notifier = function()
+                vstResetSelection()
+            end
+        },
+        vb:button {
             text = "Cancel",
             height = button_height,
             notifier = function()
@@ -142,6 +159,4 @@ function vstShowPluginListDialog()
 
     custom_dialog = renoise.app():show_custom_dialog("Load VST Device(s)", dialog_content)
 end
-
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Load VST Devices Dialog",invoke=vstShowPluginListDialog}
 

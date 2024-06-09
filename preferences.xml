@@ -1,18 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ScriptingToolPreferences doc_version="0">
-  <renderBitDepth>32</renderBitDepth>
-  <sliceCounter>3</sliceCounter>
-  <WipeSlicesBeatSyncMode>2</WipeSlicesBeatSyncMode>
-  <WipeSlicesMuteGroup>11</WipeSlicesMuteGroup>
-  <slicePreviousDirection>0.0</slicePreviousDirection>
-  <RandomBPM>false</RandomBPM>
-  <WipeSlicesBeatSyncGlobal>false</WipeSlicesBeatSyncGlobal>
-  <WipeSlicesNNA>1.0</WipeSlicesNNA>
-  <upperFramePreference>1.0</upperFramePreference>
-  <renderSampleRate>88200</renderSampleRate>
-  <loadPaleGreenTheme>false</loadPaleGreenTheme>
-  <WipeSlicesLoopMode>2</WipeSlicesLoopMode>
-  <WipeSlicesAutoseek>false</WipeSlicesAutoseek>
-  <_0G01_Loader>false</_0G01_Loader>
-  <WipeSlicesOneShot>false</WipeSlicesOneShot>
-</ScriptingToolPreferences>
+<AppLoadingPreferences doc_version="0">
+  <App1>/Applications/Microsoft Edge.app</App1>
+  <App3>/Applications/TouchOSC Bridge.app</App3>
+  <App2>/Applications/Audacity.app</App2>
+  <App6>/Applications/Bitwig Studio.app</App6>
+  <App4>/System/Applications/Time Machine.app</App4>
+  <App5>/Applications/Upscayl.app</App5>
+</AppLoadingPreferences>

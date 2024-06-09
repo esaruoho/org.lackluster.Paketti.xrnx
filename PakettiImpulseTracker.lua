@@ -79,55 +79,62 @@ renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker F2 Pattern Ed
 ----------------------------------------------------------------------------------------------------------------
 --- F3
 function F3()
-local w=renoise.app().window
-local s=renoise.song()
-local raw=renoise.ApplicationWindow
+  local w = renoise.app().window
+  local raw = renoise.ApplicationWindow
 
-if w.active_middle_frame==5 then w.active_middle_frame=3
-    else w.active_middle_frame=5 end
+  -- Debug print to check current middle frame
+  print("Current middle frame: " .. tostring(w.active_middle_frame))
 
-w.pattern_matrix_is_visible=false
-w.pattern_advanced_edit_is_visible=false
+  -- Check for middleframe 3 and switch to 7, or 7 and switch to 3
+  if w.active_middle_frame == 5 then
+    w.active_middle_frame = 7
+    print("Switching to middle frame 7")
+    return
+  elseif w.active_middle_frame == 7 then
+    w.active_middle_frame = 5
+    print("Switching to middle frame 5")
+    return
+  end
 
-if w.active_middle_frame == 1 then
-w.active_middle_frame = raw.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
-w.lock_keyboard_focus=true
-w.disk_browser_is_visible=true
-w.instrument_box_is_visible=true
+  -- Rest of the original logic remains unchanged
+  w.pattern_matrix_is_visible = false
+  w.pattern_advanced_edit_is_visible = false
 
-  if w.upper_frame_is_visible==true then 
-     w.active_upper_frame=2 else return end
-w.upper_frame_is_visible=true
-w.active_upper_frame=2
-return else  end
+  if w.active_middle_frame == 1 then
+    w.active_middle_frame = raw.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
+    w.lock_keyboard_focus = true
+    w.disk_browser_is_visible = true
+    w.instrument_box_is_visible = true
 
-if w.upper_frame_is_visible == true then 
+    if w.upper_frame_is_visible == true then
+      w.active_upper_frame = 2
+    else
+      return
+    end
 
-else return end
+    w.upper_frame_is_visible = true
+    w.active_upper_frame = 2
+    return
+  else
+  end
 
-if w.active_middle_frame==raw.MIDDLE_FRAME_PATTERN_EDITOR and w.lower_frame_is_visible==false and w.pattern_advanced_edit_is_visible==false and w.upper_frame_is_visible==false then
-w.upper_frame_is_visible=true
+  if w.upper_frame_is_visible == true then
+  else
+    return
+  end
 
+  if w.active_middle_frame == raw.MIDDLE_FRAME_PATTERN_EDITOR and w.lower_frame_is_visible == false and w.pattern_advanced_edit_is_visible == false and w.upper_frame_is_visible == false then
+    w.upper_frame_is_visible = true
+    w.disk_browser_is_visible = true
+    return
+  else
+  end
 
-
-w.disk_browser_is_visible=true return
-else end
-
---if w.active_upper_frame == raw.UPPER_FRAME_TRACK_SCOPES and w.upper_frame_is_visible==true then 
-----w.active_upper_frame = renoise.ApplicationWindow.UPPER_FRAME_MASTER_SPECTRUM 
-----switching between trackscopes + master spectrum is not preferred anymore by this user
---return 
---else w.active_upper_frame = raw.UPPER_FRAME_TRACK_SCOPES end
-
-s.selected_instrument.active_tab=1
---if preferences.upperFramePreference ~= 0.0 then 
--- print (preferences.upperFramePreference)
--- renoise.app().window.active_upper_frame = preferences.upperFramePreference
---else end
-w.active_middle_frame=raw.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
-
---renoise.app().window.active_middle_frame=renoise.ApplicationWindow.MIDDLE_FRAME_PHRASE_EDITOR
+  local s = renoise.song()
+  s.selected_instrument.active_tab = 1
+  w.active_middle_frame = raw.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
 end
+
 
 renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker F3 Sample Editor", invoke=function() F3() end}
 -- F3 Only
@@ -241,10 +248,17 @@ renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker F7 Start Play
 ------------------------------------------------------------------------------------------------------------------------------------------- F8
 function ImpulseTrackerStop()
 local t=renoise.song().transport
+
+if renoise.song().transport.playing == false then
+renoise.song().selected_sequence_index = 1
+renoise.song().selected_line_index = 1
+else 
 t.follow_player=false
 t:panic()
 t.loop_pattern=false
 t.loop_block_enabled=false
+renoise.song().selected_line_index = 1
+end
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker F8 Stop Playback (Panic)", invoke=function() ImpulseTrackerStop()  end}
@@ -863,4 +877,160 @@ local s=renoise.song()
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:ImpulseTracker ALT-F10 (Solo Toggle)", invoke=function() impulseTrackerSoloKey() end}
+-----------
+
+local vb = renoise.ViewBuilder()
+
+-- Variables to store the state of each section
+local patterns_state = "Keep"
+local instruments_state = "Keep"
+local pattern_sequence_state = "Keep"
+
+-- Functions to clear patterns, instruments, and pattern sequence
+function patternClear()
+  local song = renoise.song()
+  for i = 1, #song.patterns do
+    song.patterns[i]:clear()
+  end
+end
+
+function instrumentsClear()
+  local song = renoise.song()
+  for i = 1, #song.instruments do
+    song.instruments[i]:clear()
+  end
+end
+
+function patternSequenceClear()
+  local song = renoise.song()
+  local sequence_length = #song.sequencer.pattern_sequence
+  -- We need to keep at least one sequence, so we'll clear from the second item onward
+  for i = sequence_length, 2, -1 do
+    song.sequencer:delete_sequence_at(i)
+  end
+end
+
+-- Function to handle switch changes
+function handle_switch_change(value, section)
+  local state = value == 1 and "Keep" or "Clear"
+  if section == "Patterns" then
+    patterns_state = state
+  elseif section == "Instruments" then
+    instruments_state = state
+  elseif section == "Pattern Sequence" then
+    pattern_sequence_state = state
+  end
+end
+
+-- Declare the dialog variable
+local dialog = nil
+
+-- Function to handle the OK button click
+function handle_ok_click()
+  return function()
+    local actions = {}
+  if patterns_state == "Clear" and instruments_state == "Clear" and pattern_sequence_state == "Clear" then
+  renoise.app():new_song()
+  else
+
+    if patterns_state == "Clear" then
+      patternClear()
+      table.insert(actions, "Patterns")
+    end
+    if instruments_state == "Clear" then
+      instrumentsClear()
+      table.insert(actions, "Instruments")
+    end
+    if pattern_sequence_state == "Clear" then
+      patternSequenceClear()
+      table.insert(actions, "Pattern Sequence")
+    end
+end 
+    local status_message = ""
+    if #actions == 0 then
+      status_message = "Kept all"
+    else
+      local kept = {}
+      if patterns_state == "Keep" then table.insert(kept, "Patterns") end
+      if instruments_state == "Keep" then table.insert(kept, "Instruments") end
+      if pattern_sequence_state == "Keep" then table.insert(kept, "Pattern Sequence") end
+      if #kept > 0 then
+        status_message = "Kept " .. table.concat(kept, ", ") .. "; "
+      end
+      status_message = status_message .. "Cleared " .. table.concat(actions, ", ")
+    end
+    renoise.app():show_status(status_message)
+    dialog:close()
+  end
+end
+
+-- Function to handle the Cancel button click
+function handle_cancel_click()
+  return function()
+    dialog:close()
+  end
+end
+
+-- Function to create unique IDs
+local function create_unique_id(base_id)
+  return base_id .. "_" .. tostring(os.clock() * 1000)
+end
+
+-- Define the toggle switch group content with unique IDs
+function toggle_switch_group(section, state)
+  local keep_id = create_unique_id(section:lower() .. "_keep_switch")
+  local clear_id = create_unique_id(section:lower() .. "_clear_switch")
+
+  return vb:row {
+    vb:text { text = section, width = 120 },
+    vb:switch {
+      id = keep_id,
+      items = { "Keep", "Clear" },
+      value = state == "Keep" and 1 or 2,
+      width = 100, -- Set width to ensure full text is displayed
+      notifier = function(value)
+        handle_switch_change(value, section)
+      end
+    }
+  }
+end
+
+-- Function to show the dialog
+function show_new_song_dialog()
+  local dialog_content = vb:column {
+    margin = 10,
+    vb:text {
+      text = "New Song ... with",
+      font = "bold",
+      align = "center"
+    },
+    vb:space { height = 10 },
+    vb:column {
+      style = "border",
+      margin = 10,
+      toggle_switch_group("Patterns", patterns_state),
+      toggle_switch_group("Instruments", instruments_state),
+      toggle_switch_group("Pattern Sequence", pattern_sequence_state),
+      vb:space { height = 10 },
+      vb:row {
+        vb:button {
+          text = "OK",
+          width = 100,
+          notifier = handle_ok_click()
+        },
+        vb:button {
+          text = "Cancel",
+          width = 100,
+          notifier = handle_cancel_click(),
+          color = {1, 0, 0} -- Red color to highlight the Cancel button
+        }
+      }
+    }
+  }
+  dialog = renoise.app():show_custom_dialog("New Song", dialog_content)
+end
+
+-- Add menu entry to show the dialog
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Show New Song Dialog...", invoke=show_new_song_dialog}
+renoise.tool():add_keybinding{name="Global:Paketti:Show New Song Dialog.. (CTRL-N)", invoke=show_new_song_dialog}
 

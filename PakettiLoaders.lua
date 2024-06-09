@@ -183,53 +183,111 @@ end
 renoise.tool():add_keybinding{name="Global:Paketti:Load Waldorf Attack (VST)", invoke=function() LoadAttack() end}
 -----------------------------------------------------------------------------------------------------
 function loadnative(effect)
-local checkline=nil
-local s=renoise.song()
-local w=renoise.app().window
-local sdevices=s.selected_track.devices
-   if (table.count(s.selected_track.devices)) <2 then checkline=2
-   else 
-    if s.selected_track.devices[2].name=="#Line Input" then checkline=3
-    else checkline=2
+  local checkline=nil
+  local s=renoise.song()
+  local w=renoise.app().window
+
+  if w.active_middle_frame==7 then
+    if s.selected_sample_device_chain then
+      local sample_devices=s.selected_sample_device_chain.devices
+      if (table.count(sample_devices)) <2 then 
+        checkline=2
+      else 
+        if sample_devices[2] and sample_devices[2].name=="#Line Input" then 
+          checkline=3
+        else 
+          checkline=2
+        end
+      end
+
+      -- Insert the device into the sample device chain at the correct position
+      s.selected_sample_device_chain:insert_device_at(effect,checkline)
+
+      -- Re-fetch sample_devices after insertion to update the reference
+      sample_devices=s.selected_sample_device_chain.devices
+
+      if sample_devices[checkline] and sample_devices[checkline].name=="DC Offset" then 
+        sample_devices[checkline].parameters[2].value=1
+      else end 
+
+      if sample_devices[checkline] and sample_devices[checkline].name=="#Multiband Send" then 
+        sample_devices[checkline].parameters[1].show_in_mixer=false
+        sample_devices[checkline].parameters[3].show_in_mixer=false
+        sample_devices[checkline].parameters[5].show_in_mixer=false 
+        local PakettiMultiSend_xml_file_path="Presets/PakettiMultiSend.XML"
+        local PakettiMultiSend_xml_data=read_file(PakettiMultiSend_xml_file_path)
+        sample_devices[checkline].active_preset_data=PakettiMultiSend_xml_data
+      else end
+
+      if sample_devices[checkline] and sample_devices[checkline].name=="Gainer" then 
+        -- As of 1st April 2020 I do want to see the Gain parameter in Mixer. Remove comments if you change opinion
+        -- sample_devices[checkline].parameters[1].show_in_mixer=false
+      else end  
+
+      if sample_devices[checkline] and sample_devices[checkline].name=="#Line Input" then 
+        sample_devices[checkline].parameters[2].show_in_mixer=true
+      else end
+
+      if sample_devices[checkline] and sample_devices[checkline].name=="#Send" then 
+        sample_devices[checkline].parameters[2].show_in_mixer=true
+        local PakettiSend_xml_file_path="Presets/PakettiSend.XML"
+        local PakettiSend_xml_data=read_file(PakettiSend_xml_file_path)
+        sample_devices[checkline].active_preset_data=PakettiSend_xml_data
+      else end
+    else
+      renoise.app():show_error("No sample selected.")
     end
-   end
-   
- w.lower_frame_is_visible=true
- w.active_lower_frame=1
- s.selected_track:insert_device_at(effect,checkline)
- s.selected_device_index = 2
- 
-  if s.selected_track.devices[checkline].name=="DC Offset" then 
-    s.selected_track.devices[checkline].parameters[2].value=1
-  else end 
-  
-  if s.selected_track.devices[checkline].name=="#Multiband Send" then 
-  s.selected_track.devices[checkline].parameters[1].show_in_mixer=false
-  s.selected_track.devices[checkline].parameters[3].show_in_mixer=false
-  s.selected_track.devices[checkline].parameters[5].show_in_mixer=false 
-      local PakettiMultiSend_xml_file_path = "Presets/PakettiMultiSend.XML"
-    local PakettiMultiSend_xml_data = read_file(PakettiMultiSend_xml_file_path)
-renoise.song().selected_track.devices[2].active_preset_data=PakettiMultiSend_xml_data
+  else
+    local sdevices=s.selected_track.devices
+    if (table.count(sdevices)) <2 then 
+      checkline=2
+    else 
+      if sdevices[2] and sdevices[2].name=="#Line Input" then 
+        checkline=3
+      else 
+        checkline=2
+      end
+    end
 
-  else end
-  
-  if s.selected_track.devices[checkline].name=="Gainer" then 
-  -- As of 1st April 2020 I do want to see the Gain parameter in Mixer. Remove comments if you change opinion
-  -- renoise.song().selected_track.devices[checkline].parameters[1].show_in_mixer=false
-  else end  
-  
-  if s.selected_track.devices[checkline].name=="#Line Input" then 
-  s.selected_track.devices[2].parameters[2].show_in_mixer=true
-  else end
+    w.lower_frame_is_visible=true
+    w.active_lower_frame=1
+    s.selected_track:insert_device_at(effect,checkline)
+    s.selected_device_index=2
 
-  if s.selected_track.devices[checkline].name=="#Send" then 
-  s.selected_track.devices[2].parameters[2].show_in_mixer=true
-    local PakettiSend_xml_file_path = "Presets/PakettiSend.XML"
-    local PakettiSend_xml_data = read_file(PakettiSend_xml_file_path)
-renoise.song().selected_track.devices[2].active_preset_data=PakettiSend_xml_data
-else end
+    -- Re-fetch sdevices after insertion to update the reference
+    sdevices=s.selected_track.devices
 
+    if sdevices[checkline] and sdevices[checkline].name=="DC Offset" then 
+      sdevices[checkline].parameters[2].value=1
+    else end 
+
+    if sdevices[checkline] and sdevices[checkline].name=="#Multiband Send" then 
+      sdevices[checkline].parameters[1].show_in_mixer=false
+      sdevices[checkline].parameters[3].show_in_mixer=false
+      sdevices[checkline].parameters[5].show_in_mixer=false 
+      local PakettiMultiSend_xml_file_path="Presets/PakettiMultiSend.XML"
+      local PakettiMultiSend_xml_data=read_file(PakettiMultiSend_xml_file_path)
+      sdevices[checkline].active_preset_data=PakettiMultiSend_xml_data
+    else end
+
+    if sdevices[checkline] and sdevices[checkline].name=="Gainer" then 
+      -- As of 1st April 2020 I do want to see the Gain parameter in Mixer. Remove comments if you change opinion
+      -- sdevices[checkline].parameters[1].show_in_mixer=false
+    else end  
+
+    if sdevices[checkline] and sdevices[checkline].name=="#Line Input" then 
+      sdevices[checkline].parameters[2].show_in_mixer=true
+    else end
+
+    if sdevices[checkline] and sdevices[checkline].name=="#Send" then 
+      sdevices[checkline].parameters[2].show_in_mixer=true
+      local PakettiSend_xml_file_path="Presets/PakettiSend.XML"
+      local PakettiSend_xml_data=read_file(PakettiSend_xml_file_path)
+      sdevices[checkline].active_preset_data=PakettiSend_xml_data
+    else end
+  end
 end
+
 
 renoise.tool():add_keybinding{name="Global:Track Devices:Load Renoise Analog Filter",
 invoke=function() loadnative("Audio/Effects/Native/Analog Filter") end}
@@ -334,76 +392,144 @@ function loadvst(vstname)
   local raw=renoise.app().window
   local devices=s.selected_track.devices
 
-  if (table.count(s.selected_track.devices)) <2 then checkline=2
-    else 
-      if s.selected_track.devices[2].name=="#Line Input" then checkline=3
-       else checkline=2
-      end
+  if (table.count(s.selected_track.devices))<2 then checkline=2
+  else 
+    if s.selected_track.devices[2].name=="#Line Input" then checkline=3
+    else checkline=2
+    end
   end
 
   if raw.lower_frame_is_visible==false then raw.lower_frame_is_visible=false
-else raw.lower_frame_is_visible=true end
+  else raw.lower_frame_is_visible=true end
 
--- raw.active_lower_frame=1
- s.selected_track:insert_device_at(vstname, checkline)
-   if s.selected_track.devices[checkline].name=="AU: Koen Tanghe @ Smartelectronix: KTGranulator" then return
-   else s.selected_track.devices[checkline].external_editor_visible=true end
-  s.selected_track.devices[checkline].is_maximized=false
--- devices[checkline].plugin_properties.auto_suspend=false
--- the one above is just for plugins :( not available for actual track devices
- 
- renoise.song().selected_device_index=checkline
- 
-  if s.selected_track.devices[checkline].name=="AU: Schaack Audio Technologies: TransientShaper" then 
-     s.selected_track.devices[checkline].parameters[1].show_in_mixer=true
-     s.selected_track.devices[checkline].parameters[2].show_in_mixer=true
-     s.selected_track.devices[checkline].parameters[4].show_in_mixer=true
-     s.selected_track.devices[checkline].parameters[7].show_in_mixer=true
-     s.selected_track.devices[checkline].is_maximized=false
-  end 
-  if s.selected_track.devices[checkline].name=="VST: FabFilter: Pro-Q" then 
-     s.selected_track.devices[checkline].parameters[206].value=1 
-  end 
+  if raw.active_middle_frame==7 then
+    -- Operate on the selected sample device chain
+    local chain=s.selected_sample_device_chain
+    local chain_index=s.selected_sample_device_chain_index
+    if chain==nil or chain_index==0 then
+      -- Insert a new sample device chain if none exists
+      local instrument=s.selected_instrument
+      instrument:insert_sample_device_chain_at(1)
+      chain=s.selected_sample_device_chain
+      chain_index=1
+    end
 
---  if s.selected_track.devices[checkline].name=="AU: FabFilter: Pro-Q 3" then 
---     s.selected_track.devices[checkline].parameters[206].value=1 
---  end 
-  
-  
-  if s.selected_track.devices[checkline].name=="AU: TAL-Togu Audio Line: TAL Reverb 4 Plugin" then 
-     s.selected_track.devices[checkline].parameters[2].value=0.0 -- delay
-     s.selected_track.devices[checkline].parameters[3].value=0.30 -- High Cut
-     s.selected_track.devices[checkline].parameters[4].value=0.88 -- Size
-     s.selected_track.devices[checkline].parameters[5].value=0.9 -- Diffuse
-     s.selected_track.devices[checkline].parameters[6].value=1 -- Dry
-     s.selected_track.devices[checkline].parameters[7].value=0.4 -- low cut
-     s.selected_track.devices[checkline].parameters[9].value=0.7 -- wet
--- slt.devices[renoise.song().selected_device_index].parameters[7].value=0.4
-  end 
+    if chain then
+      if (table.count(chain.devices))<2 then checkline=2
+      else 
+        if chain.devices[2].name=="#Line Input" then checkline=3
+        else checkline=2
+        end
+      end
 
-  if s.selected_track.devices[checkline].name=="AU: Valhalla DSP, LLC: ValhallaVintageVerb" then 
-     s.selected_track.devices[checkline].parameters[1].value=0.474 -- Mix 
-     s.selected_track.devices[checkline].parameters[3].value=0.688 -- Decay 
-     s.selected_track.devices[checkline].parameters[15].value=0.097 -- low cut
-  end 
+      chain:insert_device_at(vstname, checkline)
+      local inserted_device=chain.devices[checkline]
 
-  if s.selected_track.devices[checkline].name=="AU: Koen Tanghe @ Smartelectronix: KTGranulator" then 
-     s.selected_track.devices[checkline].is_maximized=true
-     s.selected_track.devices[checkline].parameters[31].value=1 --SplitPitch
-     s.selected_track.devices[checkline].parameters[16].value=0.75 --maxTransp
-     s.selected_track.devices[checkline].parameters[2].value=0.50 --Mix
-     s.selected_track.devices[checkline].parameters[3].value=0.35 --Mix
-     s.selected_track.devices[checkline].parameters[6].value=0.75 --Mix
-     raw.lower_frame_is_visible=true
-     raw.active_lower_frame=1
-  end 
- 
-  if s.selected_track.devices[checkline].name=="AU: George Yohng: W1 Limiter" then
-     s.selected_track.devices[checkline].is_maximized=true
-     s.selected_track.devices[checkline].parameters[1].show_in_mixer=true
-     s.selected_track.devices[checkline].parameters[2].show_in_mixer=true
+      if inserted_device.name=="AU: Koen Tanghe @ Smartelectronix: KTGranulator" then return
+      else inserted_device.external_editor_visible=true end
+      inserted_device.is_maximized=false
+      renoise.song().selected_device_index=checkline
+
+      if inserted_device.name=="AU: Schaack Audio Technologies: TransientShaper" then 
+        inserted_device.parameters[1].show_in_mixer=true
+        inserted_device.parameters[2].show_in_mixer=true
+        inserted_device.parameters[4].show_in_mixer=true
+        inserted_device.parameters[7].show_in_mixer=true
+        inserted_device.is_maximized=false
+      end 
+
+      if inserted_device.name=="VST: FabFilter: Pro-Q" then 
+        inserted_device.parameters[206].value=1 
+      end 
+
+      if inserted_device.name=="AU: TAL-Togu Audio Line: TAL Reverb 4 Plugin" then 
+        inserted_device.parameters[2].value=0.0
+        inserted_device.parameters[3].value=0.30
+        inserted_device.parameters[4].value=0.88
+        inserted_device.parameters[5].value=0.9
+        inserted_device.parameters[6].value=1
+        inserted_device.parameters[7].value=0.4
+        inserted_device.parameters[9].value=0.7
+      end 
+
+      if inserted_device.name=="AU: Valhalla DSP, LLC: ValhallaVintageVerb" then 
+        inserted_device.parameters[1].value=0.474
+        inserted_device.parameters[3].value=0.688
+        inserted_device.parameters[15].value=0.097
+      end 
+
+      if inserted_device.name=="AU: Koen Tanghe @ Smartelectronix: KTGranulator" then 
+        inserted_device.is_maximized=true
+        inserted_device.parameters[31].value=1
+        inserted_device.parameters[16].value=0.75
+        inserted_device.parameters[2].value=0.50
+        inserted_device.parameters[3].value=0.35
+        inserted_device.parameters[6].value=0.75
+        raw.lower_frame_is_visible=true
+        raw.active_lower_frame=1
+      end 
+
+      if inserted_device.name=="AU: George Yohng: W1 Limiter" then
+        inserted_device.is_maximized=true
+        inserted_device.parameters[1].show_in_mixer=true
+        inserted_device.parameters[2].show_in_mixer=true
+      end
+    end
+  else
+    -- Original functionality for selected track
+    s.selected_track:insert_device_at(vstname, checkline)
+    local inserted_device=s.selected_track.devices[checkline]
+
+    if inserted_device.name=="AU: Koen Tanghe @ Smartelectronix: KTGranulator" then return
+    else inserted_device.external_editor_visible=true end
+    inserted_device.is_maximized=false
+    renoise.song().selected_device_index=checkline
+
+    if inserted_device.name=="AU: Schaack Audio Technologies: TransientShaper" then 
+      inserted_device.parameters[1].show_in_mixer=true
+      inserted_device.parameters[2].show_in_mixer=true
+      inserted_device.parameters[4].show_in_mixer=true
+      inserted_device.parameters[7].show_in_mixer=true
+      inserted_device.is_maximized=false
+    end 
+
+    if inserted_device.name=="VST: FabFilter: Pro-Q" then 
+      inserted_device.parameters[206].value=1 
+    end 
+
+    if inserted_device.name=="AU: TAL-Togu Audio Line: TAL Reverb 4 Plugin" then 
+      inserted_device.parameters[2].value=0.0
+      inserted_device.parameters[3].value=0.30
+      inserted_device.parameters[4].value=0.88
+      inserted_device.parameters[5].value=0.9
+      inserted_device.parameters[6].value=1
+      inserted_device.parameters[7].value=0.4
+      inserted_device.parameters[9].value=0.7
+    end 
+
+    if inserted_device.name=="AU: Valhalla DSP, LLC: ValhallaVintageVerb" then 
+      inserted_device.parameters[1].value=0.474
+      inserted_device.parameters[3].value=0.688
+      inserted_device.parameters[15].value=0.097
+    end 
+
+    if inserted_device.name=="AU: Koen Tanghe @ Smartelectronix: KTGranulator" then 
+      inserted_device.is_maximized=true
+      inserted_device.parameters[31].value=1
+      inserted_device.parameters[16].value=0.75
+      inserted_device.parameters[2].value=0.50
+      inserted_device.parameters[3].value=0.35
+      inserted_device.parameters[6].value=0.75
+      raw.lower_frame_is_visible=true
+      raw.active_lower_frame=1
+    end 
+
+    if inserted_device.name=="AU: George Yohng: W1 Limiter" then
+      inserted_device.is_maximized=true
+      inserted_device.parameters[1].show_in_mixer=true
+      inserted_device.parameters[2].show_in_mixer=true
+    end
   end
- 
 end
 
 --Audio/Effects/AU/aufx:cHL1:TOGU
@@ -528,43 +654,92 @@ renoise.tool():add_keybinding{name="Global:Paketti:Open Ext.Editor of Selected E
 -----------------------------------------------------------------------------------------------------
 renoise.tool():add_keybinding{name="Global:Paketti:Hide Track DSP Devices",invoke=function()
 
-if renoise.song().selected_instrument.plugin_properties.plugin_device == nil then else
-local pd=renoise.song().selected_instrument.plugin_properties.plugin_device
+  -- Function to hide all devices in a given device chain
+  local function hide_devices(device_chain)
+    if #device_chain.devices > 1 then
+      for i = 2, #device_chain.devices do
+        if device_chain.devices[i].external_editor_available == true then
+          device_chain.devices[i].external_editor_visible = false
+        end
+      end
+    end
+  end
 
-     if pd.external_editor_visible==false then pd.external_editor_visible=true else pd.external_editor_visible=false end
+  -- Hide track devices if there are any
+  if renoise.song().selected_track and #renoise.song().selected_track.devices > 1 then
+    hide_devices(renoise.song().selected_track)
+  end
+
+  -- Hide sample effect chains for the selected instrument if there are any
+  local instrument = renoise.song().selected_instrument
+  if instrument and #instrument.sample_device_chains > 0 then
+    for _, device_chain in ipairs(instrument.sample_device_chains) do
+      if #device_chain.devices > 1 then
+        hide_devices(device_chain)
+      end
+    end
+  end
+
+  -- Hide plugin device editor if present
+  if instrument and instrument.plugin_properties.plugin_device then
+    local pd = instrument.plugin_properties.plugin_device
+    if pd.external_editor_available == true then
+      pd.external_editor_visible = false
+    end
+  end
+
+end}
+
+--------------------------
+-- Function to inspect the selected plugin
+function inspectPlugin()
+  local s = renoise.song()
+  local plugin = s.selected_instrument.plugin_properties.plugin_device
+
+  -- Check if there is a plugin in the selected instrument
+  if not plugin then
+    renoise.app():show_status("No plugin in this instrument")
+    return
+  end
+
+  -- Iterate over the plugin parameters and print their details
+  for i = 1, #plugin.parameters do
+    oprint(
+      plugin.name .. ": " .. i .. ": " .. plugin.parameters[i].name .. ": " ..
+      "renoise.song().selected_instrument.plugin_properties.plugin_device.parameters[" .. i .. "].value=" .. plugin.parameters[i].value
+    )
+  end
 end
 
-  if table.count(renoise.song().selected_track.devices) >1 then
-     for i=2,(table.count(renoise.song().selected_track.devices)) do 
-      if renoise.song().selected_track.devices[i].external_editor_available==true
-       then
-       renoise.song().selected_track.devices[i].external_editor_visible=false
-      end
-     end
-  end
-end}
---------------------------
-function inspectPlugin()
-local s=renoise.song()
-local plugin=renoise.song().selected_instrument.plugin_properties.plugin_device
+-- Adding keybinding for the inspectPlugin function
+renoise.tool():add_keybinding{name="Global:Paketti:Inspect Plugin", invoke=function() inspectPlugin() end}
 
-for i=1,(table.count(plugin.parameters)) 
-do oprint (plugin.name .. ": " .. i .. ": " .. plugin.parameters[i].name .. ": " .. "renoise.song().selected_instrument.plugin_properties.plugin_device.parameters[" .. i .. "].value=" .. plugin.parameters[i].value) 
---oprint (renoise.song().selected_instrument.plugin_properties.plugin_device.parameters[i].value)
-end end
-
-renoise.tool():add_keybinding{name="Global:Paketti:Inspect Plugin",invoke=function() inspectPlugin() end}
-
+-- Function to inspect the effect in device slot 2
 function inspectEffect()
-local devices=renoise.song().selected_track.devices
-oprint("Effect Displayname: " .. devices[2].display_name)
-oprint("Effect Name: " .. devices[2].name)
-oprint("Effect Path: " .. devices[2].device_path)
-for i=1,(table.count(devices[2].parameters)) 
-do oprint (devices[2].name .. ": " .. i .. ": " .. devices[2].parameters[i].name .. ": " .. "renoise.song().selected_track.devices[" .. i .. "].value=" .. devices[2].parameters[i].value) end
- end
+  local devices = renoise.song().selected_track.devices
 
-renoise.tool():add_keybinding{name="Global:Paketti:Inspect Device in Slot 2",invoke=function() inspectEffect() end}
+  -- Check if there is an effect in device slot 2
+  if not devices[2] then
+    renoise.app():show_status("No effect in device slot 2")
+    return
+  end
+
+  -- Print details of the effect in device slot 2
+  oprint("Effect Displayname: " .. devices[2].display_name)
+  oprint("Effect Name: " .. devices[2].name)
+  oprint("Effect Path: " .. devices[2].device_path)
+
+  -- Iterate over the effect parameters and print their details
+  for i = 1, #devices[2].parameters do
+    oprint(
+      devices[2].name .. ": " .. i .. ": " .. devices[2].parameters[i].name .. ": " ..
+      "renoise.song().selected_track.devices[2].parameters[" .. i .. "].value=" .. devices[2].parameters[i].value
+    )
+  end
+end
+
+-- Adding keybinding for the inspectEffect function
+renoise.tool():add_keybinding{name="Global:Paketti:Inspect Device in Slot 2", invoke=function() inspectEffect() end}
 ------------------------------------------------------------------------------------------------------
 renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Show Plugin Details",
   invoke = function() show_plugin_details_gui() end}
@@ -1022,14 +1197,225 @@ renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Ableton Live..:Sa
 
 ----
 
+function effectbypass()
+local number = (table.count(renoise.song().selected_track.devices))
+ for i=2,number  do 
+  renoise.song().selected_track.devices[i].is_active=false
+ end
+end
+
+function effectenable()
+local number = (table.count(renoise.song().selected_track.devices))
+for i=2,number  do 
+renoise.song().selected_track.devices[i].is_active=true
+end
+end
+
+renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Bypass All Devices on Channel", invoke=function() effectbypass() end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Enable All Devices on Channel", invoke=function() effectenable() end}
+renoise.tool():add_menu_entry{name="--Mixer:Paketti..:Bypass All Devices on Channel", invoke=function() effectbypass() end}
+renoise.tool():add_menu_entry{name="Mixer:Paketti..:Enable All Devices on Channel", invoke=function() effectenable() end}
+
+
+
+-- Utility function to print a formatted list from the provided items
+function printItems(items)
+    -- Sort items alphabetically by name
+    table.sort(items, function(a, b) return a.name < b.name end)
+    for _, item in ipairs(items) do
+        print(item.name .. ": " .. item.path)
+    end
+end
+
+-- Function to list available plugins by type
+function listAvailablePluginsByType(typeFilter)
+    local availablePlugins = renoise.song().instruments[renoise.song().selected_instrument_index].plugin_properties.available_plugins
+    local availablePluginInfos = renoise.song().instruments[renoise.song().selected_instrument_index].plugin_properties.available_plugin_infos
+    local pluginItems = {}
+
+    for index, pluginPath in ipairs(availablePlugins) do
+        -- Adjusting to exclude VST3 content from VST listing
+        if typeFilter == "VST" and pluginPath:find("/VST/") and not pluginPath:find("/VST3/") then
+            local pluginInfo = availablePluginInfos[index]
+            if pluginInfo then
+                table.insert(pluginItems, {name = pluginInfo.name, path = pluginInfo.path})
+            end
+        elseif typeFilter ~= "VST" and pluginPath:find("/" .. typeFilter .. "/") then
+            local pluginInfo = availablePluginInfos[index]
+            if pluginInfo then
+                table.insert(pluginItems, {name = pluginInfo.name, path = pluginInfo.path})
+            end
+        end
+    end
+    printItems(pluginItems)
+end
+
+-- Adjusted function to handle only plugin listing
+function listByPluginType(typeFilter)
+    print(typeFilter .. " Plugins:")
+    listAvailablePluginsByType(typeFilter)
+end
+
+
+-- Function to list devices (effects) by type, remains unchanged as it's working correctly
+function listDevicesByType(typeFilter)
+    local devices = renoise.song().tracks[renoise.song().selected_track_index].available_device_infos
+    local deviceItems = {}
+     print(typeFilter .. " Devices:")
+    for _, deviceInfo in ipairs(devices) do
+        if deviceInfo.path:find("/" .. typeFilter .. "/") and not deviceInfo.path:find("/Native/") then
+            table.insert(deviceItems, {name = deviceInfo.name, path = deviceInfo.path})
+        end
+    end
+    printItems(deviceItems)
+end
 
 
 
 
+function insertMonoToEnd()
+    local track = renoise.song().selected_track
+    local mono_device_index = nil
+
+    -- Check for existing "Mono" device in the track
+    for i = 2, #track.devices do
+        if track.devices[i].display_name == "Mono" then
+            mono_device_index = i
+            break
+        end
+    end
+
+    if mono_device_index then
+        -- Check if Mono is at the end
+        if mono_device_index == #track.devices then
+            -- Toggle Mono device state
+            local mono_device = track:device(mono_device_index)
+            mono_device.is_active = not mono_device.is_active
+            print("Mono device at the end is now " .. (mono_device.is_active and "on" or "off"))
+        else
+            -- Insert Gainer device at the end
+            print("Inserting Gainer at the end")
+            track:insert_device_at("Audio/Effects/Native/Gainer", #track.devices + 1)
+            print("Gainer inserted at the end")
+
+            -- Swap Mono device with Gainer device
+            print("Swapping Mono device at position " .. mono_device_index .. " with Gainer at the end")
+            track:swap_devices_at(mono_device_index, #track.devices)
+            print("Swap completed")
+
+            -- Remove the Gainer device which is now at the original mono_device_index position
+            print("Removing Gainer device at position " .. mono_device_index)
+            track:delete_device_at(mono_device_index)
+            print("Gainer device removed")
+        end
+    else
+        -- Insert Mono device at the end
+        print("No Mono device found, inserting Mono at the end")
+        local mono_device = track:insert_device_at("Audio/Effects/Native/Stereo Expander", #track.devices + 1)
+        mono_device.display_name = "Mono"
+        mono_device.parameters[1].value = 0
+        mono_device.is_maximized = false
+        print("Mono device inserted at the end")
+    end
+
+    -- Select the Mono device
+    for i = 2, #track.devices do
+        if track.devices[i].display_name == "Mono" then
+            renoise.song().selected_track_device_index = i
+            print("Mono device selected at position " .. i)
+            break
+        end
+    end
+end
+
+function insertMonoToBeginning()
+    local track = renoise.song().selected_track
+    local mono_device_index = nil
+
+    -- Check for existing "Mono" device in the track
+    for i = 2, #track.devices do
+        if track.devices[i].display_name == "Mono" then
+            mono_device_index = i
+            break
+        end
+    end
+
+    if mono_device_index then
+        -- Check if Mono is at the beginning
+        if mono_device_index == 2 then
+            -- Toggle Mono device state
+            local mono_device = track:device(mono_device_index)
+            mono_device.is_active = not mono_device.is_active
+            print("Mono device at the beginning is now " .. (mono_device.is_active and "on" or "off"))
+        else
+            -- Insert Gainer device at position 2
+            print("Inserting Gainer at position 2")
+            local gainer_device = track:insert_device_at("Audio/Effects/Native/Gainer", 2)
+            print("Gainer inserted at position 2")
+
+            -- Adjust Mono device index after insertion
+            if mono_device_index > 2 then
+                mono_device_index = mono_device_index + 1
+            end
+
+            -- Swap Mono device with Gainer device
+            print("Swapping Mono device at position " .. mono_device_index .. " with Gainer at position 2")
+            track:swap_devices_at(mono_device_index, 2)
+            print("Swap completed")
+
+            -- Remove the Gainer device which is now at the original mono_device_index position
+            print("Removing Gainer device at position " .. mono_device_index)
+            track:delete_device_at(mono_device_index)
+            print("Gainer device removed")
+        end
+    else
+        -- Insert Mono device at position 2
+        print("No Mono device found, inserting Mono at position 2")
+        local mono_device = track:insert_device_at("Audio/Effects/Native/Stereo Expander", 2)
+        mono_device.display_name = "Mono"
+        mono_device.parameters[1].value = 0
+        mono_device.is_maximized = false
+        print("Mono device inserted at position 2")
+    end
+
+    -- Select the Mono device
+    for i = 2, #track.devices do
+        if track.devices[i].display_name == "Mono" then
+            renoise.song().selected_track_device_index = i
+            print("Mono device selected at position " .. i)
+            break
+        end
+    end
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Insert Stereo -> Mono device to Beginning of DSP Chain",invoke=function() insertMonoToBeginning() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Insert Stereo -> Mono device to End of DSP Chain",invoke=function() insertMonoToEnd() end}
 
 
 
+--------
+-- Function to hide all visible external editors of Devices
+function hide_all_external_editors()
+  local song=renoise.song()
+  local num_tracks=#song.tracks
 
+  for track_index=1,num_tracks do
+    local track=song:track(track_index)
+    local num_devices=#track.devices
+
+    for device_index=2,num_devices do
+      local device=track:device(device_index)
+
+      if device.external_editor_available and device.external_editor_visible then
+        device.external_editor_visible=false
+      end
+    end
+  end
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Hide Track DSP Devices for All Tracks",invoke=function() hide_all_external_editors() end}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Hide Track DSP Devices for All Tracks",invoke=function() hide_all_external_editors() end}
+renoise.tool():add_midi_mapping{name="Global:Paketti:Hide Track DSP Devices for All Tracks",invoke=function() hide_all_external_editors() end}
 
 
 

@@ -1,46 +1,105 @@
--- Declare variables at the beginning of the script to ensure they're available globally
-local vb = renoise.ViewBuilder()
-local checkboxes = {}
-local deviceReadableNames = {}
-local notAllowedInMaster = {
-    ["#Multiband Send"] = true,
-    ["#Send"] = true,
-    ["#Sidechain"] = true,
-    ["*Key Tracker"] = true,
-    ["*Velocity Tracker"] = true
-}
-local notAllowedInSend = {
-    ["*Key Tracker"] = true,
-    ["*Velocity Tracker"] = true
-}
+local vb=renoise.ViewBuilder()
 local addedKeyBindings = {}
+local preferencesFile = renoise.tool().bundle_path .. "PreferencesLoaders.xml"
+local checkboxes = {}  -- Initialize the checkboxes table
+local deviceReadableNames = {}  -- Initialize the deviceReadableNames table
 
+-- Function to add keybindings and MIDI mappings
 function addAsShortcut()
-    for _, cb_info in ipairs(checkboxes) do
-        if cb_info.checkbox.value then
-            local keyBindingName = "Global:Track Devices:Load " .. cb_info.name .. " (Native)"
+  for _, cb_info in ipairs(checkboxes) do
+    if cb_info.checkbox.value then
+      local keyBindingName = "Global:Track Devices:Load Device (Native) " .. cb_info.name
+      local midiMappingName = "Tools:Track Devices:Load Device (Native) " .. cb_info.name
 
-            -- Check if we've already attempted to add this keybinding
-            if not addedKeyBindings[keyBindingName] then
-                print("Adding shortcut for: " .. cb_info.name)
+      -- Check if we've already attempted to add this keybinding
+      if not addedKeyBindings[keyBindingName] then
+        print("Adding shortcut for: " .. cb_info.name)
 
-                -- Attempt to add the keybinding, using pcall to catch any errors gracefully
-                local success, err = pcall(function()
-                    renoise.tool():add_keybinding{name=keyBindingName, invoke=function() loadnative(cb_info.path) end}
-                end)
+        -- Attempt to add the keybinding, using pcall to catch any errors gracefully
+        local success, err = pcall(function()
+          renoise.tool():add_keybinding{name=keyBindingName, invoke=function() loadnative(cb_info.path) end}
+          renoise.tool():add_midi_mapping{name=midiMappingName, invoke=function() loadnative(cb_info.path) end}
+        end)
 
-                -- Check if the keybinding was added successfully
-                if success then
-                    addedKeyBindings[keyBindingName] = true
-                else
-                    print("Could not add keybinding for " .. cb_info.name .. ". It might already exist.")
-                end
-            else
-                print("Keybinding for " .. cb_info.name .. " already added.")
-            end
+        -- Check if the keybinding was added successfully
+        if success then
+          addedKeyBindings[keyBindingName] = true
+          saveToPreferencesFile(keyBindingName, midiMappingName, cb_info.path)
+        else
+          print("Could not add keybinding for " .. cb_info.name .. ". It might already exist.")
         end
+      else
+        print("Keybinding for " .. cb_info.name .. " already added.")
+      end
     end
+  end
 end
+
+-- Function to save keybinding and MIDI mapping to PreferencesLoaders.xml
+function saveToPreferencesFile(keyBindingName, midiMappingName, path)
+  local file, err = io.open(preferencesFile, "a")
+  if not file then
+    print("Error opening preferences file: " .. err)
+    return
+  end
+
+  local keybindingEntry = string.format(
+    '<KeyBinding name="%s">\n  <Path>%s</Path>\n</KeyBinding>\n',
+    keyBindingName, path
+  )
+
+  local midiMappingEntry = string.format(
+    '<MIDIMapping name="%s">\n  <Path>%s</Path>\n</MIDIMapping>\n',
+    midiMappingName, path
+  )
+
+  file:write(keybindingEntry)
+  file:write(midiMappingEntry)
+  file:close()
+end
+
+-- Function to load keybindings and MIDI mappings from PreferencesLoaders.xml
+function loadFromPreferencesFile()
+  local file, err = io.open(preferencesFile, "r")
+  if not file then
+    print("Error opening preferences file: " .. err)
+    return
+  end
+
+  local content = file:read("*all")
+  file:close()
+
+  -- Parse the XML content to add keybindings and MIDI mappings
+  for keyBindingName, path in content:gmatch('<KeyBinding name="(.-)">.-<Path>(.-)</Path>.-</KeyBinding>') do
+    renoise.tool():add_keybinding{name=keyBindingName, invoke=function() loadnative(path) end}
+  end
+
+  for midiMappingName, path in content:gmatch('<MIDIMapping name="(.-)">.-<Path>(.-)</Path>.-</MIDIMapping>') do
+    renoise.tool():add_midi_mapping{name=midiMappingName, invoke=function() loadnative(path) end}
+  end
+end
+
+-- Ensure PreferencesLoaders.xml exists and is properly formatted
+function initializePreferencesFile()
+  local file, err = io.open(preferencesFile, "r")
+  if not file then
+    file, err = io.open(preferencesFile, "w")
+    if not file then
+      print("Error creating preferences file: " .. err)
+      return
+    end
+    file:write("<PreferencesLoaders>\n</PreferencesLoaders>\n")
+    file:close()
+  else
+    file:close()
+  end
+end
+
+-- Initialize preferences file and load keybindings and MIDI mappings
+initializePreferencesFile()
+loadFromPreferencesFile()
+
+------ Part2
 
 function create_scrollable_native_list()
     local left_column = vb:column {}
@@ -51,10 +110,7 @@ function create_scrollable_native_list()
     for i, device in ipairs(deviceReadableNames) do
         local checkbox = vb:checkbox { value = false, id = "checkbox_native_" .. tostring(i) }
         checkboxes[#checkboxes + 1] = { checkbox = checkbox, path = device.path, name = device.name }
-        local device_row = vb:row {
-            checkbox,
-            vb:text { text = device.name }
-        }
+        local device_row = vb:row {checkbox, vb:text { text = device.name }}
 
         if i <= mid_point then
             left_column:add_child(device_row)
@@ -63,12 +119,10 @@ function create_scrollable_native_list()
         end
     end
 
-    return vb:horizontal_aligner {
-        mode = "left",
+    return vb:horizontal_aligner {mode = "left",
         spacing = 20,
         left_column,
-        right_column
-    }
+        right_column}
 end
 
 function loadSelectedNativeDevices()
@@ -98,6 +152,12 @@ function loadSelectedNativeDevices()
     end
 end
 
+function resetSelection()
+    for _, cb_info in ipairs(checkboxes) do
+        cb_info.checkbox.value = false
+    end
+end
+
 function show_plugin_list_dialog()
     checkboxes = {}  -- Reinitialize the checkboxes table to avoid carrying over previous states
     local track_index = renoise.song().selected_track_index
@@ -121,46 +181,36 @@ function show_plugin_list_dialog()
     local action_buttons = vb:column {
         uniform = true,
         width = "100%",
-        vb:horizontal_aligner {
-            vb:button {
-                text = "Load Device(s)",
+        vb:horizontal_aligner {vb:button {text = "Load Device(s)",
                 width = "50%",
                 height = button_height,
                 notifier = function()
                     loadSelectedNativeDevices()
-                end
-            },
-            vb:button {
-                text = "Load Device(s) & Close",
+                end},
+            vb:button {text = "Load Device(s) & Close",
                 width = "50%",
                 height = button_height,
                 notifier = function()
                     loadSelectedNativeDevices()
                     custom_dialog:close()
-                end
-            }
-        },
-        vb:button {
-            text = "Add Device(s) as Shortcut(s)",
+                end}},
+        vb:button {text = "Add Device(s) as Shortcut(s)",
             height = button_height,
-            notifier = addAsShortcut
-        },
-        vb:button {
-            text = "Cancel",
+            notifier = addAsShortcut},
+        vb:button {text = "Reset Selection",
+            height = button_height,
+            notifier = resetSelection},
+        vb:button {text = "Cancel",
             height = button_height,
             notifier = function()
                 custom_dialog:close()
-            end
-        }
-    }
+            end}}
 
     local dialog_content = vb:column {
         margin = 10,
         spacing = 5,
         create_scrollable_native_list(),
-        action_buttons
-    }
+        action_buttons}
 
     custom_dialog = renoise.app():show_custom_dialog("Load Native Device(s)", dialog_content)
 end
-

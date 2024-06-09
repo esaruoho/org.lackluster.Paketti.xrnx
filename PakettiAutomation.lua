@@ -527,6 +527,18 @@ renoise.tool():add_menu_entry{name="Track Automation:Paketti..:Open External Edi
 
 
 
+function AutomationDeviceShowUI()
+if renoise.song().selected_automation_device.external_editor_visible
+then renoise.song().selected_automation_device.external_editor_visible=false
+else
+renoise.song().selected_automation_device.external_editor_visible=true
+end
+end
+
+renoise.tool():add_menu_entry{name="--Track Automation List:Paketti..:Show/Hide External Editor for Device", invoke=function() AutomationDeviceShowUI() end}
+renoise.tool():add_menu_entry{name="Track Automation List:Paketti..:Show/Hide External Editor for Plugin",invoke=function() openExternalInstrumentEditor() end}
+renoise.tool():add_menu_entry{name="--Track Automation:Paketti..:Show/Hide External Editor for Device", invoke=function() AutomationDeviceShowUI() end}
+renoise.tool():add_menu_entry{name="Track Automation:Paketti..:Show/Hide External Editor for Plugin",invoke=function() openExternalInstrumentEditor() end}
 
 
 

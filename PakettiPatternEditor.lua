@@ -1,4 +1,29 @@
 
+-- Function to mute or unmute the selected note column
+function muteUnmuteNoteColumn()
+  -- Access the song object
+  local s = renoise.song()
+  -- Get the selected track and note column indices
+  local sti = s.selected_track_index
+  local snci = s.selected_note_column_index
+
+  -- Check if a note column is selected
+  if snci == 0 then
+    return
+  else
+    -- Access the selected track
+    local track = s:track(sti)
+    -- Check if the note column is muted and toggle its state
+    if track:column_is_muted(snci) then
+      track:set_column_is_muted(snci, false)
+    else
+      track:set_column_is_muted(snci, true)
+    end
+  end
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Mute/Unmute Note Column", invoke=function() muteUnmuteNoteColumn() end}
+
 
 
 
@@ -1392,8 +1417,8 @@ function nextEffectColumn()
   end
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Select Previous Effect Column", invoke=function() previousEffectColumn() end}
-renoise.tool():add_keybinding{name="Global:Paketti:Select Next Effect Column", invoke=function() nextEffectColumn() end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Select Previous Effect Column", invoke=function() previousEffectColumn() end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Select Next Effect Column", invoke=function() nextEffectColumn() end}
 
 
 
@@ -1608,4 +1633,106 @@ renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Increase E
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Decrease Effect Amount -1",invoke=function() columnspart2(-1,5) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Increase Effect Amount +10",invoke=function() columnspart2(10,5) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Decrease Effect Amount -10",invoke=function() columnspart2(-10,5) end}
+
+--------
+-- Global variables to store the last track index and color
+last_track_index = nil
+last_track_color = nil
+track_notifier_added = false -- Flag to track if the notifier was added
+
+-- Function to set color blend for all tracks
+function set_all_tracks_color_blend(value)
+  for i = 1, #renoise.song().tracks do
+    renoise.song().tracks[i].color_blend = value
+  end
+end
+
+-- Function to set color blend for a specific track
+function set_track_color_blend(index, value)
+  renoise.song().tracks[index].color_blend = value
+end
+
+-- Function to handle edit mode enabled
+function on_edit_mode_enabled()
+  local song = renoise.song()
+  local selected_track_index = song.selected_track_index
+
+  last_track_index = selected_track_index
+  last_track_color = song.tracks[selected_track_index].color_blend
+
+  local pakettiEditMode = preferences.pakettiEditMode.value
+
+  if pakettiEditMode == 3 then
+    set_all_tracks_color_blend(40)
+  elseif pakettiEditMode == 2 then
+    set_track_color_blend(selected_track_index, 40)
+  end
+
+  -- Add selected track index notifier if not already added
+  if not track_notifier_added then
+    song.selected_track_index_observable:add_notifier(track_index_notifier)
+    track_notifier_added = true
+  end
+end
+
+-- Function to handle edit mode disabled
+function on_edit_mode_disabled()
+  local song = renoise.song()
+  local pakettiEditMode = preferences.pakettiEditMode.value
+
+  if last_track_index and pakettiEditMode ~= 1 then
+    set_track_color_blend(last_track_index, last_track_color)
+  end
+
+  -- Set all tracks' color blend to 0
+  set_all_tracks_color_blend(0)
+
+  -- Remove selected track index notifier if it was added
+  if track_notifier_added then
+    song.selected_track_index_observable:remove_notifier(track_index_notifier)
+    track_notifier_added = false
+  end
+end
+
+-- Notifier for edit mode change
+function edit_mode_notifier()
+  local transport = renoise.song().transport
+  if transport.edit_mode then
+    on_edit_mode_enabled()
+  else
+    on_edit_mode_disabled()
+  end
+end
+
+-- Notifier for track selection change
+function track_index_notifier()
+  local song = renoise.song()
+  local selected_track_index = song.selected_track_index
+  local pakettiEditMode = preferences.pakettiEditMode.value
+
+  if song.transport.edit_mode then
+    if last_track_index and last_track_index ~= selected_track_index and pakettiEditMode ~= 1 then
+      set_track_color_blend(last_track_index, last_track_color)
+    end
+    last_track_index = selected_track_index
+    last_track_color = song.tracks[selected_track_index].color_blend
+    if pakettiEditMode == 2 then
+      set_track_color_blend(selected_track_index, 40)
+    end
+  end
+end
+
+-- Add notifiers for edit mode change and initial track selection
+renoise.tool().app_new_document_observable:add_notifier(function()
+  renoise.song().transport.edit_mode_observable:add_notifier(edit_mode_notifier)
+  edit_mode_notifier() -- Call once to ensure the state is consistent
+end)
+
+-- Keybinding and MIDI mapping
+function recordTint()
+  renoise.song().transport.edit_mode = not renoise.song().transport.edit_mode
+end
+
+renoise.tool():add_keybinding{name="Global:Tools:Toggle Edit Mode and Tint Track",invoke=recordTint}
+renoise.tool():add_midi_mapping{name="Global:Tools:Toggle Edit Mode and Tint Track",invoke=recordTint}
 
