@@ -3,7 +3,7 @@ local vb = renoise.ViewBuilder()
 local checkboxes = {}
 local deviceReadableNames = { VST = {}, VST3 = {}, AU = {} }
 local addedKeyBindings = {}
-local preferencesFile = renoise.tool().bundle_path .. "LoaderPreferences.xml"
+local preferencesFile = renoise.tool().bundle_path .. "preferences_pluginLoaders.xml"
 
 -- Initialize LoaderPreferences.xml file if it does not exist
 local function initializePreferencesFile()
@@ -14,7 +14,7 @@ local function initializePreferencesFile()
       print("Error creating preferences file: " .. err)
       return
     end
-    file:write("<LoaderPreferences>\n</LoaderPreferences>\n")
+    file:write("<preferencesPluginLoaders>\n</preferencesPluginLoaders>\n")
     file:close()
   else
     file:close()
@@ -92,8 +92,8 @@ local function addAsShortcut()
         plugin_type = " (AU)"
       end
 
-      local keyBindingName = "Global:Paketti:Load Plugin " .. cb_info.name .. plugin_type
-      local midiMappingName = "Tools:Paketti:Load Plugin " .. cb_info.name .. plugin_type
+      local keyBindingName = "Global:Paketti:Load Plugin" .. plugin_type .. " " .. cb_info.name
+      local midiMappingName = "Tools:Paketti:Load Plugin" .. plugin_type .. " " .. cb_info.name
 
       -- Debug: Print the keybinding name
       print("Attempting to add keybinding:", keyBindingName)

@@ -1,0 +1,37 @@
+
+<KeyBinding name="Global:Track Devices:Load Device (Native) *XY Pad">
+  <Path>Audio/Effects/Native/*XY Pad</Path>
+</KeyBinding>
+<MIDIMapping name="Tools:Track Devices:Load Device (Native) *XY Pad">
+  <Path>Audio/Effects/Native/*XY Pad</Path>
+</MIDIMapping>
+<KeyBinding name="Global:Track Devices:Load Device (Native) Repeater">
+  <Path>Audio/Effects/Native/Repeater</Path>
+</KeyBinding>
+<MIDIMapping name="Tools:Track Devices:Load Device (Native) Repeater">
+  <Path>Audio/Effects/Native/Repeater</Path>
+</MIDIMapping>
+<KeyBinding name="Global:Track Devices:Load Device (VST) Frontier">
+  <Path>Audio/Effects/VST/Frontier</Path>
+</KeyBinding>
+<MIDIMapping name="Tools:Track Devices:Load Device (VST) Frontier">
+  <Path>Audio/Effects/VST/Frontier</Path>
+</MIDIMapping>
+<KeyBinding name="Global:Track Devices:Load Device (VST) Zebrify">
+  <Path>Audio/Effects/VST/Zebrify</Path>
+</KeyBinding>
+<MIDIMapping name="Tools:Track Devices:Load Device (VST) Zebrify">
+  <Path>Audio/Effects/VST/Zebrify</Path>
+</MIDIMapping>
+<KeyBinding name="Global:Track Devices:Load Device (VST3/AU) AUSampleDelay">
+  <Path>Audio/Effects/AU/aufx:sdly:appl</Path>
+</KeyBinding>
+<MIDIMapping name="Tools:Track Devices:Load Device (VST3/AU) AUSampleDelay">
+  <Path>Audio/Effects/AU/aufx:sdly:appl</Path>
+</MIDIMapping>
+<KeyBinding name="Global:Track Devices:Load Device (VST3/AU) Supercharger">
+  <Path>Audio/Effects/VST3/5653544E692440737570657263686172</Path>
+</KeyBinding>
+<MIDIMapping name="Tools:Track Devices:Load Device (VST3/AU) Supercharger">
+  <Path>Audio/Effects/VST3/5653544E692440737570657263686172</Path>
+</MIDIMapping>

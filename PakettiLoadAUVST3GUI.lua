@@ -3,8 +3,7 @@ local vb = renoise.ViewBuilder()
 local checkboxes = {}
 local deviceReadableNames = { VST3 = {}, AU = {} }
 local addedKeyBindings = {}
-local preferencesFile = renoise.tool().bundle_path .. "PreferencesLoaders.xml"
-
+local preferencesFile = renoise.tool().bundle_path .. "preferences_deviceLoaders.xml"
 
 function vst3AddAsShortcut()
   for _, cb_info in ipairs(checkboxes) do
@@ -68,7 +67,7 @@ function initializePreferencesFile()
       print("Error creating preferences file: " .. err)
       return
     end
-    file:write("<PreferencesLoaders>\n</PreferencesLoaders>\n")
+    file:write("<preferences_deviceLoaders>\n</preferences_deviceLoaders>\n")
     file:close()
   else
     file:close()

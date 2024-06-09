@@ -1,0 +1,19 @@
+
+<KeyBinding name="Global:Paketti:Load Plugin (AU) Knif Audio Knifonium">
+  <Path>Audio/Generators/AU/aumu:Knif:Brwx</Path>
+</KeyBinding>
+<MIDIMapping name="Tools:Paketti:Load Plugin (AU) Knif Audio Knifonium">
+  <Path>Audio/Generators/AU/aumu:Knif:Brwx</Path>
+</MIDIMapping>
+<KeyBinding name="Global:Paketti:Load Plugin (VST) BucketOne">
+  <Path>Audio/Generators/VST/BucketOne</Path>
+</KeyBinding>
+<MIDIMapping name="Tools:Paketti:Load Plugin (VST) BucketOne">
+  <Path>Audio/Generators/VST/BucketOne</Path>
+</MIDIMapping>
+<KeyBinding name="Global:Paketti:Load Plugin (VST3) Kontakt 7">
+  <Path>Audio/Generators/VST3/5653544E694B376B6F6E74616B742037</Path>
+</KeyBinding>
+<MIDIMapping name="Tools:Paketti:Load Plugin (VST3) Kontakt 7">
+  <Path>Audio/Generators/VST3/5653544E694B376B6F6E74616B742037</Path>
+</MIDIMapping>

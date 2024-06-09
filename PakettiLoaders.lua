@@ -1393,31 +1393,54 @@ renoise.tool():add_keybinding{name="Global:Paketti:Insert Stereo -> Mono device 
 
 
 
---------
 -- Function to hide all visible external editors of Devices
 function hide_all_external_editors()
-  local song=renoise.song()
-  local num_tracks=#song.tracks
+  local song = renoise.song()
+  local num_tracks = #song.tracks
+  local num_instruments = #song.instruments
 
-  for track_index=1,num_tracks do
-    local track=song:track(track_index)
-    local num_devices=#track.devices
+  -- Hide external editors for all track devices
+  for track_index = 1, num_tracks do
+    local track = song:track(track_index)
+    local num_devices = #track.devices
 
-    for device_index=2,num_devices do
-      local device=track:device(device_index)
+    for device_index = 2, num_devices do
+      local device = track:device(device_index)
 
       if device.external_editor_available and device.external_editor_visible then
-        device.external_editor_visible=false
+        device.external_editor_visible = false
+      end
+    end
+  end
+
+  -- Hide external editors for all instrument plugins
+  for instrument_index = 1, num_instruments do
+    local instrument = song:instrument(instrument_index)
+    
+    -- Hide sample effect chain devices
+    for _, device_chain in ipairs(instrument.sample_device_chains) do
+      for device_index = 2, #device_chain.devices do
+        local device = device_chain:device(device_index)
+        
+        if device.external_editor_available and device.external_editor_visible then
+          device.external_editor_visible = false
+        end
+      end
+    end
+    
+    -- Hide plugin device editor
+    if instrument.plugin_properties.plugin_device then
+      local plugin_device = instrument.plugin_properties.plugin_device
+      if plugin_device.external_editor_available and plugin_device.external_editor_visible then
+        plugin_device.external_editor_visible = false
       end
     end
   end
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Hide Track DSP Devices for All Tracks",invoke=function() hide_all_external_editors() end}
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Hide Track DSP Devices for All Tracks",invoke=function() hide_all_external_editors() end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Hide Track DSP Devices for All Tracks",invoke=function() hide_all_external_editors() end}
 renoise.tool():add_midi_mapping{name="Global:Paketti:Hide Track DSP Devices for All Tracks",invoke=function() hide_all_external_editors() end}
-
-
 
 
 

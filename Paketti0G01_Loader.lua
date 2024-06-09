@@ -37,7 +37,13 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
     selectionNewInstrumentSelect = false,
     selectionNewInstrumentLoop = 2,
     shortcuts = renoise.Document.create("KeyBindings") {},
-    midimappings = renoise.Document.create("MidiMappings") {}
+    midimappings = renoise.Document.create("MidiMappings") {},
+    AppSelection1 = "",
+    AppSelection2 = "",
+    AppSelection3 = "",
+    AppSelection4 = "",
+    AppSelection5 = "",
+    AppSelection6 = ""
 }
 
 renoise.tool().preferences = preferences

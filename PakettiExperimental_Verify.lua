@@ -1,3 +1,111 @@
+-- Function to duplicate the current track and set notes to the selected instrument
+function setToSelectedInstrument_DuplicateTrack()
+  local song = renoise.song()
+  local pattern_index = song.selected_pattern_index
+  local track_index = song.selected_track_index
+  local selected_instrument_index = song.selected_instrument_index
+
+  -- Insert a new track
+  song:insert_track_at(track_index + 1)
+  song.selected_track_index = track_index + 1
+
+  local new_track = song.tracks[track_index + 1]
+  local old_track = song.tracks[track_index]
+
+  -- Copy the content of the current track to the new track
+  for i = 1, #song.patterns do
+    local old_pattern_track = song.patterns[i].tracks[track_index]
+    local new_pattern_track = song.patterns[i].tracks[track_index + 1]
+
+    for line = 1, #old_pattern_track.lines do
+      new_pattern_track:line(line):copy_from(old_pattern_track:line(line))
+    end
+
+    -- Change pattern data to use the selected instrument
+    for line = 1, #new_pattern_track.lines do
+      for _, note_column in ipairs(new_pattern_track:line(line).note_columns) do
+        if note_column.instrument_value ~= 255 then
+          note_column.instrument_value = selected_instrument_index - 1
+        end
+      end
+    end
+  end
+
+  -- Copy Track DSPs and handle Instr. Automation
+  local has_instr_automation = false
+  local old_instr_automation_device = nil
+  for dsp_index = 2, #old_track.devices do
+    local old_device = old_track.devices[dsp_index]
+
+    if old_device.device_path:find("Instr. Automation") then
+      has_instr_automation = true
+      old_instr_automation_device = old_device
+    else
+      local new_device = new_track:insert_device_at(old_device.device_path, dsp_index)
+      for parameter_index = 1, #old_device.parameters do
+        new_device.parameters[parameter_index].value = old_device.parameters[parameter_index].value
+      end
+      new_device.is_maximized = old_device.is_maximized
+    end
+  end
+
+  -- Create a new Instr. Automation device if the original track had one
+  if has_instr_automation then
+    local new_device = new_track:insert_device_at("Audio/Effects/Native/*Instr. Automation", #new_track.devices + 1)
+
+    -- Extract XML from the old device
+    local old_device_xml = old_instr_automation_device.active_preset_data
+    -- Modify the XML to update the instrument references
+    local new_device_xml = old_device_xml:gsub("<instrument>(%d+)</instrument>", function(instr_index)
+      return string.format("<instrument>%d</instrument>", selected_instrument_index - 1)
+    end)
+    -- Apply the modified XML to the new device
+    new_device.active_preset_data = new_device_xml
+    new_device.is_maximized = old_instr_automation_device.is_maximized
+  end
+
+  -- Adjust visibility settings for the new track
+  new_track.visible_note_columns = old_track.visible_note_columns
+  new_track.visible_effect_columns = old_track.visible_effect_columns
+  new_track.volume_column_visible = old_track.volume_column_visible
+  new_track.panning_column_visible = old_track.panning_column_visible
+  new_track.delay_column_visible = old_track.delay_column_visible
+
+  -- Handle automation duplication after fixing XML
+  for i = 1, #song.patterns do
+    local old_pattern_track = song.patterns[i].tracks[track_index]
+    local new_pattern_track = song.patterns[i].tracks[track_index + 1]
+
+    for _, automation in ipairs(old_pattern_track.automation) do
+      local new_automation = new_pattern_track:create_automation(automation.dest_parameter)
+      for _, point in ipairs(automation.points) do
+        new_automation:add_point_at(point.time, point.value)
+      end
+    end
+  end
+
+  -- Select the new track
+  song.selected_track_index = track_index + 1
+
+  -- Ready the new track for transposition (select all notes)
+  Deselect_All()
+  MarkTrackMarkPattern()
+end
+
+-- Add menu entry for the function
+renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Duplicate Track, set to Selected Instrument",invoke=function() setToSelectedInstrument_DuplicateTrack() end}
+renoise.tool():add_menu_entry{name="--Mixer:Paketti..:Duplicate Track, set to Selected Instrument",invoke=function() setToSelectedInstrument_DuplicateTrack() end}
+
+-- Add keybinding for the function
+renoise.tool():add_keybinding{name="Global:Paketti..:Duplicate Track, set to Selected Instrument",invoke=function() setToSelectedInstrument_DuplicateTrack() end}
+
+
+
+
+
+
+
+
 -- Function to duplicate the current track and instrument, then copy notes and prepare the new track for editing
 function duplicateTrackDuplicateInstrument()
   local song = renoise.song()
@@ -144,11 +252,8 @@ function duplicateTrackDuplicateInstrument()
   end
 end
 
--- Add menu entry for the function
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Duplicate Track Duplicate Instrument",invoke=function() duplicateTrackDuplicateInstrument() end}
 renoise.tool():add_menu_entry{name="Mixer:Paketti..:Duplicate Track Duplicate Instrument",invoke=function() duplicateTrackDuplicateInstrument() end}
-
--- Add keybinding for the function
 renoise.tool():add_keybinding{name="Global:Paketti..:Duplicate Track Duplicate Instrument",invoke=function() duplicateTrackDuplicateInstrument() end}
 
 

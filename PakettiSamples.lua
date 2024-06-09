@@ -1,231 +1,213 @@
 local vb = renoise.ViewBuilder()
 
--- Define a Document to store the App paths
-local AppLoadingPreferences = renoise.Document.create("AppLoadingPreferences") {
-  App1 = "",
-  App2 = "",
-  App3 = "",
-  App4 = "",
-  App5 = "",
-  App6 = ""
-}
-
--- Load the preferences from the stored settings
-renoise.tool().preferences = AppLoadingPreferences
-
 local app_paths = {}
 
 -- Function to browse for an app and update the corresponding field
 function browse_for_app(index)
-  local file_extensions = {"*.*"}
-  local dialog_title = "Select an Application"
+    local file_extensions = {"*.*"}
+    local dialog_title = "Select an Application"
 
-  local selected_file = renoise.app():prompt_for_filename_to_read(file_extensions, dialog_title)
-  if selected_file ~= "" then
-    -- Detect the operating system
-    local os_name = os.platform()
-    if os_name == "WINDOWS" then
-      -- Replace backslashes with double backslashes for Windows paths
-      selected_file = string.gsub(selected_file, "\\", "\\\\")
+    local selected_file = renoise.app():prompt_for_filename_to_read(file_extensions, dialog_title)
+    if selected_file ~= "" then
+        -- Detect the operating system
+        local os_name = os.platform()
+        if os_name == "WINDOWS" then
+            -- Replace backslashes with double backslashes for Windows paths
+            selected_file = string.gsub(selected_file, "\\", "\\\\")
+        end
+        preferences["AppSelection"..index].value = selected_file
+        if app_paths[index] then
+            app_paths[index].text = selected_file
+        end
+        renoise.app():show_status("Selected file: " .. selected_file)
+    else
+        renoise.app():show_status("No file selected")
     end
-    AppLoadingPreferences["App"..index].value = selected_file
-    if app_paths[index] then
-      app_paths[index].text = selected_file
-    end
-    renoise.app():show_status("Selected file: " .. selected_file)
-  else
-    renoise.app():show_status("No file selected")
-  end
 end
 
 -- Function to save selected sample to temp and open with the selected app
 function save_selected_sample_to_temp_and_open(app_path)
-  if renoise.song() == nil then return end
-  local song = renoise.song()
-  if song.selected_sample == nil or not song.selected_sample.sample_buffer.has_sample_data then
-    renoise.app():show_status("No sample data available.")
-    return
-  end
+    if renoise.song() == nil then return end
+    local song = renoise.song()
+    if song.selected_sample == nil or not song.selected_sample.sample_buffer.has_sample_data then
+        renoise.app():show_status("No sample data available.")
+        return
+    end
 
-  local temp_file_path = os.tmpname() .. ".wav"
-  song.selected_sample.sample_buffer:save_as(temp_file_path, "wav")
-  
-  -- Detect the operating system
-  local os_name = os.platform()
-  local command
+    local temp_file_path = os.tmpname() .. ".wav"
+    song.selected_sample.sample_buffer:save_as(temp_file_path, "wav")
+    
+    -- Detect the operating system
+    local os_name = os.platform()
+    local command
 
-  -- Display initial command message
-  renoise.app():show_warning("Preparing to execute command for OS: " .. os_name)
+    if os_name == "WINDOWS" then
+        command = 'start "" "' .. app_path .. '" "' .. temp_file_path .. '"'
+    elseif os_name == "MACINTOSH" then
+        command = 'open -a "' .. app_path .. '" "' .. temp_file_path .. '"'
+    else
+        command = 'exec "' .. app_path .. '" "' .. temp_file_path .. '"'
+    end
 
-  if os_name == "WINDOWS" then
-    command = 'start "" "' .. app_path .. '" "' .. temp_file_path .. '"'
-  elseif os_name == "MACINTOSH" then
-    command = 'open -a "' .. app_path .. '" "' .. temp_file_path .. '"'
-  else
-    command = 'exec "' .. app_path .. '" "' .. temp_file_path .. '"'
-  end
-
-  -- Display the command being executed
-  renoise.app():show_warning("Executing command: " .. command)
-
-  os.execute(command)
-  renoise.app():show_status("Sample sent to " .. app_path)
+    os.execute(command)
+    renoise.app():show_status("Sample sent to " .. app_path)
 end
 
 -- Create the dialog UI
 local function create_dialog_content(close_dialog)
-  app_paths = {}
-  
-  return vb:column{
-    margin = 10,
-    spacing = 10,
-    width = 900,
-    vb:row{
-      spacing = 10,
-      vb:button{
-        text = "Browse",
-        notifier = function() browse_for_app(1) end
-      },
-      vb:button{
-        text = "Send Selected Sample to App",
-        notifier = function() 
-          save_selected_sample_to_temp_and_open(AppLoadingPreferences.App1.value) 
-        end,
-        width = 200
-      },
-      (function()
-        local path = vb:text{
-          text = AppLoadingPreferences.App1.value ~= "" and AppLoadingPreferences.App1.value or "None",
-          width = 600,
-          font = "bold"
+    app_paths = {}
+    
+    return vb:column{
+        margin=10,
+        spacing=10,
+        width=900,
+        vb:row{
+            spacing=10,
+            vb:button{
+                text="Browse",
+                notifier=function() browse_for_app(1) end
+            },
+            vb:button{
+                text="Send Selected Sample to App",
+                notifier=function() 
+                    save_selected_sample_to_temp_and_open(preferences.AppSelection1.value) 
+                end,
+                width=200
+            },
+            (function()
+                local path = vb:text{
+                    text=(preferences.AppSelection1.value ~= "" and preferences.AppSelection1.value or "None"),
+                    width=600,
+                    font="bold"
+                }
+                app_paths[1] = path
+                return path
+            end)()
+        },
+        vb:row{
+            spacing=10,
+            vb:button{
+                text="Browse",
+                notifier=function() browse_for_app(2) end
+            },
+            vb:button{
+                text="Send Selected Sample to App",
+                notifier=function() 
+                    save_selected_sample_to_temp_and_open(preferences.AppSelection2.value) 
+                end,
+                width=200
+            },
+            (function()
+                local path = vb:text{
+                    text=(preferences.AppSelection2.value ~= "" and preferences.AppSelection2.value or "None"),
+                    width=600,
+                    font="bold"
+                }
+                app_paths[2] = path
+                return path
+            end)()
+        },
+        vb:row{
+            spacing=10,
+            vb:button{
+                text="Browse",
+                notifier=function() browse_for_app(3) end
+            },
+            vb:button{
+                text="Send Selected Sample to App",
+                notifier=function() 
+                    save_selected_sample_to_temp_and_open(preferences.AppSelection3.value) 
+                end,
+                width=200
+            },
+            (function()
+                local path = vb:text{
+                    text=(preferences.AppSelection3.value ~= "" and preferences.AppSelection3.value or "None"),
+                    width=600,
+                    font="bold"
+                }
+                app_paths[3] = path
+                return path
+            end)()
+        },
+        vb:row{
+            spacing=10,
+            vb:button{
+                text="Browse",
+                notifier=function() browse_for_app(4) end
+            },
+            vb:button{
+                text="Send Selected Sample to App",
+                notifier=function() 
+                    save_selected_sample_to_temp_and_open(preferences.AppSelection4.value) 
+                end,
+                width=200
+            },
+            (function()
+                local path = vb:text{
+                    text=(preferences.AppSelection4.value ~= "" and preferences.AppSelection4.value or "None"),
+                    width=600,
+                    font="bold"
+                }
+                app_paths[4] = path
+                return path
+            end)()
+        },
+        vb:row{
+            spacing=10,
+            vb:button{
+                text="Browse",
+                notifier=function() browse_for_app(5) end
+            },
+            vb:button{
+                text="Send Selected Sample to App",
+                notifier=function() 
+                    save_selected_sample_to_temp_and_open(preferences.AppSelection5.value) 
+                end,
+                width=200
+            },
+            (function()
+                local path = vb:text{
+                    text=(preferences.AppSelection5.value ~= "" and preferences.AppSelection5.value or "None"),
+                    width=600,
+                    font="bold"
+                }
+                app_paths[5] = path
+                return path
+            end)()
+        },
+        vb:row{
+            spacing=10,
+            vb:button{
+                text="Browse",
+                notifier=function() browse_for_app(6) end
+            },
+            vb:button{
+                text="Send Selected Sample to App",
+                notifier=function() 
+                    save_selected_sample_to_temp_and_open(preferences.AppSelection6.value) 
+                end,
+                width=200
+            },
+            (function()
+                local path = vb:text{
+                    text=(preferences.AppSelection6.value ~= "" and preferences.AppSelection6.value or "None"),
+                    width=600,
+                    font="bold"
+                }
+                app_paths[6] = path
+                return path
+            end)()
+        },
+        vb:button{
+            text="OK",
+            notifier=function()
+                close_dialog()
+            end
         }
-        app_paths[1] = path
-        return path
-      end)()
-    },
-    vb:row{
-      spacing = 10,
-      vb:button{
-        text = "Browse",
-        notifier = function() browse_for_app(2) end
-      },
-      vb:button{
-        text = "Send Selected Sample to App",
-        notifier = function() 
-          save_selected_sample_to_temp_and_open(AppLoadingPreferences.App2.value) 
-        end,
-        width = 200
-      },
-      (function()
-        local path = vb:text{
-          text = AppLoadingPreferences.App2.value ~= "" and AppLoadingPreferences.App2.value or "None",
-          width = 600,
-          font = "bold"
-        }
-        app_paths[2] = path
-        return path
-      end)()
-    },
-    vb:row{
-      spacing = 10,
-      vb:button{
-        text = "Browse",
-        notifier = function() browse_for_app(3) end
-      },
-      vb:button{
-        text = "Send Selected Sample to App",
-        notifier = function() 
-          save_selected_sample_to_temp_and_open(AppLoadingPreferences.App3.value) 
-        end,
-        width = 200
-      },
-      (function()
-        local path = vb:text{
-          text = AppLoadingPreferences.App3.value ~= "" and AppLoadingPreferences.App3.value or "None",
-          width = 600,
-          font = "bold"
-        }
-        app_paths[3] = path
-        return path
-      end)()
-    },
-    vb:row{
-      spacing = 10,
-      vb:button{
-        text = "Browse",
-        notifier = function() browse_for_app(4) end
-      },
-      vb:button{
-        text = "Send Selected Sample to App",
-        notifier = function() 
-          save_selected_sample_to_temp_and_open(AppLoadingPreferences.App4.value) 
-        end,
-        width = 200
-      },
-      (function()
-        local path = vb:text{
-          text = AppLoadingPreferences.App4.value ~= "" and AppLoadingPreferences.App4.value or "None",
-          width = 600,
-          font = "bold"
-        }
-        app_paths[4] = path
-        return path
-      end)()
-    },
-    vb:row{
-      spacing = 10,
-      vb:button{
-        text = "Browse",
-        notifier = function() browse_for_app(5) end
-      },
-      vb:button{
-        text = "Send Selected Sample to App",
-        notifier = function() 
-          save_selected_sample_to_temp_and_open(AppLoadingPreferences.App5.value) 
-        end,
-        width = 200
-      },
-      (function()
-        local path = vb:text{
-          text = AppLoadingPreferences.App5.value ~= "" and AppLoadingPreferences.App5.value or "None",
-          width = 600,
-          font = "bold"
-        }
-        app_paths[5] = path
-        return path
-      end)()
-    },
-    vb:row{
-      spacing = 10,
-      vb:button{
-        text = "Browse",
-        notifier = function() browse_for_app(6) end
-      },
-      vb:button{
-        text = "Send Selected Sample to App",
-        notifier = function() 
-          save_selected_sample_to_temp_and_open(AppLoadingPreferences.App6.value) 
-        end,
-        width = 200
-      },
-      (function()
-        local path = vb:text{
-          text = AppLoadingPreferences.App6.value ~= "" and AppLoadingPreferences.App6.value or "None",
-          width = 600,
-          font = "bold"
-        }
-        app_paths[6] = path
-        return path
-      end)()
-    },
-    vb:button{
-      text = "OK",
-      notifier = function()
-        close_dialog()
-      end
     }
-  }
 end
+
 
 -- Show the dialog
 function show_app_selection_dialog()

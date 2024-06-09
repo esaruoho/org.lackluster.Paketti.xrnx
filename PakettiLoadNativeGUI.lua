@@ -1,6 +1,6 @@
 local vb=renoise.ViewBuilder()
 local addedKeyBindings = {}
-local preferencesFile = renoise.tool().bundle_path .. "PreferencesLoaders.xml"
+local preferencesFile = renoise.tool().bundle_path .. "preferences_deviceLoaders.xml"
 local checkboxes = {}  -- Initialize the checkboxes table
 local deviceReadableNames = {}  -- Initialize the deviceReadableNames table
 
@@ -88,7 +88,7 @@ function initializePreferencesFile()
       print("Error creating preferences file: " .. err)
       return
     end
-    file:write("<PreferencesLoaders>\n</PreferencesLoaders>\n")
+    file:write("<preferences_deviceLoaders>\n</preferences_deviceLoaders>\n")
     file:close()
   else
     file:close()
