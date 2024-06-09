@@ -2,8 +2,8 @@
 
   Author : Alexander Stoica
   Creation Date : 07/27/2010
-  Last modified : 07/27/2010
-  Version : 1.0
+  Last modified : 06/03/2024
+  Version : 1.9
 
 ----------------------------------------------------------------------------]]--
 
@@ -11,7 +11,15 @@ _AUTO_RELOAD_DEBUG = true
 
 --[[ manual dialog ]]-------------------------------------------------------]]--
 
+-- Unique identifier for the dialog
+local dialog_id = "unique_manual_dialog"
+local dialog_instance = nil
+
 function show_manual(dialog_title, filename)
+  -- Check if the dialog is already shown
+  if dialog_instance and dialog_instance.visible then
+    dialog_instance:close()
+  end
 
   local header = table.create()
   local pages = table.create()
@@ -28,7 +36,7 @@ function show_manual(dialog_title, filename)
 
     vb:valuebox {
       id = "page_index",
-      width = "10%",
+      width = 50,
       min = 0,
       max = 0,
       notifier = function(value)
@@ -37,7 +45,7 @@ function show_manual(dialog_title, filename)
     },
     vb:popup {
       id = "page_list",
-      width = "90%",
+      width = 456,
       items = {},
       notifier = function(index)
         vb.views.page_index.value = index
@@ -53,7 +61,7 @@ function show_manual(dialog_title, filename)
       id = "page_text",
       font = "mono",
       width = 506,
-      height = 250
+      height = 500 -- Twice the original height
     }
   }
 
@@ -65,8 +73,31 @@ function show_manual(dialog_title, filename)
       margin = DIALOG_MARGIN,
       style = "group",
 
+      vb:text {
+        text = "Formula Documentation",
+        font = "mono",
+        width = 506,
+        align = "center"
+      },
       row_navigation,
-      row_text
+      row_text,
+      vb:horizontal_aligner {
+        margin = CONTROL_MARGIN,
+        mode = "distribute",
+        vb:button {text = "Forum Link 1", notifier = function() renoise.app():open_url("http://forum.renoise.com") end},
+        vb:button {text = "Forum Link 2", notifier = function() renoise.app():open_url("http://forum.renoise.com") end},
+        vb:button {text = "Forum Link 3", notifier = function() renoise.app():open_url("http://forum.renoise.com") end},
+        vb:button {text = "Forum Link 4", notifier = function() renoise.app():open_url("http://forum.renoise.com") end},
+        vb:button {text = "Forum Link 5", notifier = function() renoise.app():open_url("http://forum.renoise.com") end}
+      },
+      vb:button {
+        id = "close_button",
+        text = "Close",
+        width = 506,
+        notifier = function()
+          dialog_instance:close()
+        end
+      }
     }
   }
 
@@ -110,13 +141,10 @@ function show_manual(dialog_title, filename)
     vb.views.content:resize()
     load_page(vb.views, header, pages, 1)
 
-
-   renoise.app():show_custom_dialog (
-        dialog_title, dialog_content
-        )
+    dialog_instance = renoise.app():show_custom_dialog(dialog_title, dialog_content)
 
   else
-    renoise.app():show_warning (
+    renoise.app():show_warning(
       "The manual could not be found, please reinstall this tool.\n\n" ..
       "Missing file: " .. manual_filename
     )
@@ -135,7 +163,7 @@ function load_page(vbv, header, pages, page_index)
       vbv.page_text:add_line(line)
     end
   end
-
 end
 
 ---------------------------------------------------------------------[[ EOF ]]--
+
