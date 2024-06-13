@@ -188,9 +188,20 @@ function loadnative(effect)
   local w=renoise.app().window
 
   if w.active_middle_frame==7 then
-    if s.selected_sample_device_chain then
-      local sample_devices=s.selected_sample_device_chain.devices
-      if (table.count(sample_devices)) <2 then 
+    -- Check if the selected sample device chain exists, and create one if it doesn't
+    local chain=s.selected_sample_device_chain
+    local chain_index=s.selected_sample_device_chain_index
+
+    if chain==nil or chain_index==0 then
+      local instrument=s.selected_instrument
+      instrument:insert_sample_device_chain_at(1)
+      chain=s.selected_sample_device_chain
+      chain_index=1
+    end
+
+    if chain then
+      local sample_devices=chain.devices
+      if (table.count(sample_devices))<2 then 
         checkline=2
       else 
         if sample_devices[2] and sample_devices[2].name=="#Line Input" then 
@@ -200,15 +211,18 @@ function loadnative(effect)
         end
       end
 
+      -- Ensure checkline is within the valid range
+      checkline=math.min(checkline, #sample_devices + 1)
+
       -- Insert the device into the sample device chain at the correct position
-      s.selected_sample_device_chain:insert_device_at(effect,checkline)
+      chain:insert_device_at(effect, checkline)
 
       -- Re-fetch sample_devices after insertion to update the reference
-      sample_devices=s.selected_sample_device_chain.devices
+      sample_devices=chain.devices
 
       if sample_devices[checkline] and sample_devices[checkline].name=="DC Offset" then 
         sample_devices[checkline].parameters[2].value=1
-      else end 
+      end 
 
       if sample_devices[checkline] and sample_devices[checkline].name=="#Multiband Send" then 
         sample_devices[checkline].parameters[1].show_in_mixer=false
@@ -217,29 +231,29 @@ function loadnative(effect)
         local PakettiMultiSend_xml_file_path="Presets/PakettiMultiSend.XML"
         local PakettiMultiSend_xml_data=read_file(PakettiMultiSend_xml_file_path)
         sample_devices[checkline].active_preset_data=PakettiMultiSend_xml_data
-      else end
+      end
 
       if sample_devices[checkline] and sample_devices[checkline].name=="Gainer" then 
         -- As of 1st April 2020 I do want to see the Gain parameter in Mixer. Remove comments if you change opinion
         -- sample_devices[checkline].parameters[1].show_in_mixer=false
-      else end  
+      end  
 
       if sample_devices[checkline] and sample_devices[checkline].name=="#Line Input" then 
         sample_devices[checkline].parameters[2].show_in_mixer=true
-      else end
+      end
 
       if sample_devices[checkline] and sample_devices[checkline].name=="#Send" then 
-        sample_devices[checkline].parameters[2].show_in_mixer=true
+        sample_devices[checkline].parameters[2].show_in_mixer=false
         local PakettiSend_xml_file_path="Presets/PakettiSend.XML"
         local PakettiSend_xml_data=read_file(PakettiSend_xml_file_path)
         sample_devices[checkline].active_preset_data=PakettiSend_xml_data
-      else end
+      end
     else
       renoise.app():show_error("No sample selected.")
     end
   else
     local sdevices=s.selected_track.devices
-    if (table.count(sdevices)) <2 then 
+    if (table.count(sdevices))<2 then 
       checkline=2
     else 
       if sdevices[2] and sdevices[2].name=="#Line Input" then 
@@ -249,17 +263,20 @@ function loadnative(effect)
       end
     end
 
+    -- Ensure checkline is within the valid range
+    checkline=math.min(checkline, #sdevices + 1)
+
     w.lower_frame_is_visible=true
     w.active_lower_frame=1
-    s.selected_track:insert_device_at(effect,checkline)
-    s.selected_device_index=2
+    s.selected_track:insert_device_at(effect, checkline)
+    s.selected_device_index=checkline
 
     -- Re-fetch sdevices after insertion to update the reference
     sdevices=s.selected_track.devices
 
     if sdevices[checkline] and sdevices[checkline].name=="DC Offset" then 
       sdevices[checkline].parameters[2].value=1
-    else end 
+    end 
 
     if sdevices[checkline] and sdevices[checkline].name=="#Multiband Send" then 
       sdevices[checkline].parameters[1].show_in_mixer=false
@@ -268,23 +285,23 @@ function loadnative(effect)
       local PakettiMultiSend_xml_file_path="Presets/PakettiMultiSend.XML"
       local PakettiMultiSend_xml_data=read_file(PakettiMultiSend_xml_file_path)
       sdevices[checkline].active_preset_data=PakettiMultiSend_xml_data
-    else end
+    end
 
     if sdevices[checkline] and sdevices[checkline].name=="Gainer" then 
       -- As of 1st April 2020 I do want to see the Gain parameter in Mixer. Remove comments if you change opinion
       -- sdevices[checkline].parameters[1].show_in_mixer=false
-    else end  
+    end  
 
     if sdevices[checkline] and sdevices[checkline].name=="#Line Input" then 
       sdevices[checkline].parameters[2].show_in_mixer=true
-    else end
+    end
 
     if sdevices[checkline] and sdevices[checkline].name=="#Send" then 
-      sdevices[checkline].parameters[2].show_in_mixer=true
+      sdevices[checkline].parameters[2].show_in_mixer=false
       local PakettiSend_xml_file_path="Presets/PakettiSend.XML"
       local PakettiSend_xml_data=read_file(PakettiSend_xml_file_path)
       sdevices[checkline].active_preset_data=PakettiSend_xml_data
-    else end
+    end
   end
 end
 
@@ -386,6 +403,7 @@ invoke=function() loadnative("Audio/Effects/Native/*XY Pad") end}
 -- ValhallaDSP ValhallaVintageVerb opens with 50% Wet instead of 100% Wet, and a long tail
 -- And each line input will become first.
 function loadvst(vstname)
+
   local checkline=nil
   local s=renoise.song()
   local slt=s.selected_track
@@ -402,89 +420,40 @@ function loadvst(vstname)
   if raw.lower_frame_is_visible==false then raw.lower_frame_is_visible=false
   else raw.lower_frame_is_visible=true end
 
-  if raw.active_middle_frame==7 then
-    -- Operate on the selected sample device chain
-    local chain=s.selected_sample_device_chain
-    local chain_index=s.selected_sample_device_chain_index
-    if chain==nil or chain_index==0 then
-      -- Insert a new sample device chain if none exists
-      local instrument=s.selected_instrument
-      instrument:insert_sample_device_chain_at(1)
-      chain=s.selected_sample_device_chain
-      chain_index=1
-    end
+if raw.active_middle_frame==7 then
+  -- Check if the selected sample device chain exists, and create one if it doesn't
+  local chain=s.selected_sample_device_chain
+  local chain_index=s.selected_sample_device_chain_index
 
-    if chain then
-      if (table.count(chain.devices))<2 then checkline=2
-      else 
-        if chain.devices[2].name=="#Line Input" then checkline=3
-        else checkline=2
-        end
-      end
+  if chain==nil or chain_index==0 then
+    local instrument=s.selected_instrument
+    instrument:insert_sample_device_chain_at(1)
+    chain=s.selected_sample_device_chain
+    chain_index=1
+  end
 
-      chain:insert_device_at(vstname, checkline)
-      local inserted_device=chain.devices[checkline]
-
-      if inserted_device.name=="AU: Koen Tanghe @ Smartelectronix: KTGranulator" then return
-      else inserted_device.external_editor_visible=true end
-      inserted_device.is_maximized=false
-      renoise.song().selected_device_index=checkline
-
-      if inserted_device.name=="AU: Schaack Audio Technologies: TransientShaper" then 
-        inserted_device.parameters[1].show_in_mixer=true
-        inserted_device.parameters[2].show_in_mixer=true
-        inserted_device.parameters[4].show_in_mixer=true
-        inserted_device.parameters[7].show_in_mixer=true
-        inserted_device.is_maximized=false
-      end 
-
-      if inserted_device.name=="VST: FabFilter: Pro-Q" then 
-        inserted_device.parameters[206].value=1 
-      end 
-
-      if inserted_device.name=="AU: TAL-Togu Audio Line: TAL Reverb 4 Plugin" then 
-        inserted_device.parameters[2].value=0.0
-        inserted_device.parameters[3].value=0.30
-        inserted_device.parameters[4].value=0.88
-        inserted_device.parameters[5].value=0.9
-        inserted_device.parameters[6].value=1
-        inserted_device.parameters[7].value=0.4
-        inserted_device.parameters[9].value=0.7
-      end 
-
-      if inserted_device.name=="AU: Valhalla DSP, LLC: ValhallaVintageVerb" then 
-        inserted_device.parameters[1].value=0.474
-        inserted_device.parameters[3].value=0.688
-        inserted_device.parameters[15].value=0.097
-      end 
-
-      if inserted_device.name=="AU: Koen Tanghe @ Smartelectronix: KTGranulator" then 
-        inserted_device.is_maximized=true
-        inserted_device.parameters[31].value=1
-        inserted_device.parameters[16].value=0.75
-        inserted_device.parameters[2].value=0.50
-        inserted_device.parameters[3].value=0.35
-        inserted_device.parameters[6].value=0.75
-        raw.lower_frame_is_visible=true
-        raw.active_lower_frame=1
-      end 
-
-      if inserted_device.name=="AU: George Yohng: W1 Limiter" then
-        inserted_device.is_maximized=true
-        inserted_device.parameters[1].show_in_mixer=true
-        inserted_device.parameters[2].show_in_mixer=true
+  if chain then
+    -- Determine the valid index for inserting the device
+    if (table.count(chain.devices))<2 then checkline=2
+    else 
+      if chain.devices[2].name=="#Line Input" then checkline=3
+      else checkline=2
       end
     end
-  else
-    -- Original functionality for selected track
-    s.selected_track:insert_device_at(vstname, checkline)
-    local inserted_device=s.selected_track.devices[checkline]
+    
+    -- Ensure checkline is within the valid range
+    checkline=math.min(checkline, #chain.devices + 1)
 
+    chain:insert_device_at(vstname, checkline)
+    local inserted_device=chain.devices[checkline]
+
+    -- Insert the rest of your logic for handling the inserted device here
     if inserted_device.name=="AU: Koen Tanghe @ Smartelectronix: KTGranulator" then return
     else inserted_device.external_editor_visible=true end
     inserted_device.is_maximized=false
     renoise.song().selected_device_index=checkline
 
+    -- Additional device-specific parameter adjustments
     if inserted_device.name=="AU: Schaack Audio Technologies: TransientShaper" then 
       inserted_device.parameters[1].show_in_mixer=true
       inserted_device.parameters[2].show_in_mixer=true
@@ -530,8 +499,63 @@ function loadvst(vstname)
       inserted_device.parameters[2].show_in_mixer=true
     end
   end
-end
+else
+  -- Original functionality for selected track
+  s.selected_track:insert_device_at(vstname, checkline)
+  local inserted_device=s.selected_track.devices[checkline]
 
+  if inserted_device.name=="AU: Koen Tanghe @ Smartelectronix: KTGranulator" then return
+  else inserted_device.external_editor_visible=true end
+  inserted_device.is_maximized=false
+  renoise.song().selected_device_index=checkline
+
+  -- Additional device-specific parameter adjustments
+  if inserted_device.name=="AU: Schaack Audio Technologies: TransientShaper" then 
+    inserted_device.parameters[1].show_in_mixer=true
+    inserted_device.parameters[2].show_in_mixer=true
+    inserted_device.parameters[4].show_in_mixer=true
+    inserted_device.parameters[7].show_in_mixer=true
+    inserted_device.is_maximized=false
+  end 
+
+  if inserted_device.name=="VST: FabFilter: Pro-Q" then 
+    inserted_device.parameters[206].value=1 
+  end 
+
+  if inserted_device.name=="AU: TAL-Togu Audio Line: TAL Reverb 4 Plugin" then 
+    inserted_device.parameters[2].value=0.0
+    inserted_device.parameters[3].value=0.30
+    inserted_device.parameters[4].value=0.88
+    inserted_device.parameters[5].value=0.9
+    inserted_device.parameters[6].value=1
+    inserted_device.parameters[7].value=0.4
+    inserted_device.parameters[9].value=0.7
+  end 
+
+  if inserted_device.name=="AU: Valhalla DSP, LLC: ValhallaVintageVerb" then 
+    inserted_device.parameters[1].value=0.474
+    inserted_device.parameters[3].value=0.688
+    inserted_device.parameters[15].value=0.097
+  end 
+
+  if inserted_device.name=="AU: Koen Tanghe @ Smartelectronix: KTGranulator" then 
+    inserted_device.is_maximized=true
+    inserted_device.parameters[31].value=1
+    inserted_device.parameters[16].value=0.75
+    inserted_device.parameters[2].value=0.50
+    inserted_device.parameters[3].value=0.35
+    inserted_device.parameters[6].value=0.75
+    raw.lower_frame_is_visible=true
+    raw.active_lower_frame=1
+  end 
+
+  if inserted_device.name=="AU: George Yohng: W1 Limiter" then
+    inserted_device.is_maximized=true
+    inserted_device.parameters[1].show_in_mixer=true
+    inserted_device.parameters[2].show_in_mixer=true
+  end
+end
+end
 --Audio/Effects/AU/aufx:cHL1:TOGU
 --Audio/Effects/AU/aumf:58h8:TOGU
 --73  Audio/Effects/AU/aumf:676v:TOGU
@@ -741,9 +765,13 @@ end
 -- Adding keybinding for the inspectEffect function
 renoise.tool():add_keybinding{name="Global:Paketti:Inspect Device in Slot 2", invoke=function() inspectEffect() end}
 ------------------------------------------------------------------------------------------------------
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Show Plugin Details",
-  invoke = function() show_plugin_details_gui() end}
------------------------------------
+-- Add the menu entry to show plugin details
+-- Add the menu entry to show plugin details
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Debug:Show Plugin Details",invoke=function() show_plugin_details_gui() end}
+
+-- Declare the customdialog variable at the beginning
+customdialog = nil
+
 -- Utility function to fetch, sort, and group available plugins by type
 function get_sorted_and_grouped_plugin_infos()
   local audio_units = {}
@@ -778,6 +806,7 @@ function get_sorted_and_grouped_plugin_infos()
   return table_concat(audio_units, vsts, vst3s)
 end
 
+-- Utility function to determine plugin type from path
 function determine_plugin_type(path)
   if path and path:lower():find("/au/") then
     return "AU"
@@ -790,6 +819,7 @@ function determine_plugin_type(path)
   end
 end
 
+-- Utility function to concatenate tables
 function table_concat(...)
   local result = {}
   for _, list in ipairs({...}) do
@@ -815,6 +845,7 @@ function display_selected_plugin_details(index, available_plugin_infos)
   end
 end
 
+-- Function to show the plugin details GUI
 function show_plugin_details_gui()
   local vb = renoise.ViewBuilder()
   local available_plugin_infos = get_sorted_and_grouped_plugin_infos()
@@ -854,7 +885,9 @@ function show_plugin_details_gui()
     vb:button {
       text = "Close",
       released = function()
-        renoise.app():close_custom_dialog()
+        if customdialog and customdialog.visible then
+          customdialog:close()
+        end
       end
     }
   }
@@ -867,12 +900,16 @@ function show_plugin_details_gui()
   vb.views.plugins_list.items = popup_items
 
   -- Dialog management
-  local dialog = renoise.app():show_custom_dialog("Plugin Details", dialog_content)
+  customdialog = renoise.app():show_custom_dialog("Plugin Details", dialog_content)
 end
 
+-----
 
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Show Effect Details",
-  invoke = function() show_effect_details_gui() end}
+-- Add the menu entry to show effect details
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Debug:Show Effect Details",invoke=function() show_effect_details_gui() end}
+
+-- Declare the customdialog variable at the beginning
+customdialog = nil
 
 -- Utility function to fetch, sort, and group available device effects by type
 function get_sorted_and_grouped_device_infos()
@@ -912,6 +949,7 @@ function get_sorted_and_grouped_device_infos()
   return table_concat(audio_units, vsts, vst3s)
 end
 
+-- Utility function to determine device type from path
 function determine_device_type(path)
   if path and path:lower():find("/au/") then
     return "AU"
@@ -924,6 +962,7 @@ function determine_device_type(path)
   end
 end
 
+-- Utility function to concatenate tables
 function table_concat(...)
   local result = {}
   for _, list in ipairs({...}) do
@@ -950,6 +989,7 @@ function display_selected_device_details(index, available_device_infos)
   end
 end
 
+-- Function to show the effect details GUI
 function show_effect_details_gui()
   local vb = renoise.ViewBuilder()
   local available_device_infos = get_sorted_and_grouped_device_infos()
@@ -993,13 +1033,15 @@ function show_effect_details_gui()
     vb:button {
       text = "Close",
       released = function()
-        renoise.app():close_custom_dialog()
+        if customdialog and customdialog.visible then
+          customdialog:close()
+        end
       end
     }
   }
 
   -- Show dialog
-  local dialog = renoise.app():show_custom_dialog("Effect Details", dialog_content)
+  customdialog = renoise.app():show_custom_dialog("Effect Details", dialog_content)
 end
 
 
@@ -1016,6 +1058,17 @@ local modtargets = {
   {name= "06 Drive", target = renoise.SampleModulationDevice.TARGET_DRIVE}}
 
 function loadModulationDevice(devicename, device_target)
+  local song = renoise.song()
+  local instrument = song.selected_instrument
+  local sample_index = song.selected_sample_index
+  local mod_set_index
+
+  if #instrument.samples < 1 then
+    instrument:insert_sample_at(1)
+    sample_index = 1
+  end
+
+
   local w = renoise.app().window
   w.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_MODULATION
   
@@ -1056,6 +1109,23 @@ for _, target in ipairs(targets) do
     -- Check if target.display and device are not nil
     if target.display and device then
       local menu_entry_name = string.format("Sample Modulation Matrix:Paketti..:%s %s:%s", target.number, target.display, device)
+      renoise.tool():add_menu_entry{
+        name = menu_entry_name,
+        invoke = function()
+          loadModulationDevice(device, target.target)
+        end
+      }
+    else
+      print("Error: Missing display name or device for target")
+    end
+  end
+end
+
+for _, target in ipairs(targets) do
+  for _, device in ipairs(moddevices) do
+    -- Check if target.display and device are not nil
+    if target.display and device then
+      local menu_entry_name = string.format("Modulation Set:Paketti..:%s %s:%s", target.number, target.display, device)
       renoise.tool():add_menu_entry{
         name = menu_entry_name,
         invoke = function()
@@ -1143,7 +1213,7 @@ end
 
 renoise.tool():add_menu_entry{name="Disk Browser Files:Paketti..:Run Experimental Script",invoke=function() terminalApp("/Users/esaruoho/macOS_EnableScriptingTools.sh") end}
 
-renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Ableton Live..:Launch Ableton Live 12",invoke=function() launchApp("open -a 'Ableton\ Live\ 12\ Suite\.app'") end}
+--renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Ableton Live..:Launch Ableton Live 12",invoke=function() launchApp("open -a 'Ableton\ Live\ 12\ Suite\.app'") end}
 
 
 
@@ -1156,9 +1226,57 @@ renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Ableton Live..:Laun
 
 --function() launchApp("open -a 'Ableton\ Live\ 12\ Suite.app' .. renoise.song().selected_instrument.sample") end}
 
-renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Pure Data..:Launch Pure Data",invoke=function() launchApp("open -a 'Pd-0.54-1.app'") end}
-renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Logic Pro..:Launch Logic Pro",invoke=function() launchApp("open -a 'Logic\ Pro.app'") end}
+--renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Pure Data..:Launch Pure Data",invoke=function() launchApp("open -a 'Pd-0.54-1.app'") end}
+--renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Logic Pro..:Launch Logic Pro",invoke=function() launchApp("open -a 'Logic\ Pro.app'") end}
+local lsfvariable=nil
+lsfvariable=os.tmpname("wav")
 
+local tmpvariable=nil
+tmpvariable=os.tmpname("wav")
+--local path="/Users/esaruoho/Music/samples/LogicSmartFolder/"
+--local path3="/Users/esaruoho/Music/samples/LogicSmartFolder/file.wav"
+--concatpath=path tmpvariable
+
+function SampleToLiveSF()
+local lsfvariable=nil
+lsfvariable=os.tmpname("wav")
+local path="/Users/esaruoho/Music/samples/LiveSmartFolder/"
+local path2="SmartFolderFile" 
+local s=renoise.song()
+renoise.app():show_status("Saving")
+local randoseed = nil
+local instboxname = renoise.song().selected_instrument.name
+randoseed = math.random()
+s.instruments[s.selected_instrument_index].samples[1].sample_buffer:save_as(path .. instboxname .. randoseed .. ".wav", "wav")
+--s.instruments[s.selected_instrument_index].samples[1].sample_buffer:save_as(lsfvariable, "wav")
+renoise.app():show_status("Saved")
+--renoise.app():show_status("Moving")
+--renoise.app():show_status("32Bit to 24Bit Converting")
+--os.execute("beep")
+--os.execute("sox " .. lsfvariable .. " -b 24 " .. path .. "LSF_a" .. s.selected_instrument_index .. "_opbab.wav")
+--renoise.app():show_status("32Bit to 24Bit Conversion From Tmp-folder to Logic Smart Folder Done")
+--os.execute("cd /Users/esaruoho/Music/samples/LogicSmartFolder;open .")
+--renoise.app():show_status("Temporary File Name was " .. lsfvariable )
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Save Sample to Live Smart Folder",invoke=function() SampleToLiveSF() end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Smart Folders..:Save Sample to Live Smart Folder",invoke=function() SampleToLiveSF() end}
+
+function SampleToLogicSF()
+local lsfvariable=nil
+lsfvariable=os.tmpname("wav")
+local path="/Users/esaruoho/Music/samples/LogicSmartFolder/"
+local path2="SmartFolderFile" 
+local s=renoise.song()
+renoise.app():show_status("Saving")
+s.instruments[s.selected_instrument_index].samples[1].sample_buffer:save_as(path .. path2 .. ".wav", "wav")
+renoise.app():show_status("Saved")
+end
+
+
+
+
+----------
 function saveSamplesToLogicSmartFolder()
 local s=renoise.song()
 --local additionalname=os.clock
@@ -1173,7 +1291,6 @@ end
 renoise.app():show_status("32Bit to 24Bit Conversion From Tmp-folder to Logic Smart Folder Done")
 os.execute("cd /Users/esaruoho/Music/samples/LogicSmartFolder;open .") end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Save All Samples to Logic Smart Folder", invoke=function() saveSamplesToLogicSmartFolder() end}
 ----
 
 function saveSamplesToLiveSmartFolder()
@@ -1191,8 +1308,13 @@ renoise.app():show_status("32Bit to 24Bit Conversion From Tmp-folder to Logic Sm
 os.execute("cd /Users/esaruoho/Music/samples/LiveSmartFolder;open .") end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Save All Samples to Live Smart Folder", invoke=function() saveSamplesToLiveSmartFolder() end}
-renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Logic Pro..:Save All Samples to Logic Smart Folder", invoke=function() saveSamplesToLogicSmartFolder() end}
-renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Ableton Live..:Save All Samples to Live Smart Folder", invoke=function() saveSamplesToLiveSmartFolder() end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Smart Folders..:Save All Samples to Live Smart Folder", invoke=function() saveSamplesToLiveSmartFolder() end}
+
+renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Smart Folders..:Save Sample to Logic Smart Folder",invoke=function() SampleToLogicSF() end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Smart Folders..:Save All Samples to Logic Smart Folder", invoke=function() saveSamplesToLogicSmartFolder() end}
+
+renoise.tool():add_keybinding{name="--Global:Paketti:Save Sample to Logic Smart Folder",invoke=function() SampleToLogicSF() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Save All Samples to Logic Smart Folder", invoke=function() saveSamplesToLogicSmartFolder() end}
 
 
 ----
@@ -1439,9 +1561,145 @@ function hide_all_external_editors()
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Hide Track DSP Devices for All Tracks",invoke=function() hide_all_external_editors() end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Hide Track DSP Devices for All Tracks",invoke=function() hide_all_external_editors() end}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Hide Track DSP Devices for All Tracks",invoke=function() hide_all_external_editors() end}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Bypass All Devices on Track", invoke=function() effectbypass() end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Enable All Devices on Track", invoke=function() effectenable() end}
+
+
 renoise.tool():add_midi_mapping{name="Global:Paketti:Hide Track DSP Devices for All Tracks",invoke=function() hide_all_external_editors() end}
 
 
+
+---------
+
+
+-- Table to keep track of added menu entries
+local added_menu_entries = {}
+
+-- Global function to launch the applications
+function appSelectionLaunchApp(app_path)
+  local os_name = os.platform()
+  local command
+
+  if os_name == "WINDOWS" then
+    command = 'start "" "' .. app_path .. '"'
+  elseif os_name == "MACINTOSH" then
+    command = 'open -a "' .. app_path .. '"'
+  else
+    command = 'exec "' .. app_path .. '"'
+  end
+
+  os.execute(command)
+  renoise.app():show_status("Launched app " .. app_path:match("([^/\\]+)%.app$"))
+end
+
+-- Function to remove existing menu entries
+function appSelectionRemoveMenuEntries()
+  for _, entry in ipairs(added_menu_entries) do
+    if renoise.tool():has_menu_entry(entry) then
+      renoise.tool():remove_menu_entry(entry)
+    end
+  end
+  -- Clear the tracking table
+  added_menu_entries = {}
+end
+
+-- Function to create menu entries
+function appSelectionCreateMenuEntries()
+  local preferences = renoise.tool().preferences
+  local app_selections = {
+    preferences.AppSelection1.value,
+    preferences.AppSelection2.value,
+    preferences.AppSelection3.value,
+    preferences.AppSelection4.value,
+    preferences.AppSelection5.value,
+    preferences.AppSelection6.value
+  }
+
+  local apps_present = false
+
+  -- Create menu entries for each app selection
+  for i, app_path in ipairs(app_selections) do
+    if app_path ~= "" then
+      apps_present = true
+      local app_name = app_path:match("([^/\\]+)%.app$")
+      local menu_entry_name = "Instrument Box:Paketti..:Launch App..:Launch App " .. i .. " " .. app_name
+      if not renoise.tool():has_menu_entry(menu_entry_name) then
+        renoise.tool():add_menu_entry{
+          name=menu_entry_name,
+          invoke=function() appSelectionLaunchApp(app_path) end
+        }
+        -- Add to tracking table
+        table.insert(added_menu_entries, menu_entry_name)
+      end
+
+      menu_entry_name = "Main Menu:Tools:Paketti..:Launch App..:Launch App " .. i .. " " .. app_name
+      if not renoise.tool():has_menu_entry(menu_entry_name) then
+        renoise.tool():add_menu_entry{
+          name=menu_entry_name,
+          invoke=function() appSelectionLaunchApp(app_path) end
+        }
+        -- Add to tracking table
+        table.insert(added_menu_entries, menu_entry_name)
+      end
+    end
+  end
+
+  -- If no app selections are set, show the app selection dialog
+  if not apps_present then
+    show_app_selection_dialog()
+  end
+
+  -- Add menu entry for configuring app selections
+  local configure_entry_name = "--Instrument Box:Paketti..:Launch App..:Configure Launch App Selection"
+  if not renoise.tool():has_menu_entry(configure_entry_name) then
+    renoise.tool():add_menu_entry{
+      name=configure_entry_name,
+      invoke=show_app_selection_dialog
+    }
+    -- Add to tracking table
+    table.insert(added_menu_entries, configure_entry_name)
+  end
+
+  configure_entry_name = "--Main Menu:Tools:Paketti..:Launch App..:Configure Launch App Selection"
+  if not renoise.tool():has_menu_entry(configure_entry_name) then
+    renoise.tool():add_menu_entry{
+      name=configure_entry_name,
+      invoke=show_app_selection_dialog
+    }
+    -- Add to tracking table
+    table.insert(added_menu_entries, configure_entry_name)
+  end
+end
+
+-- Function to update menu entries
+function appSelectionUpdateMenuEntries()
+  if renoise.song() == nil then return end
+  appSelectionRemoveMenuEntries()
+  appSelectionCreateMenuEntries()
+end
+
+-- Idle notifier function
+local function handle_idle_notifier()
+  if renoise.song() then
+    appSelectionUpdateMenuEntries()
+    -- Remove this notifier to prevent repeated execution
+    renoise.tool().app_idle_observable:remove_notifier(handle_idle_notifier)
+  end
+end
+
+-- Ensure menu entries are created only after renoise.song() is initialized
+local function handle_new_document()
+  if not renoise.tool().app_idle_observable:has_notifier(handle_idle_notifier) then
+    renoise.tool().app_idle_observable:add_notifier(handle_idle_notifier)
+  end
+end
+
+renoise.tool().app_new_document_observable:add_notifier(handle_new_document)
+
+-- Ensure menu entries are created only after renoise.song() is initialized (initial load)
+if not renoise.tool().app_idle_observable:has_notifier(handle_idle_notifier) then
+  renoise.tool().app_idle_observable:add_notifier(handle_idle_notifier)
+end
 
 

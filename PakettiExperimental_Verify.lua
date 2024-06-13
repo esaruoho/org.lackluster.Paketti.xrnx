@@ -1,271 +1,361 @@
--- Function to duplicate the current track and set notes to the selected instrument
-function setToSelectedInstrument_DuplicateTrack()
-  local song = renoise.song()
-  local pattern_index = song.selected_pattern_index
-  local track_index = song.selected_track_index
-  local selected_instrument_index = song.selected_instrument_index
+local vb = renoise.ViewBuilder()
+local midi_input_devices, midi_output_devices, plugin_dropdown_items, available_plugins
+local dialog_content
+local custom_dialog
 
-  -- Insert a new track
-  song:insert_track_at(track_index + 1)
-  song.selected_track_index = track_index + 1
+-- Preferences for storing selected values
+local midi_input_device = {}
+local midi_input_channel = {}
+local midi_output_device = {}
+local midi_output_channel = {}
+local selected_plugin = {}
+local open_external_editor = false
 
-  local new_track = song.tracks[track_index + 1]
-  local old_track = song.tracks[track_index]
-
-  -- Copy the content of the current track to the new track
-  for i = 1, #song.patterns do
-    local old_pattern_track = song.patterns[i].tracks[track_index]
-    local new_pattern_track = song.patterns[i].tracks[track_index + 1]
-
-    for line = 1, #old_pattern_track.lines do
-      new_pattern_track:line(line):copy_from(old_pattern_track:line(line))
-    end
-
-    -- Change pattern data to use the selected instrument
-    for line = 1, #new_pattern_track.lines do
-      for _, note_column in ipairs(new_pattern_track:line(line).note_columns) do
-        if note_column.instrument_value ~= 255 then
-          note_column.instrument_value = selected_instrument_index - 1
-        end
-      end
-    end
+-- Initialize variables when needed
+local function initialize_variables()
+  midi_input_devices = {"<None>"}
+  for _, device in ipairs(renoise.Midi.available_input_devices()) do
+    table.insert(midi_input_devices, device)
   end
 
-  -- Copy Track DSPs and handle Instr. Automation
-  local has_instr_automation = false
-  local old_instr_automation_device = nil
-  for dsp_index = 2, #old_track.devices do
-    local old_device = old_track.devices[dsp_index]
+  midi_output_devices = {"<None>"}
+  for _, device in ipairs(renoise.Midi.available_output_devices()) do
+    table.insert(midi_output_devices, device)
+  end
 
-    if old_device.device_path:find("Instr. Automation") then
-      has_instr_automation = true
-      old_instr_automation_device = old_device
-    else
-      local new_device = new_track:insert_device_at(old_device.device_path, dsp_index)
-      for parameter_index = 1, #old_device.parameters do
-        new_device.parameters[parameter_index].value = old_device.parameters[parameter_index].value
-      end
-      new_device.is_maximized = old_device.is_maximized
+  plugin_dropdown_items = {"<None>"}
+  available_plugins = renoise.song().selected_instrument.plugin_properties.available_plugin_infos
+  for _, plugin_info in ipairs(available_plugins) do
+    if plugin_info.path:find("/AU/") then
+      table.insert(plugin_dropdown_items, "AU: " .. plugin_info.short_name)
+    elseif plugin_info.path:find("/VST/") then
+      table.insert(plugin_dropdown_items, "VST: " .. plugin_info.short_name)
+    elseif plugin_info.path:find("/VST3/") then
+      table.insert(plugin_dropdown_items, "VST3: " .. plugin_info.short_name)
     end
   end
-
-  -- Create a new Instr. Automation device if the original track had one
-  if has_instr_automation then
-    local new_device = new_track:insert_device_at("Audio/Effects/Native/*Instr. Automation", #new_track.devices + 1)
-
-    -- Extract XML from the old device
-    local old_device_xml = old_instr_automation_device.active_preset_data
-    -- Modify the XML to update the instrument references
-    local new_device_xml = old_device_xml:gsub("<instrument>(%d+)</instrument>", function(instr_index)
-      return string.format("<instrument>%d</instrument>", selected_instrument_index - 1)
-    end)
-    -- Apply the modified XML to the new device
-    new_device.active_preset_data = new_device_xml
-    new_device.is_maximized = old_instr_automation_device.is_maximized
+  
+  for i = 1, 16 do
+    midi_input_device[i] = midi_input_devices[1]
+    midi_input_channel[i] = i
+    midi_output_device[i] = midi_output_devices[1]
+    midi_output_channel[i] = i
+    selected_plugin[i] = plugin_dropdown_items[1]
   end
-
-  -- Adjust visibility settings for the new track
-  new_track.visible_note_columns = old_track.visible_note_columns
-  new_track.visible_effect_columns = old_track.visible_effect_columns
-  new_track.volume_column_visible = old_track.volume_column_visible
-  new_track.panning_column_visible = old_track.panning_column_visible
-  new_track.delay_column_visible = old_track.delay_column_visible
-
-  -- Handle automation duplication after fixing XML
-  for i = 1, #song.patterns do
-    local old_pattern_track = song.patterns[i].tracks[track_index]
-    local new_pattern_track = song.patterns[i].tracks[track_index + 1]
-
-    for _, automation in ipairs(old_pattern_track.automation) do
-      local new_automation = new_pattern_track:create_automation(automation.dest_parameter)
-      for _, point in ipairs(automation.points) do
-        new_automation:add_point_at(point.time, point.value)
-      end
-    end
-  end
-
-  -- Select the new track
-  song.selected_track_index = track_index + 1
-
-  -- Ready the new track for transposition (select all notes)
-  Deselect_All()
-  MarkTrackMarkPattern()
 end
 
--- Add menu entry for the function
-renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Duplicate Track, set to Selected Instrument",invoke=function() setToSelectedInstrument_DuplicateTrack() end}
-renoise.tool():add_menu_entry{name="--Mixer:Paketti..:Duplicate Track, set to Selected Instrument",invoke=function() setToSelectedInstrument_DuplicateTrack() end}
+local note_columns_switch, effect_columns_switch, delay_column_switch, volume_column_switch, panning_column_switch, sample_effects_column_switch, collapsed_switch, incoming_audio_switch, populate_sends_switch, external_editor_switch
 
--- Add keybinding for the function
-renoise.tool():add_keybinding{name="Global:Paketti..:Duplicate Track, set to Selected Instrument",invoke=function() setToSelectedInstrument_DuplicateTrack() end}
+local function simplifiedSendCreationNaming()
+  local send_tracks = {}
+  local count = 0
 
+  -- Collect all send tracks
+  for i = 1, #renoise.song().tracks do
+    if renoise.song().tracks[i].type == renoise.Track.TRACK_TYPE_SEND then
+      -- Store the index and name of each send track
+      table.insert(send_tracks, {index = count, name = renoise.song().tracks[i].name, track_number = i - 1})
+      count = count + 1
+    end
+  end
 
+  -- Create the appropriate number of #Send devices
+  for i = 1, count do
+    loadnative("Audio/Effects/Native/#Send")
+  end
 
+  local sendcount = 2  -- Start after existing devices
 
+  -- Assign parameters and names in correct order
+  for i = 1, count do
+    local send_device = renoise.song().selected_track.devices[sendcount]
+    local send_track = send_tracks[i]
+    send_device.parameters[3].value = send_track.index
+    send_device.display_name = send_track.name
+    sendcount = sendcount + 1
+  end
+end
 
+local function MidiInitChannelTrackInstrument(track_index)
+  local midi_in_device = midi_input_device[track_index]
+  local midi_in_channel = midi_input_channel[track_index]
+  local midi_out_device = midi_output_device[track_index]
+  local midi_out_channel = midi_output_channel[track_index]
+  local plugin = selected_plugin[track_index]
+  local note_columns = note_columns_switch.value
+  local effect_columns = effect_columns_switch.value
+  local delay_column = (delay_column_switch.value == 2)
+  local volume_column = (volume_column_switch.value == 2)
+  local panning_column = (panning_column_switch.value == 2)
+  local sample_effects_column = (sample_effects_column_switch.value == 2)
+  local collapsed = (collapsed_switch.value == 2)
+  local incoming_audio = (incoming_audio_switch.value == 2)
+  local populate_sends = (populate_sends_switch.value == 2)
+  local open_ext_editor = (external_editor_switch.value == 2)
 
+  -- Create a new track
+  renoise.song():insert_track_at(track_index)
+  local new_track = renoise.song():track(track_index)
+  new_track.name = "CH" .. string.format("%02d", midi_in_channel) .. " " .. midi_in_device
+  renoise.song().selected_track_index = track_index
 
+  -- Set track column settings
+  new_track.visible_note_columns = note_columns
+  new_track.visible_effect_columns = effect_columns
+  new_track.delay_column_visible = delay_column
+  new_track.volume_column_visible = volume_column
+  new_track.panning_column_visible = panning_column
+  new_track.sample_effects_column_visible = sample_effects_column
+  new_track.collapsed = collapsed
 
--- Function to duplicate the current track and instrument, then copy notes and prepare the new track for editing
-function duplicateTrackDuplicateInstrument()
-  local song = renoise.song()
-  local pattern_index = song.selected_pattern_index
-  local track_index = song.selected_track_index
+  -- Populate send devices
+  if populate_sends then
+    simplifiedSendCreationNaming()
+  end
 
-  -- Detect the instrument used in the current track and select it
-  local found_instrument_index = nil
-  for _, line in ipairs(song.patterns[pattern_index].tracks[track_index].lines) do
-    for _, note_column in ipairs(line.note_columns) do
-      if note_column.instrument_value ~= 255 then
-        found_instrument_index = note_column.instrument_value + 1
+  -- Load *Line Input device if incoming audio is set to ON
+  local checkline = #new_track.devices + 1
+  if incoming_audio then
+    loadnative("Audio/Effects/Native/#Line Input", checkline)
+    checkline = checkline + 1
+  end
+
+  -- Create a new instrument
+  renoise.song():insert_instrument_at(track_index)
+  local new_instrument = renoise.song():instrument(track_index)
+  new_instrument.name = "CH" .. string.format("%02d", midi_in_channel) .. " " .. midi_in_device
+
+  -- Set MIDI input properties for the new instrument
+  new_instrument.midi_input_properties.device_name = midi_in_device
+  new_instrument.midi_input_properties.channel = midi_in_channel
+  new_instrument.midi_input_properties.assigned_track = track_index
+
+  -- Set the output device for the new track
+  if midi_out_device ~= "<None>" then
+    new_instrument.midi_output_properties.device_name = midi_out_device
+    new_instrument.midi_output_properties.channel = midi_out_channel
+  end
+
+  -- Load the selected plugin for the new instrument
+  if plugin and plugin ~= "<None>" then
+    local plugin_path
+    for _, plugin_info in ipairs(available_plugins) do
+      if plugin_info.short_name == plugin:sub(5) then
+        plugin_path = plugin_info.path
         break
       end
     end
-    if found_instrument_index then break end
+    if plugin_path then
+      new_instrument.plugin_properties:load_plugin(plugin_path)
+      -- Rename the instrument
+      new_instrument.name = "CH" .. string.format("%02d", midi_in_channel) .. " " .. midi_in_device .. " (" .. plugin:sub(5) .. ")"
+
+      -- Select the instrument to ensure devices are mapped correctly
+      renoise.song().selected_instrument_index = track_index
+      
+      -- Add *Instr. Automation and *Instr. MIDI Control to the track immediately after the plugin is loaded
+      local instr_automation_device = loadnative("Audio/Effects/Native/*Instr. Automation", checkline)
+      if instr_automation_device then
+        instr_automation_device.parameters[1].value = track_index - 1
+        checkline = checkline + 1
+      end
+
+      local instr_midi_control_device = loadnative("Audio/Effects/Native/*Instr. MIDI Control", checkline)
+      if instr_midi_control_device then
+        instr_midi_control_device.parameters[1].value = track_index - 1
+        checkline = checkline + 1
+      end
+
+      -- Open external editor if the option is enabled
+      if open_ext_editor and new_instrument.plugin_properties.plugin_device then
+        new_instrument.plugin_properties.plugin_device.external_editor_visible = true
+      end
+    end
   end
+end
 
-  if found_instrument_index then
-    song.selected_instrument_index = found_instrument_index
-  else
-    song.selected_instrument_index = 1
+local function on_ok_button_pressed(dialog_content)
+  for i = 1, 16 do
+    MidiInitChannelTrackInstrument(i)
   end
+  renoise.song().selected_track_index = 1 -- Select the first track
+  custom_dialog:close()
+end
 
-  local instrument_index = song.selected_instrument_index
-  local external_editor_open = false
+local function on_midi_input_switch_changed(value)
+  for i = 1, 16 do
+    midi_input_device[i] = midi_input_devices[value]
+  end
+  -- Update the GUI
+  for i = 1, 16 do
+    local popup = vb.views["midi_input_popup_" .. i]
+    if popup then
+      popup.value = value
+    end
+  end
+end
 
-  -- Check if the external editor is open and close it if necessary
-  if song.instruments[instrument_index].plugin_properties.plugin_device then
-    external_editor_open = song.instruments[instrument_index].plugin_properties.plugin_device.external_editor_visible
-    if external_editor_open then
-      song.instruments[instrument_index].plugin_properties.plugin_device.external_editor_visible = false
+local function on_midi_output_switch_changed(value)
+  for i = 1, 16 do
+    midi_output_device[i] = midi_output_devices[value]
+  end
+  -- Update the GUI
+  for i = 1, 16 do
+    local popup = vb.views["midi_output_popup_" .. i]
+    if popup then
+      popup.value = value
+    end
+  end
+end
+
+-- Randomize plugin selection
+local function randomize_plugin_selection(plugin_type)
+  local plugins = {}
+  for _, plugin_info in ipairs(available_plugins) do
+    if plugin_info.path:find(plugin_type) then
+      table.insert(plugins, plugin_info.short_name)
     end
   end
 
-  -- Duplicate the current instrument
-  song:insert_instrument_at(instrument_index + 1)
-  local new_instrument_index = instrument_index + 1
-  song.instruments[new_instrument_index]:copy_from(song.instruments[instrument_index])
-
-  -- Handle phrases
-  if #song.instruments[instrument_index].phrases > 0 then
-    for phrase_index = 1, #song.instruments[instrument_index].phrases do
-      song.instruments[new_instrument_index]:insert_phrase_at(phrase_index)
-      song.instruments[new_instrument_index].phrases[phrase_index]:copy_from(song.instruments[instrument_index].phrases[phrase_index])
-    end
-  end
-
-  -- Insert a new track
-  song:insert_track_at(track_index + 1)
-  song.selected_track_index = track_index + 1
-
-  local new_track = song.tracks[track_index + 1]
-  local old_track = song.tracks[track_index]
-
-  -- Copy the content of the current track to the new track
-  for i = 1, #song.patterns do
-    local old_pattern_track = song.patterns[i].tracks[track_index]
-    local new_pattern_track = song.patterns[i].tracks[track_index + 1]
-
-    for line = 1, #old_pattern_track.lines do
-      new_pattern_track:line(line):copy_from(old_pattern_track:line(line))
-    end
-
-    -- Change pattern data to use the new instrument
-    for line = 1, #new_pattern_track.lines do
-      for _, note_column in ipairs(new_pattern_track:line(line).note_columns) do
-        if note_column.instrument_value == instrument_index - 1 then
-          note_column.instrument_value = new_instrument_index - 1
+  for i = 1, 16 do
+    if #plugins > 0 then
+      local random_plugin = plugins[math.random(#plugins)]
+      for j, item in ipairs(plugin_dropdown_items) do
+        if item:find(plugin_type:sub(2, -2)) and item:find(random_plugin) then
+          selected_plugin[i] = item
+          vb.views["plugin_popup_" .. i].value = j
+          break
         end
       end
     end
   end
+end
 
-  -- Copy Track DSPs and handle Instr. Automation
-  local has_instr_automation = false
-  local old_instr_automation_device = nil
-  for dsp_index = 2, #old_track.devices do
-    local old_device = old_track.devices[dsp_index]
+local function randomize_au_plugins()
+  randomize_plugin_selection("/AU/")
+end
 
-    if old_device.device_path:find("Instr. Automation") then
-      has_instr_automation = true
-      old_instr_automation_device = old_device
-    else
-      local new_device = new_track:insert_device_at(old_device.device_path, dsp_index)
-      for parameter_index = 1, #old_device.parameters do
-        new_device.parameters[parameter_index].value = old_device.parameters[parameter_index].value
-      end
-      new_device.is_maximized = old_device.is_maximized
-    end
-  end
+local function randomize_vst_plugins()
+  randomize_plugin_selection("/VST/")
+end
 
-  -- Create a new Instr. Automation device if the original track had one
-  if has_instr_automation then
-    -- Select the new instrument
-    song.selected_instrument_index = new_instrument_index
+local function randomize_vst3_plugins()
+  randomize_plugin_selection("/VST3/")
+end
 
-    local new_device = new_track:insert_device_at("Audio/Effects/Native/*Instr. Automation", #new_track.devices + 1)
-
-    -- Extract XML from the old device
-    local old_device_xml = old_instr_automation_device.active_preset_data
-    -- Modify the XML to update the instrument references
-    local new_device_xml = old_device_xml:gsub("<instrument>(%d+)</instrument>", function(instr_index)
-      return string.format("<instrument>%d</instrument>", new_instrument_index - 1)
-    end)
-    -- Apply the modified XML to the new device
-    new_device.active_preset_data = new_device_xml
-    new_device.is_maximized = old_instr_automation_device.is_maximized
-  end
-
-  -- Adjust visibility settings for the new track
-  new_track.visible_note_columns = old_track.visible_note_columns
-  new_track.visible_effect_columns = old_track.visible_effect_columns
-  new_track.volume_column_visible = old_track.volume_column_visible
-  new_track.panning_column_visible = old_track.panning_column_visible
-  new_track.delay_column_visible = old_track.delay_column_visible
-
-  -- Handle automation duplication after fixing XML
-  for i = 1, #song.patterns do
-    local old_pattern_track = song.patterns[i].tracks[track_index]
-    local new_pattern_track = song.patterns[i].tracks[track_index + 1]
-
-    for _, automation in ipairs(old_pattern_track.automation) do
-      local new_automation = new_pattern_track:create_automation(automation.dest_parameter)
-      for _, point in ipairs(automation.points) do
-        new_automation:add_point_at(point.time, point.value)
-      end
-    end
-  end
-
-  -- Select the new instrument
-  song.selected_instrument_index = new_instrument_index
-
-  -- Select the new track
-  song.selected_track_index = track_index + 1
-
-  -- Ready the new track for transposition (select all notes)
-  Deselect_All()
-  MarkTrackMarkPattern()
-
-  -- Reopen the external editor if it was open
-  if external_editor_open then
-    song.instruments[new_instrument_index].plugin_properties.plugin_device.external_editor_visible = true
+local function clear_plugin_selection()
+  for i = 1, 16 do
+    selected_plugin[i] = plugin_dropdown_items[1]
+    vb.views["plugin_popup_" .. i].value = 1
   end
 end
 
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Duplicate Track Duplicate Instrument",invoke=function() duplicateTrackDuplicateInstrument() end}
-renoise.tool():add_menu_entry{name="Mixer:Paketti..:Duplicate Track Duplicate Instrument",invoke=function() duplicateTrackDuplicateInstrument() end}
-renoise.tool():add_keybinding{name="Global:Paketti..:Duplicate Track Duplicate Instrument",invoke=function() duplicateTrackDuplicateInstrument() end}
+-- Function to show the custom dialog
+function generaMIDISetupShowCustomDialog()
+  -- Initialize variables
+  initialize_variables()
+
+  -- Clear the ViewBuilder to prevent duplicate view IDs
+  vb = renoise.ViewBuilder()
+
+  -- Initialize the GUI elements
+  local rows = {}
+  for i = 1, 16 do
+    rows[i] = vb:horizontal_aligner{
+      mode = "right",
+      vb:text{text = "Track " .. i .. ":", width = 100},
+      vb:popup{items = midi_input_devices, width = 200, notifier = function(value) midi_input_device[i] = midi_input_devices[value] end, id = "midi_input_popup_" .. i},
+      vb:popup{items = {"1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16"}, width = 50, notifier = function(value) midi_input_channel[i] = tonumber(value) end, value = i},
+      vb:popup{items = midi_output_devices, width = 200, notifier = function(value) midi_output_device[i] = midi_output_devices[value] end, id = "midi_output_popup_" .. i},
+      vb:popup{items = {"1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16"}, width = 50, notifier = function(value) midi_output_channel[i] = tonumber(value) end, value = i},
+      vb:popup{items = plugin_dropdown_items, width = 200, notifier = function(value) selected_plugin[i] = plugin_dropdown_items[value] end, id = "plugin_popup_" .. i}
+    }
+  end
+
+  note_columns_switch = vb:switch{items = {"1","2","3","4","5","6","7","8","9","10","11","12"}, width = 300, value = 1}
+  effect_columns_switch = vb:switch{items = {"1","2","3","4","5","6","7","8"}, width = 300, value = 1}
+  delay_column_switch = vb:switch{items = {"Off","On"}, width = 300, value = 1}
+  volume_column_switch = vb:switch{items = {"Off","On"}, width = 300, value = 1}
+  panning_column_switch = vb:switch{items = {"Off","On"}, width = 300, value = 1}
+  sample_effects_column_switch = vb:switch{items = {"Off","On"}, width = 300, value = 1}
+  collapsed_switch = vb:switch{items = {"Not Collapsed","Collapsed"}, width = 300, value = 1}
+  incoming_audio_switch = vb:switch{items = {"Off","On"}, width = 300, value = 1}
+  populate_sends_switch = vb:switch{items = {"Off","On"}, width = 300, value = 1}
+  external_editor_switch = vb:switch{items = {"Off","On"}, width = 300, value = 1}
+
+  dialog_content = vb:column{
+    margin = 10, spacing = 10,
+    vb:horizontal_aligner{mode = "right", vb:row{
+      vb:text{text = "MIDI Input Device:"},
+      vb:switch{items = midi_input_devices, value = 1, width = 700, notifier = on_midi_input_switch_changed}
+    }},
+    vb:horizontal_aligner{mode = "right", vb:row{
+      vb:text{text = "MIDI Output Device:"},
+      vb:switch{items = midi_output_devices, value = 1, width = 700, notifier = on_midi_output_switch_changed}
+    }},
+    vb:row{
+      vb:button{text = "Randomize AU Plugin Selection", width = 200, notifier = randomize_au_plugins},
+      vb:button{text = "Randomize VST Plugin Selection", width = 200, notifier = randomize_vst_plugins},
+      vb:button{text = "Randomize VST3 Plugin Selection", width = 200, notifier = randomize_vst3_plugins},
+      vb:button{text = "Clear Plugin Selection", width = 200, notifier = clear_plugin_selection}
+    },
+    vb:column(rows),
+    vb:horizontal_aligner{mode = "right", vb:row{vb:text{text = "Note Columns:"}, note_columns_switch}},
+    vb:horizontal_aligner{mode = "right", vb:row{vb:text{text = "Effect Columns:"}, effect_columns_switch}},
+    vb:horizontal_aligner{mode = "right", vb:row{vb:text{text = "Delay Column:"}, delay_column_switch}},
+    vb:horizontal_aligner{mode = "right", vb:row{vb:text{text = "Volume Column:"}, volume_column_switch}},
+    vb:horizontal_aligner{mode = "right", vb:row{vb:text{text = "Panning Column:"}, panning_column_switch}},
+    vb:horizontal_aligner{mode = "right", vb:row{vb:text{text = "Sample Effects Column:"}, sample_effects_column_switch}},
+    vb:horizontal_aligner{mode = "right", vb:row{vb:text{text = "Track State:"}, collapsed_switch}},
+    vb:horizontal_aligner{mode = "right", vb:row{vb:text{text = "Incoming Audio:"}, incoming_audio_switch}},
+    vb:horizontal_aligner{mode = "right", vb:row{vb:text{text = "Populate Track with Sends:"}, populate_sends_switch}},
+    vb:horizontal_aligner{mode = "right", vb:row{vb:text{text = "Open External Editor:"}, external_editor_switch}},
+    vb:row{
+      vb:button{text = "OK", width = 100, notifier = function() on_ok_button_pressed(dialog_content) end},
+      vb:button{text = "Close", width = 100, notifier = function() custom_dialog:close() end}
+    }
+  }
+
+  custom_dialog = renoise.app():show_custom_dialog("Paketti MIDI Populator", dialog_content)
+end
+
+-- Add menu entry to show the custom dialog
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Paketti MIDI Populator",invoke=generaMIDISetupShowCustomDialog}
 
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-----------
 function hackysack()
-
-
+renoise.song().selected_instrument.name="IAC Driver (Bus 1) Channel 01"
+renoise.song().selected_instrument.midi_input_properties.device_name="IAC Driver (Bus 1)"
 renoise.song().selected_instrument.midi_input_properties.channel=1
 renoise.song().selected_instrument.midi_input_properties.assigned_track=1
-renoise.song().selected_instrument.midi_input_properties.device_name=1
+
+renoise.song().selected_instrument.midi_output_properties.device_name=blaa
+renoise.song().selected_instrument.midi_output_properties.channel=blee
+
 end
 
 
@@ -376,44 +466,7 @@ end
 renoise.tool():add_keybinding{name="Global:Paketti:Loop Block Backwards", invoke=function() loopblockback() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Loop Block Forwards", invoke=function() loopblockforward() end}
 
-function midiprogram(change)  
-local midi=renoise.song().selected_instrument.midi_output_properties  
-local currentprg=midi.program  
- currentprg = math.max(1, math.min(128, currentprg + change))  
- rprint (currentprg)  
-renoise.song().selected_instrument.midi_output_properties.program = currentprg  
-renoise.song().transport:panic()  
-end  
-  
--->>> oprint (renoise.song().selected_instrument.midi_output_properties)  
---class: InstrumentMidiOutputProperties  
- --properties:  
- --bank  
- --bank_observable  
- --channel  
- --channel_observable  
- --delay  
- --delay_observable  
- --device_name  
- --device_name_observable  
- --duration  
- --duration_observable  
- --instrument_type  
- --instrument_type_observable  
- --program  
- --program_observable  
- --transpose  
- --transpose_observable  
-renoise.tool():add_keybinding{name="Global:Paketti:Next/Prev Midi Program +1", invoke=function() midiprogram(1) end}  
-renoise.tool():add_keybinding{name="Global:Paketti:Next/Prev Midi Program -1", invoke=function() midiprogram(-1) end}  
-
-renoise.tool():add_keybinding{name="Global:Track Devices:Load TOGU Audioline Reverb", invoke=function() loadvst("Audio/Effects/AU/aumf:676v:TOGU") end}
-renoise.tool():add_keybinding{name="Global:Track Devices:Load TOGU Audioline Chorus", invoke=function() loadvst("Audio/Effects/AU/aufx:Chor:Togu") end}
-renoise.tool():add_keybinding{name="Global:Track Devices:Load TOGU Audioline Ultra Simple EQ", invoke=function() loadvst("Audio/Effects/AU/aufx:TILT:Togu") end}
-renoise.tool():add_keybinding{name="Global:Track Devices:Load TOGU Audioline Dub-Delay I", invoke=function() loadvst("Audio/Effects/AU/aumf:aumf:Togu") end}
-renoise.tool():add_keybinding{name="Global:Track Devices:Load TOGU Audioline Dub-Delay II", invoke=function() loadvst("Audio/Effects/AU/aumf:dub2:Togu") end}
-renoise.tool():add_keybinding{name="Global:Track Devices:Load TOGU Audioline Dub-Delay III",invoke=function() loadvst("Audio/Effects/AU/aumf:xg70:TOGU") end}
-
+------------
 function start_stop_sample_and_loop_oh_my()
 local w=renoise.app().window
 local s=renoise.song()
@@ -610,16 +663,6 @@ renoise.song().patterns[renoise.song().selected_pattern_index].tracks[renoise.so
 end
 end
 
---This makes sure that when you start Renoise, it switches to preset#1. 
---You will have to actually feed information to Config.XML to get to the specified settings. The settings go like this
---Upper Layer = visible.
---Disk Browser = visible.
---Disk Browser = set to Sample. 
---Cursor Focus is on Disk Browser
---
---Also, this segment makes sure that when you load a sample, and are in Disk Browser Expanded-mode, you are transported
---to the Sample Editor. It's actually fairly buggy so either it works or it doesn't, sometimes it does, mostly it doesn't.
---This is all heavily work in progress.
 local s = nil
 
 function startup_()
@@ -630,7 +673,7 @@ function startup_()
     if renoise.app().window.active_middle_frame==0 and s.selected_sample.sample_buffer_observable:has_notifier(sample_loaded_change_to_sample_editor) then 
     s.selected_sample.sample_buffer_observable:remove_notifier(sample_loaded_change_to_sample_editor)
     else
-  --jep  --s.selected_sample.sample_buffer_observable:add_notifier(sample_loaded_change_to_sample_editor)
+  --s.selected_sample.sample_buffer_observable:add_notifier(sample_loaded_change_to_sample_editor)
 
     return
     end

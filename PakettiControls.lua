@@ -244,8 +244,8 @@ end
 renoise.song().selected_track_index=previousTrack
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Select Next Track", invoke=function() selectNextTrack() end}
-renoise.tool():add_keybinding{name="Global:Paketti:Select Previous Track", invoke=function() selectPreviousTrack() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Select Track (Next)", invoke=function() selectNextTrack() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Select Track (Previous)", invoke=function() selectPreviousTrack() end}
 
 
 function createNewTrack()
@@ -254,6 +254,77 @@ end
 renoise.tool():add_keybinding{name="Global:Paketti:Insert Track (2nd)", invoke=function() createNewTrack() end}
 
 
+--------
+-- Function to clone the currently selected pattern sequence row
+function clone_current_sequence()
+  -- Access the Renoise song
+  local song = renoise.song()
+  
+  -- Retrieve the currently selected sequence index
+  local current_sequence_pos = song.selected_sequence_index
+  -- Get the total number of sequences
+  local total_sequences = #song.sequencer.pattern_sequence
+
+  -- Debug information
+  print("Current Sequence Index:", current_sequence_pos)
+  print("Total Sequences:", total_sequences)
+
+  -- Clone the sequence range, appending it right after the current position
+  if current_sequence_pos <= total_sequences then
+    song.sequencer:clone_range(current_sequence_pos, current_sequence_pos)
+    -- Debug information
+    print("Cloned Sequence Index:", current_sequence_pos)
+    -- Select the newly created sequence
+    song.selected_sequence_index = current_sequence_pos + 1
+  else
+    renoise.app():show_warning("Cannot clone the sequence: The current sequence is the last one.")
+  end
+end
+
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Clone Current Sequence",invoke=clone_current_sequence}
+renoise.tool():add_menu_entry{name="Pattern Sequencer:Paketti..:Clone Current Sequence",invoke=clone_current_sequence}
+renoise.tool():add_menu_entry{name="Pattern Matrix:Paketti..:Clone Current Sequence",invoke=clone_current_sequence}
+renoise.tool():add_keybinding{name="Global:Tools:Clone Current Sequence",invoke=clone_current_sequence}
+renoise.tool():add_midi_mapping{name="Global:Tools:Clone Current Sequence",invoke=clone_current_sequence}
+
+---------
+-- Define a table with the middle frame constants
+local middle_frames = {
+  renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_PHRASE_EDITOR,
+  renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_KEYZONES,
+  renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR,
+  renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_MODULATION,
+  renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EFFECTS,
+  renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_PLUGIN_EDITOR,
+  renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_MIDI_EDITOR
+}
+
+-- Function to switch the middle frame based on the tab number
+function sampleEditorTabSwitcher(tabNumber)
+  if tabNumber >= 1 and tabNumber <= #middle_frames then
+    renoise.app().window.active_middle_frame = middle_frames[tabNumber]
+  else
+    renoise.app():show_status("Invalid tab number: " .. tostring(tabNumber))
+  end
+end
+
+-- Function to cycle through middle frames based on MIDI input value (0-127)
+function cycleMiddleFrames(midiValue)
+  local index = math.floor(midiValue / 127 * (#middle_frames - 1)) + 1
+  renoise.app().window.active_middle_frame = middle_frames[index]
+end
+
+-- Add keybindings for each tab switch
+renoise.tool():add_keybinding{name="Global:Paketti:Sample Editor Tab Switcher (01 Phrases)",invoke=function() sampleEditorTabSwitcher(1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Sample Editor Tab Switcher (02 Keyzones)",invoke=function() sampleEditorTabSwitcher(2) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Sample Editor Tab Switcher (03 Waveform)",invoke=function() sampleEditorTabSwitcher(3) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Sample Editor Tab Switcher (04 Modulation)",invoke=function() sampleEditorTabSwitcher(4) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Sample Editor Tab Switcher (05 Effects)",invoke=function() sampleEditorTabSwitcher(5) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Sample Editor Tab Switcher (06 Plugin Editor)",invoke=function() sampleEditorTabSwitcher(6) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Sample Editor Tab Switcher (07 Midi Editor)",invoke=function() sampleEditorTabSwitcher(7) end}
+
+-- Add MIDI mapping to cycle through middle frames
+renoise.tool():add_midi_mapping{name="Global:Paketti:Cycle Sample Editor Tabs",invoke=function(midiMessage) cycleMiddleFrames(midiMessage.int_value) end}
 
 
 

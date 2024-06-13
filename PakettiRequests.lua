@@ -869,8 +869,8 @@ function selectPreviousGroupTrack()
     end
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Select Group Next", invoke=function() selectNextGroupTrack() end}
-renoise.tool():add_keybinding{name="Global:Paketti:Select Group Previous", invoke=function() selectPreviousGroupTrack() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Select Group (Next)", invoke=function() selectNextGroupTrack() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Select Group (Previous)", invoke=function() selectPreviousGroupTrack() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Delete / Clear / Wipe Entire Row", invoke=function() renoise.song().selected_line:clear() end}
 -----
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Set Selected Instrument Velocity Tracking Off",invoke=function() selectedInstrumentVelocityTracking(0) end}
@@ -1243,10 +1243,10 @@ function selectPreviousFXGroup()
 end
 
 -- Adding keybindings for next and previous mod and FX groups
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mod Group Next",invoke=function() selectNextModGroup() end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mod Group Previous",invoke=function() selectPreviousModGroup() end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample FX Group Next",invoke=function() selectNextFXGroup() end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample FX Group Previous",invoke=function() selectPreviousFXGroup() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mod Group (Next)",invoke=function() selectNextModGroup() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mod Group (Previous)",invoke=function() selectPreviousModGroup() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample FX Group (Next)",invoke=function() selectNextFXGroup() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample FX Group (Previous)",invoke=function() selectPreviousFXGroup() end}
 
 
 -- Function to assign a modulation set to all samples based on a given index
@@ -1362,10 +1362,10 @@ function selectedInstrumentPreviousFXGroup()
 end
 
 -- Adding keybindings for next and previous mod and FX groups
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Mod Group Next",invoke=function() selectedInstrumentNextModGroup() end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Mod Group Previous",invoke=function() selectedInstrumentPreviousModGroup() end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument FX Group Next",invoke=function() selectedInstrumentNextFXGroup() end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument FX Group Previous",invoke=function() selectedInstrumentPreviousFXGroup() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Mod Group (Next)",invoke=function() selectedInstrumentNextModGroup() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Mod Group (Previous)",invoke=function() selectedInstrumentPreviousModGroup() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument FX Group (Next)",invoke=function() selectedInstrumentNextFXGroup() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument FX Group (Previous)",invoke=function() selectedInstrumentPreviousFXGroup() end}
 
 
 ---
@@ -1883,5 +1883,317 @@ end
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Convert Mono to Stereo",invoke=convert_mono_to_stereo}
 renoise.tool():add_keybinding{name="Sample Editor:Paketti:Convert Mono to Stereo",invoke=convert_mono_to_stereo}
 renoise.tool():add_midi_mapping{name="Sample Editor:Paketti:Convert Mono to Stereo",invoke=convert_mono_to_stereo}
+
+-----------
+
+-- Function to duplicate the current track and set notes to the selected instrument
+function setToSelectedInstrument_DuplicateTrack()
+  local song = renoise.song()
+  local pattern_index = song.selected_pattern_index
+  local track_index = song.selected_track_index
+  local selected_instrument_index = song.selected_instrument_index
+
+  -- Insert a new track
+  song:insert_track_at(track_index + 1)
+  song.selected_track_index = track_index + 1
+
+  local new_track = song.tracks[track_index + 1]
+  local old_track = song.tracks[track_index]
+
+  -- Copy the content of the current track to the new track
+  for i = 1, #song.patterns do
+    local old_pattern_track = song.patterns[i].tracks[track_index]
+    local new_pattern_track = song.patterns[i].tracks[track_index + 1]
+
+    for line = 1, #old_pattern_track.lines do
+      new_pattern_track:line(line):copy_from(old_pattern_track:line(line))
+    end
+
+    -- Change pattern data to use the selected instrument
+    for line = 1, #new_pattern_track.lines do
+      for _, note_column in ipairs(new_pattern_track:line(line).note_columns) do
+        if note_column.instrument_value ~= 255 then
+          note_column.instrument_value = selected_instrument_index - 1
+        end
+      end
+    end
+  end
+
+  -- Copy Track DSPs and handle Instr. Automation
+  local has_instr_automation = false
+  local old_instr_automation_device = nil
+  for dsp_index = 2, #old_track.devices do
+    local old_device = old_track.devices[dsp_index]
+
+    if old_device.device_path:find("Instr. Automation") then
+      has_instr_automation = true
+      old_instr_automation_device = old_device
+    else
+      local new_device = new_track:insert_device_at(old_device.device_path, dsp_index)
+      for parameter_index = 1, #old_device.parameters do
+        new_device.parameters[parameter_index].value = old_device.parameters[parameter_index].value
+      end
+      new_device.is_maximized = old_device.is_maximized
+    end
+  end
+
+  -- Create a new Instr. Automation device if the original track had one
+  if has_instr_automation then
+    local new_device = new_track:insert_device_at("Audio/Effects/Native/*Instr. Automation", #new_track.devices + 1)
+
+    -- Extract XML from the old device
+    local old_device_xml = old_instr_automation_device.active_preset_data
+    -- Modify the XML to update the instrument references
+    local new_device_xml = old_device_xml:gsub("<instrument>(%d+)</instrument>", function(instr_index)
+      return string.format("<instrument>%d</instrument>", selected_instrument_index - 1)
+    end)
+    -- Apply the modified XML to the new device
+    new_device.active_preset_data = new_device_xml
+    new_device.is_maximized = old_instr_automation_device.is_maximized
+  end
+
+  -- Adjust visibility settings for the new track
+  new_track.visible_note_columns = old_track.visible_note_columns
+  new_track.visible_effect_columns = old_track.visible_effect_columns
+  new_track.volume_column_visible = old_track.volume_column_visible
+  new_track.panning_column_visible = old_track.panning_column_visible
+  new_track.delay_column_visible = old_track.delay_column_visible
+
+  -- Handle automation duplication after fixing XML
+  for i = 1, #song.patterns do
+    local old_pattern_track = song.patterns[i].tracks[track_index]
+    local new_pattern_track = song.patterns[i].tracks[track_index + 1]
+
+    for _, automation in ipairs(old_pattern_track.automation) do
+      local new_automation = new_pattern_track:create_automation(automation.dest_parameter)
+      for _, point in ipairs(automation.points) do
+        new_automation:add_point_at(point.time, point.value)
+      end
+    end
+  end
+
+  -- Select the new track
+  song.selected_track_index = track_index + 1
+
+  -- Ready the new track for transposition (select all notes)
+  Deselect_All()
+  MarkTrackMarkPattern()
+end
+
+-- Add menu entry for the function
+renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Duplicate Track, set to Selected Instrument",invoke=function() setToSelectedInstrument_DuplicateTrack() end}
+renoise.tool():add_menu_entry{name="--Mixer:Paketti..:Duplicate Track, set to Selected Instrument",invoke=function() setToSelectedInstrument_DuplicateTrack() end}
+
+-- Add keybinding for the function
+renoise.tool():add_keybinding{name="Global:Paketti..:Duplicate Track, set to Selected Instrument",invoke=function() setToSelectedInstrument_DuplicateTrack() end}
+
+----------
+
+
+-- Function to duplicate the current track and instrument, then copy notes and prepare the new track for editing
+function duplicateTrackDuplicateInstrument()
+  local song = renoise.song()
+  local pattern_index = song.selected_pattern_index
+  local track_index = song.selected_track_index
+
+  -- Detect the instrument used in the current track and select it
+  local found_instrument_index = nil
+  for _, line in ipairs(song.patterns[pattern_index].tracks[track_index].lines) do
+    for _, note_column in ipairs(line.note_columns) do
+      if note_column.instrument_value ~= 255 then
+        found_instrument_index = note_column.instrument_value + 1
+        break
+      end
+    end
+    if found_instrument_index then break end
+  end
+
+  if found_instrument_index then
+    song.selected_instrument_index = found_instrument_index
+  else
+    song.selected_instrument_index = 1
+  end
+
+  local instrument_index = song.selected_instrument_index
+  local external_editor_open = false
+
+  -- Check if the external editor is open and close it if necessary
+  if song.instruments[instrument_index].plugin_properties.plugin_device then
+    external_editor_open = song.instruments[instrument_index].plugin_properties.plugin_device.external_editor_visible
+    if external_editor_open then
+      song.instruments[instrument_index].plugin_properties.plugin_device.external_editor_visible = false
+    end
+  end
+
+  -- Duplicate the current instrument
+  song:insert_instrument_at(instrument_index + 1)
+  local new_instrument_index = instrument_index + 1
+  song.instruments[new_instrument_index]:copy_from(song.instruments[instrument_index])
+
+  -- Handle phrases
+  if #song.instruments[instrument_index].phrases > 0 then
+    for phrase_index = 1, #song.instruments[instrument_index].phrases do
+      song.instruments[new_instrument_index]:insert_phrase_at(phrase_index)
+      song.instruments[new_instrument_index].phrases[phrase_index]:copy_from(song.instruments[instrument_index].phrases[phrase_index])
+    end
+  end
+
+  -- Insert a new track
+  song:insert_track_at(track_index + 1)
+  song.selected_track_index = track_index + 1
+
+  local new_track = song.tracks[track_index + 1]
+  local old_track = song.tracks[track_index]
+
+  -- Copy the content of the current track to the new track
+  for i = 1, #song.patterns do
+    local old_pattern_track = song.patterns[i].tracks[track_index]
+    local new_pattern_track = song.patterns[i].tracks[track_index + 1]
+
+    for line = 1, #old_pattern_track.lines do
+      new_pattern_track:line(line):copy_from(old_pattern_track:line(line))
+    end
+
+    -- Change pattern data to use the new instrument
+    for line = 1, #new_pattern_track.lines do
+      for _, note_column in ipairs(new_pattern_track:line(line).note_columns) do
+        if note_column.instrument_value == instrument_index - 1 then
+          note_column.instrument_value = new_instrument_index - 1
+        end
+      end
+    end
+  end
+
+  -- Copy Track DSPs and handle Instr. Automation
+  local has_instr_automation = false
+  local old_instr_automation_device = nil
+  for dsp_index = 2, #old_track.devices do
+    local old_device = old_track.devices[dsp_index]
+
+    if old_device.device_path:find("Instr. Automation") then
+      has_instr_automation = true
+      old_instr_automation_device = old_device
+    else
+      local new_device = new_track:insert_device_at(old_device.device_path, dsp_index)
+      for parameter_index = 1, #old_device.parameters do
+        new_device.parameters[parameter_index].value = old_device.parameters[parameter_index].value
+      end
+      new_device.is_maximized = old_device.is_maximized
+    end
+  end
+
+  -- Create a new Instr. Automation device if the original track had one
+  if has_instr_automation then
+    -- Select the new instrument
+    song.selected_instrument_index = new_instrument_index
+
+    local new_device = new_track:insert_device_at("Audio/Effects/Native/*Instr. Automation", #new_track.devices + 1)
+
+    -- Extract XML from the old device
+    local old_device_xml = old_instr_automation_device.active_preset_data
+    -- Modify the XML to update the instrument references
+    local new_device_xml = old_device_xml:gsub("<instrument>(%d+)</instrument>", function(instr_index)
+      return string.format("<instrument>%d</instrument>", new_instrument_index - 1)
+    end)
+    -- Apply the modified XML to the new device
+    new_device.active_preset_data = new_device_xml
+    new_device.is_maximized = old_instr_automation_device.is_maximized
+  end
+
+  -- Adjust visibility settings for the new track
+  new_track.visible_note_columns = old_track.visible_note_columns
+  new_track.visible_effect_columns = old_track.visible_effect_columns
+  new_track.volume_column_visible = old_track.volume_column_visible
+  new_track.panning_column_visible = old_track.panning_column_visible
+  new_track.delay_column_visible = old_track.delay_column_visible
+
+  -- Handle automation duplication after fixing XML
+  for i = 1, #song.patterns do
+    local old_pattern_track = song.patterns[i].tracks[track_index]
+    local new_pattern_track = song.patterns[i].tracks[track_index + 1]
+
+    for _, automation in ipairs(old_pattern_track.automation) do
+      local new_automation = new_pattern_track:create_automation(automation.dest_parameter)
+      for _, point in ipairs(automation.points) do
+        new_automation:add_point_at(point.time, point.value)
+      end
+    end
+  end
+
+  -- Select the new instrument
+  song.selected_instrument_index = new_instrument_index
+
+  -- Select the new track
+  song.selected_track_index = track_index + 1
+
+  -- Ready the new track for transposition (select all notes)
+  Deselect_All()
+  MarkTrackMarkPattern()
+
+  -- Reopen the external editor if it was open
+  if external_editor_open then
+    song.instruments[new_instrument_index].plugin_properties.plugin_device.external_editor_visible = true
+  end
+end
+
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Duplicate Track Duplicate Instrument",invoke=function() duplicateTrackDuplicateInstrument() end}
+renoise.tool():add_menu_entry{name="Mixer:Paketti..:Duplicate Track Duplicate Instrument",invoke=function() duplicateTrackDuplicateInstrument() end}
+renoise.tool():add_keybinding{name="Global:Paketti..:Duplicate Track Duplicate Instrument",invoke=function() duplicateTrackDuplicateInstrument() end}
+------------
+
+
+
+
+
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Note Interpolation",invoke=function() note_interpolation() end}
+renoise.tool():add_midi_mapping{name="Paketti:Note Interpolation",invoke=function() note_interpolation() end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Note Interpolation",invoke=function() note_interpolation() end}
+
+-- Main function for note interpolation
+function note_interpolation()
+  -- Get the current pattern and pattern sequence
+  local song = renoise.song()
+  local pattern_index = song.selected_pattern_index
+  local pattern = song.patterns[pattern_index]
+  local pattern_length = pattern.number_of_lines
+
+  -- Get selection start and end lines
+  local start_line, end_line
+  if song.selection_in_pattern == nil then
+    start_line = 1
+    end_line = pattern_length
+  else
+    start_line = song.selection_in_pattern.start_line
+    end_line = song.selection_in_pattern.end_line
+  end
+
+  -- Ensure there is a difference between start and end lines
+  if start_line == end_line then
+    renoise.app():show_error("The selection must span at least two lines.")
+    return
+  end
+
+  -- Retrieve note columns from start and end lines
+  local start_note = song:pattern(pattern_index):track(song.selected_track_index):line(start_line):note_column(1)
+  local end_note = song:pattern(pattern_index):track(song.selected_track_index):line(end_line):note_column(1)
+
+  if not start_note.is_empty and not end_note.is_empty then
+    -- Calculate note difference and step
+    local note_diff = end_note.note_value - start_note.note_value
+    local steps = end_line - start_line
+    local step_size = note_diff / steps
+
+    -- Interpolate notes between start and end lines
+    for i = 1, steps - 1 do
+      local interpolated_note_value = math.floor(start_note.note_value + (i * step_size))
+      local line_index = start_line + i
+      local line = song:pattern(pattern_index):track(song.selected_track_index):line(line_index)
+      line:note_column(1):copy_from(start_note)
+      line:note_column(1).note_value = interpolated_note_value
+    end
+  else
+    renoise.app():show_error("Both start and end lines must contain notes.")
+  end
+end
 
 

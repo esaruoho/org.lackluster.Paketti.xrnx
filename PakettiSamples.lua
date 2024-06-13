@@ -219,7 +219,24 @@ end
 
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:App Selection",invoke=show_app_selection_dialog}
 
+-- Add key bindings and MIDI mappings for AppSelection shortcuts
+for i=1, 6 do
+    renoise.tool():add_keybinding{
+        name="Global:Paketti:Send Selected Sample to AppSelection" .. i,
+        invoke=function()
+            save_selected_sample_to_temp_and_open(preferences["AppSelection"..i].value)
+        end
+    }
 
+    renoise.tool():add_midi_mapping{
+        name="Global:Paketti:Send Selected Sample to AppSelection" .. i,
+        invoke=function(message)
+            if message:is_trigger() then
+                save_selected_sample_to_temp_and_open(preferences["AppSelection"..i].value)
+            end
+        end
+    }
+end
 
 
 function pitchBendDrumkitLoader()
@@ -654,6 +671,9 @@ end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Add Sample Slot to Instrument", invoke=function() addSampleSlot(1) end}
 renoise.tool():add_keybinding{name="Global:Paketti:Add 84 Sample Slots to Instrument", invoke=function() addSampleSlot(84) end}
+renoise.tool():add_menu_entry{name="Sample List:Paketti..:Add 84 Sample Slots to Instrument", invoke=function() addSampleSlot(84) end}
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Add 84 Sample Slots to Instrument", invoke=function() addSampleSlot(84) end}
+
 -------------------------------------------------------------------------------------------------------------------------------
 function oneshotcontinue()
   local s=renoise.song()
@@ -1123,10 +1143,10 @@ for i = 10, 32 do
     }
 end
 
-renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Select Padded Slice Next",invoke=function(message)
+renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Select Padded Slice (Next)",invoke=function(message)
   if message.int_value == 127 then selectNextSliceInOriginalSample() end end}
 
-renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Select Padded Slice Previous",invoke=function(message)
+renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Select Padded Slice (Previous)",invoke=function(message)
   if message.int_value == 127 then selectPreviousSliceInOriginalSample() end end}
 
 -- Function to select the next slice
@@ -1243,7 +1263,7 @@ function resetSliceCounter()
 end
 
 -- Keybindings
-renoise.tool():add_keybinding{name="Sample Editor:Paketti:Select Padded Slice Next Slice", invoke=selectNextSliceInOriginalSample}
-renoise.tool():add_keybinding{name="Sample Editor:Paketti:Select Padded Slice Previous", invoke=function() selectPreviousSliceInOriginalSample() end}
+renoise.tool():add_keybinding{name="Sample Editor:Paketti:Select Padded Slice (Next)", invoke=selectNextSliceInOriginalSample}
+renoise.tool():add_keybinding{name="Sample Editor:Paketti:Select Padded Slice (Previous)", invoke=function() selectPreviousSliceInOriginalSample() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Reset Slice Counter", invoke=resetSliceCounter}
 

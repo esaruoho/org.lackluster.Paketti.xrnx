@@ -369,8 +369,8 @@ t:trigger_sequence(s.selected_sequence_index-1) end
   end
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker Next Pattern", invoke=function() ImpulseTrackerNextPattern() end}
-renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker Previous Pattern", invoke=function() ImpulseTrackerPrevPattern() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker Pattern (Next)", invoke=function() ImpulseTrackerNextPattern() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker Pattern (Previous)", invoke=function() ImpulseTrackerPrevPattern() end}
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 --IT: ALT-D (whole track) Double-select
 function DoubleSelect()

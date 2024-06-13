@@ -77,6 +77,7 @@ function loadPlugin(pluginPath)
   if new_instrument.plugin_properties.plugin_device and new_instrument.plugin_properties.plugin_device.external_editor_available then
     new_instrument.plugin_properties.plugin_device.external_editor_visible = true
   end
+loadnative("Audio/Effects/Native/*Instr. Automation")
 end
 
 -- Function to add a plugin as a shortcut
@@ -272,10 +273,11 @@ local function showPluginListDialog()
   custom_dialog = renoise.app():show_custom_dialog("Load Plugin(s)", dialog_content)
 end
 
--- Register the menu entry to show the plugin list dialog
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Plugin Loader GUI", invoke=showPluginListDialog}
 
 -- Initialize preferences file and load keybindings and MIDI mappings
 initializePreferencesFile()
 loadFromPreferencesFile()
+
+-- Register the menu entry to show the plugin list dialog
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Load AU/VST/VST3 Plugins Dialog", invoke=function() showPluginListDialog() end}
 

@@ -139,8 +139,8 @@ renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Decrease Effect Nu
 renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Increase Effect Amount +1 x[Toggle]",invoke=function() columnspart2(1,5) end}
 renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Decrease Effect Amount -1 x[Toggle]",invoke=function() columnspart2(-1,5) end}
 
-renoise.tool():add_midi_mapping{name="Global:Paketti:Impulse Tracker Next Pattern x[Toggle]", invoke=function() ImpulseTrackerNextPattern() end}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Impulse Tracker Previous Pattern x[Toggle]", invoke=function() ImpulseTrackerPrevPattern() end}
+renoise.tool():add_midi_mapping{name="Global:Paketti:Impulse Tracker Pattern (Next) x[Toggle]", invoke=function() ImpulseTrackerNextPattern() end}
+renoise.tool():add_midi_mapping{name="Global:Paketti:Impulse Tracker Pattern (Previous) x[Toggle]", invoke=function() ImpulseTrackerPrevPattern() end}
 
 --renoise.tool():add_midi_mapping{name="Global:Paketti:Start Playback from Cursor Row x[Toggle]",  invoke=function() ImpulseTrackerPlaySong() end}
 renoise.tool():add_midi_mapping{name="Global:Paketti:Start Playback x[Toggle]",  invoke=function() ImpulseTrackerPlaySong() end}
@@ -323,16 +323,16 @@ for i=10,64 do
 renoise.tool():add_midi_mapping{name="Global:Paketti:Set EditStep to " .. i, invoke=function() midiMappedEditStep(i) end}
 end
 ------
-renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Select Group Next",invoke=function(message)
+renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Select Group (Next)",invoke=function(message)
   if message.int_value == 127 then selectNextGroupTrack() end end}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Select Group Previous",invoke=function(message)   if message.int_value == 127 then selectPreviousGroupTrack() end end}
+renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Select Group (Previous)",invoke=function(message)   if message.int_value == 127 then selectPreviousGroupTrack() end end}
 
 
 
 
-renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Select Track Next",invoke=function(message)
+renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Select Track (Next)",invoke=function(message)
   if message.int_value == 127 then selectNextTrack() end end}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Select Track Previous",invoke=function(message)   if message.int_value == 127 then selectPreviousTrack() end end}
+renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Select Track (Previous)",invoke=function(message)   if message.int_value == 127 then selectPreviousTrack() end end}
 
 -----
 -- Retrieve all group track indices
@@ -582,4 +582,149 @@ renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Automation Selection 0
 }
 
 renoise.tool():add_midi_mapping{name="Global:Paketti:Create New Instrument & Loop from Selection", invoke=function() create_new_instrument_from_selection() end}
+--------------
+
+-- Global table to keep track of added MIDI mappings
+local added_midi_mappings = {}
+
+-- Function to map MIDI values to macro values
+function map_midi_value_to_macro(macro_index, midi_value)
+  -- Ensure renoise.song() is available
+  if not pcall(renoise.song) then
+    renoise.app():show_status("No song is currently loaded.")
+    return
+  end
+
+  -- Ensure the macro index is within the valid range (1 to 8)
+  if macro_index < 1 or macro_index > 8 then
+    renoise.app():show_status("Macro index must be between 1 and 8")
+    return
+  end
+
+  -- Ensure the MIDI value is within the valid range (0 to 127)
+  if midi_value < 0 or midi_value > 127 then
+    renoise.app():show_status("MIDI value must be between 0 and 127")
+    return
+  end
+
+  -- Convert the MIDI value to a range of 0 to 1
+  local macro_value = midi_value / 127
+
+  -- Set the value of the specified macro
+  renoise.song().selected_instrument.macros[macro_index].value = macro_value
+end
+
+-- Function to add MIDI mappings for each of the 8 macros with custom names
+function add_custom_midi_mappings(mapping_names)
+  -- Ensure renoise.song() is available
+  if not pcall(renoise.song) then
+    renoise.app():show_status("No song is currently loaded.")
+    return
+  end
+
+  -- Ensure the selected instrument is available
+  if not renoise.song().selected_instrument then
+    renoise.app():show_status("No instrument is currently selected.")
+    return
+  end
+
+  -- Add MIDI mappings for each of the 8 macros
+  for macro_index = 1, 8 do
+    -- Retrieve the custom name for the MIDI mapping
+    local mapping_name = mapping_names[macro_index]
+    if mapping_name then
+      local full_mapping_name = "Global:Tools:" .. mapping_name
+      if not added_midi_mappings[full_mapping_name] then
+        -- Create the MIDI mapping with the custom name
+        renoise.tool():add_midi_mapping{name=full_mapping_name, invoke=function(midi_message)
+          -- Extract the MIDI controller value from the MIDI message
+          local midi_value = midi_message.int_value
+          -- Map the MIDI value to the macro value
+          map_midi_value_to_macro(macro_index, midi_value)
+        end}
+        -- Track the added MIDI mapping
+        added_midi_mappings[full_mapping_name] = true
+      end
+    else
+      renoise.app():show_status("Missing name for MIDI mapping " .. macro_index)
+    end
+  end
+end
+
+-- Custom MIDI mapping names
+local midiMacroMappingNames = {
+  "Midi Selected Instrument Macro 1 (PitchBend)",
+  "Midi Selected Instrument Macro 2 (Cutoff)",
+  "Midi Selected Instrument Macro 3 (Resonance)",
+  "Midi Selected Instrument Macro 4 (Cutoff LfoAmp)",
+  "Midi Selected Instrument Macro 5 (Cutoff LfoFreq)",
+  "Midi Selected Instrument Macro 6 (Overdrive)",
+  "Midi Selected Instrument Macro 7 (Volume LfoAmp)",
+  "Midi Selected Instrument Macro 8 (Volume LfoFreq)"
+}
+
+-- Observable to add MIDI mappings when a new song is loaded
+renoise.tool().app_new_document_observable:add_notifier(function()
+  add_custom_midi_mappings(midiMacroMappingNames)
+end)
+
+-- Observable to handle document release
+renoise.tool().app_release_document_observable:add_notifier(function()
+  renoise.app():show_status("Song is being released.")
+end)
+
+-- Initial call to add MIDI mappings if a song is already loaded
+if pcall(renoise.song) then
+  add_custom_midi_mappings(midiMacroMappingNames)
+else
+  renoise.app():show_status("No song is currently loaded at script startup.")
+end
+
+--------
+----------------
+-- Script to map MIDI values to sample modulation set filter types in Renoise
+-- Ensure this script is named 'Paketti_Midi_Change_Sample_Modulation_Set_Filter.lua'
+
+-- Define a function to change the sample modulation set filter type based on MIDI value
+function change_sample_modulation_set_filter(midi_value)
+  -- Get the current song
+  local song = renoise.song()
+  
+  -- Check if a sample and modulation set are selected
+  if song.selected_sample and song.selected_sample_modulation_set then
+    -- Get the available filter types
+    local filter_types = song.selected_sample_modulation_set.available_filter_types
+    
+    -- Calculate the index in the filter types list based on the MIDI value
+    local index = math.floor((midi_value / 127) * (#filter_types - 1)) + 1
+    
+    -- Set the filter type
+    song.selected_sample_modulation_set.filter_type = filter_types[index]
+    
+    -- Show status message with the selected filter type
+    renoise.app():show_status("Selected Filter Type: " .. filter_types[index])
+  else
+    -- Show status message if no sample or modulation set is selected
+    renoise.app():show_status("No sample or modulation set selected")
+  end
+end
+
+-- Add MIDI mapping for the function
+renoise.tool():add_midi_mapping{name="Paketti:Midi Change Sample Modulation Set Filter",invoke=function(message)
+  -- Call the function with the MIDI value
+  change_sample_modulation_set_filter(message.int_value)
+end}
+
+---------
+function midiprogram(change)  
+local midi=renoise.song().selected_instrument.midi_output_properties  
+local currentprg=midi.program  
+ currentprg = math.max(1, math.min(128, currentprg + change))  
+ rprint (currentprg)  
+renoise.song().selected_instrument.midi_output_properties.program = currentprg  
+renoise.song().transport:panic()  
+end  
+  
+renoise.tool():add_keybinding{name="Global:Paketti:Selected Instrument Midi Program +1 (Next)", invoke=function() midiprogram(1) end}  
+renoise.tool():add_keybinding{name="Global:Paketti:Selected Instrument Midi Program -1 (Previous)", invoke=function() midiprogram(-1) end}  
 

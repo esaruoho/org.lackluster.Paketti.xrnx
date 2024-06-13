@@ -1,3 +1,10 @@
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:!! Donate !!",invoke=function()
+renoise.app():open_url("http://paypal.me/esaruoho")
+end}
+
+
+
+
 local dialog
 local vb = renoise.ViewBuilder()
 
@@ -240,19 +247,29 @@ function show_paketti_preferences()
                         preferences.renderBitDepth.value = (value == 1 and 16 or value == 2 and 24 or 32)
                     end}}},
         horizontal_rule(),
-        vb:column{style = "group", margin = 10,
-            vb:text{style = "strong", text = "Edit Mode Colouring"},
-            vertical_space(5),
-            vb:row{vb:text{text = "Edit Mode", width = 150},
-                vb:switch{
-                    items = {"None", "Selected Track", "All Tracks"},
-                    value = preferences.pakettiEditMode.value,
-                    width = 300,
-                    notifier = function(value)
-                        preferences.pakettiEditMode.value = value
-                    end}}},
-        vb:space{height = 10},
-        vb:horizontal_aligner{mode = "distribute",
+  
+  
+  
+  vb:column{style = "group", margin = 10,
+    vb:text{style = "strong", text = "Edit Mode Colouring"},
+    vertical_space(5),
+    vb:row{
+        vb:text{text = "Edit Mode", width = 150},
+        vb:switch{
+            items = {"None", "Selected Track", "All Tracks"},
+            value = preferences.pakettiEditMode.value,
+            width = 300,
+            notifier = function(value)
+                preferences.pakettiEditMode.value = value
+            end
+        },
+        vb:text{
+            style = "strong",
+            text = "Enable Scope Highlight by going to Settings -> GUI -> Show Track Color Blends."
+        }
+    },
+    vb:space{height = 10},
+},      vb:horizontal_aligner{mode = "distribute",
             vb:button{text = "OK", width = "50%", notifier = function() preferences:save_as("preferences.xml"); dialog:close() end},
             vb:button{text = "Cancel", width = "50%", notifier = function() dialog:close() end}}}
     

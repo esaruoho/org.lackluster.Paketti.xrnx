@@ -750,8 +750,8 @@ local s = renoise.song()
    end end end end
  
 renoise.tool():add_keybinding{name="Pattern Editor:Navigation:Paketti Switch between Note/FX columns",invoke=toggle_column_type}
-renoise.tool():add_keybinding{name="Pattern Editor:Navigation:Paketti Jump to Next Column (Note/FX)",invoke=function() cycle_column("next") end}
-renoise.tool():add_keybinding{name="Pattern Editor:Navigation:Paketti Jump to Previous Column (Note/FX)",invoke=function() cycle_column("prev") end}
+renoise.tool():add_keybinding{name="Pattern Editor:Navigation:Paketti Jump to Column (Next) (Note/FX)",invoke=function() cycle_column("next") end}
+renoise.tool():add_keybinding{name="Pattern Editor:Navigation:Paketti Jump to Column (Previous) (Note/FX)",invoke=function() cycle_column("prev") end}
 renoise.tool().app_idle_observable:add_notifier(cache_columns)
 
 -- Pattern Resizer by dblue. some minor modifications.
@@ -1148,7 +1148,7 @@ if renoise.song().selected_line_index > 255 then LineGoTo = 00 end
 renoise.song().selected_pattern.tracks[get_master_track_index()].lines[renoise.song().selected_line_index].effect_columns[3].amount_value  = LineGoTo
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Write Jump To Next Row (ZBxx)", invoke=function() JumpToNextRow() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Write Jump To Row (Next) (ZBxx)", invoke=function() JumpToNextRow() end}
 --------------------
 --Clone Current Pattern to Current Sequence and maintain pattern line index.
 --Heaps of help from KMaki
@@ -1417,8 +1417,8 @@ function nextEffectColumn()
   end
 end
 
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Select Previous Effect Column", invoke=function() previousEffectColumn() end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Select Next Effect Column", invoke=function() nextEffectColumn() end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Select Effect Column (Previous)", invoke=function() previousEffectColumn() end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Select Effect Column (Next)", invoke=function() nextEffectColumn() end}
 
 
 

@@ -2,7 +2,7 @@
 <ScriptingToolPreferences doc_version="0">
   <pakettiLoaderOverSampling>true</pakettiLoaderOverSampling>
   <selectionNewInstrumentLoop>2</selectionNewInstrumentLoop>
-  <sliceCounter>1.0</sliceCounter>
+  <sliceCounter>22</sliceCounter>
   <WipeSlicesBeatSyncMode>1.0</WipeSlicesBeatSyncMode>
   <pakettiLoaderLoopMode>1.0</pakettiLoaderLoopMode>
   <RandomBPM>false</RandomBPM>
@@ -17,12 +17,12 @@
   <AppSelection3>/Applications/Ableton Live 12 Suite.app</AppSelection3>
   <WipeSlicesMuteGroup>1.0</WipeSlicesMuteGroup>
   <slicePreviousDirection>1.0</slicePreviousDirection>
-  <AppSelection1>/Applications/Audacity.app</AppSelection1>
+  <AppSelection1>/Applications/Renoise copy.app</AppSelection1>
   <midimappings/>
   <pakettiEditMode>2</pakettiEditMode>
   <shortcuts/>
   <pakettiLoaderAutoFade>true</pakettiLoaderAutoFade>
-  <pakettiLoaderInterpolation>1.0</pakettiLoaderInterpolation>
+  <pakettiLoaderInterpolation>4</pakettiLoaderInterpolation>
   <WipeSlicesBeatSyncGlobal>false</WipeSlicesBeatSyncGlobal>
   <renderSampleRate>88200</renderSampleRate>
   <renderBitDepth>32</renderBitDepth>
