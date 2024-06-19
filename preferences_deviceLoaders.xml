@@ -35,3 +35,39 @@
 <MIDIMapping name="Tools:Track Devices:Load Device (VST3/AU) Supercharger">
   <Path>Audio/Effects/VST3/5653544E692440737570657263686172</Path>
 </MIDIMapping>
+<KeyBinding name="Global:Track Devices:Load Device (Native) Gainer">
+  <Path>Audio/Effects/Native/Gainer</Path>
+</KeyBinding>
+<MIDIMapping name="Tools:Track Devices:Load Device (Native) Gainer">
+  <Path>Audio/Effects/Native/Gainer</Path>
+</MIDIMapping>
+<KeyBinding name="Global:Track Devices:Load Device (Native) Mixer EQ">
+  <Path>Audio/Effects/Native/Mixer EQ</Path>
+</KeyBinding>
+<MIDIMapping name="Tools:Track Devices:Load Device (Native) Mixer EQ">
+  <Path>Audio/Effects/Native/Mixer EQ</Path>
+</MIDIMapping>
+<KeyBinding name="Global:Track Devices:Load Device (Native) RingMod 2">
+  <Path>Audio/Effects/Native/RingMod 2</Path>
+</KeyBinding>
+<MIDIMapping name="Tools:Track Devices:Load Device (Native) RingMod 2">
+  <Path>Audio/Effects/Native/RingMod 2</Path>
+</MIDIMapping>
+<KeyBinding name="Global:Track Devices:Load Device (VST) FabFilter Micro">
+  <Path>Audio/Effects/VST/FabFilter Micro</Path>
+</KeyBinding>
+<MIDIMapping name="Tools:Track Devices:Load Device (VST) FabFilter Micro">
+  <Path>Audio/Effects/VST/FabFilter Micro</Path>
+</MIDIMapping>
+<KeyBinding name="Global:Track Devices:Load Device (VST3/AU) Zebrify">
+  <Path>Audio/Effects/AU/aumf:SMY2:UHfX</Path>
+</KeyBinding>
+<MIDIMapping name="Tools:Track Devices:Load Device (VST3/AU) Zebrify">
+  <Path>Audio/Effects/AU/aumf:SMY2:UHfX</Path>
+</MIDIMapping>
+<KeyBinding name="Global:Track Devices:Load Device (VST3/AU) ZRev">
+  <Path>Audio/Effects/VST3/D39D5B69D6AF42FA1234567872655630</Path>
+</KeyBinding>
+<MIDIMapping name="Tools:Track Devices:Load Device (VST3/AU) ZRev">
+  <Path>Audio/Effects/VST3/D39D5B69D6AF42FA1234567872655630</Path>
+</MIDIMapping>

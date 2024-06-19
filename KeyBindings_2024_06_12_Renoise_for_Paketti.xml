@@ -721,7 +721,6 @@
         <KeyBinding>
           <Topic>File</Topic>
           <Binding>New Song</Binding>
-          <Key>Control + N</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>File</Topic>
@@ -1093,6 +1092,7 @@
         <KeyBinding>
           <Topic>Paketti</Topic>
           <Binding>∿ Show New Song Dialog.. (CTRL-N)</Binding>
+          <Key>Control + N</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
@@ -1193,7 +1193,6 @@
         <KeyBinding>
           <Topic>Paketti</Topic>
           <Binding>∿ Load Waldorf PPG v2 (VST)</Binding>
-          <Key>Shift + Command + P</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
@@ -1854,6 +1853,12 @@
         <KeyBinding>
           <Topic>Paketti</Topic>
           <Binding>∿ Load Plugin (AU) XO</Binding>
+          <Key>Shift + Command + X</Key>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Load Plugin (AU) PPG Wave 2.V</Binding>
+          <Key>Shift + Command + P</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
@@ -2534,6 +2539,24 @@
         <KeyBinding>
           <Topic>Paketti</Topic>
           <Binding>∿ Reset Slice Counter</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Sample Loop Cycler (Forwards)</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Sample Loop Cycler (Backwards)</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ All Samples Loop Cycler (Forwards)</Binding>
+          <Key>Shift + Command + 2</Key>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ All Samples Loop Cycler (Backwards)</Binding>
+          <Key>Shift + Command + 1</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
@@ -3896,6 +3919,16 @@
         <KeyBinding>
           <Topic>Paketti..</Topic>
           <Binding>∿ Duplicate Track Duplicate Instrument</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Jump to First Track in Next Group</Binding>
+          <Key>Command + Control + Right</Key>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Jump to First Track in Previous Group</Binding>
+          <Key>Command + Control + Left</Key>
         </KeyBinding>
       </KeyBindings>
     </Category>
@@ -5699,6 +5732,11 @@
           <Topic>Paketti..</Topic>
           <Binding>∿ Clean Render Selected Track or Group</Binding>
           <Key>Command + R</Key>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Impulse Tracker MixPaste</Binding>
+          <Key>Option + M</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>

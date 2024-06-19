@@ -84,7 +84,7 @@ local triggersamplebutton=vb:button {width=globalwidth, text=triggersample, tool
   pressed = function() effect_write("0S",off) end}
 
 local surround="0Wxx"
-local surroundtooltip="0Wxx - Surround width (00-FF) *"
+local surroundtooltip="0Wxx - Surround Width (00-FF) *"
 local surroundbutton=vb:button {width=globalwidth, text=surround, tooltip=surroundtooltip,
   pressed = function() effect_write("0W",sur) end}
 
@@ -94,7 +94,7 @@ local playsamplebackwardsbutton=vb:button {width=globalwidth, text=playsamplebac
   pressed = function() effect_write("0B",rev) end}
 
 local settrackvolume="0Lxx"
-local settrackvolumetooltip="0Lxx - Set track-volume (00-FF)"
+local settrackvolumetooltip="0Lxx - Set Track-Volume (00-FF)"
 local settrackvolumebutton=vb:button {width=globalwidth, text=settrackvolume, tooltip=settrackvolumetooltip,
   pressed = function() effect_write("0L",trv) end}
 
@@ -138,6 +138,15 @@ local stopalltooltip="0Xxx - Stop all notes and FX (xx = 00) or only effect xx (
 local stopallbutton=vb:button {width=globalwidth, text=stopall, tooltip=stopalltooltip,
   pressed = function() effect_write("0X",stopall) end}
   
+local trigger="0Zxx"
+local triggertooltip="0Zxx - Trigger Phrase (xx = Phrase number (01 - 7E), 00 = none, 7F = keymap mode)"
+local triggerbutton=vb:button {width=globalwidth, text=trigger, tooltip=triggertooltip,
+  pressed = function() effect_write("0Z",trigger) end}  
+  
+local maybe="0Yxx"
+local maybetooltip="0Yxx - Probability of triggering line playback (xx) 00 = mutually exclusive mode"  
+local maybebutton=vb:button {width=globalwidth, text=maybe, tooltip=maybetooltip,
+  pressed = function() effect_write("0X",maybe) end}
 -------
 --Generation of Pattern Effect
 local dialog_title = "Paketti 0.354 - Pattern Effect Command CheatSheet"
@@ -148,48 +157,52 @@ local effect_buttons = vb:column {
 arpeggiobutton,
 pitchslideupbutton,
 pitchslidedownbutton,
-setchannelvolbutton,
-volumeslicerbutton,
 glidetonotebutton,
+vibratobutton,
 volumeslideupbutton,
 volumeslidedownbutton,
-setpanningbutton,
-triggersamplebutton,
-surroundbutton,
-playsamplebackwardsbutton,
+tremolobutton,
+volumeslicerbutton,
+setchannelvolbutton,
 settrackvolumebutton,
+triggersamplebutton,
+playsamplebackwardsbutton,
+aenvbutton,
 delaynotesbutton,
 retrigbutton,
-vibratobutton,
-tremolobutton,
+maybebutton,
 autopanbutton,
-aenvbutton,
-troutbutton,
+setpanningbutton,
+surroundbutton,
 stopallbutton,
+triggerbutton,
+troutbutton,
 wikibutton}
 
 local effect_desc = vb:column {
 vb:text{text=arpeggiotooltip},
 vb:text{text=pitchslideuptooltip},
 vb:text{text=pitchslidedowntooltip},
-vb:text{text=setchannelvoltooltip},
-vb:text{text=volumeslicertooltip},
 vb:text{text=glidetonotetooltip},
+vb:text{text=vibratotooltip},
 vb:text{text=volumeslideuptooltip},
 vb:text{text=volumeslidedowntooltip},
-vb:text{text=setpanningtooltip},
-vb:text{text=triggersampletooltip},
-vb:text{text=surroundtooltip},
-vb:text{text=playsamplebackwardstooltip},
+vb:text{text=tremolotooltip},
+vb:text{text=volumeslicertooltip},
+vb:text{text=setchannelvoltooltip},
 vb:text{text=settrackvolumetooltip},
+vb:text{text=triggersampletooltip},
+vb:text{text=playsamplebackwardstooltip},
+vb:text{text=aenvtooltip},
 vb:text{text=delaynotestooltip},
 vb:text{text=retrigtooltip},
-vb:text{text=vibratotooltip},
-vb:text{text=tremolotooltip},
+vb:text{text=maybetooltip},
 vb:text{text=autopantooltip},
-vb:text{text=aenvtooltip},
-vb:text{text=trouttooltip},
+vb:text{text=setpanningtooltip},
+vb:text{text=surroundtooltip},
 vb:text{text=stopalltooltip},
+vb:text{text=triggertooltip},
+vb:text{text=trouttooltip},
 vb:text{text=wikitooltip}
 }
 
@@ -197,13 +210,7 @@ local vb = renoise.ViewBuilder()
 
 local s = renoise.song()
 
-local effect_slider = vb:column {
-    vb:horizontal_aligner {
-        mode = "center",
-        vb:text {
-        style = "Strong",
-            text = "Volume"
-        },
+local effect_slider=vb:column{vb:horizontal_aligner{mode="center",vb:text{style="Strong",text="Volume"},
         vb:minislider{
             id="volumeslider",
             width=30,
@@ -215,16 +222,8 @@ local effect_slider = vb:column {
                 if s.selected_note_column then
                     s.selected_note_column.volume_value = v3
                 end
-            end
-        },
-    },
-
-    vb:horizontal_aligner {
-        mode = "center",
-        vb:text {
-        style="Strong",
-            text = "Panning"
-        },
+            end},},
+    vb:horizontal_aligner{mode="center",vb:text{style="Strong",text = "Panning"},
         vb:minislider{
             id="panningslider",
             width=30,
@@ -236,15 +235,8 @@ local effect_slider = vb:column {
                 if s.selected_note_column then
                     s.selected_note_column.panning_value = v2
                 end
-            end
-        },
-    },
-    vb:horizontal_aligner {
-        mode = "center",
-        vb:text {
-        style="Strong",
-            text = "Delay"
-        },
+            end},},
+    vb:horizontal_aligner {mode = "center",vb:text{style="Strong",text = "Delay"},
         vb:minislider{
             id="delayslider",
             width=30,
@@ -256,46 +248,52 @@ local effect_slider = vb:column {
                 if s.selected_note_column then
                     s.selected_note_column.delay_value = v1
                 end
-            end
-        },
-    },
+            end},},
+    vb:horizontal_aligner {mode = "center",vb:text {style="Strong",text = "Effect"},
+       vb:minislider{
+  id="effectslider",
+  width=30,
+  height=127,
+  min=0,
+  max=0xFF,
+  notifier=function(v4)
+    local s = renoise.song()
+    
+    if s.selected_track.visible_effect_columns == 0 and s.selected_track.type == 1 then 
+      s.selected_track.visible_effect_columns = 1
+    end
+    
+    if s.selection_in_pattern == nil then
+      -- If no selection is set, output to the row that the cursor is on
+      local nc = s.selected_note_column
+      local ec = s.selected_effect_column
+      
+      if nc == nil then 
+        -- Protect user if note column is nil
+        if ec == nil then 
+          return false  -- Also protect user if effect column is nil  
+        else 
+          ec.amount_value = v4
+          return
+        end
+      end
 
-
-
-
-    vb:horizontal_aligner {
-        mode = "center",
-        vb:text {
-        style="Strong",
-            text = "Effect"
-        },
-        vb:minislider{
-            id="effectslider",
-            width=30,
-            height=127,
-            min=0,
-            max=0xFF,
-            notifier=function(v4) 
-                local nc = s.selected_note_column
-                local ec = s.selected_effect_column
-                if nc == nil then 
-                    -- Protect user if note column is nil
-                    if ec == nil then 
-                        return false  -- Also protect user if effect column is nil  
-                    else 
-                        ec.amount_value = v4
-                        return
-                    end
-                end
-
-                local writenc = s.selected_note_column_index
-                s.selected_effect_column_index = 1
-                ec.amount_value = v4
-                s.selected_note_column_index = writenc
-            end
-        },
-    }
-}
+      local writenc = s.selected_note_column_index
+      s.selected_effect_column_index = 1
+      s.selected_effect_column.amount_value = v4
+      s.selected_note_column_index = writenc
+    else
+      -- If a selection is set, process the selection range
+      for i = s.selection_in_pattern.start_line, s.selection_in_pattern.end_line do
+        for t = s.selection_in_pattern.start_track, s.selection_in_pattern.end_track do
+          local ec = s:pattern(s.selected_pattern_index):track(t):line(i):effect_column(1)
+          if ec ~= nil then
+            ec.amount_value = v4
+          end
+        end
+      end
+    end
+  end}}}
 
 local dialog_content = vb:row {effect_buttons, effect_desc, effect_slider}
 local vb=renoise.ViewBuilder()
@@ -330,41 +328,60 @@ end
 --local status="0Vxy - Vibrato x= speed, y = depth; x=(0-F); y=(0-F)*"
 
 --Effect Functions
-function effect_write(effect,status)
-local s=renoise.song()
-local a=renoise.app()
-local nc=s.selected_note_column
-local ec=s.selected_effect_column
-local nci=s.selected_note_column_index
-local w=a.window
-if nc == nil then 
--- Protect user if notecolumn is nil
-  if ec == nil then return false
--- Also protect user if effect column is nil  
-  else 
-       s.selected_effect_column.number_string=effect
--- If effectcolumn does exist, just write to it
-  a:show_status(status)
-return end end
+function effect_write(effect, status)
+  local s = renoise.song()
+  local a = renoise.app()
+  local nc = s.selected_note_column
+  local ec = s.selected_effect_column
+  local nci = s.selected_note_column_index
+  local w = a.window
+  
+  if nc == nil then 
+    -- Protect user if note column is nil
+    if ec == nil then 
+      return false -- Also protect user if effect column is nil  
+    else 
+      s.selected_effect_column.number_string = effect
+      -- If effect column does exist, just write to it
+      a:show_status(status)
+      return
+    end
+  end
 
-local writenc=nil
-writenc=nci
--- Store current note column index into a local variable
+  local writenc = nci
+  -- Store current note column index into a local variable
 
-s.selected_effect_column_index=1
--- Set the selection location to effect column index 1
+  if s.selected_track.visible_effect_columns == 0 and s.selected_track.type == 1 then 
+    s.selected_track.visible_effect_columns = 1 
+  end
 
-s.selected_effect_column.number_string=effect
--- Write to the amount value of the selected effect column - receive this from effectslider.
+  s.selected_effect_column_index = 1
+  -- Set the selection location to effect column index 1
 
-s.selected_note_column_index=writenc
--- Return back to previous note column index.
+  if s.selection_in_pattern == nil then
+    -- If no selection is set, output to the row that the cursor is on
+    s.selected_effect_column.number_string = effect
+    -- Write to the amount value of the selected effect column
+  else
+    -- If a selection is set, process the selection range
+    for i = s.selection_in_pattern.start_line, s.selection_in_pattern.end_line do
+      for t = s.selection_in_pattern.start_track, s.selection_in_pattern.end_track do
+        local ec = s:pattern(s.selected_pattern_index):track(t):line(i):effect_column(1)
+        if ec ~= nil then
+          ec.number_string = effect
+        end
+      end
+    end
+  end
+
+  s.selected_note_column_index = writenc
+  -- Return back to previous note column index.
 
   a:show_status(status)
   w.active_middle_frame = 1
   w.lock_keyboard_focus = true
-  s.selected_note_column_index=writenc
- end
+  s.selected_note_column_index = writenc
+end
 
 renoise.tool():add_keybinding{name = "Global:Paketti:Pattern Effect Command CheatSheet",invoke=function() CheatSheet() end}
 

@@ -82,17 +82,11 @@ function F3()
   local w = renoise.app().window
   local raw = renoise.ApplicationWindow
 
-  -- Debug print to check current middle frame
-  print("Current middle frame: " .. tostring(w.active_middle_frame))
-
-  -- Check for middleframe 3 and switch to 7, or 7 and switch to 3
   if w.active_middle_frame == 5 then
     w.active_middle_frame = 7
-    print("Switching to middle frame 7")
     return
   elseif w.active_middle_frame == 7 then
     w.active_middle_frame = 5
-    print("Switching to middle frame 5")
     return
   end
 
@@ -409,7 +403,7 @@ function DoubleSelect()
  end
 end
 
-renoise.tool():add_keybinding{name="Pattern Editor:Selection:Paketti DoubleSelect (ALT-D)", invoke=function() DoubleSelect() end}
+renoise.tool():add_keybinding{name="Pattern Editor:Selection:Impulse Tracker Double Select (ALT-D)", invoke=function() DoubleSelect() end}
 --------------------------------------------------------------------------------------------------------------------------------
 -- Protman's set octave
 -- Protman: Thanks to suva for the function per octave declaration loop :)
@@ -495,7 +489,7 @@ function ExpandSelection()
 end
 end
 
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Expand Selection (Protman)", invoke=function() ExpandSelection() end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Impulse Tracker Expand Selection (Protman)", invoke=function() ExpandSelection() end}
 ------------------------------------------------------------------------------------------------------------------------------------
 -------Protman's Shrink Selection
 function cpclsh_line(track, from_line, to_line)
@@ -526,7 +520,7 @@ function ShrinkSelection()
   end
 end
 end
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Shrink Selection (Protman)", invoke=function() ShrinkSelection() end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Impulse Tracker Shrink Selection (Protman)", invoke=function() ShrinkSelection() end}
 
 -----------------------------------------------------------------------------------------------------------------------------------------
 --Protman's Set Instrument
@@ -553,9 +547,7 @@ renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Selection to Curr
 ----------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------
 function MarkTrackMarkPattern()
---Known bug: If you're on Send, and press Alt-L, it selects all effect columns of Send. 
---Second press of Alt-L will select all the channels in the track, but deselect Master + Send tracks.
---Known bug: Has no idea as to what to do with Groups. Impulse Tracker
+--Known bug: Has no idea as to what to do with Groups.
 local st=nil
 local et=nil
 local sl=nil
@@ -568,12 +560,12 @@ if sip ~= nil then
   et = sip.end_track
   sl = sip.start_line
   el = sip.end_line
-
+  local totalTrackCount=s.sequencer_track_count + 1 + s.send_track_count
   if st == et and st == s.selected_track_index then
     if sl == 1 and el == sp.number_of_lines then
       s.selection_in_pattern = {
         start_track = 1,
-        end_track = s.sequencer_track_count,
+        end_track = totalTrackCount,
           start_line=1,
         end_line=sp.number_of_lines
       }
@@ -598,7 +590,7 @@ else
         end_line = sp.number_of_lines} end
 end
 
-renoise.tool():add_keybinding{name="Pattern Editor:Selection:Paketti Mark Track/Mark Pattern (ALT-L)", invoke=function() MarkTrackMarkPattern() end}  
+renoise.tool():add_keybinding{name="Pattern Editor:Selection:Impulse Tracker Mark Track/Mark Pattern (ALT-L)", invoke=function() MarkTrackMarkPattern() end}  
 -------------------------------------------------------------------------------------------------------------------------------------------Protman's Alt-D except patternwide
 function DoubleSelectPattern()
  local s = renoise.song()
@@ -676,8 +668,8 @@ end
  end
 end
 
-renoise.tool():add_keybinding{name="Pattern Editor:Selection:Paketti DoubleSelectColumnOnly (Protman)", invoke=function() DoubleSelectColumnOnly() end}
-renoise.tool():add_keybinding{name="Pattern Editor:Selection:Paketti DoubleSelectPattern (Protman)", invoke=function() DoubleSelectPattern() end}
+renoise.tool():add_keybinding{name="Pattern Editor:Selection:Impulse Tracker DoubleSelectColumnOnly (Protman)", invoke=function() DoubleSelectColumnOnly() end}
+renoise.tool():add_keybinding{name="Pattern Editor:Selection:Impulse Tracker DoubleSelectPattern (Protman)", invoke=function() DoubleSelectPattern() end}
 --------------------------------------------------------------------------------------------------------------------------------------
 --IT "Home Home Home" behaviour. First Home takes to current column first_line. Second Home takes to current track first_line. 
 --Third home takes to first track first_line.
@@ -867,7 +859,7 @@ local start_time = os.clock()
     end
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Play Current Line & Advance by EditStep", invoke=function() PlayCurrentLine() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker Play Current Line & Advance by EditStep", invoke=function() PlayCurrentLine() end}
 -----------------
 -- alt-f9 - solo / unsolo selected track. if not in Pattern Editor or in Mixer, transport to Pattern Editor.
 function impulseTrackerSoloKey()
@@ -876,17 +868,18 @@ local s=renoise.song()
     if renoise.app().window.active_middle_frame~=1 and renoise.app().window.active_middle_frame~=2 then renoise.app().window.active_middle_frame=1 end
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:ImpulseTracker ALT-F10 (Solo Toggle)", invoke=function() impulseTrackerSoloKey() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker ALT-F10 (Solo Toggle)", invoke=function() impulseTrackerSoloKey() end}
 -----------
-
 local vb = renoise.ViewBuilder()
 
 -- Variables to store the state of each section
 local patterns_state = "Keep"
 local instruments_state = "Keep"
 local pattern_sequence_state = "Keep"
+local instrument_midi_outs_state = "Keep"
+local instrument_samples_state = "Keep"
 
--- Functions to clear patterns, instruments, and pattern sequence
+-- Functions to clear patterns, instruments, pattern sequence, MIDI outs, and samples
 function patternClear()
   local song = renoise.song()
   for i = 1, #song.patterns do
@@ -904,9 +897,32 @@ end
 function patternSequenceClear()
   local song = renoise.song()
   local sequence_length = #song.sequencer.pattern_sequence
-  -- We need to keep at least one sequence, so we'll clear from the second item onward
   for i = sequence_length, 2, -1 do
     song.sequencer:delete_sequence_at(i)
+  end
+end
+
+function instrumentMidiOutsClear()
+  local song = renoise.song()
+  for i = 1, #song.instruments do
+    song.instruments[i].midi_output_properties.device_name = ""
+  end
+end
+
+function instrumentSamplesClear()
+  local song = renoise.song()
+  for i = 1, #song.instruments do
+    local instrument = song.instruments[i]
+    if #instrument.samples > 1 then
+      instrument:delete_sample_at(1)
+      if #instrument.samples > 1 then
+        for j = #instrument.samples, 1, -1 do
+          instrument:delete_sample_at(j)
+        end
+      end
+    elseif #instrument.samples == 1 then
+      instrument:delete_sample_at(1)
+    end
   end
 end
 
@@ -919,6 +935,10 @@ function handle_switch_change(value, section)
     instruments_state = state
   elseif section == "Pattern Sequence" then
     pattern_sequence_state = state
+  elseif section == "Instrument MIDI Outs" then
+    instrument_midi_outs_state = state
+  elseif section == "Instrument Samples" then
+    instrument_samples_state = state
   end
 end
 
@@ -929,23 +949,32 @@ local dialog = nil
 function handle_ok_click()
   return function()
     local actions = {}
-  if patterns_state == "Clear" and instruments_state == "Clear" and pattern_sequence_state == "Clear" then
-  renoise.app():new_song()
-  else
+    if patterns_state == "Clear" and instruments_state == "Clear" and pattern_sequence_state == "Clear" and 
+       instrument_midi_outs_state == "Clear" and instrument_samples_state == "Clear" then
+      renoise.app():new_song()
+    else
+      if patterns_state == "Clear" then
+        patternClear()
+        table.insert(actions, "Patterns")
+      end
+      if instruments_state == "Clear" then
+        instrumentsClear()
+        table.insert(actions, "Instruments")
+      end
+      if pattern_sequence_state == "Clear" then
+        patternSequenceClear()
+        table.insert(actions, "Pattern Sequence")
+      end
+      if instrument_midi_outs_state == "Clear" then
+        instrumentMidiOutsClear()
+        table.insert(actions, "Instrument MIDI Outs")
+      end
+      if instrument_samples_state == "Clear" then
+        instrumentSamplesClear()
+        table.insert(actions, "Instrument Samples")
+      end
+    end 
 
-    if patterns_state == "Clear" then
-      patternClear()
-      table.insert(actions, "Patterns")
-    end
-    if instruments_state == "Clear" then
-      instrumentsClear()
-      table.insert(actions, "Instruments")
-    end
-    if pattern_sequence_state == "Clear" then
-      patternSequenceClear()
-      table.insert(actions, "Pattern Sequence")
-    end
-end 
     local status_message = ""
     if #actions == 0 then
       status_message = "Kept all"
@@ -954,6 +983,8 @@ end
       if patterns_state == "Keep" then table.insert(kept, "Patterns") end
       if instruments_state == "Keep" then table.insert(kept, "Instruments") end
       if pattern_sequence_state == "Keep" then table.insert(kept, "Pattern Sequence") end
+      if instrument_midi_outs_state == "Keep" then table.insert(kept, "Instrument MIDI Outs") end
+      if instrument_samples_state == "Keep" then table.insert(kept, "Instrument Samples") end
       if #kept > 0 then
         status_message = "Kept " .. table.concat(kept, ", ") .. "; "
       end
@@ -982,12 +1013,12 @@ function toggle_switch_group(section, state)
   local clear_id = create_unique_id(section:lower() .. "_clear_switch")
 
   return vb:row {
-    vb:text { text = section, width = 120 },
+    vb:text { text = section, width = 180 },
     vb:switch {
       id = keep_id,
       items = { "Keep", "Clear" },
       value = state == "Keep" and 1 or 2,
-      width = 100, -- Set width to ensure full text is displayed
+      width = 100,
       notifier = function(value)
         handle_switch_change(value, section)
       end
@@ -999,30 +1030,21 @@ end
 function show_new_song_dialog()
   local dialog_content = vb:column {
     margin = 10,
-    vb:text {
-      text = "New Song ... with",
-      font = "bold",
-      align = "center"
-    },
+    vb:text {text = "New Song ... with", font = "bold", align = "center"},
     vb:space { height = 10 },
     vb:column {
       style = "border",
       margin = 10,
       toggle_switch_group("Patterns", patterns_state),
-      toggle_switch_group("Instruments", instruments_state),
       toggle_switch_group("Pattern Sequence", pattern_sequence_state),
+      toggle_switch_group("Instruments", instruments_state),
+      toggle_switch_group("Instrument Samples", instrument_samples_state),
+      toggle_switch_group("Instrument MIDI Outs", instrument_midi_outs_state),
       vb:space { height = 10 },
       vb:row {
-        vb:button {
-          text = "OK",
-          width = 100,
-          notifier = handle_ok_click()
+        vb:button {text="OK", width=100, notifier=handle_ok_click()
         },
-        vb:button {
-          text = "Cancel",
-          width = 100,
-          notifier = handle_cancel_click(),
-          color = {1, 0, 0} -- Red color to highlight the Cancel button
+        vb:button {text="Cancel", width=100, notifier=handle_cancel_click(), color={1, 0, 0}
         }
       }
     }
@@ -1030,7 +1052,17 @@ function show_new_song_dialog()
   dialog = renoise.app():show_custom_dialog("New Song", dialog_content)
 end
 
--- Add menu entry to show the dialog
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Show New Song Dialog...", invoke=show_new_song_dialog}
-renoise.tool():add_keybinding{name="Global:Paketti:Show New Song Dialog.. (CTRL-N)", invoke=show_new_song_dialog}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Show New Song Dialog...", invoke=show_new_song_dialog}
+renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker New Song Dialog (CTRL-N)", invoke=show_new_song_dialog}
+
+
+----ALT-U
+function Deselect_All() renoise.song().selection_in_pattern=nil end
+function Deselect_Phr() renoise.song().selection_in_phrase =nil end
+
+renoise.tool():add_keybinding{name="Pattern Editor:Selection:Impulse Tracker Unmark Selection (ALT-U)",invoke=function() Deselect_All() end}
+renoise.tool():add_keybinding{name="Pattern Editor:Selection:Impulse Tracker Unmark Selection (CTRL-U) (2nd)",invoke=function() Deselect_All() end}
+
+renoise.tool():add_keybinding{name="Phrase Editor:Selection:Impulse Tracker Unmark Selection (ALT-U)",invoke=function() Deselect_Phr() end}
+renoise.tool():add_keybinding{name="Phrase Editor:Selection:Impulse Tracker Unmark Selection (CTRL-U) (2nd)",invoke=function() Deselect_Phr() end}
 

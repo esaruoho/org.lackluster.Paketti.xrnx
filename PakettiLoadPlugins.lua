@@ -77,7 +77,7 @@ function loadPlugin(pluginPath)
   if new_instrument.plugin_properties.plugin_device and new_instrument.plugin_properties.plugin_device.external_editor_available then
     new_instrument.plugin_properties.plugin_device.external_editor_visible = true
   end
-loadnative("Audio/Effects/Native/*Instr. Automation")
+openVisiblePagesToFitParameters()  
 end
 
 -- Function to add a plugin as a shortcut
@@ -93,8 +93,8 @@ local function addAsShortcut()
         plugin_type = " (AU)"
       end
 
-      local keyBindingName = "Global:Paketti:Load Plugin" .. plugin_type .. " " .. cb_info.name
-      local midiMappingName = "Tools:Paketti:Load Plugin" .. plugin_type .. " " .. cb_info.name
+      local keyBindingName="Global:Paketti:Load Plugin" .. plugin_type .. " " .. cb_info.name
+      local midiMappingName="Tools:Paketti:Load Plugin" .. plugin_type .. " " .. cb_info.name
 
       -- Debug: Print the keybinding name
       print("Attempting to add keybinding:", keyBindingName)
@@ -121,6 +121,8 @@ local function addAsShortcut()
       end
     end
   end
+  
+  renoise.app():show_status("Plugins added. Open Settings -> Keys, search for 'Load Plugin' or Midi Mappings and search for 'Load Plugin'")
 end
 
 -- Function to create a scrollable list of plugins
@@ -148,10 +150,7 @@ local function createScrollableList(plugins, title)
     local checkbox_id = "checkbox_" .. title .. "_" .. tostring(i) .. "_" .. tostring(math.random(1000000))
     local checkbox = vb:checkbox { value = false, id = checkbox_id }
     checkboxes[#checkboxes + 1] = { checkbox = checkbox, path = plugin.path, name = plugin.name }
-    local plugin_row = vb:row {
-      checkbox,
-      vb:text { text = plugin.name }
-    }
+    local plugin_row = vb:row {checkbox, vb:text {text=plugin.name}}
 
     columns[column_index]:add_child(plugin_row)
   end
@@ -231,34 +230,18 @@ local function showPluginListDialog()
         end
       },
       vb:button {
-        text = "Load Plugin(s) & Close",
-        width = "50%",
-        height = button_height,
-        notifier = function()
+        text="Load Plugin(s) & Close",
+        width="50%",
+        height=button_height,
+        notifier=function()
           loadSelectedPlugins()
           custom_dialog:close()
         end
       }
     },
-    vb:button {
-      text = "Add Plugin(s) as Shortcut(s)",
-      height = button_height,
-      notifier = addAsShortcut
-    },
-    vb:button {
-      text = "Reset Selection",
-      height = button_height,
-      notifier = function()
-        resetSelection()
-      end
-    },
-    vb:button {
-      text = "Cancel",
-      height = button_height,
-      notifier = function()
-        custom_dialog:close()
-      end
-    }
+    vb:button{text="Add Plugin(s) as Shortcut(s)",height=button_height,notifier=addAsShortcut},
+    vb:button{text="Reset Selection", height=button_height, notifier=function() resetSelection() end},
+    vb:button{text="Cancel", height=button_height, notifier=function() custom_dialog:close() end}
   }
 
   local dialog_content = vb:column {

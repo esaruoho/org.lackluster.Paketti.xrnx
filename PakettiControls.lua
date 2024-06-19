@@ -277,11 +277,10 @@ function clone_current_sequence()
     -- Select the newly created sequence
     song.selected_sequence_index = current_sequence_pos + 1
   else
-    renoise.app():show_warning("Cannot clone the sequence: The current sequence is the last one.")
+    renoise.app():show_status("Cannot clone the sequence: The current sequence is the last one.")
   end
 end
 
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Clone Current Sequence",invoke=clone_current_sequence}
 renoise.tool():add_menu_entry{name="Pattern Sequencer:Paketti..:Clone Current Sequence",invoke=clone_current_sequence}
 renoise.tool():add_menu_entry{name="Pattern Matrix:Paketti..:Clone Current Sequence",invoke=clone_current_sequence}
 renoise.tool():add_keybinding{name="Global:Tools:Clone Current Sequence",invoke=clone_current_sequence}
@@ -327,4 +326,22 @@ renoise.tool():add_keybinding{name="Global:Paketti:Sample Editor Tab Switcher (0
 renoise.tool():add_midi_mapping{name="Global:Paketti:Cycle Sample Editor Tabs",invoke=function(midiMessage) cycleMiddleFrames(midiMessage.int_value) end}
 
 
+----------
+--2nd keybind for LoopBlock forward/backward
+function loopblockback()
+local t = renoise.song().transport
+      t.loop_block_enabled=true
+      t:loop_block_move_backwards()
+      t.follow_player = true
+end
+
+function loopblockforward()
+local t = renoise.song().transport
+      t.loop_block_enabled=true
+      t:loop_block_move_forwards()
+      t.follow_player = true
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Select LoopBlock Backwards (Previous)", invoke=function() loopblockback() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Select LoopBlock Forwards (Next)", invoke=function() loopblockforward() end}
 

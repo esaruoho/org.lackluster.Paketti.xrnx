@@ -1,10 +1,3 @@
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:!! Donate !!",invoke=function()
-renoise.app():open_url("http://paypal.me/esaruoho")
-end}
-
-
-
-
 local dialog
 local vb = renoise.ViewBuilder()
 
@@ -26,6 +19,7 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
     RandomBPM = false,
     loadPaleGreenTheme = false,
     WipeSlicesLoopMode = 2,
+    WipeSlicesLoopRelease = false,
     WipeSlicesBeatSyncMode = 1,
     WipeSlicesOneShot = false,
     WipeSlicesAutoseek = false,
@@ -90,23 +84,22 @@ end
 
 function update_interpolation_mode(value)
     preferences.pakettiLoaderInterpolation.value = value
-    renoise.song().selected_sample.interpolation_mode = 5 - value -- Map 1-4 to 4-1
 end
 
 function update_loop_mode(loop_mode_pref, value)
-    loop_mode_pref.value = value
-    renoise.song().selected_sample.loop_mode = value - 1 -- Map 1-4 to 0-3
+  loop_mode_pref.value = value
+  preferences.pakettiLoaderLoopMode.value = value
 end
 
 function create_loop_mode_switch(preference)
-    return vb:switch{
-        items = {"Off", "Forward", "Backward", "PingPong"},
-        value = preference.value,
-        width = 300,
-        notifier = function(value)
-            update_loop_mode(preference, value)
-        end
-    }
+  return vb:switch{
+    items = {"Off", "Forward", "Backward", "PingPong"},
+    value = preference.value,
+    width = 300,
+    notifier = function(value)
+      update_loop_mode(preference, value)
+    end
+  }
 end
 
 function show_paketti_preferences()
@@ -170,20 +163,6 @@ function show_paketti_preferences()
                     notifier = function(value)
                         update_interpolation_mode(value)
                     end}},
-            vb:row{vb:text{text = "Sample OverSampling", width = 150},
-                vb:switch{items = {"Off", "On"},
-                    value = preferences.pakettiLoaderOverSampling and 2 or 1,
-                    width = 200,
-                    notifier = function(value)
-                        preferences.pakettiLoaderOverSampling = (value == 2)
-                    end}},
-            vb:row{vb:text{text = "Sample AutoFade", width = 150},
-                vb:switch{items = {"Off", "On"},
-                    value = preferences.pakettiLoaderAutoFade and 2 or 1,
-                    width = 200,
-                    notifier = function(value)
-                        preferences.pakettiLoaderAutoFade = (value == 2)
-                    end}},
             vb:row{vb:text{text = "Loop Mode", width = 150},
                 create_loop_mode_switch(preferences.pakettiLoaderLoopMode)}},
         horizontal_rule(),
@@ -192,6 +171,16 @@ function show_paketti_preferences()
             vertical_space(5),
             vb:row{vb:text{text = "Slice Loop Mode", width = 150},
                 create_loop_mode_switch(preferences.WipeSlicesLoopMode)},
+            vb:row {
+  vb:text {text = "Slice Loop Release/Exit Mode", width = 200},
+  vb:checkbox {
+    value = preferences.WipeSlicesLoopRelease.value,
+    notifier = function(value)
+      preferences.WipeSlicesLoopRelease.value = value
+    end
+  }},
+            
+            
             vb:row{vb:text{text = "Slice BeatSync Mode", width = 150},
                 vb:switch{items = {"Repitch", "Time-Stretch (Percussion)", "Time-Stretch (Texture)"},
                     value = preferences.WipeSlicesBeatSyncMode.value,

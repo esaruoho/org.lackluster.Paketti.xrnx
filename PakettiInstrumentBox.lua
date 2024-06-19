@@ -121,10 +121,12 @@ local ssi=renoise.song().selected_sample_index
 
    for i=1,64 do renoise.song().selected_instrument.samples[i].name="empty_sampleslot" .. i end
 
- renoise.song().selected_instrument.name=("multiloopersampler_instrument" .. renoise.song().selected_instrument_index)
+ renoise.song().selected_instrument.name=("Empty Sample Slices" .. renoise.song().selected_instrument_index)
  w.active_middle_frame= 2 end
 
-renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Create Empty Sample Slices", invoke=function() emptyslices() end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Initialize..:Create Empty Sample Slices", invoke=function() emptyslices() end}
+renoise.tool():add_menu_entry{name="Sample List:Paketti..:Create Empty Sample Slices", invoke=function() emptyslices() end}
+renoise.tool():add_menu_entry{name="Sample Navigation:Paketti..:Create Empty Sample Slices", invoke=function() emptyslices() end}
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 
 

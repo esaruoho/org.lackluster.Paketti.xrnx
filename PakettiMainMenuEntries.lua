@@ -1,3 +1,17 @@
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:!!About..:!! Donate !!",invoke=function()
+renoise.app():open_url("http://paypal.me/esaruoho")
+end}
+
+
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:!!About..:Open Paketti Path",invoke=function() renoise.app():open_path(renoise.tool().bundle_path)
+ end}
+
+
+
+
+
+
+
 
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Debug:Inspect Plugin",invoke=function() inspectPlugin() end}
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Debug:Inspect Device in Slot 2",invoke=function() inspectEffect() end}
@@ -38,30 +52,14 @@ renoise.tool():add_menu_entry{name = "--Main Menu:Tools:Paketti..:Pattern Editor
 --renoise.song().transport.bpm=math.random(60,180) end}
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Write Current BPM&LPB to Master column",invoke=function() write_bpm() end}
 
--- Function to create and show the dialog with a text field.
-function squigglerdialog()
-  local vb = renoise.ViewBuilder()
-  local content = vb:column {
-    margin = 10,
-    vb:textfield {
-      value = "∿",
-      edit_mode = true
-    }
-  }
-  
-  -- Using a local variable for 'dialog' to limit its scope to this function.
-  local dialog = renoise.app():show_custom_dialog("Copy the Squiggler to your clipboard", content)
-end
-
-renoise.tool():add_keybinding{name="Global:Paketti:∿ Squiggly Sinewave to Clipboard (macOS)", invoke=function() squigglerdialog() end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:∿ Squiggly Sinewave to Clipboard", invoke=function() squigglerdialog() end}
 
 
 
 
 
 
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor:Effect Column CheatSheet", invoke=function() CheatSheet() end}
+
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor:Effect Column CheatSheet Dialog", invoke=function() CheatSheet() end}
 
 -------- Plugins/Devices
 -- Adding menu entries for listing available plugins by type
@@ -90,5 +88,23 @@ local devices=renoise.song().tracks[renoise.song().selected_track_index].availab
     print(key, value)
   end
 end}
+renoise.tool():add_menu_entry{name="---Main Menu:Tools:Paketti..:Plugins/Devices:Debug:Available Routings for Track",invoke=function() showAvailableRoutings() end}
 
+-- Function to create and show the dialog with a text field.
+function squigglerdialog()
+  local vb = renoise.ViewBuilder()
+  local content = vb:column {
+    margin = 10,
+    vb:textfield {
+      value = "∿",
+      edit_mode = true
+    }
+  }
+  
+  -- Using a local variable for 'dialog' to limit its scope to this function.
+  local dialog = renoise.app():show_custom_dialog("Copy the Squiggler to your clipboard", content)
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:∿ Squiggly Sinewave to Clipboard (macOS)", invoke=function() squigglerdialog() end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:∿ Squiggly Sinewave to Clipboard", invoke=function() squigglerdialog() end}
 

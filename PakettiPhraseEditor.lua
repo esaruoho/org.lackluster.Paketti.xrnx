@@ -27,7 +27,7 @@ s.instruments[s.selected_instrument_index].phrases[s.selected_phrase_index].dela
 s.instruments[s.selected_instrument_index].phrases[s.selected_phrase_index].sample_effects_column_visible=true
 end
 
-renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Create Phrase",invoke=function() createPhrase() end}
+renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Create Phrase",invoke=function() createPhrase() end}
 renoise.tool():add_menu_entry{name="--Sample Editor:Paketti..:Create Phrase",invoke=function() createPhrase() end}
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Create Phrase",invoke=function() createPhrase() end}
 
@@ -76,8 +76,6 @@ selphra.name=renamephrase_to_index
 --selphra.name=renoise.song().selected_phrase_index
 end}
 
-
-
 function joulephrasedoubler()
   local old_phraselength = renoise.song().selected_phrase.number_of_lines
   local s=renoise.song()
@@ -104,10 +102,9 @@ end
 end
 end
 
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Joule Phrase Doubler",invoke=function() joulephrasedoubler() end}  
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Joule Phrase Doubler (2nd)",invoke=function() joulepatterndoubler() end}    
-
-
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Phrase Doubler (Joule)",invoke=function() joulephrasedoubler() end}  
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Phrase Doubler (Joule) (2nd)",invoke=function() joulepatterndoubler() end}    
+-------
 function joulephrasehalver()
   local old_phraselength = renoise.song().selected_phrase.number_of_lines
   local s=renoise.song()
@@ -135,9 +132,6 @@ end
 end
 end
 
-
-
-
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Joule Phrase Halver",invoke=function() joulephrasehalver() end}  
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Joule Phrase Halver (2nd)",invoke=function() joulephrasehalver() end}  
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Phrase Halver (Joule)",invoke=function() joulephrasehalver() end}  
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Phrase Halver (Joule) (2nd)",invoke=function() joulephrasehalver() end}  
 

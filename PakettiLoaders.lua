@@ -146,6 +146,41 @@ s.selected_instrument.active_tab=2 end
 renoise.tool():add_keybinding{name="Global:Paketti:Load U-He Zebra (VST)", invoke=function() LoadZebra() end}
 
 ------------------------------------------------------------------------------------------------------------
+-- Function to read an XML file and return its contents as a string
+function readXMLfile(file_path)
+  local file = io.open(file_path, "r")
+  if not file then
+    renoise.app():show_warning("Failed to open file: " .. file_path)
+    return nil
+  end
+  local content = file:read("*all")
+  file:close()
+  return content
+end
+
+-- Function to set the active preset data from the provided XML file path
+function providePresetXML(preset_file_path)
+  local preset_xml = readXMLfile(preset_file_path)
+  if not preset_xml then
+    renoise.app():show_warning("Failed to read preset XML from file: " .. preset_file_path)
+    return
+  end
+  
+  -- Assign the read XML data to the active preset data of the selected instrument's plugin device
+  local song = renoise.song()
+  local selected_instrument_index = song.selected_instrument_index
+  local plugin_device = song.instruments[selected_instrument_index].plugin_properties.plugin_device
+  
+  if plugin_device then
+    plugin_device.active_preset_data = preset_xml
+    renoise.app():show_status("Preset successfully loaded from: " .. preset_file_path)
+  else
+    renoise.app():show_warning("No plugin device found for the selected instrument.")
+  end
+end
+
+-- Example usage
+
 function LoadPPG()
 local s=renoise.song()
 s.selected_instrument_index = search_empty_instrument()
@@ -160,13 +195,14 @@ renoise.app().window.active_middle_frame=3
 s.selected_instrument.active_tab=2 
 --     renoise.song().selected_track.devices[checkline].parameters[1].value=0.474 -- Mix 
 
-renoise.song().instruments[renoise.song().selected_instrument_index].plugin_properties.plugin_device.active_preset_data="Presets/PPG_Arpeg.XML"
+renoise.song().instruments[renoise.song().selected_instrument_index].plugin_properties.plugin_device.active_preset_data=providePresetXML("Presets/PPG_Arpeg.XML")
+
 --loadnative("Audio/Effects/Native/*Instr. Automation")
 --     s.selected_track.devices[2].parameters[2].value=0.0 -- delay
 
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Load Waldorf PPG v2 (VST)", invoke=function() LoadPPG() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Waldorf PPG v2 (VST)",invoke=function() LoadPPG() end}
 -----------------------------------------------------------------------------------------------------
 function LoadAttack()
 local s=renoise.song()
@@ -180,7 +216,7 @@ if s.selected_instrument.plugin_properties.plugin_loaded
 renoise.app().window.active_middle_frame=3
 s.selected_instrument.active_tab=2 
 end
-renoise.tool():add_keybinding{name="Global:Paketti:Load Waldorf Attack (VST)", invoke=function() LoadAttack() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Waldorf Attack (VST)",invoke=function() LoadAttack() end}
 -----------------------------------------------------------------------------------------------------
 function loadnative(effect)
   local checkline=nil
@@ -249,7 +285,7 @@ function loadnative(effect)
         sample_devices[checkline].active_preset_data=PakettiSend_xml_data
       end
     else
-      renoise.app():show_error("No sample selected.")
+      renoise.app():show_status("No sample selected.")
     end
   else
     local sdevices=s.selected_track.devices
@@ -448,10 +484,13 @@ if raw.active_middle_frame==7 then
     local inserted_device=chain.devices[checkline]
 
     -- Insert the rest of your logic for handling the inserted device here
-    if inserted_device.name=="AU: Koen Tanghe @ Smartelectronix: KTGranulator" then return
-    else inserted_device.external_editor_visible=true end
-    inserted_device.is_maximized=false
-    renoise.song().selected_device_index=checkline
+    if inserted_device.name=="AU: Koen Tanghe @ Smartelectronix: KTGranulator" then 
+    
+    return
+    end
+    inserted_device.external_editor_visible=true 
+        inserted_device.is_maximized=false
+
 
     -- Additional device-specific parameter adjustments
     if inserted_device.name=="AU: Schaack Audio Technologies: TransientShaper" then 
@@ -674,9 +713,9 @@ if not devices[s.selected_device_index].external_editor_visible then
 end
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Open Ext.Editor of Selected Effect",invoke=function() OpenSelectedEffectExternalEditor() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Open External Editor of Selected Effect",invoke=function() OpenSelectedEffectExternalEditor() end}
 -----------------------------------------------------------------------------------------------------
-renoise.tool():add_keybinding{name="Global:Paketti:Hide Track DSP Devices",invoke=function()
+renoise.tool():add_keybinding{name="Global:Paketti:Hide Track DSP Device External Editors",invoke=function()
 
   -- Function to hide all devices in a given device chain
   local function hide_devices(device_chain)
@@ -1116,7 +1155,7 @@ for _, target in ipairs(targets) do
         end
       }
     else
-      print("Error: Missing display name or device for target")
+     -- print("Error: Missing display name or device for target")
     end
   end
 end
@@ -1324,6 +1363,7 @@ local number = (table.count(renoise.song().selected_track.devices))
  for i=2,number  do 
   renoise.song().selected_track.devices[i].is_active=false
  end
+ renoise.app():show_status("Disabled all Track DSP Devices on Selected Channel")
 end
 
 function effectenable()
@@ -1331,10 +1371,9 @@ local number = (table.count(renoise.song().selected_track.devices))
 for i=2,number  do 
 renoise.song().selected_track.devices[i].is_active=true
 end
+renoise.app():show_status("Enabled all Track DSP Devices on Selected Channel")
 end
 
-renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Bypass All Devices on Channel", invoke=function() effectbypass() end}
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Enable All Devices on Channel", invoke=function() effectenable() end}
 renoise.tool():add_menu_entry{name="--Mixer:Paketti..:Bypass All Devices on Channel", invoke=function() effectbypass() end}
 renoise.tool():add_menu_entry{name="Mixer:Paketti..:Enable All Devices on Channel", invoke=function() effectenable() end}
 
@@ -1521,6 +1560,8 @@ function hide_all_external_editors()
   local num_tracks = #song.tracks
   local num_instruments = #song.instruments
 
+  local any_editor_closed = false
+
   -- Hide external editors for all track devices
   for track_index = 1, num_tracks do
     local track = song:track(track_index)
@@ -1531,6 +1572,7 @@ function hide_all_external_editors()
 
       if device.external_editor_available and device.external_editor_visible then
         device.external_editor_visible = false
+        any_editor_closed = true
       end
     end
   end
@@ -1546,6 +1588,7 @@ function hide_all_external_editors()
         
         if device.external_editor_available and device.external_editor_visible then
           device.external_editor_visible = false
+          any_editor_closed = true
         end
       end
     end
@@ -1555,18 +1598,25 @@ function hide_all_external_editors()
       local plugin_device = instrument.plugin_properties.plugin_device
       if plugin_device.external_editor_available and plugin_device.external_editor_visible then
         plugin_device.external_editor_visible = false
+        any_editor_closed = true
       end
     end
   end
+
+  if any_editor_closed then
+    renoise.app():show_status("All open External Editors for Track DSP & Sample FX Chain Devices have been closed.")
+  else
+    renoise.app():show_status("No Track DSP or Sample FX Chain Device External Editors were open, did nothing.")
+  end
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Hide Track DSP Devices for All Tracks",invoke=function() hide_all_external_editors() end}
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Hide Track DSP Devices for All Tracks",invoke=function() hide_all_external_editors() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Hide Track DSP Device External Editors for All Tracks",invoke=function() hide_all_external_editors() end}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Hide Track DSP Device External Editors for All Tracks",invoke=function() hide_all_external_editors() end}
 renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Bypass All Devices on Track", invoke=function() effectbypass() end}
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Enable All Devices on Track", invoke=function() effectenable() end}
 
 
-renoise.tool():add_midi_mapping{name="Global:Paketti:Hide Track DSP Devices for All Tracks",invoke=function() hide_all_external_editors() end}
+renoise.tool():add_midi_mapping{name="Global:Paketti:Hide Track DSP Device External Editors for All Tracks",invoke=function() hide_all_external_editors() end}
 
 
 
@@ -1702,4 +1752,66 @@ if not renoise.tool().app_idle_observable:has_notifier(handle_idle_notifier) the
   renoise.tool().app_idle_observable:add_notifier(handle_idle_notifier)
 end
 
+---------
+-- Function to toggle external editors for all devices in a given device chain
+function ToggleDeviceExternalEditors(device_chain)
+  if #device_chain.devices > 1 then
+    for i = 2, #device_chain.devices do
+      if device_chain.devices[i].external_editor_available == true then
+        device_chain.devices[i].external_editor_visible = not device_chain.devices[i].external_editor_visible
+      end
+    end
+  end
+end
+
+-- Function to hide external editors for all devices in a given device chain
+function HideDeviceExternalEditors(device_chain)
+  if #device_chain.devices > 1 then
+    for i = 2, #device_chain.devices do
+      if device_chain.devices[i].external_editor_available == true then
+        device_chain.devices[i].external_editor_visible = false
+      end
+    end
+  end
+end
+
+-- Keybinding to show/hide track DSP and FX chain devices
+renoise.tool():add_keybinding{name="Global:Paketti:Show/Hide Track DSP and FX Chain Device External Editors",invoke=function()
+
+  -- Check the middle layer
+  local w = renoise.app().window
+  local instrument = renoise.song().selected_instrument
+  local selected_track = renoise.song().selected_track
+
+  if w.active_middle_frame==7 then
+    -- Hide track DSP devices
+    if selected_track and #selected_track.devices > 1 then
+      HideDeviceExternalEditors(selected_track)
+    end
+
+    -- Toggle FX chain device external editors for the selected instrument
+    if instrument and #instrument.sample_device_chains > 0 then
+      for _, device_chain in ipairs(instrument.sample_device_chains) do
+        if #device_chain.devices > 1 then
+          ToggleDeviceExternalEditors(device_chain)
+        end
+      end
+    end
+  else
+    -- Hide FX chain devices
+    if instrument and #instrument.sample_device_chains > 0 then
+      for _, device_chain in ipairs(instrument.sample_device_chains) do
+        if #device_chain.devices > 1 then
+          HideDeviceExternalEditors(device_chain)
+        end
+      end
+    end
+
+    -- Toggle track DSP device external editors for the selected track
+    if selected_track and #selected_track.devices > 1 then
+      ToggleDeviceExternalEditors(selected_track)
+    end
+  end
+
+end}
 

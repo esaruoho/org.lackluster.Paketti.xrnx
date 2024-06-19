@@ -56,11 +56,11 @@ else if changedSampleTranspose < -120 then changedSampleTranspose = -120 end end
 renoise.song().selected_sample.transpose=changedSampleTranspose
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Transpose -1",invoke=function() selectedSampleTranspose(-1) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Transpose +1",invoke=function() selectedSampleTranspose(1) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Transpose -12",invoke=function() selectedSampleTranspose(-12) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Transpose +12",invoke=function() selectedSampleTranspose(12) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Selected Sample Transpose 0",invoke=function() renoise.song().selected_sample.transpose=0 end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Transpose (-1)",invoke=function() selectedSampleTranspose(-1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Transpose (+1)",invoke=function() selectedSampleTranspose(1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Transpose (-12)",invoke=function() selectedSampleTranspose(-12) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Transpose (+12)",invoke=function() selectedSampleTranspose(12) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Selected Sample Transpose (0)",invoke=function() renoise.song().selected_sample.transpose=0 end}
 
 function selectedSampleFinetune(amount)
 local currentSampleFinetune = renoise.song().selected_sample.fine_tune
@@ -70,11 +70,11 @@ else if changedSampleFinetune < -127 then changedSampleFinetune = -127 end end
 renoise.song().selected_sample.fine_tune=changedSampleFinetune
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Finetune -1",invoke=function() selectedSampleFinetune(-1) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Finetune +1",invoke=function() selectedSampleFinetune(1) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Finetune -10",invoke=function() selectedSampleFinetune(-10) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Finetune +10",invoke=function() selectedSampleFinetune(10) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Finetune 0",invoke=function() renoise.song().selected_sample.fine_tune=0 end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Finetune (-1)",invoke=function() selectedSampleFinetune(-1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Finetune (+1)",invoke=function() selectedSampleFinetune(1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Finetune (-10)",invoke=function() selectedSampleFinetune(-10) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Finetune (+10)",invoke=function() selectedSampleFinetune(10) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Finetune (0)",invoke=function() renoise.song().selected_sample.fine_tune=0 end}
 
 function selectedSamplePanning(amount)
 local currentSamplePanning = renoise.song().selected_sample.panning
@@ -88,8 +88,8 @@ renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Panning 0
 renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Panning 0.0 (Left)",invoke=function() renoise.song().selected_sample.panning=0.0 end}
 renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Panning 1.0 (Right)",invoke=function() renoise.song().selected_sample.panning=1.0 end}
  
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Panning +0.01",invoke=function() selectedSamplePanning(0.01) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Panning -0.01",invoke=function() selectedSamplePanning(-0.01) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Panning (+0.01)",invoke=function() selectedSamplePanning(0.01) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Panning (-0.01)",invoke=function() selectedSamplePanning(-0.01) end}
 
 function selectedSampleVolume(amount)
 local currentSampleVolume = renoise.song().selected_sample.volume
@@ -99,8 +99,8 @@ else if changedSampleVolume < 0.0 then changedSampleVolume = 0.0 end end
 renoise.song().selected_sample.volume=changedSampleVolume
 end
  
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Volume +0.01",invoke=function() selectedSampleVolume(0.01) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Volume -0.01",invoke=function() selectedSampleVolume(-0.01) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Volume (+0.01)",invoke=function() selectedSampleVolume(0.01) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Volume (-0.01)",invoke=function() selectedSampleVolume(-0.01) end}
 renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Volume Reset (0.0dB)",invoke=function() renoise.song().selected_sample.volume=1 end }
 
 function selectedSampleInterpolation(amount)
@@ -379,8 +379,8 @@ renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Beatsync 
 
 -- Shortcuts as requested by Casiino
 -- 
-renoise.tool():add_keybinding{name="Global:Paketti:Computer Keyboard Velocity -16",invoke=function() computerKeyboardVolChange(-16) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Computer Keyboard Velocity +16",invoke=function() computerKeyboardVolChange(16) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Computer Keyboard Velocity (-16)",invoke=function() computerKeyboardVolChange(-16) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Computer Keyboard Velocity (+16)",invoke=function() computerKeyboardVolChange(16) end}
 renoise.tool():add_keybinding{name="Global:Paketti:BPM Decrease (-5)",invoke=function() adjust_bpm(-5, 0) end}
 renoise.tool():add_keybinding{name="Global:Paketti:BPM Increase (+5)",invoke=function() adjust_bpm(5, 0) end}
 
@@ -405,18 +405,18 @@ renoise.song().instruments[renoise.song().selected_instrument_index].samples[ren
 renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Autofade On",invoke=function() renoise.song().selected_sample.autofade=true end}
 renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Autofade Off",invoke=function() renoise.song().selected_sample.autofade=false end}
 
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Finetune -5",invoke=function() selectedSampleFinetune(-5) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Finetune +5",invoke=function() selectedSampleFinetune(5) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Finetune (-5)",invoke=function() selectedSampleFinetune(-5) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Finetune (+5)",invoke=function() selectedSampleFinetune(5) end}
 
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Volume +0.05",invoke=function() selectedSampleVolume(0.05) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Volume -0.05",invoke=function() selectedSampleVolume(-0.05) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Volume (+0.05)",invoke=function() selectedSampleVolume(0.05) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Volume (-0.05)",invoke=function() selectedSampleVolume(-0.05) end}
 
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Panning +0.05",invoke=function() selectedSamplePanning(0.05) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Panning -0.05",invoke=function() selectedSamplePanning(-0.05) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Panning (+0.05)",invoke=function() selectedSamplePanning(0.05) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Panning (-0.05)",invoke=function() selectedSamplePanning(-0.05) end}
 
 
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Transpose -5",invoke=function() selectedSampleTranspose(-5) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Transpose +5",invoke=function() selectedSampleTranspose(5) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Transpose (-5)",invoke=function() selectedSampleTranspose(-5) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Transpose (+5)",invoke=function() selectedSampleTranspose(5) end}
 
 -- Function to assign a modulation set to the selected sample based on a given index
 function selectedSampleMod(number)
@@ -679,12 +679,12 @@ renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments:48st P
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments:64st PitchBend Instrument Init",invoke=function() pitchedInstrument(64) end}
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments:96st PitchBend Instrument Init",invoke=function() pitchedInstrument(96) end}
 
-renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:12st PitchBend Instrument Init",invoke=function() pitchedInstrument(12) end}
-renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:24st PitchBend Instrument Init",invoke=function() pitchedInstrument(24) end}
-renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:36st PitchBend Instrument Init",invoke=function() pitchedInstrument(36) end}
-renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:48st PitchBend Instrument Init",invoke=function() pitchedInstrument(48) end}
-renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:64st PitchBend Instrument Init",invoke=function() pitchedInstrument(64) end}
-renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:96st PitchBend Instrument Init",invoke=function() pitchedInstrument(96) end}
+renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Initialize..:12st PitchBend Instrument Init",invoke=function() pitchedInstrument(12) end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Initialize..:24st PitchBend Instrument Init",invoke=function() pitchedInstrument(24) end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Initialize..:36st PitchBend Instrument Init",invoke=function() pitchedInstrument(36) end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Initialize..:48st PitchBend Instrument Init",invoke=function() pitchedInstrument(48) end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Initialize..:64st PitchBend Instrument Init",invoke=function() pitchedInstrument(64) end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Initialize..:96st PitchBend Instrument Init",invoke=function() pitchedInstrument(96) end}
 
 renoise.tool():add_keybinding{name="Global:Paketti:12st PitchBend Instrument Init", invoke=function() pitchedInstrument(12) end}
 renoise.tool():add_keybinding{name="Global:Paketti:24st PitchBend Instrument Init", invoke=function() pitchedInstrument(24) end}
@@ -713,16 +713,16 @@ function transposeAllSamplesInInstrument(amount)
     end
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Transpose -1",
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Transpose (-1)",
     invoke = function() transposeAllSamplesInInstrument(-1) end}
 
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Transpose +1",
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Transpose (+1)",
     invoke = function() transposeAllSamplesInInstrument(1) end}
 
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Transpose -12",
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Transpose (-12)",
     invoke = function() transposeAllSamplesInInstrument(-12) end}
 
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Transpose +12",
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Transpose (+12)",
     invoke = function() transposeAllSamplesInInstrument(12) end}
 
 function resetInstrumentTranspose(amount)
@@ -767,11 +767,11 @@ end
 
 
 
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Velocity Tracking On",
+invoke=function() selectedInstrumentVelocityTracking(1) end}
 renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Velocity Tracking Off",
 invoke=function() selectedInstrumentVelocityTracking(0) end}
 
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Velocity Tracking On",
-invoke=function() selectedInstrumentVelocityTracking(1) end}
 
 function selectedSampleVelocityTracking(enable)
   -- Access the selected instrument
@@ -871,13 +871,16 @@ end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Select Group (Next)", invoke=function() selectNextGroupTrack() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Select Group (Previous)", invoke=function() selectPreviousGroupTrack() end}
+
+
+
 renoise.tool():add_keybinding{name="Global:Paketti:Delete / Clear / Wipe Entire Row", invoke=function() renoise.song().selected_line:clear() end}
 -----
+renoise.tool():add_menu_entry{name="--Sample Editor:Paketti..:Set Selected Instrument Velocity Tracking On",invoke=function()  selectedInstrumentVelocityTracking(1) end}
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Set Selected Instrument Velocity Tracking Off",invoke=function() selectedInstrumentVelocityTracking(0) end}
-renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Set Selected Instrument Velocity Tracking On",invoke=function()  selectedInstrumentVelocityTracking(1) end}
 
+renoise.tool():add_menu_entry{name="--Sample Mappings:Paketti..:Set Selected Instrument Velocity Tracking On",invoke=function()  selectedInstrumentVelocityTracking(1) end}
 renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Set Selected Instrument Velocity Tracking Off",invoke=function() selectedInstrumentVelocityTracking(0) end}
-renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Set Selected Instrument Velocity Tracking On",invoke=function()  selectedInstrumentVelocityTracking(1) end}
 
 function setInstrumentVolume(amount)
     -- Access the currently selected instrument in Renoise
@@ -902,8 +905,8 @@ function setInstrumentVolume(amount)
 end
 
 -- Keybindings to adjust the volume of all samples in the selected instrument
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Volume +0.01",invoke=function() setInstrumentVolume(0.01) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Volume -0.01",invoke=function() setInstrumentVolume(-0.01) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Volume (+0.01)",invoke=function() setInstrumentVolume(0.01) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Volume (-0.01)",invoke=function() setInstrumentVolume(-0.01) end}
 renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Volume Reset (0.0dB)",invoke=function()
     local instrument = renoise.song().selected_instrument
     for i = 1, #instrument.samples do
@@ -945,8 +948,8 @@ function setInstrumentPanningValue(value)
 end
 
 -- Keybindings to adjust the panning of all samples in the selected instrument
-renoise.tool():add_keybinding{name="Sample Editor:Paketti:Set Selected Instrument Panning +0.01",invoke=function() setInstrumentPanning(0.01) end}
-renoise.tool():add_keybinding{name="Sample Editor:Paketti:Set Selected Instrument Panning -0.01",invoke=function() setInstrumentPanning(-0.01) end}
+renoise.tool():add_keybinding{name="Sample Editor:Paketti:Set Selected Instrument Panning (+0.01)",invoke=function() setInstrumentPanning(0.01) end}
+renoise.tool():add_keybinding{name="Sample Editor:Paketti:Set Selected Instrument Panning (-0.01)",invoke=function() setInstrumentPanning(-0.01) end}
 renoise.tool():add_keybinding{name="Sample Editor:Paketti:Set Selected Instrument Panning Reset (Center)",invoke=function() setInstrumentPanningValue(0.5) end}
 renoise.tool():add_keybinding{name="Sample Editor:Paketti:Set Selected Instrument Panning 0.0 (Left)",invoke=function() setInstrumentPanningValue(0.0) end}
 renoise.tool():add_keybinding{name="Sample Editor:Paketti:Set Selected Instrument Panning 1.0 (Right)",invoke=function() setInstrumentPanningValue(1.0) end}
@@ -1039,7 +1042,11 @@ function toggle_catch_octave()
 end
 
 -- Add a menu entry and key binding for toggling Catch Octave
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Catch Octave",invoke = toggle_catch_octave}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Catch Octave",invoke = toggle_catch_octave}
+
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Clone Current Sequence",invoke=clone_current_sequence}
+
+
 renoise.tool():add_keybinding{name="Global:Paketti:Catch Octave",invoke=toggle_catch_octave}
 
 -- Initial call to add notifiers if enabled
@@ -1095,7 +1102,7 @@ local deltas = {["+1"] = 1, ["-1"] = -1, ["+10"] = 10, ["-10"] = -10, ["+16"] = 
 -- Create key bindings for each slice and each delta
 for i = 1, 32 do
     for name, delta in pairs(deltas) do
-        renoise.tool():add_keybinding{name="Sample Editor:Paketti:Nudge Slice " .. i .. " by " .. name,invoke=function() adjustSliceKeyshortcut(i, delta) end}
+        renoise.tool():add_keybinding{name="Sample Editor:Paketti:Nudge Slice " .. i .. " by (" .. name .. ")",invoke=function() adjustSliceKeyshortcut(i, delta) end}
     end
 end
 -----------
@@ -1123,11 +1130,11 @@ else if changedSampleFinetune < -127 then changedSampleFinetune = -127 end end
 renoise.song().selected_sample.fine_tune=changedSampleFinetune
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Finetune -1",invoke=function()  selectedInstrumentFinetune(-1) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Finetune +1",invoke=function()  selectedInstrumentFinetune(1) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Finetune -10",invoke=function() selectedInstrumentFinetune(-10) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Finetune +10",invoke=function() selectedInstrumentFinetune(10) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Finetune 0",invoke=function() renoise.song().selected_sample.fine_tune=0 end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Finetune (-1)",invoke=function()  selectedInstrumentFinetune(-1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Finetune (+1)",invoke=function()  selectedInstrumentFinetune(1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Finetune (-10)",invoke=function() selectedInstrumentFinetune(-10) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Finetune (+10)",invoke=function() selectedInstrumentFinetune(10) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Finetune (0)",invoke=function() renoise.song().selected_sample.fine_tune=0 end}
 
 
 -- Function to assign a modulation set to the selected sample based on a given index
@@ -1617,10 +1624,8 @@ function trackOutputRoutingsGUI_create()
   dialog = renoise.app():show_custom_dialog("Track Output Routings", content)
 end
 
-renoise.tool():add_menu_entry{name="---Main Menu:Tools:Paketti..:Available Routings for Track",invoke=function() showAvailableRoutings() end}
-
 -- Add a menu entry to show the GUI
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Track Routings GUI",invoke=trackOutputRoutingsGUI_create}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Track Routings Dialog",invoke=trackOutputRoutingsGUI_create}
 ------------
 
 -- Function to adjust the delay, panning, or volume column within the selected area in the pattern editor
@@ -1716,8 +1721,8 @@ end
 local function add_tool_entries(column_type, adjustment)
   local adj_str = (adjustment > 0) and "+" .. adjustment or tostring(adjustment)
   renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Column:Adjust Selection " .. column_type:gsub("^%l", string.upper) .. " Column " .. adj_str, invoke=function() adjust_column(column_type, adjustment) end}
-  renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Adjust Selection " .. column_type:gsub("^%l", string.upper) .. " Column " .. adj_str, invoke=function() adjust_column(column_type, adjustment) end}
-  renoise.tool():add_midi_mapping{name="Pattern Editor:Paketti:Adjust Selection " .. column_type:gsub("^%l", string.upper) .. " Column " .. adj_str, invoke=function() adjust_column(column_type, adjustment) end}
+  renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Adjust Selection " .. column_type:gsub("^%l", string.upper) .. " Column (" .. adj_str .. ")", invoke=function() adjust_column(column_type, adjustment) end}
+  renoise.tool():add_midi_mapping{name="Pattern Editor:Paketti:Adjust Selection " .. column_type:gsub("^%l", string.upper) .. " Column (" .. adj_str .. ")", invoke=function() adjust_column(column_type, adjustment) end}
 end
 
 -- Define the menu entries, keybindings, and MIDI mappings for wiping the columns
@@ -1805,14 +1810,6 @@ function mono_to_blank(left_channel, right_channel)
   renoise.app():show_status("Mono sample successfully converted.")
 end
 
--- Add menu entries, keybindings, and MIDI mappings for both operations
-renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Mono to Left with Blank Right",invoke=function() mono_to_blank(1, 0) end}
-renoise.tool():add_keybinding{name="Sample Editor:Paketti:Mono to Left with Blank Right",invoke=function() mono_to_blank(1, 0) end}
-renoise.tool():add_midi_mapping{name="Sample Editor:Paketti:Mono to Left with Blank Right",invoke=function() mono_to_blank(1, 0) end}
-
-renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Mono to Right with Blank Left",invoke=function() mono_to_blank(0, 1) end}
-renoise.tool():add_keybinding{name="Sample Editor:Paketti:Mono to Right with Blank Left",invoke=function() mono_to_blank(0, 1) end}
-renoise.tool():add_midi_mapping{name="Sample Editor:Paketti:Mono to Right with Blank Left",invoke=function() mono_to_blank(0, 1) end}
 
 
 -- Function to convert a mono sample to stereo
@@ -1880,9 +1877,24 @@ function convert_mono_to_stereo()
   renoise.app():show_status("Mono sample successfully converted to stereo.")
 end
 
-renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Convert Mono to Stereo",invoke=convert_mono_to_stereo}
+renoise.tool():add_menu_entry{name="--Sample Editor:Paketti..:Convert Mono to Stereo",invoke=convert_mono_to_stereo}
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Mono to Left with Blank Right",invoke=function() mono_to_blank(1, 0) end}
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Mono to Right with Blank Left",invoke=function() mono_to_blank(0, 1) end}
+
+renoise.tool():add_menu_entry{name="--Sample Navigator:Paketti..:Convert Mono to Stereo",invoke=convert_mono_to_stereo}
+renoise.tool():add_menu_entry{name="Sample Navigator:Paketti..:Mono to Left with Blank Right",invoke=function() mono_to_blank(1, 0) end}
+renoise.tool():add_menu_entry{name="Sample Navigator:Paketti..:Mono to Right with Blank Left",invoke=function() mono_to_blank(0, 1) end}
+
+
+renoise.tool():add_keybinding{name="Sample Editor:Paketti:Mono to Left with Blank Right",invoke=function() mono_to_blank(1, 0) end}
 renoise.tool():add_keybinding{name="Sample Editor:Paketti:Convert Mono to Stereo",invoke=convert_mono_to_stereo}
+renoise.tool():add_keybinding{name="Sample Editor:Paketti:Mono to Right with Blank Left",invoke=function() mono_to_blank(0, 1) end}
+
+renoise.tool():add_midi_mapping{name="Sample Editor:Paketti:Mono to Right with Blank Left",invoke=function() mono_to_blank(0, 1) end}
+renoise.tool():add_midi_mapping{name="Sample Editor:Paketti:Mono to Left with Blank Right",invoke=function() mono_to_blank(1, 0) end}
 renoise.tool():add_midi_mapping{name="Sample Editor:Paketti:Convert Mono to Stereo",invoke=convert_mono_to_stereo}
+
+
 
 -----------
 
@@ -2195,5 +2207,216 @@ function note_interpolation()
     renoise.app():show_error("Both start and end lines must contain notes.")
   end
 end
+
+----------------------
+
+-- Function to select the first track in the next or previous group
+function select_first_track_in_next_group(direction)
+  local song = renoise.song()
+  local current_index = song.selected_track_index
+  local group_indices = {}
+
+  -- Collect all group indices
+  for i = 1, song.sequencer_track_count do
+    if song.tracks[i].type == renoise.Track.TRACK_TYPE_GROUP then
+      local members = song.tracks[i].members
+      local theCorrectIndex = i - #members
+      table.insert(group_indices, theCorrectIndex)
+    end
+  end
+
+  -- Check if there are no groups in the song
+  if #group_indices == 0 then
+    renoise.app():show_status("There are no Groups in this Song")
+    return
+  end
+
+  -- Determine the next group index
+  if direction == 1 then
+    for _, index in ipairs(group_indices) do
+      if current_index < index then
+        song.selected_track_index = index
+        return
+      end
+    end
+    -- If no group found, wrap around to the first group
+    song.selected_track_index = group_indices[1]
+  elseif direction == 0 then
+    for i = #group_indices, 1, -1 do
+      if current_index > group_indices[i] then
+        song.selected_track_index = group_indices[i]
+        return
+      end
+    end
+    -- If no group found, wrap around to the last group
+    song.selected_track_index = group_indices[#group_indices]
+  end
+end
+
+-- Add menu entries, keybindings, and MIDI mappings
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Jump to First Track In Next Group",invoke=function() select_first_track_in_next_group(1) end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Jump to First Track In Previous Group",invoke=function() select_first_track_in_next_group(0) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Jump to First Track In Next Group",invoke=function() select_first_track_in_next_group(1) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Jump to First Track In Previous Group",invoke=function() select_first_track_in_next_group(0) end}
+renoise.tool():add_keybinding{name="Pattern Matrix:Paketti:Jump to First Track In Next Group",invoke=function() select_first_track_in_next_group(1) end}
+renoise.tool():add_keybinding{name="Pattern Matrix:Paketti:Jump to First Track In Previous Group",invoke=function() select_first_track_in_next_group(0) end}
+
+
+renoise.tool():add_keybinding{name="Mixer:Paketti:Jump to First Track In Next Group",invoke=function() select_first_track_in_next_group(1) end}
+renoise.tool():add_keybinding{name="Mixer:Paketti:Jump to First Track In Previous Group",invoke=function() select_first_track_in_next_group(0) end}
+renoise.tool():add_midi_mapping{name="Paketti:Jump to First Track in Next Group",invoke=function() select_first_track_in_next_group(1) end}
+renoise.tool():add_midi_mapping{name="Paketti:Jump to First Track in Previous Group",invoke=function() select_first_track_in_next_group(0) end}
+----------
+
+function toggle_bypass_selected_device()
+  local song = renoise.song()
+  local selected_device = song.selected_device
+  local selected_track = song.selected_track
+
+  if selected_device == nil then
+    renoise.app():show_status("No Track DSP Device is Selected, Doing Nothing.")
+    return
+  end
+
+  local selected_device_index = song.selected_device_index
+  local selected_device_name = selected_device.name
+  local all_others_active = true
+  local any_other_active = false
+
+  for i = 2, #selected_track.devices do
+    if i ~= selected_device_index then
+      if selected_track.devices[i].is_active then
+        any_other_active = true
+      else
+        all_others_active = false
+      end
+    end
+  end
+
+  if selected_device.is_active then
+    if all_others_active then
+      for i = 2, #selected_track.devices do
+        if i ~= selected_device_index then
+          selected_track.devices[i].is_active = false
+        end
+      end
+      renoise.app():show_status("Device " .. selected_device_name .. " activated, all other track DSP devices deactivated.")
+    else
+      selected_device.is_active = false
+      for i = 2, #selected_track.devices do
+        if i ~= selected_device_index then
+          selected_track.devices[i].is_active = true
+        end
+      end
+      renoise.app():show_status("Device " .. selected_device_name .. " deactivated, all other track DSP devices activated.")
+    end
+  else
+    selected_device.is_active = true
+    for i = 2, #selected_track.devices do
+      if i ~= selected_device_index then
+        selected_track.devices[i].is_active = false
+      end
+    end
+    renoise.app():show_status("Device " .. selected_device_name .. " activated, all other track DSP devices deactivated.")
+  end
+end
+
+renoise.tool():add_menu_entry{name="DSP Device:Paketti..:Bypass/Enable All Other Track DSP Devices (Toggle)",invoke=function() toggle_bypass_selected_device() end}
+renoise.tool():add_menu_entry{name="Mixer:Paketti..:Bypass/Enable All Other Track DSP Devices (Toggle)",invoke=function() toggle_bypass_selected_device() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Bypass All Other Track DSP Devices (Toggle)",invoke=function() toggle_bypass_selected_device() end}
+renoise.tool():add_midi_mapping{name="Global:Paketti:Bypass All Other Track DSP Devices (Toggle)",invoke=function() toggle_bypass_selected_device() end}
+
+
+
+
+
+
+
+
+
+
+
+------------
+
+function globalToggleVisibleColumnState(columnName)
+  -- Get the current state of the specified column from the selected track
+  local currentState = false
+  local selected_track = renoise.song().selected_track
+
+  if columnName == "delay" then
+    currentState = selected_track.delay_column_visible
+  elseif columnName == "volume" then
+    currentState = selected_track.volume_column_visible
+  elseif columnName == "panning" then
+    currentState = selected_track.panning_column_visible
+  elseif columnName == "sample_effects" then
+    currentState = selected_track.sample_effects_column_visible
+  else
+    renoise.app():show_status("Invalid column name: " .. columnName)
+    return
+  end
+
+  -- Toggle the state for all tracks of type 1
+  for i=1, renoise.song().sequencer_track_count do
+    if renoise.song().tracks[i].type == 1 then
+      if columnName == "delay" then
+        renoise.song().tracks[i].delay_column_visible = not currentState
+      elseif columnName == "volume" then
+        renoise.song().tracks[i].volume_column_visible = not currentState
+      elseif columnName == "panning" then
+        renoise.song().tracks[i].panning_column_visible = not currentState
+      elseif columnName == "sample_effects" then
+        renoise.song().tracks[i].sample_effects_column_visible = not currentState
+      end
+    end
+  end
+end
+
+-- Add menu entries for toggling column visibility
+
+renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Global Visible Column (All)",invoke=function() globalChangeVisibleColumnState("volume")
+globalChangeVisibleColumnState("panning") globalChangeVisibleColumnState("delay") globalChangeVisibleColumnState("sample_effects") end}
+
+renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Toggle Visible Column (Volume) Globally",invoke=function() globalToggleVisibleColumnState("volume") end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Toggle Visible Column (Panning) Globally",invoke=function() globalToggleVisibleColumnState("panning") end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Toggle Visible Column (Delay) Globally",invoke=function() globalToggleVisibleColumnState("delay") end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Toggle Visible Column (Sample Effects) Globally",invoke=function() globalToggleVisibleColumnState("sample_effects") end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Global Visible Column (Volume)",invoke=function() globalChangeVisibleColumnState("volume") end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Global Visible Column (Panning)",invoke=function() globalChangeVisibleColumnState("panning") end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Global Visible Column (Delay)",invoke=function() globalChangeVisibleColumnState("delay") end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Global Visible Column (Sample Effects)",invoke=function() globalChangeVisibleColumnState("sample_effects") end}
+
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Global Visible Column (All)",invoke=function() globalChangeVisibleColumnState("volume")
+globalChangeVisibleColumnState("panning") globalChangeVisibleColumnState("delay") globalChangeVisibleColumnState("sample_effects") end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Global Toggle Visible Column (Volume)",invoke=function() globalToggleVisibleColumnState("volume") end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Global Toggle Visible Column (Panning)",invoke=function() globalToggleVisibleColumnState("panning") end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Global Toggle Visible Column (Delay)",invoke=function() globalToggleVisibleColumnState("delay") end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Global Toggle Visible Column (Sample Effects)",invoke=function() globalToggleVisibleColumnState("sample_effects") end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Global Set Visible Column (Volume)",invoke=function() globalChangeVisibleColumnState("volume") end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Global Set Visible Column (Panning)",invoke=function() globalChangeVisibleColumnState("panning") end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Global Set Visible Column (Delay)",invoke=function() globalChangeVisibleColumnState("delay") end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Global Set Visible Column (Sample Effects)",invoke=function() globalChangeVisibleColumnState("sample_effects") end}
+
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor:Global Visible Column (All)",invoke=function() globalChangeVisibleColumnState("volume")
+globalChangeVisibleColumnState("panning") globalChangeVisibleColumnState("delay") globalChangeVisibleColumnState("sample_effects") end}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor:Toggle Visible Column (Volume) Globally",invoke=function() globalToggleVisibleColumnState("volume") end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Toggle Visible Column (Panning) Globally",invoke=function() globalToggleVisibleColumnState("panning") end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Toggle Visible Column (Delay) Globally",invoke=function() globalToggleVisibleColumnState("delay") end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Toggle Visible Column (Sample Effects)Globally",invoke=function() globalToggleVisibleColumnState("sample_effects") end}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor:Global Visible Column (Volume)",invoke=function() globalChangeVisibleColumnState("volume") end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Global Visible Column (Panning)",invoke=function() globalChangeVisibleColumnState("panning") end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Global Visible Column (Delay)",invoke=function() globalChangeVisibleColumnState("delay") end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Global Visible Column (Sample Effects)",invoke=function() globalChangeVisibleColumnState("sample_effects") end}
+
+renoise.tool():add_menu_entry{name="--Main Menu:View:Paketti..:Pattern Editor:Global Visible Column (All)",invoke=function() globalChangeVisibleColumnState("volume")
+globalChangeVisibleColumnState("panning") globalChangeVisibleColumnState("delay") globalChangeVisibleColumnState("sample_effects") end}
+renoise.tool():add_menu_entry{name="--Main Menu:View:Paketti..:Pattern Editor:Toggle Visible Column (Volume) Globally",invoke=function() globalToggleVisibleColumnState("volume") end}
+renoise.tool():add_menu_entry{name="Main Menu:View:Paketti..:Pattern Editor:Toggle Visible Column (Panning) Globally",invoke=function() globalToggleVisibleColumnState("panning") end}
+renoise.tool():add_menu_entry{name="Main Menu:View:Paketti..:Pattern Editor:Toggle Visible Column (Delay) Globally",invoke=function() globalToggleVisibleColumnState("delay") end}
+renoise.tool():add_menu_entry{name="Main Menu:View:Paketti..:Pattern Editor:Toggle Visible Column (Sample Effects)Globally",invoke=function() globalToggleVisibleColumnState("sample_effects") end}
+renoise.tool():add_menu_entry{name="--Main Menu:View:Paketti..:Pattern Editor:Global Visible Column (Volume)",invoke=function() globalChangeVisibleColumnState("volume") end}
+renoise.tool():add_menu_entry{name="Main Menu:View:Paketti..:Pattern Editor:Global Visible Column (Panning)",invoke=function() globalChangeVisibleColumnState("panning") end}
+renoise.tool():add_menu_entry{name="Main Menu:View:Paketti..:Pattern Editor:Global Visible Column (Delay)",invoke=function() globalChangeVisibleColumnState("delay") end}
+renoise.tool():add_menu_entry{name="Main Menu:View:Paketti..:Pattern Editor:Global Visible Column (Sample Effects)",invoke=function() globalChangeVisibleColumnState("sample_effects") end}
 
 

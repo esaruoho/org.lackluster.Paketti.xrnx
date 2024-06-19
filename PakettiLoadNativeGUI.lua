@@ -33,6 +33,8 @@ function addAsShortcut()
       end
     end
   end
+  renoise.app():show_status("Devices added. Open Settings -> Keys, search for 'Load Device' or Midi Mappings and search for 'Load Device'")
+  
 end
 
 -- Function to save keybinding and MIDI mapping to PreferencesLoaders.xml

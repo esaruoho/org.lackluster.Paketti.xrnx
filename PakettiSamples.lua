@@ -294,18 +294,25 @@ function pitchBendDrumkitLoader()
   else
     renoise.app():show_status("Failed to load the sample.")
   end
-
-  -- Set additional sample properties
+-- Set additional sample properties
   
-    sample.interpolation_mode=preferences.pakettiLoaderInterpolation.value
-  sample.oversample_enabled=preferences.pakettiLoaderOverSampling.value
-  sample.autofade = preferences.pakettiLoaderAutoFade.value
+  sample.interpolation_mode=preferences.pakettiLoaderInterpolation.value
+  sample.oversample_enabled=true
+  sample.autofade = true
   sample.loop_mode = preferences.pakettiLoaderLoopMode.value
   sample.new_note_action = 1
+  
   
   -- Iterate over the rest of the selected files and insert them sequentially
   for i = 2, num_samples_to_load do
     selected_sample_filename = selected_sample_filenames[i]
+
+  sample.interpolation_mode=preferences.pakettiLoaderInterpolation.value
+  sample.oversample_enabled=true
+  sample.autofade = true
+  sample.loop_mode = preferences.pakettiLoaderLoopMode.value
+  sample.new_note_action = 1
+
 
     -- Insert a new sample slot if necessary
     if #current_instrument.samples < i then
@@ -350,6 +357,8 @@ function pitchBendDrumkitLoader()
 end
 
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments:Paketti PitchBend Drumkit Sample Loader", invoke=function() pitchBendDrumkitLoader() end}
+renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Paketti PitchBend Drumkit Sample Loader", invoke=function() pitchBendDrumkitLoader() end}
+
 renoise.tool():add_keybinding{name="Global:Paketti:Paketti PitchBend Drumkit Sample Loader", invoke=function() pitchBendDrumkitLoader() end}
 
 
@@ -483,7 +492,6 @@ renoise.tool():add_keybinding{name="Global:Paketti:Create New Instrument & Loop 
 renoise.tool():add_keybinding{name="Sample Editor:Paketti:Create New Instrument & Loop from Selection", invoke=create_new_instrument_from_selection}
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Create New Instrument & Loop from Selection", invoke=create_new_instrument_from_selection}
 
-
 -- Function to load a pitchbend instrument
 function pitchedInstrument(st)
   renoise.app():load_instrument("Presets/" .. st .. "st_Pitchbend.xrni")
@@ -492,7 +500,6 @@ function pitchedInstrument(st)
   selected_instrument.macros_visible = true
   selected_instrument.sample_modulation_sets[1].name = st .. "st_Pitchbend"
 end
-
 
 -------------
 function pitchBendMultipleSampleLoader()
@@ -541,8 +548,9 @@ function pitchBendMultipleSampleLoader()
 
         -- Set sample properties
   current_sample.interpolation_mode=preferences.pakettiLoaderInterpolation.value
-  current_sample.oversample_enabled=preferences.pakettiLoaderOverSampling.value
-  current_sample.autofade = preferences.pakettiLoaderAutoFade.value
+  current_sample.oversample_enabled=true
+  current_sample.autofade=true
+  oprint (preferences.pakettiLoaderLoopMode.value)
   current_sample.loop_mode = preferences.pakettiLoaderLoopMode.value
   current_sample.new_note_action = 1
 
@@ -565,6 +573,7 @@ function pitchBendMultipleSampleLoader()
 end
 
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments:Paketti PitchBend Multiple Sample Loader", invoke=function() pitchBendMultipleSampleLoader() end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Paketti PitchBend Multiple Sample Loader", invoke=function() pitchBendMultipleSampleLoader() end}
 renoise.tool():add_menu_entry{name="Disk Browser Files:Paketti..:Paketti PitchBend Multiple Sample Loader", invoke=function() pitchBendMultipleSampleLoader() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Paketti PitchBend Multiple Sample Loader", invoke=function() pitchBendMultipleSampleLoader() end}
 renoise.tool():add_midi_mapping{name="Global:Paketti:Midi PakettiPitchBend Multiple Sample Loader", invoke=function(message)
@@ -648,9 +657,6 @@ renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Selected Sample:Auto
   renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].interpolation_mode=4
   renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].oversample_enabled=true
 end}
-
-
-
 -----------
 function selectedSampleInit()
 renoise.song().instruments[renoise.song().selected_instrument_index].macros_visible=true
@@ -671,7 +677,8 @@ end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Add Sample Slot to Instrument", invoke=function() addSampleSlot(1) end}
 renoise.tool():add_keybinding{name="Global:Paketti:Add 84 Sample Slots to Instrument", invoke=function() addSampleSlot(84) end}
-renoise.tool():add_menu_entry{name="Sample List:Paketti..:Add 84 Sample Slots to Instrument", invoke=function() addSampleSlot(84) end}
+--renoise.tool():add_menu_entry{name="Sample List:Paketti..:Add 84 Sample Slots to Instrument", invoke=function() addSampleSlot(84) end}
+renoise.tool():add_menu_entry{name="Sample Navigator:Paketti..:Add 84 Sample Slots to Instrument", invoke=function() addSampleSlot(84) end}
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Add 84 Sample Slots to Instrument", invoke=function() addSampleSlot(84) end}
 
 -------------------------------------------------------------------------------------------------------------------------------
@@ -700,8 +707,15 @@ renoise.tool():add_keybinding{name="Sample Editor:Paketti:Set Loop Mode to 4 Pin
 
 function slicerough(changer)
     local s = renoise.song()
-    s.selected_sample_index = 1
     local currInst = s.selected_instrument_index
+
+    -- Check if the instrument has samples
+    if #s.instruments[currInst].samples == 0 then
+        renoise.app():show_status("No samples available in the selected instrument.")
+        return
+    end
+
+    s.selected_sample_index = 1
     local currSamp = s.selected_sample_index
     
     -- Lookup table for beatsync lines based on the value of changer
@@ -716,105 +730,106 @@ function slicerough(changer)
     }
 
     -- Determine the appropriate beatsync lines from the table or use a default value
-    local beatsynclines = beatsync_lines[changer] or 64  -- Default to 32 if no match found
-    local currentTranspose = renoise.song().selected_sample.transpose
-    
+    local beatsynclines = beatsync_lines[changer] or 64
+    local currentTranspose = s.selected_sample.transpose
+
     -- Assuming that preferences are defined somewhere globally accessible in your script
-    local prefs = {
-        loop_mode = preferences.WipeSlicesLoopMode.value,
-        new_note_action = preferences.WipeSlicesNNA.value,
-        oneshot = preferences.WipeSlicesOneShot.value,
-        autofade = true,
-        autoseek = preferences.WipeSlicesAutoseek.value,
-        transpose = currentTranspose,
-        mute_group = preferences.WipeSlicesMuteGroup.value,
-        interpolation_mode = 4,  -- High Quality Interpolation
-        beat_sync_mode = preferences.WipeSlicesBeatSyncMode.value,
-        oversample_enabled = true
-    }
+local prefs = {
+    loop_mode = preferences.WipeSlicesLoopMode,
+    loop_release = preferences.WipeSlicesLoopRelease,  -- Use the correct preference key
+    new_note_action = preferences.WipeSlicesNNA,
+    oneshot = preferences.WipeSlicesOneShot,
+    autofade = true,
+    autoseek = preferences.WipeSlicesAutoseek,
+    transpose = currentTranspose,
+    mute_group = preferences.WipeSlicesMuteGroup,
+    interpolation_mode = 4,  -- High Quality Interpolation
+    beat_sync_mode = preferences.WipeSlicesBeatSyncMode,
+    oversample_enabled = true
+}
+
 
     -- Clear existing slice markers from the first sample
     for i = #s.instruments[currInst].samples[1].slice_markers, 1, -1 do
         s.instruments[currInst].samples[1]:delete_slice_marker(s.instruments[currInst].samples[1].slice_markers[i])
     end
-    
+
     -- Insert new slice markers
     local tw = s.selected_sample.sample_buffer.number_of_frames / changer
-     s.instruments[currInst].samples[currSamp]:insert_slice_marker(1) 
-    for i = 1, changer -1 do
+    s.instruments[currInst].samples[currSamp]:insert_slice_marker(1)
+    for i = 1, changer - 1 do
         s.instruments[currInst].samples[currSamp]:insert_slice_marker(tw * i)
     end
-    
-    -- Apply settings to all samples created by the slicing
-    for i, sample in ipairs(s.instruments[currInst].samples) do
-        sample.loop_mode = prefs.loop_mode
-        sample.new_note_action = prefs.new_note_action
-        sample.oneshot = prefs.oneshot
-        sample.autofade = prefs.autofade
-        sample.autoseek = prefs.autoseek
-        sample.transpose = prefs.transpose
-        sample.mute_group = prefs.mute_group
-        sample.interpolation_mode = prefs.interpolation_mode
-        sample.beat_sync_mode = prefs.beat_sync_mode
-        sample.oversample_enabled = prefs.oversample_enabled
-        sample.beat_sync_enabled = true
-       -- if preferences.WipeSlicesBeatSyncGlobal.value == true then
-        sample.beat_sync_lines = beatsynclines
-       -- print ("hello")
-       -- else return end
-    end
-    
+
+-- Apply settings to all samples created by the slicing
+for i, sample in ipairs(s.instruments[currInst].samples) do
+    sample.new_note_action = preferences.WipeSlicesNNA.value
+    sample.oneshot = prefs.oneshot.value
+    sample.autofade = prefs.autofade
+    sample.autoseek = prefs.autoseek.value
+    sample.transpose = prefs.transpose
+    sample.mute_group = prefs.mute_group.value
+    sample.interpolation_mode = prefs.interpolation_mode
+    sample.beat_sync_mode = prefs.beat_sync_mode.value
+    sample.oversample_enabled = prefs.oversample_enabled
+    sample.loop_mode = prefs.loop_mode.value
+    sample.beat_sync_enabled = true
+    sample.beat_sync_lines = beatsynclines
+    sample.loop_release = preferences.WipeSlicesLoopRelease.value
+end
+
     -- Ensure beat sync is enabled for the original sample
-  --  if preferences.WipeSlicesBeatSyncGlobal.value == true then 
+    s.instruments[currInst].samples[1].beat_sync_lines = 128
+    s.instruments[currInst].samples[1].beat_sync_enabled = true
     
-    renoise.song().instruments[currInst].samples[1].beat_sync_lines = 128
-    renoise.song().instruments[currInst].samples[1].beat_sync_enabled = true
- --   else return
- --   end
+    -- Show status with sample name and number of slices
+    local sample_name = renoise.song().selected_instrument.samples[1].name
+    local num_slices = #s.instruments[currInst].samples[currSamp].slice_markers
+    renoise.app():show_status(sample_name .. " now has " .. num_slices .. " slices.")
 end
 
---
 function wipeslices()
-  -- Retrieve the currently selected instrument and sample indices
-  local currInst = renoise.song().selected_instrument_index
-  local currSamp = renoise.song().selected_sample_index
+    -- Retrieve the currently selected instrument and sample indices
+    local s = renoise.song()
+    local currInst = s.selected_instrument_index
+    local currSamp = s.selected_sample_index
 
-  -- Check if there is a valid instrument selected
-  if currInst == nil or currInst == 0 then
-    renoise.app():show_status("No instrument selected.")
-    return
-  end
-
-  -- Check if there are any samples in the selected instrument
-  if #renoise.song().instruments[currInst].samples == 0 then
-    renoise.app():show_status("No samples available in the selected instrument.")
-    return
-  end
-
-  -- Check if there is a valid sample selected
-  if currSamp == nil or currSamp == 0 then
-    renoise.app():show_status("No sample selected.")
-    return
-  end
-
-  -- Retrieve the slice markers
-  local slice_markers = renoise.song().instruments[currInst].samples[currSamp].slice_markers
-  local number = #slice_markers
-
-  -- Delete each slice marker if there are any
-  if number > 0 then
-    for i = 1, number do
-      renoise.song().instruments[currInst].samples[currSamp]:delete_slice_marker(slice_markers[1])
+    -- Check if there is a valid instrument selected
+    if currInst == nil or currInst == 0 then
+        renoise.app():show_status("No instrument selected.")
+        return
     end
-  end
 
-  -- Set loop mode to Off (1) and disable beat sync
-  renoise.song().selected_sample.loop_mode = renoise.Sample.LOOP_MODE_OFF
-  renoise.song().selected_sample.beat_sync_enabled = false
+    -- Check if there are any samples in the selected instrument
+    if #s.instruments[currInst].samples == 0 then
+        renoise.app():show_status("No samples available in the selected instrument.")
+        return
+    end
 
-  renoise.app():show_status("Slices removed and sample settings updated.")
+    -- Check if there is a valid sample selected
+    if currSamp == nil or currSamp == 0 then
+        renoise.app():show_status("No sample selected.")
+        return
+    end
+
+    -- Retrieve the slice markers
+    local sample = s.instruments[currInst].samples[currSamp]
+    local slice_markers = sample.slice_markers
+    local number = #slice_markers
+
+    -- Delete each slice marker if there are any
+    if number > 0 then
+        for i = number, 1, -1 do
+            sample:delete_slice_marker(slice_markers[i])
+        end
+    end
+
+    -- Set loop mode to Off (1) and disable beat sync
+--    renoise.song().selected_sample.loop_mode = renoise.Sample.LOOP_MODE_OFF
+--    renoise.song().selected_sample.beat_sync_enabled = false
+    local sample_name = renoise.song().selected_instrument.samples[1].name
+    renoise.app():show_status(sample_name .. " now has 0 slices.")
 end
-
 
 renoise.tool():add_keybinding{name="Global:Paketti:Wipe&Create Slices (2)",invoke=function() slicerough(2) end}
 renoise.tool():add_keybinding{name="Global:Paketti:Wipe&Create Slices (4)",invoke=function() slicerough(4) end}
@@ -833,6 +848,31 @@ renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Wipe&Create Slices (
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Wipe&Create Slices (32)",invoke=function() slicerough(32) end}
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Wipe&Create Slices (64)",invoke=function() slicerough(64) end}
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Wipe&Create Slices (128)",invoke=function() slicerough(128) end}
+
+renoise.tool():add_menu_entry{name="Sample Navigator:Paketti..:Wipe&Slice..:Wipe Slices",invoke=function() wipeslices() end}
+renoise.tool():add_menu_entry{name="--Sample Navigator:Paketti..:Wipe&Slice..:Wipe&Create Slices (2)",invoke=function() slicerough(2) end}
+renoise.tool():add_menu_entry{name="Sample Navigator:Paketti..:Wipe&Slice..:Wipe&Create Slices (4)",invoke=function() slicerough(4) end}
+renoise.tool():add_menu_entry{name="Sample Navigator:Paketti..:Wipe&Slice..:Wipe&Create Slices (8)",invoke=function() slicerough(8) end}
+renoise.tool():add_menu_entry{name="Sample Navigator:Paketti..:Wipe&Slice..:Wipe&Create Slices (16)",invoke=function() slicerough(16) end}
+renoise.tool():add_menu_entry{name="Sample Navigator:Paketti..:Wipe&Slice..:Wipe&Create Slices (32)",invoke=function() slicerough(32) end}
+renoise.tool():add_menu_entry{name="Sample Navigator:Paketti..:Wipe&Slice..:Wipe&Create Slices (64)",invoke=function() slicerough(64) end}
+renoise.tool():add_menu_entry{name="Sample Navigator:Paketti..:Wipe&Slice..:Wipe&Create Slices (128)",invoke=function() slicerough(128) end}
+
+
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Wipe&Slice..:Wipe Slices",invoke=function() wipeslices() end}
+renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Wipe&Slice..:Wipe&Create Slices (2)",invoke=function() slicerough(2) end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Wipe&Slice..:Wipe&Create Slices (4)",invoke=function() slicerough(4) end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Wipe&Slice..:Wipe&Create Slices (8)",invoke=function() slicerough(8) end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Wipe&Slice..:Wipe&Create Slices (16)",invoke=function() slicerough(16) end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Wipe&Slice..:Wipe&Create Slices (32)",invoke=function() slicerough(32) end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Wipe&Slice..:Wipe&Create Slices (64)",invoke=function() slicerough(64) end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Wipe&Slice..:Wipe&Create Slices (128)",invoke=function() slicerough(128) end}
+
+
+
+
+
+
 
 renoise.tool():add_menu_entry{name="--Sample Editor:Paketti..:Double BeatSync Line",invoke=function() doubleBeatSyncLines() end}
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Halve BeatSync Line",invoke=function() halveBeatSyncLines() end}
@@ -853,6 +893,10 @@ end
 end
 renoise.tool():add_keybinding{name="Global:Paketti:Paketti Save Selected Sample .WAV",invoke=function() pakettiSaveSample("wav") end}
 renoise.tool():add_keybinding{name="Global:Paketti:Paketti Save Selected Sample .FLAC",invoke=function() pakettiSaveSample("flac") end}
+renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Paketti Save Selected Sample .WAV",invoke=function() pakettiSaveSample("wav") end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Paketti Save Selected Sample .FLAC",invoke=function() pakettiSaveSample("flac") end}
+
+
 
 renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Paketti Save Selected Sample .WAV", invoke=function(message)
   if message.int_value > 1 then pakettiSaveSample("wav") end end}
@@ -869,22 +913,32 @@ tmpvariable = nil
 
 -- Function to wipe the song while retaining the current sample
 function WipeRetain()
-  -- Create a temporary filename
-  tmpvariable = os.tmpname() .. ".wav"  -- Ensure the file has a .wav extension
-
   -- Get the current song
   local s = renoise.song()
 
-  -- Save the selected sample buffer to the temporary file
-  s.instruments[s.selected_instrument_index].samples[1].sample_buffer:save_as(tmpvariable, "wav")
+  -- Check if the selected instrument has samples and a sample buffer
+  if s.selected_instrument and #s.selected_instrument.samples > 0 then
+    local sample = s.selected_instrument.samples[1]
+    if sample.sample_buffer.has_sample_data then
+      -- Create a temporary filename
+      tmpvariable = os.tmpname() .. ".wav"  -- Ensure the file has a .wav extension
 
-  -- Check if the notifier is already added, if not, add it
-  if not renoise.tool().app_new_document_observable:has_notifier(WipeRetainFinish) then
-    renoise.tool().app_new_document_observable:add_notifier(WipeRetainFinish)
+      -- Save the selected sample buffer to the temporary file
+      sample.sample_buffer:save_as(tmpvariable, "wav")
+
+      -- Check if the notifier is already added, if not, add it
+      if not renoise.tool().app_new_document_observable:has_notifier(WipeRetainFinish) then
+        renoise.tool().app_new_document_observable:add_notifier(WipeRetainFinish)
+      end
+
+      -- Create a new song
+      renoise.app():new_song()
+    else
+      renoise.app():show_status("Instrument/Selection has no Sample data")
+    end
+  else
+    renoise.app():show_status("Instrument/Selection has no Sample data")
   end
-
-  -- Create a new song
-  renoise.app():new_song()
 end
 
 -- Function to finish the process of wiping the song and retaining the sample
@@ -914,6 +968,7 @@ end
 
 -- Add a keybinding to invoke the WipeRetain function
 renoise.tool():add_keybinding{name="Global:Paketti:Wipe Song Retain Sample", invoke=function() WipeRetain() end}
+renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Wipe Song Retain Sample", invoke=function() WipeRetain() end}
 
 --------
 -- Define render state (initialized when starting to render)
@@ -1020,6 +1075,14 @@ function rendering_done_callback()
     new_instrument.name = renderName .. " (Rendered)"
     new_instrument.samples[1].autofade = true
     --    new_instrument.samples[1].autoseek = true
+if renoise.song().transport.edit_mode then
+renoise.song().transport.edit_mode = false
+renoise.song().transport.edit_mode = true
+else
+renoise.song().transport.edit_mode = true
+renoise.song().transport.edit_mode = false
+end
+
 end
 
 -- Function to monitor rendering progress
@@ -1081,11 +1144,12 @@ function pakettiCleanRenderSelection()
     end
 end
 
-renoise.tool():add_menu_entry{name = "--Main Menu:Tools:Paketti..:Clean Render Selected Track or Group", invoke = function() pakettiCleanRenderSelection() end}
-renoise.tool():add_menu_entry{name = "Pattern Editor:Paketti..:Clean Render Selected Track or Group", invoke = function() pakettiCleanRenderSelection() end}
-renoise.tool():add_menu_entry{name = "Mixer:Paketti..:Clean Render Selected Track or Group", invoke = function() pakettiCleanRenderSelection() end}
-renoise.tool():add_keybinding{name = "Pattern Editor:Paketti..:Clean Render Selected Track or Group", invoke = function() pakettiCleanRenderSelection() end}
-renoise.tool():add_keybinding{name = "Mixer:Paketti..:Clean Render Selected Track or Group", invoke = function() pakettiCleanRenderSelection() end}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Clean Render Selected Track or Group", invoke = function() pakettiCleanRenderSelection() end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Clean Render Selected Track or Group", invoke = function() pakettiCleanRenderSelection() end}
+renoise.tool():add_menu_entry{name="Mixer:Paketti..:Clean Render Selected Track or Group", invoke = function() pakettiCleanRenderSelection() end}
+renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Clean Render Selected Track or Group", invoke = function() pakettiCleanRenderSelection() end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti..:Clean Render Selected Track or Group", invoke = function() pakettiCleanRenderSelection() end}
+renoise.tool():add_keybinding{name="Mixer:Paketti..:Clean Render Selected Track or Group", invoke = function() pakettiCleanRenderSelection() end}
 
 ------
 -- Function to adjust a slice marker based on MIDI input
@@ -1148,6 +1212,11 @@ renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Select Padded Slice (N
 
 renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Select Padded Slice (Previous)",invoke=function(message)
   if message.int_value == 127 then selectPreviousSliceInOriginalSample() end end}
+
+
+-------------
+-------------------
+
 
 -- Function to select the next slice
 function selectNextSliceInOriginalSample()
@@ -1262,8 +1331,159 @@ function resetSliceCounter()
   selectNextSliceInOriginalSample()
 end
 
--- Keybindings
 renoise.tool():add_keybinding{name="Sample Editor:Paketti:Select Padded Slice (Next)", invoke=selectNextSliceInOriginalSample}
 renoise.tool():add_keybinding{name="Sample Editor:Paketti:Select Padded Slice (Previous)", invoke=function() selectPreviousSliceInOriginalSample() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Reset Slice Counter", invoke=resetSliceCounter}
+
+-- Function to select and display a padded slice from the current slice
+function selectPaddedSliceFromCurrentSlice()
+  local instrument = renoise.song().selected_instrument
+
+  -- Check if the selected sample exists
+  local selected_sample_index = renoise.song().selected_sample_index
+  if not instrument.samples[selected_sample_index] then
+    renoise.app():show_status("No sample selected or invalid sample index.")
+    return
+  end
+
+  -- If not on the original sample, determine the slice index
+  local currentSliceIndex = selected_sample_index - 1
+  if selected_sample_index ~= 1 then
+    -- Debug info
+    print(string.format("Currently in slice index: %d", currentSliceIndex))
+
+    -- Set the selected sample index to 1 (the original sample)
+    renoise.song().selected_sample_index = 1
+  else
+    currentSliceIndex = preferences.sliceCounter.value
+  end
+
+  -- Get the original sample
+  local sample = instrument.samples[1]
+  local sliceMarkers = sample.slice_markers
+  local sampleLength = sample.sample_buffer.number_of_frames
+
+  if #sliceMarkers < 2 then
+    renoise.app():show_status("Not enough slice markers.")
+    return
+  end
+
+  -- Ensure the slice index is within valid range
+  if currentSliceIndex > #sliceMarkers then
+    currentSliceIndex = 1
+  end
+
+  -- Set the slice display with padding
+  local thisSlice = sliceMarkers[currentSliceIndex] or 0
+  local nextSlice = sliceMarkers[currentSliceIndex + 1] or sampleLength
+
+  local thisSlicePadding = math.max(thisSlice - 1354, 1)
+  local nextSlicePadding = math.min(nextSlice + 1354, sampleLength)
+
+  renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
+  sample.sample_buffer.display_range = {thisSlicePadding, nextSlicePadding}
+  sample.sample_buffer.display_length = nextSlicePadding - thisSlicePadding
+
+  -- Debug info
+  print(string.format("Slice Info - Current index: %d, Slice Start: %d, Slice End: %d", currentSliceIndex, thisSlicePadding, nextSlicePadding))
+  renoise.app():show_status(string.format("Slice Info - Current index: %d, Slice Start: %d, Slice End: %d", currentSliceIndex, thisSlicePadding, nextSlicePadding))
+
+  preferences.sliceCounter.value = currentSliceIndex
+end
+
+-- Function to reset the slice counter
+function resetSliceCounter()
+  preferences.sliceCounter.value = 1
+  renoise.app():show_status("Slice counter reset to 1. Will start from the first slice.")
+  selectNextSliceInOriginalSample()
+end
+
+renoise.tool():add_keybinding{name="Sample Editor:Paketti:Select Padded Slice from Current Slice", invoke=selectPaddedSliceFromCurrentSlice}
+
+-------------
+-- Define the loop modes array
+local loop_modes = {
+  renoise.Sample.LOOP_MODE_OFF,
+  renoise.Sample.LOOP_MODE_FORWARD,
+  renoise.Sample.LOOP_MODE_REVERSE,
+  renoise.Sample.LOOP_MODE_PING_PONG
+}
+
+-- Function to cycle loop mode for a single sample
+function Global_Paketti_cycle_loop_mode(forwards)
+  local sample = renoise.song().selected_sample
+  if not sample then 
+    renoise.app():show_status("No sample selected.")
+    return 
+  end
+  
+  local current_mode = sample.loop_mode
+  local current_index
+  
+  -- Find the current mode index
+  for i, mode in ipairs(loop_modes) do
+    if mode == current_mode then
+      current_index = i
+      break
+    end
+  end
+  
+  -- Determine the new mode index
+  if forwards then
+    current_index = current_index % #loop_modes + 1
+  else
+    current_index = (current_index - 2) % #loop_modes + 1
+  end
+  
+  -- Set the new loop mode
+  sample.loop_mode = loop_modes[current_index]
+end
+
+-- Function to cycle loop mode for all samples in an instrument
+function Global_Paketti_cycle_loop_mode_all_samples(forwards)
+  local instrument = renoise.song().selected_instrument
+  if not instrument or #instrument.samples == 0 then 
+    renoise.app():show_status("No samples in the selected instrument.")
+    return 
+  end
+  
+  for _, sample in ipairs(instrument.samples) do
+    local current_mode = sample.loop_mode
+    local current_index
+    
+    -- Find the current mode index
+    for i, mode in ipairs(loop_modes) do
+      if mode == current_mode then
+        current_index = i
+        break
+      end
+    end
+    
+    -- Determine the new mode index
+    if forwards then
+      current_index = current_index % #loop_modes + 1
+    else
+      current_index = (current_index - 2) % #loop_modes + 1
+    end
+    
+    -- Set the new loop mode
+    sample.loop_mode = loop_modes[current_index]
+  end
+end
+
+-- Add key binding for cycling loop mode forwards for a single sample
+renoise.tool():add_keybinding{name="Global:Paketti:Sample Loop Cycler (Forwards)",
+  invoke=function() Global_Paketti_cycle_loop_mode(true) end}
+
+-- Add key binding for cycling loop mode backwards for a single sample
+renoise.tool():add_keybinding{name="Global:Paketti:Sample Loop Cycler (Backwards)",
+  invoke=function() Global_Paketti_cycle_loop_mode(false) end}
+
+-- Add key binding for cycling loop mode forwards for all samples in an instrument
+renoise.tool():add_keybinding{name="Global:Paketti:All Samples Loop Cycler (Forwards)",
+  invoke=function() Global_Paketti_cycle_loop_mode_all_samples(true) end}
+
+-- Add key binding for cycling loop mode backwards for all samples in an instrument
+renoise.tool():add_keybinding{name="Global:Paketti:All Samples Loop Cycler (Backwards)",
+  invoke=function() Global_Paketti_cycle_loop_mode_all_samples(false) end}
 

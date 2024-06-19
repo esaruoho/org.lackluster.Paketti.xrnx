@@ -17,10 +17,10 @@ require "PakettiPhraseEditor"
 require "PakettiSamples"
 require "PakettiRecorder" 
 require "PakettiExperimental_Verify"
-
 -- These were requested via GitHub / Renoise Forum / Renoise Discord - always get in touch with me (esaruoho@icloud.com)
 -- Or post a feature on https://github.com/esaruoho/org.lackluster.Paketti.xrnx/issues/new
 require "PakettiRequests"
+
 
 ------------------------------------------------
 -- Autoexec.bat
@@ -31,7 +31,7 @@ function startup()
      -- renoise.app().window:select_preset(1)
       s.sequencer.keep_sequence_sorted=false
       t.groove_enabled=true
-      renoise.app():show_status("I'm a notifier and I just rangg")
+      renoise.app():show_status("There was a save and the Startup Notifier ran.")
 end
 
 if not renoise.tool().app_new_document_observable:has_notifier(startup)   
@@ -51,3 +51,10 @@ function dbug(msg)
  elseif type(msg) == 'table' then rprint(msg)  
  else print(msg) end  
 end
+
+
+
+
+
+
+

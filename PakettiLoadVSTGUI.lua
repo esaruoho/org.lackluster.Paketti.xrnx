@@ -32,6 +32,7 @@ function vstAddAsShortcut()
       end
     end
   end
+  renoise.app():show_status("Devices added. Open Settings -> Keys, search for 'Load Device' or Midi Mappings and search for 'Load Device'")
 
  -- renoise.app():show_status("Added " .. #checkboxes .. " shortcuts for opening devices")
 end

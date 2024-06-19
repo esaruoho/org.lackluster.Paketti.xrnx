@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ScriptingToolPreferences doc_version="0">
   <pakettiLoaderOverSampling>true</pakettiLoaderOverSampling>
-  <selectionNewInstrumentLoop>2</selectionNewInstrumentLoop>
-  <sliceCounter>22</sliceCounter>
-  <WipeSlicesBeatSyncMode>1.0</WipeSlicesBeatSyncMode>
-  <pakettiLoaderLoopMode>1.0</pakettiLoaderLoopMode>
+  <selectionNewInstrumentLoop>3</selectionNewInstrumentLoop>
+  <sliceCounter>20</sliceCounter>
+  <WipeSlicesBeatSyncMode>2</WipeSlicesBeatSyncMode>
+  <WipeSlicesLoopRelease>true</WipeSlicesLoopRelease>
+  <pakettiLoaderLoopMode>3</pakettiLoaderLoopMode>
   <RandomBPM>false</RandomBPM>
   <AppSelection6>/System/Applications/Music.app</AppSelection6>
   <upperFramePreference>0.0</upperFramePreference>
@@ -17,7 +18,7 @@
   <AppSelection3>/Applications/Ableton Live 12 Suite.app</AppSelection3>
   <WipeSlicesMuteGroup>1.0</WipeSlicesMuteGroup>
   <slicePreviousDirection>1.0</slicePreviousDirection>
-  <AppSelection1>/Applications/Renoise copy.app</AppSelection1>
+  <AppSelection1>/Applications/Audacity.app</AppSelection1>
   <midimappings/>
   <pakettiEditMode>2</pakettiEditMode>
   <shortcuts/>
@@ -26,7 +27,7 @@
   <WipeSlicesBeatSyncGlobal>false</WipeSlicesBeatSyncGlobal>
   <renderSampleRate>88200</renderSampleRate>
   <renderBitDepth>32</renderBitDepth>
-  <WipeSlicesLoopMode>2</WipeSlicesLoopMode>
+  <WipeSlicesLoopMode>3</WipeSlicesLoopMode>
   <WipeSlicesNNA>1.0</WipeSlicesNNA>
   <_0G01_Loader>false</_0G01_Loader>
   <AppSelection2>/Applications/Logic Pro X.app</AppSelection2>

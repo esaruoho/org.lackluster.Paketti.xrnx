@@ -1,368 +1,664 @@
-local vb = renoise.ViewBuilder()
-local midi_input_devices, midi_output_devices, plugin_dropdown_items, available_plugins
-local dialog_content
-local custom_dialog
+-- Helper function to select and loop a specific section
+function select_and_loop_section(section_number)
+  local song = renoise.song()
+  local sequencer = song.sequencer
+  local sequence_count = #sequencer.pattern_sequence
 
--- Preferences for storing selected values
-local midi_input_device = {}
-local midi_input_channel = {}
-local midi_output_device = {}
-local midi_output_channel = {}
-local selected_plugin = {}
-local open_external_editor = false
+  local current_section_start = nil
+  local current_section_index = 0
 
--- Initialize variables when needed
-local function initialize_variables()
-  midi_input_devices = {"<None>"}
-  for _, device in ipairs(renoise.Midi.available_input_devices()) do
-    table.insert(midi_input_devices, device)
-  end
-
-  midi_output_devices = {"<None>"}
-  for _, device in ipairs(renoise.Midi.available_output_devices()) do
-    table.insert(midi_output_devices, device)
-  end
-
-  plugin_dropdown_items = {"<None>"}
-  available_plugins = renoise.song().selected_instrument.plugin_properties.available_plugin_infos
-  for _, plugin_info in ipairs(available_plugins) do
-    if plugin_info.path:find("/AU/") then
-      table.insert(plugin_dropdown_items, "AU: " .. plugin_info.short_name)
-    elseif plugin_info.path:find("/VST/") then
-      table.insert(plugin_dropdown_items, "VST: " .. plugin_info.short_name)
-    elseif plugin_info.path:find("/VST3/") then
-      table.insert(plugin_dropdown_items, "VST3: " .. plugin_info.short_name)
-    end
-  end
-  
-  for i = 1, 16 do
-    midi_input_device[i] = midi_input_devices[1]
-    midi_input_channel[i] = i
-    midi_output_device[i] = midi_output_devices[1]
-    midi_output_channel[i] = i
-    selected_plugin[i] = plugin_dropdown_items[1]
-  end
-end
-
-local note_columns_switch, effect_columns_switch, delay_column_switch, volume_column_switch, panning_column_switch, sample_effects_column_switch, collapsed_switch, incoming_audio_switch, populate_sends_switch, external_editor_switch
-
-local function simplifiedSendCreationNaming()
-  local send_tracks = {}
-  local count = 0
-
-  -- Collect all send tracks
-  for i = 1, #renoise.song().tracks do
-    if renoise.song().tracks[i].type == renoise.Track.TRACK_TYPE_SEND then
-      -- Store the index and name of each send track
-      table.insert(send_tracks, {index = count, name = renoise.song().tracks[i].name, track_number = i - 1})
-      count = count + 1
-    end
-  end
-
-  -- Create the appropriate number of #Send devices
-  for i = 1, count do
-    loadnative("Audio/Effects/Native/#Send")
-  end
-
-  local sendcount = 2  -- Start after existing devices
-
-  -- Assign parameters and names in correct order
-  for i = 1, count do
-    local send_device = renoise.song().selected_track.devices[sendcount]
-    local send_track = send_tracks[i]
-    send_device.parameters[3].value = send_track.index
-    send_device.display_name = send_track.name
-    sendcount = sendcount + 1
-  end
-end
-
-local function MidiInitChannelTrackInstrument(track_index)
-  local midi_in_device = midi_input_device[track_index]
-  local midi_in_channel = midi_input_channel[track_index]
-  local midi_out_device = midi_output_device[track_index]
-  local midi_out_channel = midi_output_channel[track_index]
-  local plugin = selected_plugin[track_index]
-  local note_columns = note_columns_switch.value
-  local effect_columns = effect_columns_switch.value
-  local delay_column = (delay_column_switch.value == 2)
-  local volume_column = (volume_column_switch.value == 2)
-  local panning_column = (panning_column_switch.value == 2)
-  local sample_effects_column = (sample_effects_column_switch.value == 2)
-  local collapsed = (collapsed_switch.value == 2)
-  local incoming_audio = (incoming_audio_switch.value == 2)
-  local populate_sends = (populate_sends_switch.value == 2)
-  local open_ext_editor = (external_editor_switch.value == 2)
-
-  -- Create a new track
-  renoise.song():insert_track_at(track_index)
-  local new_track = renoise.song():track(track_index)
-  new_track.name = "CH" .. string.format("%02d", midi_in_channel) .. " " .. midi_in_device
-  renoise.song().selected_track_index = track_index
-
-  -- Set track column settings
-  new_track.visible_note_columns = note_columns
-  new_track.visible_effect_columns = effect_columns
-  new_track.delay_column_visible = delay_column
-  new_track.volume_column_visible = volume_column
-  new_track.panning_column_visible = panning_column
-  new_track.sample_effects_column_visible = sample_effects_column
-  new_track.collapsed = collapsed
-
-  -- Populate send devices
-  if populate_sends then
-    simplifiedSendCreationNaming()
-  end
-
-  -- Load *Line Input device if incoming audio is set to ON
-  local checkline = #new_track.devices + 1
-  if incoming_audio then
-    loadnative("Audio/Effects/Native/#Line Input", checkline)
-    checkline = checkline + 1
-  end
-
-  -- Create a new instrument
-  renoise.song():insert_instrument_at(track_index)
-  local new_instrument = renoise.song():instrument(track_index)
-  new_instrument.name = "CH" .. string.format("%02d", midi_in_channel) .. " " .. midi_in_device
-
-  -- Set MIDI input properties for the new instrument
-  new_instrument.midi_input_properties.device_name = midi_in_device
-  new_instrument.midi_input_properties.channel = midi_in_channel
-  new_instrument.midi_input_properties.assigned_track = track_index
-
-  -- Set the output device for the new track
-  if midi_out_device ~= "<None>" then
-    new_instrument.midi_output_properties.device_name = midi_out_device
-    new_instrument.midi_output_properties.channel = midi_out_channel
-  end
-
-  -- Load the selected plugin for the new instrument
-  if plugin and plugin ~= "<None>" then
-    local plugin_path
-    for _, plugin_info in ipairs(available_plugins) do
-      if plugin_info.short_name == plugin:sub(5) then
-        plugin_path = plugin_info.path
+  -- Find the start index of the specific section
+  for i = 1, sequence_count do
+    if sequencer:sequence_is_start_of_section(i) then
+      current_section_index = current_section_index + 1
+      if current_section_index == section_number then
+        current_section_start = i
         break
       end
     end
-    if plugin_path then
-      new_instrument.plugin_properties:load_plugin(plugin_path)
-      -- Rename the instrument
-      new_instrument.name = "CH" .. string.format("%02d", midi_in_channel) .. " " .. midi_in_device .. " (" .. plugin:sub(5) .. ")"
+  end
 
-      -- Select the instrument to ensure devices are mapped correctly
-      renoise.song().selected_instrument_index = track_index
-      
-      -- Add *Instr. Automation and *Instr. MIDI Control to the track immediately after the plugin is loaded
-      local instr_automation_device = loadnative("Audio/Effects/Native/*Instr. Automation", checkline)
-      if instr_automation_device then
-        instr_automation_device.parameters[1].value = track_index - 1
-        checkline = checkline + 1
+  -- If the specified section is not found, exit the function
+  if not current_section_start then
+    renoise.app():show_status("No such Section exists, doing nothing.")
+    return
+  end
+
+  -- Find the end index of the current section
+  local current_section_end = sequence_count
+  for i = current_section_start + 1, sequence_count do
+    if sequencer:sequence_is_start_of_section(i) then
+      current_section_end = i - 1
+      break
+    end
+  end
+
+  -- Set the loop to the current section
+  song.transport.loop_sequence_range = {current_section_start, current_section_end}
+  
+  -- Notify the user
+  renoise.app():show_status("Loop set to section " .. section_number .. " from sequence " .. current_section_start .. " to " .. current_section_end)
+end
+
+-- Helper function to find the current section index
+function find_current_section_index()
+  local song = renoise.song()
+  local sequencer = song.sequencer
+  local sequence_count = #sequencer.pattern_sequence
+  local current_pos = song.transport.edit_pos.sequence
+  local loop_start = song.transport.loop_sequence_range[1]
+  local loop_end = song.transport.loop_sequence_range[2]
+
+  -- Check if a section is currently selected
+  if loop_start > 0 and loop_end > 0 and loop_start <= loop_end then
+    local current_section_index = 0
+    for i = 1, sequence_count do
+      if sequencer:sequence_is_start_of_section(i) then
+        current_section_index = current_section_index + 1
+        if loop_start == i then
+          return current_section_index
+        end
       end
+    end
+  end
 
-      local instr_midi_control_device = loadnative("Audio/Effects/Native/*Instr. MIDI Control", checkline)
-      if instr_midi_control_device then
-        instr_midi_control_device.parameters[1].value = track_index - 1
-        checkline = checkline + 1
+  -- If no section is selected, find the section based on the current edit position
+  local current_section_index = 0
+  for i = 1, sequence_count do
+    if sequencer:sequence_is_start_of_section(i) then
+      current_section_index = current_section_index + 1
+      if i > current_pos then
+        return current_section_index - 1
       end
+    end
+  end
+  return current_section_index
+end
 
-      -- Open external editor if the option is enabled
-      if open_ext_editor and new_instrument.plugin_properties.plugin_device then
-        new_instrument.plugin_properties.plugin_device.external_editor_visible = true
+-- Function to select and loop the next section
+function select_and_loop_section_next()
+  local current_section_index = find_current_section_index()
+  if current_section_index < 32 then
+    select_and_loop_section(current_section_index + 1)
+  else
+    renoise.app():show_status("There is no Next Section available.")
+  end
+end
+
+-- Function to select and loop the previous section
+function select_and_loop_section_previous()
+  local current_section_index = find_current_section_index()
+  if current_section_index > 1 then
+    select_and_loop_section(current_section_index - 1)
+  else
+    renoise.app():show_status("There is no Previous Section available.")
+  end
+end
+
+-- Function to turn off the sequence selection
+function set_sequence_selection_off()
+  local song = renoise.song()
+  song.transport.loop_sequence_range = {0, 0}
+  renoise.app():show_status("Sequence selection turned off.")
+end
+
+-- Add menu entries for each of the 32 sections
+for section_number = 1, 32 do
+  renoise.tool():add_menu_entry{
+    name="Pattern Sequencer:Paketti..:Select and Loop Sequence Section " .. string.format("%02d", section_number),
+    invoke=function() select_and_loop_section(section_number) end
+  }
+end
+
+for section_number = 1, 32 do
+  renoise.tool():add_keybinding{
+    name="Global:Paketti..:Select and Loop Sequence Section " .. string.format("%02d", section_number),
+    invoke=function() select_and_loop_section(section_number) end
+  }
+end
+
+
+-- Add menu entries and global keybindings for next and previous section selection
+renoise.tool():add_menu_entry{name="Pattern Sequencer:Paketti..:Select & Loop Section (Next)",invoke=select_and_loop_section_next}
+renoise.tool():add_keybinding{name="Global:Paketti:Select & Loop Section (Next)",invoke=select_and_loop_section_next}
+
+renoise.tool():add_menu_entry{name="Pattern Sequencer:Paketti..:Select & Loop Section (Previous)",invoke=select_and_loop_section_previous}
+renoise.tool():add_keybinding{name="Global:Paketti:Select & Loop Section (Previous)",invoke=select_and_loop_section_previous}
+
+-- Add menu entry and global keybinding for setting sequence selection off
+renoise.tool():add_menu_entry{name="Pattern Sequencer:Paketti..:Set Sequence Loop Selection Off",invoke=set_sequence_selection_off}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Sequence Loop Selection Off",invoke=set_sequence_selection_off}
+
+
+
+
+
+
+
+
+function tknaNextSequence(count)
+local currSeq = renoise.song().selected_sequence_index
+local nextSeq = currSeq + count
+local total_sequences = #renoise.song().sequencer.pattern_sequence
+
+if nextSeq < 1 then renoise.app():show_status("You are on the first sequence.") return else
+
+  if nextSeq <= total_sequences then
+    renoise.song().selected_sequence_index = nextSeq
+    else
+    renoise.app():show_status("No more sequences available.")
+  end
+end
+
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Jump to Sequence (Next)",invoke=function() tknaNextSequence(1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Jump to Sequence (Previous)",invoke=function() tknaNextSequence(-1) end}
+
+function tknaContinueSequenceFromSameLine(number)
+local storedSequence = renoise.song().selected_sequence_index
+local storedRow = renoise.song().selected_line_index
+  if number <= #renoise.song().sequencer.pattern_sequence then
+if renoise.song().transport.follow_player then
+renoise.song().selected_sequence_index = number
+else
+
+renoise.song().transport.follow_player = true 
+renoise.song().selected_sequence_index = number
+renoise.song().transport.follow_player = false
+renoise.song().selected_sequence_index=storedSequence
+renoise.song().selected_line_index=storedRow 
+end
+    else
+    renoise.app():show_status("Sequence does not exist, doing nothing.")
+  end
+
+end
+
+
+for i = 1, 32 do
+  -- Zero-pad the number for sequence naming
+  local padded_number = string.format("%02d", i - 1)
+  
+  -- Add keybinding for each sequence
+  renoise.tool():add_keybinding{name="Global:Paketti:Continue Sequence " .. padded_number .. " From Same Line", invoke=function() 
+  if i < #renoise.song().sequencer.pattern_sequence then
+  tknaContinueSequenceFromSameLine(i) 
+  else
+  renoise.song():show_status("Sequence does not exist, doing nothing.")
+  end
+  end}
+
+end
+
+for i = 1, 32 do
+  -- Zero-pad the number for sequence naming
+  local padded_number = string.format("%02d", i - 1)
+  
+  -- Add keybinding for each sequence
+  renoise.tool():add_keybinding{name="Global:Paketti:Selected Specific Sequence " .. padded_number, invoke=function() 
+  if i < #renoise.song().sequencer.pattern_sequence then 
+  renoise.song().selected_sequence_index = i
+  else renoise.app():show_status("Sequence does not exist, doing nothing.")
+  end
+     end}
+end
+
+
+
+
+function tknaTriggerSequence(number)
+  local total_sequences = #renoise.song().sequencer.pattern_sequence
+  if number < total_sequences then
+    renoise.song().transport:trigger_sequence(number)
+  else
+    renoise.app():show_status("This sequence position does not exist.")
+  end
+end
+
+for i = 1, 32 do
+  -- Zero-pad the number for sequence naming
+  local padded_number = string.format("%02d", i - 1)
+  
+  -- Add keybinding for each sequence
+  renoise.tool():add_keybinding{name="Global:Paketti:Trigger Sequence " .. padded_number, invoke=function() tknaTriggerSequence(i) end}
+end
+
+function tknaSetSequenceAsScheduledList(number)
+if renoise.song().transport.playing then  else renoise.song().transport.playing=true
+end
+local total_sequences = #renoise.song().sequencer.pattern_sequence
+if number < total_sequences then
+renoise.song().transport:set_scheduled_sequence(number)
+else
+renoise.app():show_status("This sequence position does not exist.")
+end
+end
+
+for i = 1,32 do
+  local padded_number = string.format("%02d", i - 1)
+  
+  -- Add keybinding for each sequence
+  renoise.tool():add_keybinding{name="Global:Paketti:Set Sequence " .. padded_number .. " as Scheduled List", invoke=function() tknaSetSequenceAsScheduledList(i) end}
+end
+
+
+function tknaAddSequenceToScheduledList(number)
+if renoise.song().transport.playing then  else renoise.song().transport.playing=true
+end
+local total_sequences = #renoise.song().sequencer.pattern_sequence
+if number < total_sequences then
+renoise.song().transport:add_scheduled_sequence(number)
+else
+renoise.app():show_status("This sequence position does not exist.")
+end
+end
+
+for i = 1,32 do
+  local padded_number = string.format("%02d", i - 1)
+  
+  -- Add keybinding for each sequence
+  renoise.tool():add_keybinding{name="Global:Paketti:Add Sequence " .. padded_number .. " to Scheduled List", invoke=function() tknaAddSequenceToScheduledList(i) end}
+end
+
+
+for i = 1, 32 do
+  local padded_number = string.format("%02d", i - 1)
+  renoise.tool():add_keybinding{
+    name="Global:Paketti:Toggle Sequence Loop to " .. padded_number,
+    invoke=function()
+      local total_sequences = #renoise.song().sequencer.pattern_sequence
+      if i <= total_sequences then
+        local current_range = renoise.song().transport.loop_sequence_range
+        if current_range[1] == i and current_range[2] == i then
+          -- Turn off the loop
+          renoise.song().transport.loop_sequence_range = {}
+          renoise.app():show_status("Sequence loop turned off.")
+        else
+          -- Set the loop to the specified range
+          renoise.song().transport.loop_sequence_range = {i, i}
+          renoise.app():show_status("Sequence loop set to " .. padded_number)
+        end
+      else
+        renoise.app():show_status("This sequence does not exist.")
       end
     end
+  }
+end
+
+
+
+
+renoise.tool():add_keybinding{name="Global:Paketti:Clear Pattern Sequence Loop",invoke=function()
+renoise.song().transport.loop_sequence_range = {} end}
+
+-- Function to compare two tables for value equality
+function tables_equal(t1, t2)
+  if #t1 ~= #t2 then
+    return false
+  end
+  for i = 1, #t1 do
+    if t1[i] ~= t2[i] then
+      return false
+    end
+  end
+  return true
+end
+
+-- Function to set the sequence loop from current loop position to specified position
+function setSequenceLoopFromCurrentTo(position)
+  local total_sequences = #renoise.song().sequencer.pattern_sequence
+  local current_range = renoise.song().transport.loop_sequence_range
+
+  -- Ensure the specified position is within the valid range
+  if position > total_sequences then
+    renoise.app():show_status("This sequence does not exist.")
+    return
+  end
+
+
+-- Check if current_range is {0,0} using the tables_equal function
+if tables_equal(current_range, {0,0}) then
+  renoise.song().transport.loop_sequence_range = {position, position}
+  return
+end
+
+  local current_start = current_range[1]
+
+  -- Check if the specified position is valid for setting the loop
+  if position < current_start then
+    renoise.app():show_status("The end position cannot be less than the start position.")
+  else
+    renoise.song().transport.loop_sequence_range = {current_start, position}
+    renoise.app():show_status("Sequence loop set from " .. current_start .. " to " .. position)
   end
 end
 
-local function on_ok_button_pressed(dialog_content)
-  for i = 1, 16 do
-    MidiInitChannelTrackInstrument(i)
-  end
-  renoise.song().selected_track_index = 1 -- Select the first track
-  custom_dialog:close()
+-- Loop to create keybindings for setting the loop range from current to specified position
+for i = 1, 32 do
+  local padded_number = string.format("%02d", i - 1)
+  renoise.tool():add_keybinding{
+    name="Global:Paketti:Set Sequence Loop from Current to " .. padded_number,
+    invoke=function()
+      setSequenceLoopFromCurrentTo(i)
+    end
+  }
 end
 
-local function on_midi_input_switch_changed(value)
-  for i = 1, 16 do
-    midi_input_device[i] = midi_input_devices[value]
-  end
-  -- Update the GUI
-  for i = 1, 16 do
-    local popup = vb.views["midi_input_popup_" .. i]
-    if popup then
-      popup.value = value
+------
+
+function globalChangeVisibleColumnState(columnName)
+  for i=1, renoise.song().sequencer_track_count do
+    if renoise.song().tracks[i].type == 1 and columnName == "delay" then
+      renoise.song().tracks[i].delay_column_visible = true
+    elseif renoise.song().tracks[i].type == 1 and columnName == "volume" then
+      renoise.song().tracks[i].volume_column_visible = true
+    elseif renoise.song().tracks[i].type == 1 and columnName == "panning" then
+      renoise.song().tracks[i].panning_column_visible = true
+    elseif renoise.song().tracks[i].type == 1 and columnName == "sample_effects" then
+      renoise.song().tracks[i].sample_effects_column_visible = true
+    else
+      renoise.app():show_status("Invalid column name: " .. columnName)
     end
   end
 end
 
-local function on_midi_output_switch_changed(value)
-  for i = 1, 16 do
-    midi_output_device[i] = midi_output_devices[value]
-  end
-  -- Update the GUI
-  for i = 1, 16 do
-    local popup = vb.views["midi_output_popup_" .. i]
-    if popup then
-      popup.value = value
+
+
+-----------
+------------------------------
+------------------------------
+------------------------------
+
+
+-- Define the XML content as a string
+local InstrautomationXML = [[
+<?xml version="1.0" encoding="UTF-8"?>
+<FilterDevicePreset doc_version="13">
+  <DeviceSlot type="InstrumentAutomationDevice">
+    <IsMaximized>true</IsMaximized>
+    <ParameterNumber0>0</ParameterNumber0>
+    <ParameterNumber1>1</ParameterNumber1>
+    <ParameterNumber2>2</ParameterNumber2>
+    <ParameterNumber3>3</ParameterNumber3>
+    <ParameterNumber4>4</ParameterNumber4>
+    <ParameterNumber5>5</ParameterNumber5>
+    <ParameterNumber6>6</ParameterNumber6>
+    <ParameterNumber7>7</ParameterNumber7>
+    <ParameterNumber8>8</ParameterNumber8>
+    <ParameterNumber9>9</ParameterNumber9>
+    <ParameterNumber10>10</ParameterNumber10>
+    <ParameterNumber11>11</ParameterNumber11>
+    <ParameterNumber12>12</ParameterNumber12>
+    <ParameterNumber13>13</ParameterNumber13>
+    <ParameterNumber14>14</ParameterNumber14>
+    <ParameterNumber15>15</ParameterNumber15>
+    <ParameterNumber16>16</ParameterNumber16>
+    <ParameterNumber17>17</ParameterNumber17>
+    <ParameterNumber18>18</ParameterNumber18>
+    <ParameterNumber19>19</ParameterNumber19>
+    <ParameterNumber20>20</ParameterNumber20>
+    <ParameterNumber21>21</ParameterNumber21>
+    <ParameterNumber22>22</ParameterNumber22>
+    <ParameterNumber23>23</ParameterNumber23>
+    <ParameterNumber24>24</ParameterNumber24>
+    <ParameterNumber25>25</ParameterNumber25>
+    <ParameterNumber26>26</ParameterNumber26>
+    <ParameterNumber27>27</ParameterNumber27>
+    <ParameterNumber28>28</ParameterNumber28>
+    <ParameterNumber29>29</ParameterNumber29>
+    <ParameterNumber30>30</ParameterNumber30>
+    <ParameterNumber31>31</ParameterNumber31>
+    <ParameterNumber32>32</ParameterNumber32>
+    <ParameterNumber33>33</ParameterNumber33>
+    <ParameterNumber34>34</ParameterNumber34>
+    <VisiblePages>8</VisiblePages>
+  </DeviceSlot>
+</FilterDevicePreset>
+]]
+
+-- Function to load the preset XML directly into the Instr. Automation device
+function openVisiblePagesToFitParameters()
+  local song = renoise.song()
+
+  -- Load the Instr. Automation device into the selected track using insert_device_at
+  local track = song.selected_track
+  track:insert_device_at("Audio/Effects/Native/*Instr. Automation", 2)
+
+  -- Set the active_preset_data to the provided XML content
+  renoise.song().selected_track.devices[2].active_preset_data = InstrautomationXML
+
+  -- Debug logging: Confirm the preset has been loaded
+  renoise.app():show_status("Preset loaded into Instr. Automation device.")
+end
+
+-- Register the function to a menu entry
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Open Visible Pages to Fit Plugin Parameter Count",invoke=openVisiblePagesToFitParameters}
+renoise.tool():add_menu_entry{name="DSP Device:Paketti..:Open Visible Pages to Fit Plugin Parameter Count",invoke=openVisiblePagesToFitParameters}
+
+-- Register a keybinding for easier access (optional)
+renoise.tool():add_keybinding{name="Global:Paketti:Open Visible Pages to Fit Parameters",invoke=openVisiblePagesToFitParameters}
+
+
+
+
+--------------
+
+
+
+
+
+-- Mix-Paste Tool for Renoise
+-- This tool will mix clipboard data with the pattern data in Renoise
+
+local temp_text_path = renoise.tool().bundle_path .. "temp_mixpaste.txt"
+local mix_paste_mode = false
+
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Impulse Tracker MixPaste",invoke=function()
+  mix_paste()
+end}
+
+function mix_paste()
+  if not mix_paste_mode then
+    -- First invocation: save selection to text file and perform initial paste
+    save_selection_to_text()
+    local clipboard_data = load_pattern_data_from_text()
+    if clipboard_data then
+      print("Debug: Clipboard data loaded for initial paste:\n" .. clipboard_data)
+      perform_initial_paste(clipboard_data)
+      renoise.app():show_status("Initial mix-paste performed. Run Mix-Paste again to perform the final mix.")
+    else
+      renoise.app():show_error("Failed to load clipboard data from text file.")
+    end
+    mix_paste_mode = true
+  else
+    -- Second invocation: load from text file and perform final mix-paste
+    local clipboard_data = load_pattern_data_from_text()
+    if clipboard_data then
+      print("Debug: Clipboard data loaded for final paste:\n" .. clipboard_data)
+      perform_final_mix_paste(clipboard_data)
+      mix_paste_mode = false
+      -- Clear the temp text file
+      local file = io.open(temp_text_path, "w")
+      file:write("")
+      file:close()
+    else
+      renoise.app():show_error("Failed to load clipboard data from text file.")
     end
   end
 end
 
--- Randomize plugin selection
-local function randomize_plugin_selection(plugin_type)
-  local plugins = {}
-  for _, plugin_info in ipairs(available_plugins) do
-    if plugin_info.path:find(plugin_type) then
-      table.insert(plugins, plugin_info.short_name)
-    end
+function save_selection_to_text()
+  local song = renoise.song()
+  local selection = song.selection_in_pattern
+  if not selection then
+    renoise.app():show_error("Please make a selection in the pattern first.")
+    return
   end
 
-  for i = 1, 16 do
-    if #plugins > 0 then
-      local random_plugin = plugins[math.random(#plugins)]
-      for j, item in ipairs(plugin_dropdown_items) do
-        if item:find(plugin_type:sub(2, -2)) and item:find(random_plugin) then
-          selected_plugin[i] = item
-          vb.views["plugin_popup_" .. i].value = j
-          break
+  -- Capture pattern data using rprint and save to text file
+  local pattern_data = {}
+  local pattern = song:pattern(song.selected_pattern_index)
+  local track_index = song.selected_track_index
+
+  for line_index = selection.start_line, selection.end_line do
+    local line_data = {}
+    local line = pattern:track(track_index):line(line_index)
+    for col_index = 1, #line.note_columns do
+      local note_column = line:note_column(col_index)
+      table.insert(line_data, string.format("%s %02X %02X %02X %02X", 
+        note_column.note_string, note_column.instrument_value, 
+        note_column.volume_value, note_column.effect_number_value, 
+        note_column.effect_amount_value))
+    end
+    for col_index = 1, #line.effect_columns do
+      local effect_column = line:effect_column(col_index)
+      table.insert(line_data, string.format("%02X %02X", 
+        effect_column.number_value, effect_column.amount_value))
+    end
+    table.insert(pattern_data, table.concat(line_data, " "))
+  end
+
+  -- Save pattern data to text file
+  local file = io.open(temp_text_path, "w")
+  file:write(table.concat(pattern_data, "\n"))
+  file:close()
+
+  print("Debug: Saved pattern data to text file:\n" .. table.concat(pattern_data, "\n"))
+end
+
+function load_pattern_data_from_text()
+  local file = io.open(temp_text_path, "r")
+  if not file then
+    return nil
+  end
+  local clipboard = file:read("*a")
+  file:close()
+  return clipboard
+end
+
+function perform_initial_paste(clipboard_data)
+  local song = renoise.song()
+  local track_index = song.selected_track_index
+  local line_index = song.selected_line_index
+  local pattern = song:pattern(song.selected_pattern_index)
+  local track = pattern:track(track_index)
+
+  local clipboard_lines = parse_clipboard_data(clipboard_data)
+
+  for i, clipboard_line in ipairs(clipboard_lines) do
+    local line = track:line(line_index + i - 1)
+    for col_index, clipboard_note_col in ipairs(clipboard_line.note_columns) do
+      if col_index <= #line.note_columns then
+        local note_col = line:note_column(col_index)
+        if note_col.is_empty then
+          note_col.note_string = clipboard_note_col.note_string
+          note_col.instrument_value = clipboard_note_col.instrument_value
+          note_col.volume_value = clipboard_note_col.volume_value
+          note_col.effect_number_value = clipboard_note_col.effect_number_value
+          note_col.effect_amount_value = clipboard_note_col.effect_amount_value
+        end
+      end
+    end
+    for col_index, clipboard_effect_col in ipairs(clipboard_line.effect_columns) do
+      if col_index <= #line.effect_columns then
+        local effect_col = line:effect_column(col_index)
+        if effect_col.is_empty then
+          effect_col.number_value = clipboard_effect_col.number_value
+          effect_col.amount_value = clipboard_effect_col.amount_value
         end
       end
     end
   end
 end
 
-local function randomize_au_plugins()
-  randomize_plugin_selection("/AU/")
-end
+function perform_final_mix_paste(clipboard_data)
+  local song = renoise.song()
+  local track_index = song.selected_track_index
+  local line_index = song.selected_line_index
+  local pattern = song:pattern(song.selected_pattern_index)
+  local track = pattern:track(track_index)
 
-local function randomize_vst_plugins()
-  randomize_plugin_selection("/VST/")
-end
+  local clipboard_lines = parse_clipboard_data(clipboard_data)
 
-local function randomize_vst3_plugins()
-  randomize_plugin_selection("/VST3/")
-end
-
-local function clear_plugin_selection()
-  for i = 1, 16 do
-    selected_plugin[i] = plugin_dropdown_items[1]
-    vb.views["plugin_popup_" .. i].value = 1
+  for i, clipboard_line in ipairs(clipboard_lines) do
+    local line = track:line(line_index + i - 1)
+    for col_index, clipboard_note_col in ipairs(clipboard_line.note_columns) do
+      if col_index <= #line.note_columns then
+        local note_col = line:note_column(col_index)
+        if not note_col.is_empty then
+          if clipboard_note_col.effect_number_value > 0 then
+            note_col.effect_number_value = clipboard_note_col.effect_number_value
+            note_col.effect_amount_value = clipboard_note_col.effect_amount_value
+          end
+        end
+      end
+    end
+    for col_index, clipboard_effect_col in ipairs(clipboard_line.effect_columns) do
+      if col_index <= #line.effect_columns then
+        local effect_col = line:effect_column(col_index)
+        if not effect_col.is_empty then
+          if clipboard_effect_col.number_value > 0 then
+            effect_col.number_value = clipboard_effect_col.number_value
+            effect_col.amount_value = clipboard_effect_col.amount_value
+          end
+        end
+      end
+    end
   end
 end
 
--- Function to show the custom dialog
-function generaMIDISetupShowCustomDialog()
-  -- Initialize variables
-  initialize_variables()
-
-  -- Clear the ViewBuilder to prevent duplicate view IDs
-  vb = renoise.ViewBuilder()
-
-  -- Initialize the GUI elements
-  local rows = {}
-  for i = 1, 16 do
-    rows[i] = vb:horizontal_aligner{
-      mode = "right",
-      vb:text{text = "Track " .. i .. ":", width = 100},
-      vb:popup{items = midi_input_devices, width = 200, notifier = function(value) midi_input_device[i] = midi_input_devices[value] end, id = "midi_input_popup_" .. i},
-      vb:popup{items = {"1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16"}, width = 50, notifier = function(value) midi_input_channel[i] = tonumber(value) end, value = i},
-      vb:popup{items = midi_output_devices, width = 200, notifier = function(value) midi_output_device[i] = midi_output_devices[value] end, id = "midi_output_popup_" .. i},
-      vb:popup{items = {"1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16"}, width = 50, notifier = function(value) midi_output_channel[i] = tonumber(value) end, value = i},
-      vb:popup{items = plugin_dropdown_items, width = 200, notifier = function(value) selected_plugin[i] = plugin_dropdown_items[value] end, id = "plugin_popup_" .. i}
-    }
+function parse_clipboard_data(clipboard)
+  local lines = {}
+  for line in clipboard:gmatch("[^\r\n]+") do
+    table.insert(lines, parse_line(line))
   end
+  return lines
+end
 
-  note_columns_switch = vb:switch{items = {"1","2","3","4","5","6","7","8","9","10","11","12"}, width = 300, value = 1}
-  effect_columns_switch = vb:switch{items = {"1","2","3","4","5","6","7","8"}, width = 300, value = 1}
-  delay_column_switch = vb:switch{items = {"Off","On"}, width = 300, value = 1}
-  volume_column_switch = vb:switch{items = {"Off","On"}, width = 300, value = 1}
-  panning_column_switch = vb:switch{items = {"Off","On"}, width = 300, value = 1}
-  sample_effects_column_switch = vb:switch{items = {"Off","On"}, width = 300, value = 1}
-  collapsed_switch = vb:switch{items = {"Not Collapsed","Collapsed"}, width = 300, value = 1}
-  incoming_audio_switch = vb:switch{items = {"Off","On"}, width = 300, value = 1}
-  populate_sends_switch = vb:switch{items = {"Off","On"}, width = 300, value = 1}
-  external_editor_switch = vb:switch{items = {"Off","On"}, width = 300, value = 1}
+function parse_line(line)
+  local note_columns = {}
+  local effect_columns = {}
+  for note_col_data in line:gmatch("(%S+ %S+ %S+ %S+ %S+)") do
+    table.insert(note_columns, parse_note_column(note_col_data))
+  end
+  for effect_col_data in line:gmatch("(%S+ %S+)") do
+    table.insert(effect_columns, parse_effect_column(effect_col_data))
+  end
+  return {note_columns=note_columns,effect_columns=effect_columns}
+end
 
-  dialog_content = vb:column{
-    margin = 10, spacing = 10,
-    vb:horizontal_aligner{mode = "right", vb:row{
-      vb:text{text = "MIDI Input Device:"},
-      vb:switch{items = midi_input_devices, value = 1, width = 700, notifier = on_midi_input_switch_changed}
-    }},
-    vb:horizontal_aligner{mode = "right", vb:row{
-      vb:text{text = "MIDI Output Device:"},
-      vb:switch{items = midi_output_devices, value = 1, width = 700, notifier = on_midi_output_switch_changed}
-    }},
-    vb:row{
-      vb:button{text = "Randomize AU Plugin Selection", width = 200, notifier = randomize_au_plugins},
-      vb:button{text = "Randomize VST Plugin Selection", width = 200, notifier = randomize_vst_plugins},
-      vb:button{text = "Randomize VST3 Plugin Selection", width = 200, notifier = randomize_vst3_plugins},
-      vb:button{text = "Clear Plugin Selection", width = 200, notifier = clear_plugin_selection}
-    },
-    vb:column(rows),
-    vb:horizontal_aligner{mode = "right", vb:row{vb:text{text = "Note Columns:"}, note_columns_switch}},
-    vb:horizontal_aligner{mode = "right", vb:row{vb:text{text = "Effect Columns:"}, effect_columns_switch}},
-    vb:horizontal_aligner{mode = "right", vb:row{vb:text{text = "Delay Column:"}, delay_column_switch}},
-    vb:horizontal_aligner{mode = "right", vb:row{vb:text{text = "Volume Column:"}, volume_column_switch}},
-    vb:horizontal_aligner{mode = "right", vb:row{vb:text{text = "Panning Column:"}, panning_column_switch}},
-    vb:horizontal_aligner{mode = "right", vb:row{vb:text{text = "Sample Effects Column:"}, sample_effects_column_switch}},
-    vb:horizontal_aligner{mode = "right", vb:row{vb:text{text = "Track State:"}, collapsed_switch}},
-    vb:horizontal_aligner{mode = "right", vb:row{vb:text{text = "Incoming Audio:"}, incoming_audio_switch}},
-    vb:horizontal_aligner{mode = "right", vb:row{vb:text{text = "Populate Track with Sends:"}, populate_sends_switch}},
-    vb:horizontal_aligner{mode = "right", vb:row{vb:text{text = "Open External Editor:"}, external_editor_switch}},
-    vb:row{
-      vb:button{text = "OK", width = 100, notifier = function() on_ok_button_pressed(dialog_content) end},
-      vb:button{text = "Close", width = 100, notifier = function() custom_dialog:close() end}
-    }
+function parse_note_column(data)
+  local note, instrument, volume, effect_number, effect_amount = data:match("(%S+) (%S+) (%S+) (%S+) (%S+)")
+  return {
+    note_string=note,
+    instrument_value=tonumber(instrument, 16),
+    volume_value=tonumber(volume, 16),
+    effect_number_value=tonumber(effect_number, 16),
+    effect_amount_value=tonumber(effect_amount, 16),
   }
-
-  custom_dialog = renoise.app():show_custom_dialog("Paketti MIDI Populator", dialog_content)
 end
 
--- Add menu entry to show the custom dialog
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Paketti MIDI Populator",invoke=generaMIDISetupShowCustomDialog}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
------------
-function hackysack()
-renoise.song().selected_instrument.name="IAC Driver (Bus 1) Channel 01"
-renoise.song().selected_instrument.midi_input_properties.device_name="IAC Driver (Bus 1)"
-renoise.song().selected_instrument.midi_input_properties.channel=1
-renoise.song().selected_instrument.midi_input_properties.assigned_track=1
-
-renoise.song().selected_instrument.midi_output_properties.device_name=blaa
-renoise.song().selected_instrument.midi_output_properties.channel=blee
-
+function parse_effect_column(data)
+  local number, amount = data:match("(%S+) (%S+)")
+  return {
+    number_value=tonumber(number, 16),
+    amount_value=tonumber(amount, 16),
+  }
 end
 
 
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Prepare 16 channels",invoke = function() hackysack() end}
 
-------------
 
+
+
+
+
+
+
+
+
+-------------------------
 --------
 function Experimental()
     function read_file(path)
@@ -405,7 +701,7 @@ function Experimental()
     check_and_execute(config_path, bash_script)
 end
 
-renoise.tool():add_menu_entry {name = "Main Menu:Tools:Experimental",invoke = function() Experimental() end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Experimental",invoke=function() Experimental() end}
 
 --Wipes the pattern data, but not the samples or instruments.
 --WARNING: Does not reset current filename.
@@ -444,28 +740,7 @@ local gapper=renoise.song().patterns[renoise.song().selected_pattern_index].numb
   renoise.song().selected_track.devices[2].parameters[6].value_string=tostring(gapper)
 --renoise.song().selected_pattern.tracks[get_master_track_index()].lines[renoise.song().selected_line_index].effect_columns[4].number_string = "18"
 end
-
-renoise.tool():add_keybinding{name="Global:Paketti:Add Filter & LFO (AutoGapper)", invoke=function() AutoGapper() end}
-
-
---2nd keybind for LoopBlock forward/backward
-function loopblockback()
-local t = renoise.song().transport
-      t.loop_block_enabled=true
-      t:loop_block_move_backwards()
-      t.follow_player = true
-end
-
-function loopblockforward()
-local t = renoise.song().transport
-      t.loop_block_enabled=true
-      t:loop_block_move_forwards()
-      t.follow_player = true
-end
-
-renoise.tool():add_keybinding{name="Global:Paketti:Loop Block Backwards", invoke=function() loopblockback() end}
-renoise.tool():add_keybinding{name="Global:Paketti:Loop Block Forwards", invoke=function() loopblockforward() end}
-
+--renoise.tool():add_keybinding{name="Global:Paketti:Add Filter & LFO (AutoGapper)", invoke=function() AutoGapper() end}
 ------------
 function start_stop_sample_and_loop_oh_my()
 local w=renoise.app().window
@@ -530,19 +805,18 @@ end
 function effectbypasspattern()
 local currTrak = renoise.song().selected_track_index
 local number = (table.count(renoise.song().selected_track.devices))
-local tablee={"1F","2F","3F","4F","5F","6F","7F","8F"}
  for i=2,number  do 
   --renoise.song().selected_track.devices[i].is_active=false
   renoise.song().selected_track.visible_effect_columns=(table.count(renoise.song().selected_track.devices)-1)
 --This would be (1-8F)
-renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[1].number_string="1F"
-renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[2].number_string="2F"
-renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[3].number_string="3F"
-renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[4].number_string="4F"
-renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[5].number_string="5F"
-renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[6].number_string="6F"
-renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[7].number_string="7F"
-renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[8].number_string="8F"
+renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[1].number_string="10"
+renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[2].number_string="20"
+renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[3].number_string="30"
+renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[4].number_string="40"
+renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[5].number_string="50"
+renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[6].number_string="60"
+renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[7].number_string="70"
+renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[8].number_string="80"
 --this would be 00 for disabling
 local ooh=(i-1)
 renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[ooh].amount_string="00"
@@ -559,14 +833,14 @@ for i=2,number  do
 local helper=(table.count(renoise.song().selected_track.devices)-1)
 renoise.song().selected_track.visible_effect_columns=helper
 --This would be (1-8F)
-renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[1].number_string="1F"
-renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[2].number_string="2F"
-renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[3].number_string="3F"
-renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[4].number_string="4F"
-renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[5].number_string="5F"
-renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[6].number_string="6F"
-renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[7].number_string="7F"
-renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[8].number_string="8F"
+renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[1].number_string="10"
+renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[2].number_string="20"
+renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[3].number_string="30"
+renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[4].number_string="40"
+renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[5].number_string="50"
+renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[6].number_string="60"
+renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[7].number_string="70"
+renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[8].number_string="80"
 
 --this would be 01 for enabling
 local ooh=(i-1)
@@ -574,8 +848,10 @@ renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].
 end
 end
 ------
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Bypass EFX (Write to Pattern)", invoke=function() effectbypasspattern() end}
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Enable EFX (Write to Pattern)", invoke=function() effectenablepattern()  end}
+renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Bypass All Devices on Channel", invoke=function() effectbypass() end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Enable All Devices on Channel", invoke=function() effectenable() end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Bypass 8 Track DSP Devices (Write to Pattern)", invoke=function() effectbypasspattern() end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Enable 8 Track DSP Devices (Write to Pattern)", invoke=function() effectenablepattern()  end}
 ----------------------------
 
 -- has-line-input + add-line-input
@@ -667,7 +943,7 @@ local s = nil
 
 function startup_()
   local s=renoise.song()
-   renoise.app().window:select_preset(1)
+--   renoise.app().window:select_preset(1)
    
    renoise.song().instruments[s.selected_instrument_index].active_tab=1
     if renoise.app().window.active_middle_frame==0 and s.selected_sample.sample_buffer_observable:has_notifier(sample_loaded_change_to_sample_editor) then 
@@ -1089,24 +1365,6 @@ renoise.song().transport.edit_mode=true
 renoise.song().transport.edit_step=0
 renoise.song().selected_note_column_index=1
 startcolumncycling(12) end}
-
----------------------------
-function Ding()
-renoise.song().instruments[renoise.song().selected_instrument_index].sample_envelopes.pitch.enabled=true
---LFO1
---1 = Off, 2 = Sin, 3 = Saw, 4 = Pulse, 5 = Random
-renoise.song().instruments[renoise.song().selected_instrument_index].sample_envelopes.pitch.lfo1.mode=2
---LFO1 amount
-renoise.song().instruments[renoise.song().selected_instrument_index].sample_envelopes.pitch.lfo1.amount=99
---LFO1 Frequency
-renoise.song().instruments[renoise.song().selected_instrument_index].sample_envelopes.pitch.lfo1.frequency=13
---LFO1 Phase
-renoise.song().instruments[renoise.song().selected_instrument_index].sample_envelopes.pitch.lfo1.phase=30
-end
-renoise.tool():add_menu_entry{name="Sample Editor:Ding", invoke=function() Ding() end}
-
--------------------
----------------------------
 ----------------------------
 
 

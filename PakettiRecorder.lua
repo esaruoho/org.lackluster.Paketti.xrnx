@@ -213,7 +213,7 @@ function finalrecord()
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Record to Current Track", invoke=function() recordtocurrenttrack() end}
 renoise.tool():add_menu_entry{name="Mixer:Paketti..:Record to Current Track", invoke=function() recordtocurrenttrack() end}
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Record to Current Track", invoke=function() recordtocurrenttrack() end}
-renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Record to Current Track", invoke=function() recordtocurrenttrack() end}
+renoise.tool():add_menu_entry{name="--Sample Mappings:Paketti..:Record to Current Track", invoke=function() recordtocurrenttrack() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Record to Current Track", invoke=function() 
   local s=renoise.song()
   local t=s.transport
