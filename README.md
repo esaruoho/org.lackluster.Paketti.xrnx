@@ -4,12 +4,12 @@
 
 https://github.com/esaruoho/org.lackluster.Paketti.xrnx/releases
 
-## Discuss
+## Discord
 
-The forum for discussion is at http://forum.renoise.com/index.php/topic/34661-new-tool-31-pakettir3/
-or hit me up on Discord as esaruoho
+Discord for discussion about issues, requests and seeing current updates is at: https://discord.gg/Qex7k5j4wG
 
-
+## Renoise Forum
+The thread for Paketti is at http://forum.renoise.com/index.php/topic/34661-new-tool-31-pakettir3/ (note, this is severely outdated, Discord is faster)
 
 ### Hallucinations
 
