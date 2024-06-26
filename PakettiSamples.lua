@@ -1,9 +1,10 @@
 local vb = renoise.ViewBuilder()
 
 local app_paths = {}
+local smart_folder_paths = {}
 
 -- Function to browse for an app and update the corresponding field
-function browse_for_app(index)
+function appSelectionBrowseForApp(index)
     local file_extensions = {"*.*"}
     local dialog_title = "Select an Application"
 
@@ -25,8 +26,24 @@ function browse_for_app(index)
     end
 end
 
+-- Function to browse for a smart folder and update the corresponding field
+function browseForSmartFolder(index)
+    local dialog_title = "Select a Smart Folder"
+
+    local selected_folder = renoise.app():prompt_for_path(dialog_title)
+    if selected_folder ~= "" then
+        preferences["SmartFoldersApp"..index].value = selected_folder
+        if smart_folder_paths[index] then
+            smart_folder_paths[index].text = selected_folder
+        end
+        renoise.app():show_status("Selected folder: " .. selected_folder)
+    else
+        renoise.app():show_status("No folder selected")
+    end
+end
+
 -- Function to save selected sample to temp and open with the selected app
-function save_selected_sample_to_temp_and_open(app_path)
+function saveSelectedSampleToTempAndOpen(app_path)
     if renoise.song() == nil then return end
     local song = renoise.song()
     if song.selected_sample == nil or not song.selected_sample.sample_buffer.has_sample_data then
@@ -56,21 +73,23 @@ end
 -- Create the dialog UI
 local function create_dialog_content(close_dialog)
     app_paths = {}
-    
+    smart_folder_paths = {}
+
     return vb:column{
         margin=10,
         spacing=10,
         width=900,
+        vb:row{vb:text{text="App Selection", font="bold", style="strong"}},
         vb:row{
             spacing=10,
             vb:button{
                 text="Browse",
-                notifier=function() browse_for_app(1) end
+                notifier=function() appSelectionBrowseForApp(1) end
             },
             vb:button{
                 text="Send Selected Sample to App",
                 notifier=function() 
-                    save_selected_sample_to_temp_and_open(preferences.AppSelection1.value) 
+                    saveSelectedSampleToTempAndOpen(preferences.AppSelection1.value) 
                 end,
                 width=200
             },
@@ -88,12 +107,12 @@ local function create_dialog_content(close_dialog)
             spacing=10,
             vb:button{
                 text="Browse",
-                notifier=function() browse_for_app(2) end
+                notifier=function() appSelectionBrowseForApp(2) end
             },
             vb:button{
                 text="Send Selected Sample to App",
                 notifier=function() 
-                    save_selected_sample_to_temp_and_open(preferences.AppSelection2.value) 
+                    saveSelectedSampleToTempAndOpen(preferences.AppSelection2.value) 
                 end,
                 width=200
             },
@@ -111,12 +130,12 @@ local function create_dialog_content(close_dialog)
             spacing=10,
             vb:button{
                 text="Browse",
-                notifier=function() browse_for_app(3) end
+                notifier=function() appSelectionBrowseForApp(3) end
             },
             vb:button{
                 text="Send Selected Sample to App",
                 notifier=function() 
-                    save_selected_sample_to_temp_and_open(preferences.AppSelection3.value) 
+                    saveSelectedSampleToTempAndOpen(preferences.AppSelection3.value) 
                 end,
                 width=200
             },
@@ -134,12 +153,12 @@ local function create_dialog_content(close_dialog)
             spacing=10,
             vb:button{
                 text="Browse",
-                notifier=function() browse_for_app(4) end
+                notifier=function() appSelectionBrowseForApp(4) end
             },
             vb:button{
                 text="Send Selected Sample to App",
                 notifier=function() 
-                    save_selected_sample_to_temp_and_open(preferences.AppSelection4.value) 
+                    saveSelectedSampleToTempAndOpen(preferences.AppSelection4.value) 
                 end,
                 width=200
             },
@@ -157,12 +176,12 @@ local function create_dialog_content(close_dialog)
             spacing=10,
             vb:button{
                 text="Browse",
-                notifier=function() browse_for_app(5) end
+                notifier=function() appSelectionBrowseForApp(5) end
             },
             vb:button{
                 text="Send Selected Sample to App",
                 notifier=function() 
-                    save_selected_sample_to_temp_and_open(preferences.AppSelection5.value) 
+                    saveSelectedSampleToTempAndOpen(preferences.AppSelection5.value) 
                 end,
                 width=200
             },
@@ -180,12 +199,12 @@ local function create_dialog_content(close_dialog)
             spacing=10,
             vb:button{
                 text="Browse",
-                notifier=function() browse_for_app(6) end
+                notifier=function() appSelectionBrowseForApp(6) end
             },
             vb:button{
                 text="Send Selected Sample to App",
                 notifier=function() 
-                    save_selected_sample_to_temp_and_open(preferences.AppSelection6.value) 
+                    saveSelectedSampleToTempAndOpen(preferences.AppSelection6.value) 
                 end,
                 width=200
             },
@@ -199,6 +218,97 @@ local function create_dialog_content(close_dialog)
                 return path
             end)()
         },
+        vb:row{vb:text{text="Smart Folders", font="bold", style="strong"}},
+        vb:row{
+            spacing=10,
+            vb:button{
+                text="Browse",
+                notifier=function() browseForSmartFolder(1) end
+            },
+            vb:button{
+                text="Save Selected Sample to Smart Folder",
+                notifier=function() 
+                    saveSampleToSmartFolder(1) 
+                end,
+                width=200
+            },
+            vb:button{
+                text="Save All Samples to Smart Folder",
+                notifier=function() 
+                    saveSamplesToSmartFolder(1) 
+                end,
+                width=200
+            },
+            (function()
+                local path = vb:text{
+                    text=(preferences.SmartFoldersApp1.value ~= "" and preferences.SmartFoldersApp1.value or "None"),
+                    width=600,
+                    font="bold"
+                }
+                smart_folder_paths[1] = path
+                return path
+            end)()
+        },
+        vb:row{
+            spacing=10,
+            vb:button{
+                text="Browse",
+                notifier=function() browseForSmartFolder(2) end
+            },
+            vb:button{
+                text="Save Selected Sample to Smart Folder",
+                notifier=function() 
+                    saveSampleToSmartFolder(2) 
+                end,
+                width=200
+            },
+            vb:button{
+                text="Save All Samples to Smart Folder",
+                notifier=function() 
+                    saveSamplesToSmartFolder(2) 
+                end,
+                width=200
+            },
+            (function()
+                local path = vb:text{
+                    text=(preferences.SmartFoldersApp2.value ~= "" and preferences.SmartFoldersApp2.value or "None"),
+                    width=600,
+                    font="bold"
+                }
+                smart_folder_paths[2] = path
+                return path
+            end)()
+        },
+        vb:row{
+            spacing=10,
+            vb:button{
+                text="Browse",
+                notifier=function() browseForSmartFolder(3) end
+            },
+            vb:button{
+                text="Save Selected Sample to Smart Folder",
+                notifier=function() 
+                    saveSampleToSmartFolder(3) 
+                end,
+                width=200
+            },
+            vb:button{
+                text="Save All Samples to Smart Folder",
+                notifier=function() 
+                    saveSamplesToSmartFolder(3) 
+                end,
+                width=200
+            },
+            (function()
+                local path = vb:text{
+                    text=(preferences.SmartFoldersApp3.value ~= "" and preferences.SmartFoldersApp3.value or "None"),
+                    width=600,
+                    font="bold"
+                }
+                smart_folder_paths[3] = path
+                return path
+            end)()
+        },
         vb:button{
             text="OK",
             notifier=function()
@@ -208,23 +318,22 @@ local function create_dialog_content(close_dialog)
     }
 end
 
-
 -- Show the dialog
 function show_app_selection_dialog()
-  local dialog = nil
-  dialog = renoise.app():show_custom_dialog("App Selection", create_dialog_content(function()
-    dialog:close()
-  end))
+    local dialog = nil
+    dialog = renoise.app():show_custom_dialog("App Selection & Smart Folders", create_dialog_content(function()
+        dialog:close()
+    end))
 end
 
-renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:App Selection",invoke=show_app_selection_dialog}
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:App Selection & Smart Folders",invoke=show_app_selection_dialog}
 
 -- Add key bindings and MIDI mappings for AppSelection shortcuts
 for i=1, 6 do
     renoise.tool():add_keybinding{
         name="Global:Paketti:Send Selected Sample to AppSelection" .. i,
         invoke=function()
-            save_selected_sample_to_temp_and_open(preferences["AppSelection"..i].value)
+            saveSelectedSampleToTempAndOpen(preferences["AppSelection"..i].value)
         end
     }
 
@@ -232,13 +341,125 @@ for i=1, 6 do
         name="Global:Paketti:Send Selected Sample to AppSelection" .. i,
         invoke=function(message)
             if message:is_trigger() then
-                save_selected_sample_to_temp_and_open(preferences["AppSelection"..i].value)
+                saveSelectedSampleToTempAndOpen(preferences["AppSelection"..i].value)
             end
         end
     }
 end
 
+-- Add key bindings and MIDI mappings for SmartFolders shortcuts
+for i=1, 3 do
+    renoise.tool():add_keybinding{
+        name="Global:Paketti:Save Sample to Smart Folder " .. i,
+        invoke=function()
+            saveSampleToSmartFolder(i)
+        end
+    }
 
+    renoise.tool():add_midi_mapping{
+        name="Global:Paketti:Save Sample to Smart Folder " .. i,
+        invoke=function(message)
+            if message:is_trigger() then
+                saveSampleToSmartFolder(i)
+            end
+        end
+    }
+
+    renoise.tool():add_keybinding{
+        name="Global:Paketti:Save All Samples to Smart Folder " .. i,
+        invoke=function()
+            saveSamplesToSmartFolder(i)
+        end
+    }
+
+    renoise.tool():add_midi_mapping{
+        name="Global:Paketti:Save All Samples to Smart Folder " .. i,
+        invoke=function(message)
+            if message:is_trigger() then
+                saveSamplesToSmartFolder(i)
+            end
+        end
+    }
+end
+----------------
+-- Function to save selected sample to the specified Smart Folder
+function saveSampleToSmartFolder(index)
+    local smart_folder_path = preferences["SmartFoldersApp"..index].value
+    if smart_folder_path == "" then
+        renoise.app():show_status("Please set the Smart Folder path for " .. index)
+        renoise.app():show_custom_dialog("Set Smart Folder Path", create_dialog_content())
+        return
+    end
+
+    local lsfvariable = nil
+    lsfvariable = os.tmpname("wav")
+    local path = smart_folder_path .. "/"
+    local s = renoise.song()
+    local instboxname = s.selected_instrument.name
+
+    if not s.selected_sample or not s.selected_sample.sample_buffer.has_sample_data then
+        renoise.app():show_status("No sample data available.")
+        return
+    end
+
+    local sample = s.selected_sample.sample_buffer
+    local file_name = instboxname .. ".wav"
+    
+    if sample.bit_depth == 32 then
+        -- local temp_sample = sample:clone()
+        -- temp_sample.bit_depth = 24
+        -- temp_sample:save_as(path .. file_name, "wav")
+        sample:save_as(path .. file_name, "wav")
+    else
+        sample:save_as(path .. file_name, "wav")
+    end
+    renoise.app():show_status("Saved " .. file_name .. " to Smart Folder " .. path)
+end
+
+-- Function to save all samples to the specified Smart Folder
+function saveSamplesToSmartFolder(index)
+    local smart_folder_path = preferences["SmartFoldersApp"..index].value
+    if smart_folder_path == "" then
+        renoise.app():show_status("Please set the Smart Folder path for " .. index)
+        renoise.app():show_custom_dialog("Set Smart Folder Path", create_dialog_content())
+        return
+    end
+
+    local s = renoise.song()
+    local path = smart_folder_path .. "/"
+    local saved_samples_count = 0
+
+    for i = 1, #s.instruments do
+        local instrument = s.instruments[i]
+        if instrument and #instrument.samples > 0 then
+            for j = 1, #instrument.samples do
+                local sample = instrument.samples[j].sample_buffer
+                if sample.has_sample_data then
+                    local file_name = instrument.name .. "_" .. j .. ".wav"
+                    if sample.bit_depth == 32 then
+                        -- local temp_sample = sample:clone()
+                        -- temp_sample.bit_depth = 24
+                        -- temp_sample:save_as(path .. file_name, "wav")
+                        sample:save_as(path .. file_name, "wav")
+                    else
+                        sample:save_as(path .. file_name, "wav")
+                    end
+                    saved_samples_count = saved_samples_count + 1
+                end
+            end
+        end
+    end
+
+    renoise.app():show_status("Saved " .. saved_samples_count .. " samples to Smart Folder " .. path)
+    os.execute("cd " .. smart_folder_path .. ";open .")
+end
+
+
+
+
+
+
+---------------
 function pitchBendDrumkitLoader()
   -- Prompt the user to select multiple sample files to load
   local selected_sample_filenames = renoise.app():prompt_for_multiple_filenames_to_read({"*.wav", "*.aif", "*.flac", "*.mp3", "*.aiff"}, "Paketti PitchBend Drumkit Sample Loader")
@@ -706,6 +927,12 @@ renoise.tool():add_keybinding{name="Sample Editor:Paketti:Set Loop Mode to 4 Pin
 ------------------
 
 function slicerough(changer)
+local G01CurrentState = preferences._0G01_Loader.value
+if preferences._0G01_Loader.value == true or preferences._0G01_Loader.value == false 
+then preferences._0G01_Loader.value = false
+end
+manage_sample_count_observer(preferences._0G01_Loader.value)
+
     local s = renoise.song()
     local currInst = s.selected_instrument_index
 
@@ -786,13 +1013,15 @@ end
     local sample_name = renoise.song().selected_instrument.samples[1].name
     local num_slices = #s.instruments[currInst].samples[currSamp].slice_markers
     renoise.app():show_status(sample_name .. " now has " .. num_slices .. " slices.")
+    
+preferences._0G01_Loader.value=G01CurrentState 
+manage_sample_count_observer(preferences._0G01_Loader.value)
 end
 
 function wipeslices()
-    -- Retrieve the currently selected instrument and sample indices
+    -- Retrieve the currently selected instrument index
     local s = renoise.song()
     local currInst = s.selected_instrument_index
-    local currSamp = s.selected_sample_index
 
     -- Check if there is a valid instrument selected
     if currInst == nil or currInst == 0 then
@@ -806,30 +1035,34 @@ function wipeslices()
         return
     end
 
-    -- Check if there is a valid sample selected
-    if currSamp == nil or currSamp == 0 then
-        renoise.app():show_status("No sample selected.")
-        return
-    end
+    -- Ensure we iterate over all samples in the selected instrument
+    local instrument = s.instruments[currInst]
+    for i = 1, #instrument.samples do
+        local sample = instrument.samples[i]
 
-    -- Retrieve the slice markers
-    local sample = s.instruments[currInst].samples[currSamp]
-    local slice_markers = sample.slice_markers
-    local number = #slice_markers
+        -- Check if the sample is valid
+        if sample then
+            local slice_markers = sample.slice_markers
+            local number = #slice_markers
 
-    -- Delete each slice marker if there are any
-    if number > 0 then
-        for i = number, 1, -1 do
-            sample:delete_slice_marker(slice_markers[i])
+            -- Delete each slice marker if there are any
+            if number > 0 then
+                for j = number, 1, -1 do
+                    sample:delete_slice_marker(slice_markers[j])
+                end
+            end
+
+            -- Set loop mode to Off and disable beat sync for the sample
+            sample.loop_mode = renoise.Sample.LOOP_MODE_OFF
+            sample.beat_sync_enabled = false
         end
     end
 
-    -- Set loop mode to Off (1) and disable beat sync
---    renoise.song().selected_sample.loop_mode = renoise.Sample.LOOP_MODE_OFF
---    renoise.song().selected_sample.beat_sync_enabled = false
-    local sample_name = renoise.song().selected_instrument.samples[1].name
-    renoise.app():show_status(sample_name .. " now has 0 slices.")
+    -- Confirm slices have been wiped
+    renoise.app():show_status(instrument.name .. " now has 0 slices.")
 end
+
+
 
 renoise.tool():add_keybinding{name="Global:Paketti:Wipe&Create Slices (2)",invoke=function() slicerough(2) end}
 renoise.tool():add_keybinding{name="Global:Paketti:Wipe&Create Slices (4)",invoke=function() slicerough(4) end}

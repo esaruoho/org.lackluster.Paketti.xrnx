@@ -77,7 +77,7 @@ function loadPlugin(pluginPath)
   if new_instrument.plugin_properties.plugin_device and new_instrument.plugin_properties.plugin_device.external_editor_available then
     new_instrument.plugin_properties.plugin_device.external_editor_visible = true
   end
-openVisiblePagesToFitParameters()  
+  openVisiblePagesToFitParameters()  
 end
 
 -- Function to add a plugin as a shortcut
@@ -244,23 +244,35 @@ local function showPluginListDialog()
     vb:button{text="Cancel", height=button_height, notifier=function() custom_dialog:close() end}
   }
 
-  local dialog_content = vb:column {
-    margin = 10,
-    spacing = 5,
-    createScrollableList(deviceReadableNames.AU, "AudioUnit"),
-    createScrollableList(deviceReadableNames.VST, "VST"),
-    createScrollableList(deviceReadableNames.VST3, "VST3"),
-    action_buttons
-  }
+  -- Check if there are any plugins available, if not, show a message
+  local dialog_content
+  if #deviceReadableNames.AU == 0 and #deviceReadableNames.VST == 0 and #deviceReadableNames.VST3 == 0 then
+    dialog_content = vb:column {
+      margin = 10,
+      spacing = 5,
+      vb:text { text = "No AudioUnit Plugins found on this computer.", font = "bold", height = 20 },
+      vb:text { text = "No VST Plugins found on this computer.", font = "bold", height = 20 },
+      vb:text { text = "No VST3 Plugins found on this computer.", font = "bold", height = 20 },
+      action_buttons
+    }
+  else
+    dialog_content = vb:column {
+      margin = 10,
+      spacing = 5,
+      createScrollableList(deviceReadableNames.AU, "AudioUnit"),
+      createScrollableList(deviceReadableNames.VST, "VST"),
+      createScrollableList(deviceReadableNames.VST3, "VST3"),
+      action_buttons
+    }
+  end
 
   custom_dialog = renoise.app():show_custom_dialog("Load Plugin(s)", dialog_content)
 end
-
 
 -- Initialize preferences file and load keybindings and MIDI mappings
 initializePreferencesFile()
 loadFromPreferencesFile()
 
 -- Register the menu entry to show the plugin list dialog
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Load AU/VST/VST3 Plugins Dialog", invoke=function() showPluginListDialog() end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Load AU/VST/VST3 Plugins Dialog",invoke=function() showPluginListDialog() end}
 

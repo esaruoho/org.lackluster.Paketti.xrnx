@@ -1746,6 +1746,7 @@ end
 
 
 -- Function to convert mono sample to specified channels with blank opposite channel
+-- Function to convert mono sample to specified channels with blank opposite channel
 function mono_to_blank(left_channel, right_channel)
   -- Ensure a song exists
   if not renoise.song() then
@@ -1762,7 +1763,8 @@ function mono_to_blank(left_channel, right_channel)
   end
 
   -- Ensure a sample is selected
-  local sample = instrument:sample(song.selected_sample_index)
+  local sample_index = song.selected_sample_index
+  local sample = instrument:sample(sample_index)
   if not sample then
     renoise.app():show_status("No sample is selected.")
     return
@@ -1780,36 +1782,76 @@ function mono_to_blank(left_channel, right_channel)
   local bit_depth = sample_buffer.bit_depth
   local number_of_frames = sample_buffer.number_of_frames
   local sample_name = sample.name
-  local original_sample_index = song.selected_sample_index
 
-  -- Create a new sample slot
-  local new_sample_index = #instrument.samples + 1
-  instrument:insert_sample_at(new_sample_index)
-  local new_sample = instrument:sample(new_sample_index)
-  local new_sample_buffer = new_sample.sample_buffer
+  -- Store the sample mapping properties
+  local sample_mapping = sample.sample_mapping
+  local base_note = sample_mapping.base_note
+  local note_range = sample_mapping.note_range
+  local velocity_range = sample_mapping.velocity_range
+  local map_key_to_pitch = sample_mapping.map_key_to_pitch
+  local map_velocity_to_volume = sample_mapping.map_velocity_to_volume
+
+  -- Create a new temporary sample slot
+  local temp_sample_index = #instrument.samples + 1
+  instrument:insert_sample_at(temp_sample_index)
+  local temp_sample = instrument:sample(temp_sample_index)
+  local temp_sample_buffer = temp_sample.sample_buffer
   
-  -- Prepare the new sample buffer with the same sample rate and bit depth as the original
-  new_sample_buffer:create_sample_data(sample_rate, bit_depth, 2, number_of_frames)
-  new_sample_buffer:prepare_sample_data_changes()
+  -- Prepare the temporary sample buffer with the same sample rate and bit depth as the original
+  temp_sample_buffer:create_sample_data(sample_rate, bit_depth, 2, number_of_frames)
+  temp_sample_buffer:prepare_sample_data_changes()
 
   -- Copy the sample data to the specified channels
   for frame = 1, number_of_frames do
     local sample_value = sample_buffer:sample_data(1, frame)
-    new_sample_buffer:set_sample_data(1, frame, sample_value * left_channel)
-    new_sample_buffer:set_sample_data(2, frame, sample_value * right_channel)
+    if left_channel == 1 then
+      temp_sample_buffer:set_sample_data(1, frame, sample_value)
+      temp_sample_buffer:set_sample_data(2, frame, 0)
+    else
+      temp_sample_buffer:set_sample_data(1, frame, 0)
+      temp_sample_buffer:set_sample_data(2, frame, sample_value)
+    end
   end
 
   -- Finalize changes
-  new_sample_buffer:finalize_sample_data_changes()
+  temp_sample_buffer:finalize_sample_data_changes()
+
+  -- Name the new temporary sample
+  temp_sample.name = sample_name
   
-  -- Name the new sample and delete the original sample
+  -- Delete the original sample and insert the stereo sample into the same slot
+  instrument:delete_sample_at(sample_index)
+  instrument:insert_sample_at(sample_index)
+  local new_sample = instrument:sample(sample_index)
   new_sample.name = sample_name
-  instrument:delete_sample_at(original_sample_index)
+
+  -- Copy the stereo data from the temporary sample buffer to the new sample buffer
+  local new_sample_buffer = new_sample.sample_buffer
+  new_sample_buffer:create_sample_data(sample_rate, bit_depth, 2, number_of_frames)
+  new_sample_buffer:prepare_sample_data_changes()
+
+  for frame = 1, number_of_frames do
+    local left_value = temp_sample_buffer:sample_data(1, frame)
+    local right_value = temp_sample_buffer:sample_data(2, frame)
+    new_sample_buffer:set_sample_data(1, frame, left_value)
+    new_sample_buffer:set_sample_data(2, frame, right_value)
+  end
+
+  new_sample_buffer:finalize_sample_data_changes()
+
+  -- Restore the sample mapping properties
+  new_sample.sample_mapping.base_note = base_note
+  new_sample.sample_mapping.note_range = note_range
+  new_sample.sample_mapping.velocity_range = velocity_range
+  new_sample.sample_mapping.map_key_to_pitch = map_key_to_pitch
+  new_sample.sample_mapping.map_velocity_to_volume = map_velocity_to_volume
+
+  -- Delete the temporary sample
+  instrument:delete_sample_at(temp_sample_index)
 
   -- Provide feedback
-  renoise.app():show_status("Mono sample successfully converted.")
+  renoise.app():show_status("Mono sample successfully converted to specified channels with blank opposite channel.")
 end
-
 
 
 -- Function to convert a mono sample to stereo
@@ -1829,7 +1871,8 @@ function convert_mono_to_stereo()
   end
 
   -- Ensure a sample is selected
-  local sample = instrument:sample(song.selected_sample_index)
+  local sample_index = song.selected_sample_index
+  local sample = instrument:sample(sample_index)
   if not sample then
     renoise.app():show_status("No sample is selected.")
     return
@@ -1847,39 +1890,82 @@ function convert_mono_to_stereo()
   local bit_depth = sample_buffer.bit_depth
   local number_of_frames = sample_buffer.number_of_frames
   local sample_name = sample.name
-  local original_sample_index = song.selected_sample_index
 
-  -- Create a new sample slot
-  local new_sample_index = #instrument.samples + 1
-  instrument:insert_sample_at(new_sample_index)
-  local new_sample = instrument:sample(new_sample_index)
-  local new_sample_buffer = new_sample.sample_buffer
+  -- Store the sample mapping properties
+  local sample_mapping = sample.sample_mapping
+  local base_note = sample_mapping.base_note
+  local note_range = sample_mapping.note_range
+  local velocity_range = sample_mapping.velocity_range
+  local map_key_to_pitch = sample_mapping.map_key_to_pitch
+  local map_velocity_to_volume = sample_mapping.map_velocity_to_volume
+
+  -- Create a new temporary sample slot
+  local temp_sample_index = #instrument.samples + 1
+  instrument:insert_sample_at(temp_sample_index)
+  local temp_sample = instrument:sample(temp_sample_index)
+  local temp_sample_buffer = temp_sample.sample_buffer
   
-  -- Prepare the new sample buffer with the same sample rate and bit depth as the original
-  new_sample_buffer:create_sample_data(sample_rate, bit_depth, 2, number_of_frames)
-  new_sample_buffer:prepare_sample_data_changes()
+  -- Prepare the temporary sample buffer with the same sample rate and bit depth as the original
+  temp_sample_buffer:create_sample_data(sample_rate, bit_depth, 2, number_of_frames)
+  temp_sample_buffer:prepare_sample_data_changes()
 
   -- Copy the sample data
   for frame = 1, number_of_frames do
     local sample_value = sample_buffer:sample_data(1, frame)
+    temp_sample_buffer:set_sample_data(1, frame, sample_value)
+    temp_sample_buffer:set_sample_data(2, frame, sample_value)
+  end
+
+  -- Finalize changes
+  temp_sample_buffer:finalize_sample_data_changes()
+
+  -- Name the new temporary sample
+  temp_sample.name = sample_name
+  
+  -- Delete the original sample and insert the stereo sample into the same slot
+  instrument:delete_sample_at(sample_index)
+  instrument:insert_sample_at(sample_index)
+  local new_sample = instrument:sample(sample_index)
+  new_sample.name = sample_name
+
+  -- Copy the stereo data from the temporary sample buffer to the new sample buffer
+  local new_sample_buffer = new_sample.sample_buffer
+  new_sample_buffer:create_sample_data(sample_rate, bit_depth, 2, number_of_frames)
+  new_sample_buffer:prepare_sample_data_changes()
+
+  for frame = 1, number_of_frames do
+    local sample_value = temp_sample_buffer:sample_data(1, frame)
     new_sample_buffer:set_sample_data(1, frame, sample_value)
     new_sample_buffer:set_sample_data(2, frame, sample_value)
   end
 
-  -- Finalize changes
   new_sample_buffer:finalize_sample_data_changes()
-  
-  -- Name the new sample and delete the original sample
-  new_sample.name = sample_name
-  instrument:delete_sample_at(original_sample_index)
+
+  -- Restore the sample mapping properties
+  new_sample.sample_mapping.base_note = base_note
+  new_sample.sample_mapping.note_range = note_range
+  new_sample.sample_mapping.velocity_range = velocity_range
+  new_sample.sample_mapping.map_key_to_pitch = map_key_to_pitch
+  new_sample.sample_mapping.map_velocity_to_volume = map_velocity_to_volume
+
+  -- Delete the temporary sample
+  instrument:delete_sample_at(temp_sample_index)
 
   -- Provide feedback
-  renoise.app():show_status("Mono sample successfully converted to stereo.")
+  renoise.app():show_status("Mono sample successfully converted to stereo and preserved in the same slot with keymapping settings.")
 end
+
+
+
 
 renoise.tool():add_menu_entry{name="--Sample Editor:Paketti..:Convert Mono to Stereo",invoke=convert_mono_to_stereo}
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Mono to Left with Blank Right",invoke=function() mono_to_blank(1, 0) end}
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Mono to Right with Blank Left",invoke=function() mono_to_blank(0, 1) end}
+
+renoise.tool():add_menu_entry{name="--Sample Mappings:Paketti..:Convert Mono to Stereo",invoke=convert_mono_to_stereo}
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Mono to Left with Blank Right",invoke=function() mono_to_blank(1, 0) end}
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Mono to Right with Blank Left",invoke=function() mono_to_blank(0, 1) end}
+
 
 renoise.tool():add_menu_entry{name="--Sample Navigator:Paketti..:Convert Mono to Stereo",invoke=convert_mono_to_stereo}
 renoise.tool():add_menu_entry{name="Sample Navigator:Paketti..:Mono to Left with Blank Right",invoke=function() mono_to_blank(1, 0) end}
@@ -1889,6 +1975,11 @@ renoise.tool():add_menu_entry{name="Sample Navigator:Paketti..:Mono to Right wit
 renoise.tool():add_keybinding{name="Sample Editor:Paketti:Mono to Left with Blank Right",invoke=function() mono_to_blank(1, 0) end}
 renoise.tool():add_keybinding{name="Sample Editor:Paketti:Convert Mono to Stereo",invoke=convert_mono_to_stereo}
 renoise.tool():add_keybinding{name="Sample Editor:Paketti:Mono to Right with Blank Left",invoke=function() mono_to_blank(0, 1) end}
+
+renoise.tool():add_keybinding{name="Sample Keyzones:Paketti:Mono to Left with Blank Right",invoke=function() mono_to_blank(1, 0) end}
+renoise.tool():add_keybinding{name="Sample Keyzones:Paketti:Convert Mono to Stereo",invoke=convert_mono_to_stereo}
+renoise.tool():add_keybinding{name="Sample Keyzones:Paketti:Mono to Right with Blank Left",invoke=function() mono_to_blank(0, 1) end}
+
 
 renoise.tool():add_midi_mapping{name="Sample Editor:Paketti:Mono to Right with Blank Left",invoke=function() mono_to_blank(0, 1) end}
 renoise.tool():add_midi_mapping{name="Sample Editor:Paketti:Mono to Left with Blank Right",invoke=function() mono_to_blank(1, 0) end}
@@ -2254,8 +2345,8 @@ function select_first_track_in_next_group(direction)
 end
 
 -- Add menu entries, keybindings, and MIDI mappings
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Jump to First Track In Next Group",invoke=function() select_first_track_in_next_group(1) end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Jump to First Track In Previous Group",invoke=function() select_first_track_in_next_group(0) end}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor:Jump to First Track In Next Group",invoke=function() select_first_track_in_next_group(1) end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Jump to First Track In Previous Group",invoke=function() select_first_track_in_next_group(0) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Jump to First Track In Next Group",invoke=function() select_first_track_in_next_group(1) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Jump to First Track In Previous Group",invoke=function() select_first_track_in_next_group(0) end}
 renoise.tool():add_keybinding{name="Pattern Matrix:Paketti:Jump to First Track In Next Group",invoke=function() select_first_track_in_next_group(1) end}
@@ -2418,5 +2509,226 @@ renoise.tool():add_menu_entry{name="--Main Menu:View:Paketti..:Pattern Editor:Gl
 renoise.tool():add_menu_entry{name="Main Menu:View:Paketti..:Pattern Editor:Global Visible Column (Panning)",invoke=function() globalChangeVisibleColumnState("panning") end}
 renoise.tool():add_menu_entry{name="Main Menu:View:Paketti..:Pattern Editor:Global Visible Column (Delay)",invoke=function() globalChangeVisibleColumnState("delay") end}
 renoise.tool():add_menu_entry{name="Main Menu:View:Paketti..:Pattern Editor:Global Visible Column (Sample Effects)",invoke=function() globalChangeVisibleColumnState("sample_effects") end}
+
+-----------
+
+
+
+-- Create Identical Track Function
+function create_identical_track()
+  -- Get the current song
+  local song = renoise.song()
+  -- Get the selected track index
+  local selected_track_index = song.selected_track_index
+  -- Get the selected track
+  local selected_track = song:track(selected_track_index)
+  
+  -- Check if the selected track type is 1 (Sequencer Track)
+  if selected_track.type == renoise.Track.TRACK_TYPE_SEQUENCER then
+    -- Create a new track next to the selected track
+    song:insert_track_at(selected_track_index + 1)
+    -- Get the new track
+    local new_track = song:track(selected_track_index + 1)
+    
+    -- Copy note and effect column visibility settings
+    new_track.visible_note_columns = selected_track.visible_note_columns
+    new_track.visible_effect_columns = selected_track.visible_effect_columns
+    
+    -- Copy volume, panning, delay, and sample effects column visibility settings
+    new_track.volume_column_visible = selected_track.volume_column_visible
+    new_track.panning_column_visible = selected_track.panning_column_visible
+    new_track.delay_column_visible = selected_track.delay_column_visible
+    new_track.sample_effects_column_visible = selected_track.sample_effects_column_visible
+    
+    -- Copy track collapsed state
+    new_track.collapsed = selected_track.collapsed
+    
+    -- Select the new track
+    song.selected_track_index = selected_track_index + 1
+  else
+    -- If the selected track is not of type 1, show an error message
+    renoise.app():show_error("Selected track is not a sequencer track (type 1).")
+  end
+end
+
+-- Adding the function to the menu
+renoise.tool():add_keybinding{name="Global:Paketti:Create Identical Track",invoke=create_identical_track}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Create Identical Track",invoke=create_identical_track}
+renoise.tool():add_menu_entry{name="Mixer:Paketti..:Create Identical Track",invoke=create_identical_track}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor:Create Identical Track",invoke=create_identical_track}
+
+-------
+
+
+-- Function to toggle solo state for note columns in the selected track
+function noteColumnSoloToggle()
+  local song = renoise.song()
+  local selected_track = song.tracks[song.selected_track_index]
+
+  -- Check if any note column is muted in the selected track
+  local any_muted = false
+  for i = 1, selected_track.max_note_columns do
+    if selected_track:column_is_muted(i) then
+      any_muted = true
+      break
+    end
+  end
+
+  -- Toggle mute state for all note columns in the selected track
+  for i = 1, selected_track.max_note_columns do
+    selected_track:set_column_is_muted(i, not any_muted)
+  end
+
+  -- Show status message for the selected track
+  renoise.app():show_status(any_muted and "Unmuted all note columns in the selected track" or "Muted all note columns in the selected track")
+end
+
+-- Function to toggle mute state for note columns in all tracks within the same group, except the selected track
+function groupTracksNoteColumnSoloToggle()
+  local song = renoise.song()
+  local selected_track_index = song.selected_track_index
+  local selected_track = song.tracks[selected_track_index]
+  local selected_track_group = selected_track.group_parent
+
+  -- Debug: Log selected track information
+  print("Selected Track Index: ", selected_track_index)
+  if selected_track_group then
+    print("Selected Track Group Name: ", selected_track_group.name)
+  else
+    print("Selected Track Group: None")
+  end
+
+  -- Check if the selected track is part of a group
+  if not selected_track_group then
+    renoise.app():show_status("Selected track is not part of any group")
+    return
+  end
+
+  -- Collect indices of all tracks in the group except the selected track
+  local group_member_indices = {}
+  for i, track in ipairs(song.tracks) do
+    if track.group_parent and track.group_parent.name == selected_track_group.name and i ~= selected_track_index then
+      table.insert(group_member_indices, i)
+    end
+  end
+
+  -- Check if any note column is muted in any of the group tracks except the selected track
+  local any_muted = false
+  for _, member_index in ipairs(group_member_indices) do
+    local track = song.tracks[member_index]
+    for i = 1, track.max_note_columns do
+      if track:column_is_muted(i) then
+        any_muted = true
+        break
+      end
+    end
+    if any_muted then break end
+  end
+
+  -- Toggle mute state for all note columns in the group tracks
+  for _, member_index in ipairs(group_member_indices) do
+    local track = song.tracks[member_index]
+    for i = 1, track.max_note_columns do
+      track:set_column_is_muted(i, not any_muted)
+    end
+  end
+
+  -- Show status message for the group tracks
+  renoise.app():show_status(any_muted and "Unmuted all note columns in the group tracks" or "Muted all note columns in the group tracks")
+end
+
+-- Add keybinding for the note column solo toggle function
+renoise.tool():add_keybinding{name="Global:Paketti:Note Column Solo Toggle",invoke=function() noteColumnSoloToggle() end}
+
+-- Add keybinding for the group tracks note column solo toggle function
+renoise.tool():add_keybinding{name="Global:Paketti:Group Tracks Note Column Solo Toggle",invoke=function() groupTracksNoteColumnSoloToggle() end}
+------------------------
+-- Function to check if the selected sample is a slice
+function is_slice_selected()
+  local song = renoise.song()
+  local instrument = song.selected_instrument
+  if not instrument or #instrument.samples == 0 then
+    return false
+  end
+  
+  local sample = instrument.samples[1]
+  if not sample or #sample.slice_markers == 0 then
+    return false
+  end
+  
+  return true
+end
+
+-- Function to log messages for debugging
+function debug_log(message)
+  renoise.app():show_status(message)
+  print(message)
+end
+
+-- Function to move slice marker by a given amount
+function move_slice_marker(slice_index, amount)
+  if not is_slice_selected() then 
+    debug_log("No slice selected or no slice markers available.")
+    return 
+  end
+
+  local sample = renoise.song().selected_instrument.samples[1]
+  if slice_index <= 0 or slice_index > #sample.slice_markers then
+    debug_log("Invalid slice index: " .. string.format("%X", slice_index))
+    return
+  end
+
+  local old_marker_pos = sample.slice_markers[slice_index]
+  local new_marker_pos = old_marker_pos + amount
+
+  if new_marker_pos < 1 then new_marker_pos = 1 end
+  if new_marker_pos > sample.sample_buffer.number_of_frames - 1 then
+    new_marker_pos = sample.sample_buffer.number_of_frames - 1
+  end
+
+  sample:move_slice_marker(old_marker_pos, new_marker_pos)
+  debug_log(string.format("Moved slice marker #%X from %d to %d", slice_index, old_marker_pos, new_marker_pos))
+end
+
+-- Keybinding functions
+function move_slice_start_left_10() move_slice_marker(renoise.song().selected_sample_index - 1, -10) end
+function move_slice_start_right_10() move_slice_marker(renoise.song().selected_sample_index - 1, 10) end
+function move_slice_end_left_10() move_slice_marker(renoise.song().selected_sample_index, -10) end
+function move_slice_end_right_10() move_slice_marker(renoise.song().selected_sample_index, 10) end
+function move_slice_start_left_100() move_slice_marker(renoise.song().selected_sample_index - 1, -100) end
+function move_slice_start_right_100() move_slice_marker(renoise.song().selected_sample_index - 1, 100) end
+function move_slice_end_left_100() move_slice_marker(renoise.song().selected_sample_index, -100) end
+function move_slice_end_right_100() move_slice_marker(renoise.song().selected_sample_index, 100) end
+function move_slice_start_left_300() move_slice_marker(renoise.song().selected_sample_index - 1, -300) end
+function move_slice_start_right_300() move_slice_marker(renoise.song().selected_sample_index - 1, 300) end
+function move_slice_end_left_300() move_slice_marker(renoise.song().selected_sample_index, -300) end
+function move_slice_end_right_300() move_slice_marker(renoise.song().selected_sample_index, 300) end
+function move_slice_start_left_500() move_slice_marker(renoise.song().selected_sample_index - 1, -500) end
+function move_slice_start_right_500() move_slice_marker(renoise.song().selected_sample_index - 1, 500) end
+function move_slice_end_left_500() move_slice_marker(renoise.song().selected_sample_index, -500) end
+function move_slice_end_right_500() move_slice_marker(renoise.song().selected_sample_index, 500) end
+
+
+
+-- Register keybindings
+renoise.tool():add_keybinding{name="Sample Editor:Paketti:Move Slice Start Left by 10",invoke=move_slice_start_left_10}
+renoise.tool():add_keybinding{name="Sample Editor:Paketti:Move Slice Start Right by 10",invoke=move_slice_start_right_10}
+renoise.tool():add_keybinding{name="Sample Editor:Paketti:Move Slice End Left by 10",invoke=move_slice_end_left_10}
+renoise.tool():add_keybinding{name="Sample Editor:Paketti:Move Slice End Right by 10",invoke=move_slice_end_right_10}
+renoise.tool():add_keybinding{name="Sample Editor:Paketti:Move Slice Start Left by 100",invoke=move_slice_start_left_100}
+renoise.tool():add_keybinding{name="Sample Editor:Paketti:Move Slice Start Right by 100",invoke=move_slice_start_right_100}
+renoise.tool():add_keybinding{name="Sample Editor:Paketti:Move Slice End Left by 100",invoke=move_slice_end_left_100}
+renoise.tool():add_keybinding{name="Sample Editor:Paketti:Move Slice End Right by 100",invoke=move_slice_end_right_100}
+renoise.tool():add_keybinding{name="Sample Editor:Paketti:Move Slice Start Left by 300",invoke=move_slice_start_left_300}
+renoise.tool():add_keybinding{name="Sample Editor:Paketti:Move Slice Start Right by 300",invoke=move_slice_start_right_300}
+renoise.tool():add_keybinding{name="Sample Editor:Paketti:Move Slice End Left by 300",invoke=move_slice_end_left_300}
+renoise.tool():add_keybinding{name="Sample Editor:Paketti:Move Slice End Right by 300",invoke=move_slice_end_right_300}
+renoise.tool():add_keybinding{name="Sample Editor:Paketti:Move Slice Start Left by 500",invoke=move_slice_start_left_500}
+renoise.tool():add_keybinding{name="Sample Editor:Paketti:Move Slice Start Right by 500",invoke=move_slice_start_right_500}
+renoise.tool():add_keybinding{name="Sample Editor:Paketti:Move Slice End Left by 500",invoke=move_slice_end_left_500}
+renoise.tool():add_keybinding{name="Sample Editor:Paketti:Move Slice End Right by 500",invoke=move_slice_end_right_500}
+
+-- Print message to confirm script is loaded
+debug_log("Slice moving tool loaded successfully.")
 
 

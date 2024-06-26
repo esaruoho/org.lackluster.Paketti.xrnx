@@ -12,7 +12,6 @@ function showhidepatternmatrix()
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Show/Hide Pattern Matrix",invoke=function() showhidepatternmatrix() end}
-renoise.tool():add_menu_entry{name="Pattern Sequencer:Paketti..:Show/Hide Pattern Matrix", invoke=function() showhidepatternmatrix() end}
 renoise.tool():add_menu_entry{name="--Pattern Matrix:Paketti..:Switch to Automation",invoke=function() showAutomation() end}
 renoise.tool():add_menu_entry{name="--Pattern Matrix:Paketti..:Bypass EFX (Write to Pattern)", invoke=function() effectbypasspattern()  end}
 renoise.tool():add_menu_entry{name="Pattern Matrix:Paketti..:Enable EFX (Write to Pattern)", invoke=function() effectenablepattern() end}

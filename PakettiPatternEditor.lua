@@ -394,7 +394,7 @@ renoise.tool():add_keybinding{name="Global:Paketti:Computer Keyboard Velocity (+
 renoise.tool():add_keybinding{name="Global:Paketti:Computer Keyboard Velocity (-10)",invoke=function() computerKeyboardVolChange(-10) end}
 renoise.tool():add_keybinding{name="Global:Paketti:Computer Keyboard Velocity (+10)",invoke=function() computerKeyboardVolChange(10) end}
 
---BPM +1 / -1
+--BPM +1 / -1 / +0.1 / -0.1 (2024 update)
 function adjust_bpm(bpm_delta)
   local t = renoise.song().transport
   t.bpm = math.max(32, math.min(999, t.bpm + bpm_delta))
@@ -403,6 +403,8 @@ end
 
 renoise.tool():add_keybinding{name="Global:Paketti:BPM Decrease (-1)",invoke=function() adjust_bpm(-1, 0) end}
 renoise.tool():add_keybinding{name="Global:Paketti:BPM Increase (+1)",invoke=function() adjust_bpm(1, 0) end}
+renoise.tool():add_keybinding{name="Global:Paketti:BPM Decrease (-0.1)",invoke=function() adjust_bpm(-0.1, 0) end}
+renoise.tool():add_keybinding{name="Global:Paketti:BPM Increase (+0.1)",invoke=function() adjust_bpm(0.1, 0) end}
 
 
 function pakettiPatternDoubler()
@@ -1827,4 +1829,231 @@ end
 renoise.tool():add_keybinding{name="Global:Tools:Toggle Edit Mode and Tint Track",invoke=recordTint}
 renoise.tool():add_midi_mapping{name="Global:Tools:Toggle Edit Mode and Tint Track",invoke=recordTint}
 
+------------------
+function pakettiDuplicateEffectColumnToPatternOrSelection()
+  -- Obtain the currently selected song and pattern
+  local song = renoise.song()
+  local pattern_index = song.selected_pattern_index
+  local pattern = song.patterns[pattern_index]
+  
+  -- Obtain the current track and line index
+  local track_index = song.selected_track_index
+  local line_index = song.selected_line_index
+  
+  -- Obtain the current effect column command from the selected line
+  local current_effects = song:pattern(pattern_index):track(track_index):line(line_index).effect_columns
+  
+  -- Check if there is a selection in the pattern
+  local selection = song.selection_in_pattern
+  local start_line, end_line
+  
+  if selection then
+    -- There is a selection, use the selection range
+    start_line = selection.start_line
+    end_line = selection.end_line
+  else
+    -- No selection, use the entire pattern
+    start_line = 1
+    end_line = pattern.number_of_lines
+  end
+  
+  -- Iterate through each line in the range and copy the effect column command
+  for i = start_line, end_line do
+    local line = song:pattern(pattern_index):track(track_index):line(i)
+    for j = 1, #current_effects do
+      line.effect_columns[j].number_string = current_effects[j].number_string
+      line.effect_columns[j].amount_string = current_effects[j].amount_string
+    end
+  end
+  
+  -- Inform the user that the operation was successful
+  renoise.app():show_status("Effect column command duplicated to selected rows in the pattern.")
+end
+
+-- Add a menu entry to trigger the function
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Duplicate Effect Column Content to Pattern or Selection",invoke=pakettiDuplicateEffectColumnToPatternOrSelection}
+
+-- Add a keybinding to trigger the function
+renoise.tool():add_keybinding{name="Global:Paketti:Duplicate Effect Column Content to Pattern or Selection",invoke=pakettiDuplicateEffectColumnToPatternOrSelection}
+
+-- Add a MIDI mapping to trigger the function
+renoise.tool():add_midi_mapping{name="Paketti:Duplicate Effect Column Content to Pattern or Selection",invoke=pakettiDuplicateEffectColumnToPatternOrSelection}
+
+-- Add a menu entry to the Pattern Editor context menu
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Duplicate Effect Column Content to Pattern or Selection",invoke=pakettiDuplicateEffectColumnToPatternOrSelection}
+
+
+------------
+-- Take a deep breath. Let's start.
+
+-- Function to randomize effect column parameters
+function pakettiRandomizeEffectColumnParameters()
+  -- Obtain the currently selected song and pattern
+  local song = renoise.song()
+  local pattern_index = song.selected_pattern_index
+  local pattern = song.patterns[pattern_index]
+  
+  -- Obtain the current track index
+  local track_index = song.selected_track_index
+  
+  -- Check if there is a selection in the pattern
+  local selection = song.selection_in_pattern
+  local start_line, end_line
+  
+  if selection then
+    -- There is a selection, use the selection range
+    start_line = selection.start_line
+    end_line = selection.end_line
+  else
+    -- No selection, use the entire pattern
+    start_line = 1
+    end_line = pattern.number_of_lines
+  end
+
+  -- Randomize effect parameters
+  for line_index = start_line, end_line do
+    local line = song:pattern(pattern_index):track(track_index):line(line_index)
+    for i = 1, #line.effect_columns do
+      local effect_type = line.effect_columns[i].number_string
+      if effect_type ~= "" then
+        local random_value = math.random(0, 255)
+        line.effect_columns[i].amount_value = random_value
+      end
+    end
+  end
+  
+  -- Inform the user that the operation was successful
+  renoise.app():show_status("Effect column parameters randomized.")
+end
+
+-- Add a menu entry to trigger the function
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Randomize Effect Column Parameters",invoke=pakettiRandomizeEffectColumnParameters}
+
+-- Add a keybinding to trigger the function
+renoise.tool():add_keybinding{name="Global:Paketti:Randomize Effect Column Parameters",invoke=pakettiRandomizeEffectColumnParameters}
+
+-- Add a MIDI mapping to trigger the function
+renoise.tool():add_midi_mapping{name="Paketti:Randomize Effect Column Parameters",invoke=pakettiRandomizeEffectColumnParameters}
+
+-- Add a menu entry to the Pattern Editor context menu
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Randomize Effect Column Parameters",invoke=pakettiRandomizeEffectColumnParameters}
+
+--------
+
+
+-- Take a deep breath. Let's start.
+
+-- Function to interpolate effect column parameters
+function pakettiInterpolateEffectColumnParameters()
+  -- Obtain the currently selected song and pattern
+  local song = renoise.song()
+  local pattern_index = song.selected_pattern_index
+  local pattern = song.patterns[pattern_index]
+  
+  -- Obtain the current track index
+  local track_index = song.selected_track_index
+  
+  -- Check if there is a selection in the pattern
+  local selection = song.selection_in_pattern
+  local start_line, end_line
+  
+  if selection then
+    -- There is a selection, use the selection range
+    start_line = selection.start_line
+    end_line = selection.end_line
+  else
+    -- No selection, use the entire pattern
+    start_line = 1
+    end_line = pattern.number_of_lines
+  end
+
+  -- Interpolate effect parameters
+  local first_effect_line = song:pattern(pattern_index):track(track_index):line(start_line).effect_columns
+  local last_effect_line = song:pattern(pattern_index):track(track_index):line(end_line).effect_columns
+
+  for i = 1, #first_effect_line do
+    local first_value = tonumber(first_effect_line[i].amount_value)
+    local last_value = tonumber(last_effect_line[i].amount_value)
+    if first_value and last_value then
+      for line_index = start_line, end_line do
+        local line = song:pattern(pattern_index):track(track_index):line(line_index)
+        local t = (line_index - start_line) / (end_line - start_line)
+        local interpolated_value = math.floor(first_value + t * (last_value - first_value))
+        line.effect_columns[i].amount_value = interpolated_value
+      end
+    end
+  end
+  
+  -- Inform the user that the operation was successful
+  renoise.app():show_status("Effect column parameters interpolated.")
+end
+
+-- Add a menu entry to trigger the function
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Interpolate Effect Column Parameters",invoke=pakettiInterpolateEffectColumnParameters}
+
+-- Add a keybinding to trigger the function
+renoise.tool():add_keybinding{name="Global:Paketti:Interpolate Effect Column Parameters",invoke=pakettiInterpolateEffectColumnParameters}
+
+-- Add a MIDI mapping to trigger the function
+renoise.tool():add_midi_mapping{name="Paketti:Interpolate Effect Column Parameters",invoke=pakettiInterpolateEffectColumnParameters}
+
+-- Add a menu entry to the Pattern Editor context menu
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Interpolate Effect Column Parameters",invoke=pakettiInterpolateEffectColumnParameters}
+
+--------
+-- Take a deep breath. Let's start.
+
+-- Function to flood fill the track with the current note and instrument
+function pakettiFloodFill()
+  -- Obtain the currently selected song and pattern
+  local song = renoise.song()
+  local pattern_index = song.selected_pattern_index
+  local pattern = song.patterns[pattern_index]
+  
+  -- Obtain the current track and line index
+  local track_index = song.selected_track_index
+  local line_index = song.selected_line_index
+  
+  -- Obtain the current note column from the selected line
+  local current_note_column = song:pattern(pattern_index):track(track_index):line(line_index).note_columns[1]
+  local note_value = current_note_column.note_value
+  local instrument_value = current_note_column.instrument_value
+
+  -- Check if there is a selection in the pattern
+  local selection = song.selection_in_pattern
+  local start_line, end_line
+  
+  if selection then
+    -- There is a selection, use the selection range
+    start_line = selection.start_line
+    end_line = selection.end_line
+  else
+    -- No selection, use the entire pattern
+    start_line = 1
+    end_line = pattern.number_of_lines
+  end
+
+  -- Iterate through each line in the range and fill with the current note and instrument
+  for i = start_line, end_line do
+    local line = song:pattern(pattern_index):track(track_index):line(i)
+    local note_column = line.note_columns[1]
+    note_column.note_value = note_value
+    note_column.instrument_value = instrument_value
+  end
+  
+  -- Inform the user that the operation was successful
+  renoise.app():show_status("Track filled with the current note and instrument.")
+end
+
+-- Add a menu entry to trigger the function
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Flood Fill Note and Instrument",invoke=pakettiFloodFill}
+
+-- Add a keybinding to trigger the function
+renoise.tool():add_keybinding{name="Global:Paketti:Flood Fill Note and Instrument",invoke=pakettiFloodFill}
+
+-- Add a MIDI mapping to trigger the function
+renoise.tool():add_midi_mapping{name="Paketti:Flood Fill Note and Instrument",invoke=pakettiFloodFill}
+
+-- Add a menu entry to the Pattern Editor context menu
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Flood Fill Note and Instrument",invoke=pakettiFloodFill}
 

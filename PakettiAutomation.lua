@@ -615,7 +615,7 @@ function gainerExpCurveVol()
   for i = 0, total_points - 1 do
     local position = i / (total_points - 1) * (length - 1)  -- Scale position in the range of 0 to length-1
     local expValue = math.pow(curve, position)
-    local normalizedValue = (expValue - 1) / (max_exp_value - 1)
+    local normalizedValue = (expValue - 1) / (max_exp_value - 1) * 0.25  -- Adjust the normalized value to cap at 0.25
     envelope:add_point_at(math.floor(position + 1), math.max(0, normalizedValue))  -- Ensure the point is within valid range
   end
 
@@ -645,7 +645,7 @@ function gainerExpReverseCurveVol()
   for i = 0, total_points - 1 do
     local position = i / (total_points - 1) * (length - 1)  -- Scale position in the range of 0 to length-1
     local expValue = math.pow(curve, (length - 1) - position)  -- Reverse the curve calculation
-    local normalizedValue = (expValue - 1) / (max_exp_value - 1)
+    local normalizedValue = (expValue - 1) / (max_exp_value - 1) * 0.25  -- Adjust the normalized value to cap at 0.25
     envelope:add_point_at(math.floor(position + 1), math.max(0, normalizedValue))  -- Ensure the point is within valid range
   end
 
@@ -653,7 +653,7 @@ function gainerExpReverseCurveVol()
   renoise.app().window.active_lower_frame = renoise.ApplicationWindow.LOWER_FRAME_TRACK_AUTOMATION
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Gainer Exponential Curve Up", invoke = function() gainerExpCurveVol() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Gainer Exponential Curve Up", invoke=function() gainerExpCurveVol() end}
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Gainer Exponential Curve Up", invoke=function() gainerExpCurveVol() end}
 renoise.tool():add_menu_entry{name="Pattern Matrix:Paketti..:Gainer Exponential Curve Up", invoke=function() gainerExpCurveVol() end}
 renoise.tool():add_menu_entry{name="--Track Automation:Paketti..:Gainer Exponential Curve Up", invoke=function() gainerExpCurveVol() end}

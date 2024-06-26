@@ -1,3 +1,598 @@
+-- Function to set the scheduled sequence as the current section
+function tknaSetCurrentSectionAsScheduledSequence()
+  local song = renoise.song()
+  local sequencer = song.sequencer
+  local transport = song.transport
+  local current_sequence_index = song.selected_sequence_index
+  local total_sequences = #sequencer.pattern_sequence
+
+  -- Helper function to find all sections
+  local function findSections()
+    local sections = {}
+    for i = 1, total_sequences do
+      if sequencer:sequence_is_start_of_section(i) then
+        table.insert(sections, i)
+      end
+    end
+    return sections
+  end
+
+  -- Helper function to find the section index for a given sequence index
+  local function findSectionIndex(sections, sequence_index)
+    local total_sections = #sections
+    for i, section_start in ipairs(sections) do
+      local section_end = (i < total_sections) and (sections[i + 1] - 1) or total_sequences
+      if sequence_index >= section_start and sequence_index <= section_end then
+        return i, section_start, section_end
+      end
+    end
+    return nil
+  end
+
+  local sections = findSections()
+  local current_section_index, current_section_start, current_section_end = findSectionIndex(sections, current_sequence_index)
+
+  -- Set the scheduled sequence to the current section if it exists
+  if current_section_index then
+    transport:set_scheduled_sequence(current_section_start)
+    for i = current_section_start + 1, current_section_end do
+      transport:add_scheduled_sequence(i)
+    end
+    renoise.app():show_status("Set scheduled sequence to current section: " .. current_section_start .. " to " .. current_section_end)
+  else
+    renoise.app():show_status("Current sequence is not inside any section.")
+  end
+end
+
+-- Function to add the current section to the scheduled sequences
+function tknaAddCurrentSectionToScheduledSequences()
+  local song = renoise.song()
+  local sequencer = song.sequencer
+  local transport = song.transport
+  local current_sequence_index = song.selected_sequence_index
+  local total_sequences = #sequencer.pattern_sequence
+
+  -- Helper function to find all sections
+  local function findSections()
+    local sections = {}
+    for i = 1, total_sequences do
+      if sequencer:sequence_is_start_of_section(i) then
+        table.insert(sections, i)
+      end
+    end
+    return sections
+  end
+
+  -- Helper function to find the section index for a given sequence index
+  local function findSectionIndex(sections, sequence_index)
+    local total_sections = #sections
+    for i, section_start in ipairs(sections) do
+      local section_end = (i < total_sections) and (sections[i + 1] - 1) or total_sequences
+      if sequence_index >= section_start and sequence_index <= section_end then
+        return i, section_start, section_end
+      end
+    end
+    return nil
+  end
+
+  local sections = findSections()
+  local current_section_index, current_section_start, current_section_end = findSectionIndex(sections, current_sequence_index)
+
+  -- Add the current section to the scheduled sequences if it exists
+  if current_section_index then
+    for i = current_section_start, current_section_end do
+      transport:add_scheduled_sequence(i)
+    end
+    renoise.app():show_status("Added current section to scheduled sequences: " .. current_section_start .. " to " .. current_section_end)
+  else
+    renoise.app():show_status("Current sequence is not inside any section.")
+  end
+end
+
+-- Adding keybindings for the functions
+renoise.tool():add_keybinding{name="Global:Paketti:Set Current Section as Scheduled Sequence",invoke=tknaSetCurrentSectionAsScheduledSequence}
+renoise.tool():add_keybinding{name="Global:Paketti:Add Current Section to Scheduled Sequences",invoke=tknaAddCurrentSectionToScheduledSequences}
+
+-- Adding menu entries for the functions
+renoise.tool():add_menu_entry{name="Pattern Sequencer:Paketti..:Set Current Section as Scheduled Sequence",invoke=tknaSetCurrentSectionAsScheduledSequence}
+renoise.tool():add_menu_entry{name="Pattern Sequencer:Paketti..:Add Current Section to Scheduled Sequences",invoke=tknaAddCurrentSectionToScheduledSequences}
+
+-- Adding MIDI mappings for the functions
+renoise.tool():add_midi_mapping{name="Tools:Paketti:Set Current Section as Scheduled Sequence",invoke=tknaSetCurrentSectionAsScheduledSequence}
+renoise.tool():add_midi_mapping{name="Tools:Paketti:Add Current Section to Scheduled Sequences",invoke=tknaAddCurrentSectionToScheduledSequences}
+
+
+-- Function to expand the section loop step-by-step, adding the next section
+function expandSectionLoopNext()
+  local song = renoise.song()
+  local sequencer = song.sequencer
+  local transport = song.transport
+  local current_sequence_index = song.selected_sequence_index
+  local total_sequences = #sequencer.pattern_sequence
+
+  -- Helper function to find all sections
+  local function findSectionsA()
+    local sections = {}
+    for i = 1, total_sequences do
+      if sequencer:sequence_is_start_of_section(i) then
+        table.insert(sections, i)
+      end
+    end
+    return sections
+  end
+
+  local sections = findSectionsA()
+  local total_sections = #sections
+
+  -- Helper function to find the section index for a given sequence index
+  local function findSectionIndexA(sequence_index)
+    for i, section_start in ipairs(sections) do
+      local section_end = (i < total_sections) and (sections[i + 1] - 1) or total_sequences
+      if sequence_index >= section_start and sequence_index <= section_end then
+        return i, section_start, section_end
+      end
+    end
+    return nil
+  end
+
+  local current_section_index, current_section_start, current_section_end = findSectionIndexA(current_sequence_index)
+  local loop_range = transport.loop_sequence_range
+
+  -- If no loop range or an invalid loop range exists, set it to the current section
+  if not loop_range or #loop_range ~= 2 or 
+      (loop_range[1] == 0 and loop_range[2] == 0) then
+    if current_section_index then
+      transport.loop_sequence_range = {current_section_start, current_section_end}
+    else
+      renoise.app():show_status("Current sequence is not inside any section.")
+    end
+  else
+    local loop_end = loop_range[2]
+    local next_section_index = findSectionIndexA(loop_end + 1)
+
+    -- If there's a next section to add
+    if next_section_index then
+      local next_section_start, next_section_end = sections[next_section_index], (next_section_index < total_sections) and (sections[next_section_index + 1] - 1) or total_sequences
+      transport.loop_sequence_range = {loop_range[1], next_section_end}
+    else
+      -- No more sections to add to the loop
+      renoise.app():show_status("No more sections to add to the loop.")
+    end
+  end
+end
+
+-- Function to expand the section loop step-by-step, adding the previous section
+function expandSectionLoopPrevious()
+  local song = renoise.song()
+  local sequencer = song.sequencer
+  local transport = song.transport
+  local current_sequence_index = song.selected_sequence_index
+  local total_sequences = #sequencer.pattern_sequence
+
+  -- Helper function to find all sections
+  local function findSectionsB()
+    local sections = {}
+    for i = 1, total_sequences do
+      if sequencer:sequence_is_start_of_section(i) then
+        table.insert(sections, i)
+      end
+    end
+    return sections
+  end
+
+  local sections = findSectionsB()
+  local total_sections = #sections
+
+  -- Helper function to find the section index for a given sequence index
+  local function findSectionIndexB(sequence_index)
+    for i, section_start in ipairs(sections) do
+      local section_end = (i < total_sections) and (sections[i + 1] - 1) or total_sequences
+      if sequence_index >= section_start and sequence_index <= section_end then
+        return i, section_start, section_end
+      end
+    end
+    return nil
+  end
+
+  local current_section_index, current_section_start, current_section_end = findSectionIndexB(current_sequence_index)
+  local loop_range = transport.loop_sequence_range
+
+  -- If no loop range or an invalid loop range exists, set it to the current section
+  if not loop_range or #loop_range ~= 2 or 
+      (loop_range[1] == 0 and loop_range[2] == 0) then
+    if current_section_index then
+      transport.loop_sequence_range = {current_section_start, current_section_end}
+    else
+      renoise.app():show_status("Current sequence is not inside any section.")
+    end
+  else
+    local loop_start = loop_range[1]
+    local previous_section_index = findSectionIndexB(loop_start - 1)
+
+    -- If there's a previous section to add
+    if previous_section_index then
+      local previous_section_start, previous_section_end = sections[previous_section_index], (previous_section_index < total_sections) and (sections[previous_section_index + 1] - 1) or total_sequences
+      transport.loop_sequence_range = {previous_section_start, loop_range[2]}
+    else
+      -- No more sections to add to the loop
+      renoise.app():show_status("No more sections to add to the loop.")
+    end
+  end
+end
+
+-- Adding keybinding for the functions
+renoise.tool():add_keybinding{name="Global:Paketti:Section Loop (Next)",invoke=expandSectionLoopNext}
+renoise.tool():add_keybinding{name="Global:Paketti:Section Loop (Previous)",invoke=expandSectionLoopPrevious}
+
+-- Adding menu entry for the functions
+renoise.tool():add_menu_entry{name="Pattern Sequencer:Paketti..:Section Loop (Next)",invoke=expandSectionLoopNext}
+renoise.tool():add_menu_entry{name="Pattern Sequencer:Paketti..:Section Loop (Previous)",invoke=expandSectionLoopPrevious}
+
+-- Adding MIDI mapping for the functions
+renoise.tool():add_midi_mapping{name="Tools:Paketti:Section Loop (Next)",invoke=expandSectionLoopNext}
+renoise.tool():add_midi_mapping{name="Tools:Paketti:Section Loop (Previous)",invoke=expandSectionLoopPrevious}
+
+
+
+-- Function to expand the sequence selection step-by-step
+function tknaSequenceSelectionPlusOne()
+  local song = renoise.song()
+  local sequencer = song.sequencer
+  local current_sequence_index = song.selected_sequence_index
+  local selection_range = sequencer.selection_range
+  local total_sequences = #sequencer.pattern_sequence
+
+  -- If no selection range exists or if it is {0, 0}, select the current sequence
+  if not selection_range or #selection_range ~= 2 or 
+      (selection_range[1] == 0 and selection_range[2] == 0) then
+    sequencer.selection_range = {current_sequence_index, current_sequence_index}
+  else
+    local start_index = selection_range[1]
+    local end_index = selection_range[2]
+
+    -- If the end index is less than the total number of sequences
+    if end_index < total_sequences then
+      -- Extend the selection range by including the next sequence
+      sequencer.selection_range = {start_index, end_index + 1}
+    else
+      -- No more sequences to add to the selection
+      renoise.app():show_status("No more sequences left to add to the selection.")
+    end
+  end
+end
+
+-- Function to reduce the sequence selection step-by-step
+function tknaSequenceSelectionMinusOne()
+  local song = renoise.song()
+  local sequencer = song.sequencer
+  local current_sequence_index = song.selected_sequence_index
+  local selection_range = sequencer.selection_range
+
+  -- If no selection range exists or if it is {0, 0}, select the current sequence
+  if not selection_range or #selection_range ~= 2 or 
+      (selection_range[1] == 0 and selection_range[2] == 0) then
+    sequencer.selection_range = {current_sequence_index, current_sequence_index}
+  else
+    local start_index = selection_range[1]
+    local end_index = selection_range[2]
+
+    -- If the start index is greater than 1
+    if start_index > 1 then
+      -- Reduce the selection range by excluding the first sequence
+      sequencer.selection_range = {start_index - 1, end_index}
+    else
+      -- No more sequences to remove from the selection
+      renoise.app():show_status("No more sequences left to add to the selection.")
+    end
+  end
+end
+
+-- Adding keybinding for the functions
+renoise.tool():add_keybinding{name="Global:Paketti:Sequence Selection (Next)",invoke=tknaSequenceSelectionPlusOne}
+renoise.tool():add_keybinding{name="Global:Paketti:Sequence Selection (Previous)",invoke=tknaSequenceSelectionMinusOne}
+
+-- Adding menu entry for the functions
+renoise.tool():add_menu_entry{name="Pattern Sequencer:Paketti..:Sequence Selection (Next)",invoke=tknaSequenceSelectionPlusOne}
+renoise.tool():add_menu_entry{name="Pattern Sequencer:Paketti..:Sequence Selection (Previous)",invoke=tknaSequenceSelectionMinusOne}
+
+-- Adding MIDI mapping for the functions
+renoise.tool():add_midi_mapping{name="Tools:Paketti:Sequence Selection (Next)",invoke=tknaSequenceSelectionPlusOne}
+renoise.tool():add_midi_mapping{name="Tools:Paketti:Sequence Selection (Previous)",invoke=tknaSequenceSelectionMinusOne}
+
+
+
+
+
+
+
+
+
+
+-------
+function patternEditorSelectedLastTrack()
+renoise.song().selected_track_index=#renoise.song().tracks
+end
+
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Select Last Track",invoke=function() patternEditorSelectedLastTrack() end}
+
+
+-- Toggle Note Off "===" On / Off in all selected tracks within the selection or current row.
+function PakettiNoteOffToSelection()
+  local s = renoise.song()
+  local currPatt = s.selected_pattern_index
+  local selection = s.selection_in_pattern
+  local note_col_idx = s.selected_note_column_index
+
+  if selection then
+    -- Loop through all lines and tracks within the selection
+    for line = selection.start_line, selection.end_line do
+      for track = selection.start_track, selection.end_track do
+        local note_col = s.patterns[currPatt].tracks[track].lines[line].note_columns[note_col_idx]
+        
+        if note_col_idx and note_col_idx > 0 then
+          if note_col.note_string == "OFF" then
+            note_col.note_string = ""
+          else
+            note_col.note_string = "OFF"
+          end
+        end
+      end
+    end
+  else
+    -- No selection, operate on the current row
+    local currLine = s.selected_line_index
+    local currTrack = s.selected_track_index
+    
+    if note_col_idx and note_col_idx > 0 then
+      local note_col = s.patterns[currPatt].tracks[currTrack].lines[currLine].note_columns[note_col_idx]
+      
+      if note_col.note_string == "OFF" then
+        note_col.note_string = ""
+      else
+        note_col.note_string = "OFF"
+      end
+    end
+  end
+end
+
+-- Add keybinding for the new function
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Toggle Note Off in Selected Tracks",invoke=function() PakettiNoteOffToSelection() end}
+
+
+
+
+
+--------
+-- Function to rotate sample buffer content forwards based on MIDI knob (0...127)
+function rotate_sample_buffer_forward(knob_value)
+  local song = renoise.song()
+  local sample = song.selected_sample
+  local buffer = sample.sample_buffer
+
+  if buffer.has_sample_data then
+    buffer:prepare_sample_data_changes()
+    local frames = buffer.number_of_frames
+    local rotate_amount = math.floor((knob_value / 127) * frames)
+    for c = 1, buffer.number_of_channels do
+      local temp_data = {}
+      for i = 1, frames do
+        temp_data[i] = buffer:sample_data(c, i)
+      end
+      for i = 1, frames do
+        local new_pos = (i + rotate_amount - 1) % frames + 1
+        buffer:set_sample_data(c, new_pos, temp_data[i])
+      end
+    end
+    buffer:finalize_sample_data_changes()
+  else
+    renoise.app():show_status("No sample data to rotate.")
+  end
+end
+
+-- Function to rotate sample buffer content backwards based on MIDI knob (0...127)
+function rotate_sample_buffer_backward(knob_value)
+  local song = renoise.song()
+  local sample = song.selected_sample
+  local buffer = sample.sample_buffer
+
+  if buffer.has_sample_data then
+    buffer:prepare_sample_data_changes()
+    local frames = buffer.number_of_frames
+    local rotate_amount = math.floor((knob_value / 127) * frames)
+    for c = 1, buffer.number_of_channels do
+      local temp_data = {}
+      for i = 1, frames do
+        temp_data[i] = buffer:sample_data(c, i)
+      end
+      for i = 1, frames do
+        local new_pos = (i - rotate_amount - 1 + frames) % frames + 1
+        buffer:set_sample_data(c, new_pos, temp_data[i])
+      end
+    end
+    buffer:finalize_sample_data_changes()
+  else
+    renoise.app():show_status("No sample data to rotate.")
+  end
+end
+
+-- Adding MIDI mapping for rotating sample buffer content forwards
+renoise.tool():add_midi_mapping{name="Global:Tools:Rotate Sample Buffer Content Forward [Set]",invoke=function(midi_message)
+  rotate_sample_buffer_forward(midi_message.int_value)
+end}
+
+-- Adding MIDI mapping for rotating sample buffer content backwards
+renoise.tool():add_midi_mapping{name="Global:Tools:Rotate Sample Buffer Content Backward [Set]",invoke=function(midi_message)
+  rotate_sample_buffer_backward(midi_message.int_value)
+end}
+
+
+
+
+
+
+
+
+
+
+
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Randomize Selected Instrument Plugin Parameters",invoke=function()randomizeSelectedPlugin()end}
+renoise.tool():add_keybinding{name="Global:Paketti:Randomize Selected Plugin",invoke=function()randomizeSelectedPlugin()end}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Randomize Selected Instrument Plugin Parameters",invoke=function()randomizeSelectedPlugin()end}
+
+-- Function to randomize parameters of the selected plugin
+function randomizeSelectedPlugin()
+  local song = renoise.song()
+  local instrument = renoise.song().selected_instrument 
+
+  if not instrument or not instrument.plugin_properties then
+    renoise.app():show_status("The currently selected Instrument does not have a plugin loaded.")
+    return
+  end
+
+  local plugin_name = renoise.song().selected_instrument.plugin_properties.plugin_device.name
+  renoise.app():show_status("Randomizing parameters for plugin: " .. plugin_name)
+
+  local parameter_count = #instrument.plugin_properties.plugin_device.parameters
+  
+  for i = 1, parameter_count do
+    local parameter = instrument.plugin_properties.plugin_device.parameters[i]
+    local min = parameter.value_min
+    local max = parameter.value_max
+    local random_value = math.random() * (max - min) + min
+    parameter.value = random_value
+  end
+  
+  renoise.app():show_status("Randomized " .. parameter_count .. " parameters for plugin: " .. plugin_name)
+end
+
+
+
+
+-- Tool Registration
+renoise.tool():add_menu_entry{name="DSP Device:Paketti..:Randomize Selected Device Parameters",invoke=function()randomize_selected_device()end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Randomize Selected Device Parameters",invoke=function()randomize_selected_device()end}
+renoise.tool():add_keybinding{name="Global:Paketti:Randomize Selected Device",invoke=function()randomize_selected_device()end}
+
+-- Function to randomize parameters of the selected device
+function randomize_selected_device()
+  local song = renoise.song()
+  local device = song.selected_device
+  
+  if not device then
+    renoise.app():show_status("No DSP Device has been selected, cannot randomize parameters. Select a Track DSP Device and try again.")
+    return
+  end
+
+  local parameter_count = #device.parameters
+   local device_name = device.display_name
+  for i = 1, parameter_count do
+    local parameter = device:parameter(i)
+    local min = parameter.value_min
+    local max = parameter.value_max
+    local random_value = math.random() * (max - min) + min
+    parameter.value = random_value
+  end
+  
+  renoise.app():show_status("Randomized " .. parameter_count .. " parameters for device: " .. device_name)
+end
+
+
+
+
+
+
+
+
+
+
+-- Function to toggle the sequence selection based on the provided sequence number
+function tknaToggleSequenceSelection(number)
+  local seq_index = number + 1 -- Adjusting to 1-based index as required by Renoise
+
+  -- Check if the current selection matches the specified sequence number
+  if renoise.song().sequencer.selection_range and
+     #renoise.song().sequencer.selection_range == 2 and
+     renoise.song().sequencer.selection_range[1] == seq_index and
+     renoise.song().sequencer.selection_range[2] == seq_index then
+    -- If so, clear the selection
+    renoise.song().sequencer.selection_range = {}
+  else
+    -- Otherwise, set the selection to the specified sequence number
+    renoise.song().sequencer.selection_range = {seq_index, seq_index}
+  end
+end
+
+-- Loop to create keybindings for sequence numbers 00 to 32
+for i = 1, 33 do
+  local padded_number = string.format("%02d", i - 1)
+  local keybinding_name = "Global:Paketti:Toggle Sequence Selection " .. padded_number
+
+  -- Create a keybinding for each sequence number
+  renoise.tool():add_keybinding{name=keybinding_name, invoke=function() tknaToggleSequenceSelection(i - 1) end}
+end
+
+
+-- Function to toggle the sequence selection based on the provided sequence number
+-- If there is a selection_range, turn it into a sequence loop
+function SequenceSelectionToLoop()
+  local song = renoise.song()
+  local selection_start = song.sequencer.selection_range[1]
+  local selection_end = song.sequencer.selection_range[2]
+
+  -- Check if the loop range matches the current selection
+  if song.transport.loop_sequence_range[1] == selection_start and 
+     song.transport.loop_sequence_range[2] == selection_end then
+    -- If it matches, disable the loop by setting it to nil
+    song.transport.loop_sequence_range = {}
+  else
+    -- Otherwise, set the loop range to the current selection
+    song.transport.loop_sequence_range = { selection_start, selection_end }
+  end
+end
+
+-- Adding a key binding for the function
+renoise.tool():add_keybinding{name="Global:Paketti:Toggle Sequence Selection to Loop",invoke=function() SequenceSelectionToLoop() end}
+
+-- Adding a menu entry for the function
+renoise.tool():add_menu_entry{name="Pattern Sequencer:Paketti..:Toggle Sequence Selection to Loop",invoke=function() SequenceSelectionToLoop() end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Toggle Sequence Selection (All) On/Off",invoke=function()
+local sequencerCount=#renoise.song().sequencer.pattern_sequence
+--if renoise.song().sequencer.selection_range=={1,sequencerCount} 
+--then renoise.song().sequencer.selection_range={} else
+renoise.song().sequencer.selection_range={1,#renoise.song().sequencer.pattern_sequence}
+--end
+end
+}
+
+
+function tknaUnselectSequenceSelection()
+renoise.song().sequencer.selection_range={}
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Set Sequence Selection Off",invoke=tknaUnselectSequenceSelection}
+
+-- Function to toggle the current sequence selection
+function tknaToggleCurrentSequenceSelection()
+  -- Check if the current selection matches the selected sequence index
+  if renoise.song().sequencer.selection_range and
+     #renoise.song().sequencer.selection_range == 2 and
+     renoise.song().sequencer.selection_range[1] == renoise.song().selected_sequence_index and
+     renoise.song().sequencer.selection_range[2] == renoise.song().selected_sequence_index then
+    -- If so, clear the selection
+    renoise.song().sequencer.selection_range = {}
+  else
+    -- Otherwise, set the selection to the current sequence index
+    renoise.song().sequencer.selection_range = {renoise.song().selected_sequence_index, renoise.song().selected_sequence_index}
+  end
+end
+
+-- Add keybinding for the function
+renoise.tool():add_keybinding{name="Global:Paketti:Toggle Current Sequence Selection On/Off", invoke=tknaToggleCurrentSequenceSelection}
+
+
+
+
 -- Helper function to select and loop a specific section
 function select_and_loop_section(section_number)
   local song = renoise.song()
@@ -102,36 +697,52 @@ function set_sequence_selection_off()
   renoise.app():show_status("Sequence selection turned off.")
 end
 
--- Add menu entries for each of the 32 sections
+-- Function to select and loop a specific section, or deselect it if already selected
+function select_and_loop_section(section_index)
+  local song = renoise.song()
+  local sequencer = song.sequencer
+  local sequence_count = #sequencer.pattern_sequence
+  local current_section_index = 0
+  local loop_start = 0
+  local loop_end = 0
+
+  for i = 1, sequence_count do
+    if sequencer:sequence_is_start_of_section(i) then
+      current_section_index = current_section_index + 1
+      if current_section_index == section_index then
+        loop_start = i
+        for j = i + 1, sequence_count do
+          if sequencer:sequence_is_start_of_section(j) then
+            loop_end = j - 1
+            break
+          end
+        end
+        if loop_end == 0 then
+          loop_end = sequence_count
+        end
+        break
+      end
+    end
+  end
+
+  if song.transport.loop_sequence_range[1] == loop_start and song.transport.loop_sequence_range[2] == loop_end then
+    set_sequence_selection_off()
+  else
+    song.transport.loop_sequence_range = {loop_start, loop_end}
+    renoise.app():show_status("Looped section " .. section_index)
+  end
+end
+
 for section_number = 1, 32 do
-  renoise.tool():add_menu_entry{
-    name="Pattern Sequencer:Paketti..:Select and Loop Sequence Section " .. string.format("%02d", section_number),
+  renoise.tool():add_keybinding{name="Global:Paketti..:Select and Loop Sequence Section " .. string.format("%02d", section_number),
     invoke=function() select_and_loop_section(section_number) end
   }
 end
 
-for section_number = 1, 32 do
-  renoise.tool():add_keybinding{
-    name="Global:Paketti..:Select and Loop Sequence Section " .. string.format("%02d", section_number),
-    invoke=function() select_and_loop_section(section_number) end
-  }
-end
+renoise.tool():add_keybinding{name="Global:Paketti:Select and Loop Section (Next)",invoke=select_and_loop_section_next}
+renoise.tool():add_keybinding{name="Global:Paketti:Select and Loop Section (Previous)",invoke=select_and_loop_section_previous}
 
-
--- Add menu entries and global keybindings for next and previous section selection
-renoise.tool():add_menu_entry{name="Pattern Sequencer:Paketti..:Select & Loop Section (Next)",invoke=select_and_loop_section_next}
-renoise.tool():add_keybinding{name="Global:Paketti:Select & Loop Section (Next)",invoke=select_and_loop_section_next}
-
-renoise.tool():add_menu_entry{name="Pattern Sequencer:Paketti..:Select & Loop Section (Previous)",invoke=select_and_loop_section_previous}
-renoise.tool():add_keybinding{name="Global:Paketti:Select & Loop Section (Previous)",invoke=select_and_loop_section_previous}
-
--- Add menu entry and global keybinding for setting sequence selection off
-renoise.tool():add_menu_entry{name="Pattern Sequencer:Paketti..:Set Sequence Loop Selection Off",invoke=set_sequence_selection_off}
 renoise.tool():add_keybinding{name="Global:Paketti:Set Sequence Loop Selection Off",invoke=set_sequence_selection_off}
-
-
-
-
 
 
 
@@ -190,7 +801,50 @@ for i = 1, 32 do
   end}
 
 end
+--------
 
+function tknaContinueCurrentSequenceFromCurrentLine()
+  local song = renoise.song()
+
+  local storedSequence = song.selected_sequence_index
+  local step = 1
+
+  local function processStep()
+    if step == 1 then
+      renoise.song().transport.follow_player = true
+      renoise.app():show_status("Jumping to Previously Selected (Current) Sequence")
+      step = step + 1
+    elseif step == 2 then
+      renoise.song().selected_sequence_index = storedSequence
+      step = step + 1
+    elseif step == 3 then
+      renoise.song().transport.follow_player = false
+      renoise.tool().app_idle_observable:remove_notifier(processStep)
+    end
+  end
+
+  renoise.tool().app_idle_observable:add_notifier(processStep)
+end
+
+
+  renoise.tool():add_keybinding{name="Global:Paketti:Continue Current Sequence From Same Line", invoke=function() 
+  tknaContinueCurrentSequenceFromCurrentLine() 
+end}
+---------
+function tknaMidiMapSequence(value)
+  local max_seq = #renoise.song().sequencer.pattern_sequence - 1
+  local sequence_num = math.floor((value / 127) * max_seq) + 1
+  tknaContinueSequenceFromSameLine(sequence_num)
+end
+
+-- Add MIDI mapping
+renoise.tool():add_midi_mapping{name="Global:Paketti:Continue Sequence From Same Line [Set Sequence]", invoke=function(message)
+  if message:is_abs_value() then
+    tknaMidiMapSequence(message.int_value)
+  end
+end}
+
+--------
 for i = 1, 32 do
   -- Zero-pad the number for sequence naming
   local padded_number = string.format("%02d", i - 1)
@@ -224,6 +878,12 @@ for i = 1, 32 do
   renoise.tool():add_keybinding{name="Global:Paketti:Trigger Sequence " .. padded_number, invoke=function() tknaTriggerSequence(i) end}
 end
 
+
+
+
+
+
+
 function tknaSetSequenceAsScheduledList(number)
 if renoise.song().transport.playing then  else renoise.song().transport.playing=true
 end
@@ -241,6 +901,14 @@ for i = 1,32 do
   -- Add keybinding for each sequence
   renoise.tool():add_keybinding{name="Global:Paketti:Set Sequence " .. padded_number .. " as Scheduled List", invoke=function() tknaSetSequenceAsScheduledList(i) end}
 end
+
+  renoise.tool():add_keybinding{name="Global:Paketti:Set Current Sequence as Scheduled List", invoke=function() 
+  
+  renoise.song().transport:set_scheduled_sequence(renoise.song().selected_sequence_index) end}
+
+  renoise.tool():add_keybinding{name="Global:Paketti:Add Current Sequence to Scheduled List", invoke=function() 
+  
+  renoise.song().transport:add_scheduled_sequence(renoise.song().selected_sequence_index) end}
 
 
 function tknaAddSequenceToScheduledList(number)
@@ -292,6 +960,8 @@ end
 renoise.tool():add_keybinding{name="Global:Paketti:Clear Pattern Sequence Loop",invoke=function()
 renoise.song().transport.loop_sequence_range = {} end}
 
+
+
 -- Function to compare two tables for value equality
 function tables_equal(t1, t2)
   if #t1 ~= #t2 then
@@ -316,18 +986,18 @@ function setSequenceLoopFromCurrentTo(position)
     return
   end
 
-
--- Check if current_range is {0,0} using the tables_equal function
-if tables_equal(current_range, {0,0}) then
-  renoise.song().transport.loop_sequence_range = {position, position}
-  return
-end
+  -- Check if current_range is {0,0} using the tables_equal function
+  if tables_equal(current_range, {0,0}) then
+    renoise.song().transport.loop_sequence_range = {position, position}
+    return
+  end
 
   local current_start = current_range[1]
 
   -- Check if the specified position is valid for setting the loop
   if position < current_start then
-    renoise.app():show_status("The end position cannot be less than the start position.")
+    renoise.song().transport.loop_sequence_range = {position, current_start}
+    renoise.app():show_status("Sequence loop set from " .. position .. " to " .. current_start)
   else
     renoise.song().transport.loop_sequence_range = {current_start, position}
     renoise.app():show_status("Sequence loop set from " .. current_start .. " to " .. position)
@@ -337,12 +1007,9 @@ end
 -- Loop to create keybindings for setting the loop range from current to specified position
 for i = 1, 32 do
   local padded_number = string.format("%02d", i - 1)
-  renoise.tool():add_keybinding{
-    name="Global:Paketti:Set Sequence Loop from Current to " .. padded_number,
-    invoke=function()
-      setSequenceLoopFromCurrentTo(i)
-    end
-  }
+  renoise.tool():add_keybinding{name="Global:Paketti:Set Sequence Loop from Current to " .. padded_number,invoke=function()
+    setSequenceLoopFromCurrentTo(i)
+  end}
 end
 
 ------

@@ -67,7 +67,7 @@ renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:
     invoke=function() show_plugin_list_dialog() end}
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Load VST Devices Dialog",invoke=vstShowPluginListDialog}
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Load VST3/AU Devices Dialog",invoke=vst3ShowPluginListDialog}
-    
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Load LADSPA/DSSI Devices Dialog",invoke=LADSPADSSIShowPluginListDialog}    
     
 renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Debug:List Available VST Plugins",
     invoke=function() listByPluginType("VST") end}

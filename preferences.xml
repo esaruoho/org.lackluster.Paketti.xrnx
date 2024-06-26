@@ -1,34 +1,61 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ScriptingToolPreferences doc_version="0">
-  <pakettiLoaderOverSampling>true</pakettiLoaderOverSampling>
   <selectionNewInstrumentLoop>3</selectionNewInstrumentLoop>
   <sliceCounter>20</sliceCounter>
   <WipeSlicesBeatSyncMode>2</WipeSlicesBeatSyncMode>
   <WipeSlicesLoopRelease>true</WipeSlicesLoopRelease>
   <pakettiLoaderLoopMode>3</pakettiLoaderLoopMode>
   <RandomBPM>false</RandomBPM>
-  <AppSelection6>/System/Applications/Music.app</AppSelection6>
-  <upperFramePreference>0.0</upperFramePreference>
-  <AppSelection5>/System/Applications/Weather.app</AppSelection5>
+  <pakettiRandomizeAllDevicesPercentage>36.219354838709691</pakettiRandomizeAllDevicesPercentage>
+  <pakettiRandomizeAllPluginsPercentageUserPreference4>40</pakettiRandomizeAllPluginsPercentageUserPreference4>
+  <pakettiLoaderInterpolation>4</pakettiLoaderInterpolation>
   <loadPaleGreenTheme>false</loadPaleGreenTheme>
-  <AppSelection4>/Applications/Cog.app</AppSelection4>
-  <WipeSlicesAutoseek>false</WipeSlicesAutoseek>
+  <pakettiRandomizeSelectedDevicePercentageUserPreference3>76.077419354838696</pakettiRandomizeSelectedDevicePercentageUserPreference3>
   <WipeSlicesOneShot>false</WipeSlicesOneShot>
-  <selectionNewInstrumentSelect>false</selectionNewInstrumentSelect>
+  <pakettiRandomizeSelectedPluginPercentageUserPreference3>30</pakettiRandomizeSelectedPluginPercentageUserPreference3>
+  <pakettiRandomizeSelectedPluginPercentageUserPreference2>20</pakettiRandomizeSelectedPluginPercentageUserPreference2>
+  <pakettiRandomizeAllDevicesPercentageUserPreference2>25</pakettiRandomizeAllDevicesPercentageUserPreference2>
+  <pakettiEditMode>2</pakettiEditMode>
+  <pakettiRandomizeAllPluginsPercentageUserPreference3>30</pakettiRandomizeAllPluginsPercentageUserPreference3>
+  <shortcuts/>
+  <pakettiRandomizeAllPluginsPercentageUserPreference1>10</pakettiRandomizeAllPluginsPercentageUserPreference1>
+  <SmartFoldersApp1>/Users/esaruoho/Music/samples/LiveSmartFolder/</SmartFoldersApp1>
+  <renderSampleRate>88200</renderSampleRate>
+  <SmartFoldersApp2>/Users/esaruoho/Music/samples/LogicSmartFolder/</SmartFoldersApp2>
+  <renderBitDepth>32</renderBitDepth>
+  <pakettiRandomizeSelectedDevicePercentageUserPreference2>62.477419354838609</pakettiRandomizeSelectedDevicePercentageUserPreference2>
+  <AppSelection4>/Applications/Cog.app</AppSelection4>
+  <AppSelection1>/Applications/Audacity.app</AppSelection1>
+  <pakettiLoaderOverSampling>true</pakettiLoaderOverSampling>
+  <pakettiRandomizeSelectedPluginPercentageUserPreference4>40</pakettiRandomizeSelectedPluginPercentageUserPreference4>
+  <pakettiRandomizeAllDevicesPercentageUserPreference1>36.219354838709691</pakettiRandomizeAllDevicesPercentageUserPreference1>
+  <pakettiRandomizeSelectedPluginPercentageUserPreference1>60.399999999999963</pakettiRandomizeSelectedPluginPercentageUserPreference1>
+  <pakettiLoaderAutoFade>true</pakettiLoaderAutoFade>
   <AppSelection3>/Applications/Ableton Live 12 Suite.app</AppSelection3>
   <WipeSlicesMuteGroup>1.0</WipeSlicesMuteGroup>
+  <pakettiRandomizeAllDevicesPercentageUserPreference4>75</pakettiRandomizeAllDevicesPercentageUserPreference4>
+  <pakettiRandomizeAllDevicesPercentageUserPreference3>63.199999999999974</pakettiRandomizeAllDevicesPercentageUserPreference3>
+  <upperFramePreference>0.0</upperFramePreference>
+  <pakettiRandomizeAllPluginsPercentageUserPreference5>50</pakettiRandomizeAllPluginsPercentageUserPreference5>
+  <pakettiRandomizeSelectedDevicePercentageUserPreference5>96.877419354838935</pakettiRandomizeSelectedDevicePercentageUserPreference5>
+  <pakettiRandomizeSelectedPluginPercentageUserPreference5>50</pakettiRandomizeSelectedPluginPercentageUserPreference5>
+  <WipeSlicesAutoseek>false</WipeSlicesAutoseek>
+  <pakettiRandomizeSelectedDevicePercentageUserPreference1>47.277419354838656</pakettiRandomizeSelectedDevicePercentageUserPreference1>
+  <selectionNewInstrumentSelect>false</selectionNewInstrumentSelect>
+  <pakettiRandomizeSelectedDevicePercentage>100</pakettiRandomizeSelectedDevicePercentage>
+  <SmartFoldersApp3/>
   <slicePreviousDirection>1.0</slicePreviousDirection>
-  <AppSelection1>/Applications/Audacity.app</AppSelection1>
-  <midimappings/>
-  <pakettiEditMode>2</pakettiEditMode>
-  <shortcuts/>
-  <pakettiLoaderAutoFade>true</pakettiLoaderAutoFade>
-  <pakettiLoaderInterpolation>4</pakettiLoaderInterpolation>
-  <WipeSlicesBeatSyncGlobal>false</WipeSlicesBeatSyncGlobal>
-  <renderSampleRate>88200</renderSampleRate>
-  <renderBitDepth>32</renderBitDepth>
-  <WipeSlicesLoopMode>3</WipeSlicesLoopMode>
+  <AppSelection6>/System/Applications/Music.app</AppSelection6>
+  <AppSelection5>/System/Applications/Weather.app</AppSelection5>
+  <pakettiRandomizeAllDevicesPercentageUserPreference5>90</pakettiRandomizeAllDevicesPercentageUserPreference5>
   <WipeSlicesNNA>1.0</WipeSlicesNNA>
+  <pakettiRandomizeSelectedDevicePercentageUserPreference4>87.677419354838804</pakettiRandomizeSelectedDevicePercentageUserPreference4>
+  <midimappings/>
+  <WipeSlicesBeatSyncGlobal>false</WipeSlicesBeatSyncGlobal>
+  <pakettiRandomizeAllPluginsPercentageUserPreference2>20</pakettiRandomizeAllPluginsPercentageUserPreference2>
+  <pakettiRandomizeSelectedPluginPercentage>50</pakettiRandomizeSelectedPluginPercentage>
+  <WipeSlicesLoopMode>3</WipeSlicesLoopMode>
+  <pakettiRandomizeAllPluginsPercentage>50</pakettiRandomizeAllPluginsPercentage>
   <_0G01_Loader>false</_0G01_Loader>
   <AppSelection2>/Applications/Logic Pro X.app</AppSelection2>
 </ScriptingToolPreferences>

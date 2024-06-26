@@ -46,12 +46,12 @@ renoise.app().window.active_middle_frame=5
 renoise.song().selected_sample.volume=midi_message.int_value/127
 end}
 
-renoise.tool():add_midi_mapping{name="Global:Paketti:Delay Column x[Slider]",invoke=function(midi_message)
+renoise.tool():add_midi_mapping{name="Global:Paketti:Delay Column (DEPRECATED) x[Slider]",invoke=function(midi_message)
+renoise.song().selected_track.delay_column_visible=true
 renoise.app().window.active_middle_frame=1
 local results = nil
 
 results=midi_message.int_value/127
-renoise.app():show_status("haloo" .. results)
 renoise.song().selected_note_column.delay_value = math.max(0, math.min(257, midi_message.int_value * 2))
 
 -- if midi_message.int_value > 64 then columns(1,1)
@@ -368,36 +368,6 @@ end
 
 renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Select Group Tracks x[Knob]", invoke=changeGroupTrackWithMidi}
 --------
-renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change 02 Panning Value x[Knob]",
-  invoke = function(message)
-    if message:is_abs_value() then
-    renoise.song().selected_track.panning_column_visible=true
-      midiValues(0, 128, renoise.song().selected_note_column, 'panning_value', message.int_value)
-    end
-end}
-
-renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change 03 Delay Value x[Knob]",
-  invoke = function(message)
-    if message:is_abs_value() then
-    renoise.song().selected_track.delay_column_visible=true
-      midiValues(0, 255, renoise.song().selected_note_column, 'delay_value', message.int_value)
-    end
-end}
-
-renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change 04 Effect Value x[Knob]",
-  invoke = function(message)
-    if message:is_abs_value() then
-      midiValues(0, 255, renoise.song().selected_note_column, 'effect_amount_value', message.int_value)
-    end
-end}
-
-renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change 01 Volume Value x[Knob]",
-  invoke = function(message)
-    if message:is_abs_value() then
-    renoise.song().selected_track.volume_column_visible=true
-      midiValues(0, 128, renoise.song().selected_note_column, 'volume_value', message.int_value)
-    end
-end}
 --
 renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Octave x[Knob]",
   invoke = function(message)
@@ -1052,4 +1022,57 @@ end
 
 -- Add menu entry to show the custom dialog
 renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Paketti MIDI Populator",invoke=generaMIDISetupShowCustomDialog}
+
+--------
+-- Function to process MIDI values and set the appropriate property
+function pakettiMidiValuesColumn(minValue, maxValue, note_column_index, propertyName, midiInput)
+  local scaledValue = pakettiScaleValuesColumn(midiInput, 0, 127, minValue, maxValue)
+  local song = renoise.song()
+  local selection = song.selection_in_pattern
+  
+  if selection then
+    for line = selection.start_line, selection.end_line do
+      local note_col = song:pattern(song.selected_pattern_index):track(song.selected_track_index):line(line).note_columns[note_column_index]
+      note_col[propertyName] = math.floor(math.max(minValue, math.min(scaledValue, maxValue)))
+    end
+  else
+    local note_col = song.selected_line.note_columns[note_column_index]
+    note_col[propertyName] = math.floor(math.max(minValue, math.min(scaledValue, maxValue)))
+  end
+end
+
+-- Scales an input value from a given input range to a specified output range
+function pakettiScaleValuesColumn(input, inputMin, inputMax, outputMin, outputMax)
+  local scale = (outputMax - outputMin) / (inputMax - inputMin)
+  local output = (input - inputMin) * scale + outputMin
+  return output
+end
+
+renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Change 01 Volume Column Value x[Knob]",invoke=function(message)
+  if message:is_abs_value() then
+    renoise.song().selected_track.volume_column_visible=true
+    pakettiMidiValuesColumn(0, 128, renoise.song().selected_note_column_index, 'volume_value', message.int_value)
+  end
+end}
+
+renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Change 02 Panning Column Value x[Knob]",invoke=function(message)
+  if message:is_abs_value() then
+    renoise.song().selected_track.panning_column_visible=true
+    pakettiMidiValuesColumn(0, 128, renoise.song().selected_note_column_index, 'panning_value', message.int_value)
+  end
+end}
+
+renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Change 03 Delay Column Value x[Knob]",invoke=function(message)
+  if message:is_abs_value() then
+    renoise.song().selected_track.delay_column_visible=true
+    pakettiMidiValuesColumn(0, 255, renoise.song().selected_note_column_index, 'delay_value', message.int_value)
+  end
+end}
+
+renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Change 04 Effect Column Value x[Knob]",invoke=function(message)
+  if message:is_abs_value() then
+    renoise.song().selected_track.sample_effects_column_visible=true
+    pakettiMidiValuesColumn(0, 255, renoise.song().selected_note_column_index, 'effect_amount_value', message.int_value)
+  end
+end}
 
