@@ -146,11 +146,10 @@ s.selected_instrument.active_tab=2 end
 renoise.tool():add_keybinding{name="Global:Paketti:Load U-He Zebra (VST)", invoke=function() LoadZebra() end}
 
 ------------------------------------------------------------------------------------------------------------
--- Function to read an XML file and return its contents as a string
+-- Function to read XML file contents
 function readXMLfile(file_path)
   local file = io.open(file_path, "r")
   if not file then
-    renoise.app():show_warning("Failed to open file: " .. file_path)
     return nil
   end
   local content = file:read("*all")
@@ -158,51 +157,64 @@ function readXMLfile(file_path)
   return content
 end
 
--- Function to set the active preset data from the provided XML file path
+-- Function to read the preset XML from the provided file path and return its contents
 function providePresetXML(preset_file_path)
   local preset_xml = readXMLfile(preset_file_path)
-  if not preset_xml then
-    renoise.app():show_warning("Failed to read preset XML from file: " .. preset_file_path)
-    return
+  
+  -- Check if the XML file was read successfully
+  if not preset_xml or preset_xml == "" then
+    renoise.app():show_warning("Failed to read preset XML or file is empty: " .. preset_file_path)
+    return nil
   end
   
-  -- Assign the read XML data to the active preset data of the selected instrument's plugin device
-  local song = renoise.song()
-  local selected_instrument_index = song.selected_instrument_index
-  local plugin_device = song.instruments[selected_instrument_index].plugin_properties.plugin_device
-  
-  if plugin_device then
-    plugin_device.active_preset_data = preset_xml
-    renoise.app():show_status("Preset successfully loaded from: " .. preset_file_path)
-  else
-    renoise.app():show_warning("No plugin device found for the selected instrument.")
-  end
+  return preset_xml
 end
 
 -- Example usage
-
 function LoadPPG()
-local s=renoise.song()
-s.selected_instrument_index = search_empty_instrument()
-s.selected_instrument.plugin_properties:load_plugin("Audio/Generators/VST/PPG Wave 2.V")
-if s.selected_instrument.plugin_properties.plugin_loaded
- then
- local pd=s.selected_instrument.plugin_properties.plugin_device
- if pd.external_editor_visible==false then pd.external_editor_visible=true else pd.external_editor_visible=false end
- end
---renoise.app().window.active_lower_frame=3
-renoise.app().window.active_middle_frame=3
-s.selected_instrument.active_tab=2 
---     renoise.song().selected_track.devices[checkline].parameters[1].value=0.474 -- Mix 
+  local s = renoise.song()
+  
+  -- Ensure an empty instrument slot is selected
+  s.selected_instrument_index = search_empty_instrument()
+  
+  -- Load the plugin
+  s.selected_instrument.plugin_properties:load_plugin("Audio/Generators/VST/PPG Wave 2.V")
+  
+  -- Check if the plugin is loaded and toggle the external editor visibility
+  if s.selected_instrument.plugin_properties.plugin_loaded then
+    local pd = s.selected_instrument.plugin_properties.plugin_device
+    pd.external_editor_visible = not pd.external_editor_visible
+    
+    -- Load the preset XML file into the plugin device
+    local preset_xml = providePresetXML("Presets/PPG_Arpeg.xml")
+    
+    if preset_xml then
+      pd.active_preset_data = preset_xml
+      renoise.app():show_status("Preset successfully loaded from: Presets/PPG_Arpeg.xml")
+    else
+      renoise.app():show_warning("Preset loading failed.")
+      return
+    end
+  else
+    renoise.app():show_warning("Failed to load the plugin.")
+    return
+  end
+  
+  -- Set the active frame and tab for the UI
+  -- renoise.app().window.active_lower_frame = 3
+  renoise.app().window.active_middle_frame = 3
+  s.selected_instrument.active_tab = 2 
+  
+  -- Example commented code
+  -- renoise.song().selected_track.devices[checkline].parameters[1].value = 0.474 -- Mix 
 
-renoise.song().instruments[renoise.song().selected_instrument_index].plugin_properties.plugin_device.active_preset_data=providePresetXML("Presets/PPG_Arpeg.xml")
-
---loadnative("Audio/Effects/Native/*Instr. Automation")
---     s.selected_track.devices[2].parameters[2].value=0.0 -- delay
-
+  -- Example commented code
+  -- loadnative("Audio/Effects/Native/*Instr. Automation")
+  -- s.selected_track.devices[2].parameters[2].value = 0.0 -- delay
 end
-
 renoise.tool():add_keybinding{name="Global:Paketti:Load Waldorf PPG v2 (VST)",invoke=function() LoadPPG() end}
+
+
 -----------------------------------------------------------------------------------------------------
 function LoadAttack()
 local s=renoise.song()
@@ -1250,7 +1262,8 @@ end
 
 --renoise.tool():add_menu_entry{name="Disk Browser Files:Paketti..:Run Experimental Script",invoke=function() terminalApp("/Users/esaruoho/torretemp.sh") end}
 
-renoise.tool():add_menu_entry{name="Disk Browser Files:Paketti..:Run Experimental Script",invoke=function() terminalApp("/Users/esaruoho/macOS_EnableScriptingTools.sh") end}
+--renoise.tool():add_menu_entry{name="Disk Browser Files:Paketti..:Run Experimental Script",invoke=function() terminalApp("/Users/esaruoho/macOS_EnableScriptingTools.sh") end}
+renoise.tool():add_menu_entry{name="Disk Browser Files:Paketti..:Open macOS Terminal",invoke=function() launchApp("open -a Terminal.app") end}
 
 
 
@@ -1552,17 +1565,15 @@ function appSelectionRemoveMenuEntries()
   -- Clear the tracking table
   added_menu_entries = {}
 end
-
--- Function to create menu entries
 function appSelectionCreateMenuEntries()
   local preferences = renoise.tool().preferences
   local app_selections = {
-    preferences.AppSelection1.value,
-    preferences.AppSelection2.value,
-    preferences.AppSelection3.value,
-    preferences.AppSelection4.value,
-    preferences.AppSelection5.value,
-    preferences.AppSelection6.value
+    preferences.AppSelection.AppSelection1 and preferences.AppSelection.AppSelection1.value or "",
+    preferences.AppSelection.AppSelection2 and preferences.AppSelection.AppSelection2.value or "",
+    preferences.AppSelection.AppSelection3 and preferences.AppSelection.AppSelection3.value or "",
+    preferences.AppSelection.AppSelection4 and preferences.AppSelection.AppSelection4.value or "",
+    preferences.AppSelection.AppSelection5 and preferences.AppSelection.AppSelection5.value or "",
+    preferences.AppSelection.AppSelection6 and preferences.AppSelection.AppSelection6.value or ""
   }
 
   local apps_present = false
@@ -1572,23 +1583,21 @@ function appSelectionCreateMenuEntries()
     if app_path ~= "" then
       apps_present = true
       local app_name = app_path:match("([^/\\]+)%.app$")
-      local menu_entry_name = "Instrument Box:Paketti..:Launch App..:Launch App " .. i .. " " .. app_name
+      local menu_entry_name = "Instrument Box:Paketti..:Launch App..:Launch App "..i.." "..app_name
       if not renoise.tool():has_menu_entry(menu_entry_name) then
         renoise.tool():add_menu_entry{
           name=menu_entry_name,
           invoke=function() appSelectionLaunchApp(app_path) end
         }
-        -- Add to tracking table
         table.insert(added_menu_entries, menu_entry_name)
       end
 
-      menu_entry_name = "Main Menu:Tools:Paketti..:Launch App..:Launch App " .. i .. " " .. app_name
+      menu_entry_name = "Main Menu:Tools:Paketti..:Launch App..:Launch App "..i.." "..app_name
       if not renoise.tool():has_menu_entry(menu_entry_name) then
         renoise.tool():add_menu_entry{
           name=menu_entry_name,
           invoke=function() appSelectionLaunchApp(app_path) end
         }
-        -- Add to tracking table
         table.insert(added_menu_entries, menu_entry_name)
       end
     end
@@ -1597,17 +1606,15 @@ function appSelectionCreateMenuEntries()
   -- If no app selections are set, show the app selection dialog
   if not apps_present then
     renoise.app():show_status("No apps have been configured in Paketti..:Launch App..:Configure Launch App Selection, cannot populate Menu.")
-    --show_app_selection_dialog()
   end
 
-  -- Add menu entry for configuring app selections
+  -- Add static menu entry for configuring app selections
   local configure_entry_name = "--Instrument Box:Paketti..:Launch App..:Configure Launch App Selection"
   if not renoise.tool():has_menu_entry(configure_entry_name) then
     renoise.tool():add_menu_entry{
       name=configure_entry_name,
       invoke=show_app_selection_dialog
     }
-    -- Add to tracking table
     table.insert(added_menu_entries, configure_entry_name)
   end
 
@@ -1617,12 +1624,10 @@ function appSelectionCreateMenuEntries()
       name=configure_entry_name,
       invoke=show_app_selection_dialog
     }
-    -- Add to tracking table
     table.insert(added_menu_entries, configure_entry_name)
   end
 end
 
--- Function to update menu entries
 function appSelectionUpdateMenuEntries()
   if renoise.song() == nil then return end
   appSelectionRemoveMenuEntries()
@@ -1722,32 +1727,32 @@ renoise.tool():add_menu_entry{name="Mixer:Paketti..:Randomize Devices and Plugin
 renoise.tool():add_keybinding{name="Global:Paketti:Randomize Devices and Plugins Dialog",invoke=function() openCombinedRandomizerDialog() end}
 
 -- Adding keybindings for user preferences for the selected device
-renoise.tool():add_keybinding{name="Global:Paketti:Randomize Selected Device with User Preference 1 (%)",invoke=function() randomizeSelectedDeviceFromGUI(preferences.pakettiRandomizeSelectedDevicePercentageUserPreference1.value) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Randomize Selected Device with User Preference 2 (%)",invoke=function() randomizeSelectedDeviceFromGUI(preferences.pakettiRandomizeSelectedDevicePercentageUserPreference2.value) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Randomize Selected Device with User Preference 3 (%)",invoke=function() randomizeSelectedDeviceFromGUI(preferences.pakettiRandomizeSelectedDevicePercentageUserPreference3.value) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Randomize Selected Device with User Preference 4 (%)",invoke=function() randomizeSelectedDeviceFromGUI(preferences.pakettiRandomizeSelectedDevicePercentageUserPreference4.value) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Randomize Selected Device with User Preference 5 (%)",invoke=function() randomizeSelectedDeviceFromGUI(preferences.pakettiRandomizeSelectedDevicePercentageUserPreference5.value) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Randomize Selected Device with User Preference 1 (%)",invoke=function() randomizeSelectedDeviceFromGUI(preferences.RandomizeSettings.pakettiRandomizeSelectedDevicePercentageUserPreference1.value) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Randomize Selected Device with User Preference 2 (%)",invoke=function() randomizeSelectedDeviceFromGUI(preferences.RandomizeSettings.pakettiRandomizeSelectedDevicePercentageUserPreference2.value) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Randomize Selected Device with User Preference 3 (%)",invoke=function() randomizeSelectedDeviceFromGUI(preferences.RandomizeSettings.pakettiRandomizeSelectedDevicePercentageUserPreference3.value) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Randomize Selected Device with User Preference 4 (%)",invoke=function() randomizeSelectedDeviceFromGUI(preferences.RandomizeSettings.pakettiRandomizeSelectedDevicePercentageUserPreference4.value) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Randomize Selected Device with User Preference 5 (%)",invoke=function() randomizeSelectedDeviceFromGUI(preferences.RandomizeSettings.pakettiRandomizeSelectedDevicePercentageUserPreference5.value) end}
 
 -- Adding keybindings for user preferences for all devices on the selected track
-renoise.tool():add_keybinding{name="Global:Paketti:Randomize All Devices on Selected Track with User Preference 1 (%)",invoke=function() randomizeAllDevicesOnTrack(preferences.pakettiRandomizeAllDevicesPercentageUserPreference1.value) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Randomize All Devices on Selected Track with User Preference 2 (%)",invoke=function() randomizeAllDevicesOnTrack(preferences.pakettiRandomizeAllDevicesPercentageUserPreference2.value) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Randomize All Devices on Selected Track with User Preference 3 (%)",invoke=function() randomizeAllDevicesOnTrack(preferences.pakettiRandomizeAllDevicesPercentageUserPreference3.value) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Randomize All Devices on Selected Track with User Preference 4 (%)",invoke=function() randomizeAllDevicesOnTrack(preferences.pakettiRandomizeAllDevicesPercentageUserPreference4.value) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Randomize All Devices on Selected Track with User Preference 5 (%)",invoke=function() randomizeAllDevicesOnTrack(preferences.pakettiRandomizeAllDevicesPercentageUserPreference5.value) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Randomize All Devices on Selected Track with User Preference 1 (%)",invoke=function() randomizeAllDevicesOnTrack(preferences.RandomizeSettings.pakettiRandomizeAllDevicesPercentageUserPreference1.value) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Randomize All Devices on Selected Track with User Preference 2 (%)",invoke=function() randomizeAllDevicesOnTrack(preferences.RandomizeSettings.pakettiRandomizeAllDevicesPercentageUserPreference2.value) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Randomize All Devices on Selected Track with User Preference 3 (%)",invoke=function() randomizeAllDevicesOnTrack(preferences.RandomizeSettings.pakettiRandomizeAllDevicesPercentageUserPreference3.value) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Randomize All Devices on Selected Track with User Preference 4 (%)",invoke=function() randomizeAllDevicesOnTrack(preferences.RandomizeSettings.pakettiRandomizeAllDevicesPercentageUserPreference4.value) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Randomize All Devices on Selected Track with User Preference 5 (%)",invoke=function() randomizeAllDevicesOnTrack(preferences.RandomizeSettings.pakettiRandomizeAllDevicesPercentageUserPreference5.value) end}
 
 -- Adding keybindings for user preferences for the selected instrument plugin
-renoise.tool():add_keybinding{name="Global:Paketti:Randomize Selected Instrument Plugin with User Preference 1 (%)",invoke=function() randomizeSelectedPluginFromGUI(preferences.pakettiRandomizeSelectedPluginPercentageUserPreference1.value) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Randomize Selected Instrument Plugin with User Preference 2 (%)",invoke=function() randomizeSelectedPluginFromGUI(preferences.pakettiRandomizeSelectedPluginPercentageUserPreference2.value) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Randomize Selected Instrument Plugin with User Preference 3 (%)",invoke=function() randomizeSelectedPluginFromGUI(preferences.pakettiRandomizeSelectedPluginPercentageUserPreference3.value) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Randomize Selected Instrument Plugin with User Preference 4 (%)",invoke=function() randomizeSelectedPluginFromGUI(preferences.pakettiRandomizeSelectedPluginPercentageUserPreference4.value) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Randomize Selected Instrument Plugin with User Preference 5 (%)",invoke=function() randomizeSelectedPluginFromGUI(preferences.pakettiRandomizeSelectedPluginPercentageUserPreference5.value) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Randomize Selected Instrument Plugin with User Preference 1 (%)",invoke=function() randomizeSelectedPluginFromGUI(preferences.RandomizeSettings.pakettiRandomizeSelectedPluginPercentageUserPreference1.value) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Randomize Selected Instrument Plugin with User Preference 2 (%)",invoke=function() randomizeSelectedPluginFromGUI(preferences.RandomizeSettings.pakettiRandomizeSelectedPluginPercentageUserPreference2.value) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Randomize Selected Instrument Plugin with User Preference 3 (%)",invoke=function() randomizeSelectedPluginFromGUI(preferences.RandomizeSettings.pakettiRandomizeSelectedPluginPercentageUserPreference3.value) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Randomize Selected Instrument Plugin with User Preference 4 (%)",invoke=function() randomizeSelectedPluginFromGUI(preferences.RandomizeSettings.pakettiRandomizeSelectedPluginPercentageUserPreference4.value) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Randomize Selected Instrument Plugin with User Preference 5 (%)",invoke=function() randomizeSelectedPluginFromGUI(preferences.RandomizeSettings.pakettiRandomizeSelectedPluginPercentageUserPreference5.value) end}
 
 -- Adding keybindings for user preferences for all plugins in the song
-renoise.tool():add_keybinding{name="Global:Paketti:Randomize All Plugins in Song with User Preference 1 (%)",invoke=function() randomizeAllPluginsInSong(preferences.pakettiRandomizeAllPluginsPercentageUserPreference1.value) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Randomize All Plugins in Song with User Preference 2 (%)",invoke=function() randomizeAllPluginsInSong(preferences.pakettiRandomizeAllPluginsPercentageUserPreference2.value) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Randomize All Plugins in Song with User Preference 3 (%)",invoke=function() randomizeAllPluginsInSong(preferences.pakettiRandomizeAllPluginsPercentageUserPreference3.value) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Randomize All Plugins in Song with User Preference 4 (%)",invoke=function() randomizeAllPluginsInSong(preferences.pakettiRandomizeAllPluginsPercentageUserPreference4.value) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Randomize All Plugins in Song with User Preference 5 (%)",invoke=function() randomizeAllPluginsInSong(preferences.pakettiRandomizeAllPluginsPercentageUserPreference5.value) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Randomize All Plugins in Song with User Preference 1 (%)",invoke=function() randomizeAllPluginsInSong(preferences.RandomizeSettings.pakettiRandomizeAllPluginsPercentageUserPreference1.value) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Randomize All Plugins in Song with User Preference 2 (%)",invoke=function() randomizeAllPluginsInSong(preferences.RandomizeSettings.pakettiRandomizeAllPluginsPercentageUserPreference2.value) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Randomize All Plugins in Song with User Preference 3 (%)",invoke=function() randomizeAllPluginsInSong(preferences.RandomizeSettings.pakettiRandomizeAllPluginsPercentageUserPreference3.value) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Randomize All Plugins in Song with User Preference 4 (%)",invoke=function() randomizeAllPluginsInSong(preferences.RandomizeSettings.pakettiRandomizeAllPluginsPercentageUserPreference4.value) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Randomize All Plugins in Song with User Preference 5 (%)",invoke=function() randomizeAllPluginsInSong(preferences.RandomizeSettings.pakettiRandomizeAllPluginsPercentageUserPreference5.value) end}
 
 -- Function to randomize parameters of the selected device by a given intensity
 function randomizeSelectedDeviceFromGUI(intensity)
@@ -1934,20 +1939,20 @@ local instrument_plugin_name = instrument.plugin_properties.plugin_device and in
 
 
   local function save_current_intensity()
-    preferences.pakettiRandomizeSelectedDevicePercentage.value = vb.views["randomize_slider_device"].value
-    preferences.pakettiRandomizeAllDevicesPercentage.value = vb.views["randomize_slider_track"].value
-    preferences.pakettiRandomizeSelectedPluginPercentage.value = vb.views["randomize_slider_plugin"].value
-    preferences.pakettiRandomizeAllPluginsPercentage.value = vb.views["randomize_slider_all_plugins"].value
+    preferences.RandomizeSettings.pakettiRandomizeSelectedDevicePercentage.value = vb.views["randomize_slider_device"].value
+    preferences.RandomizeSettings.pakettiRandomizeAllDevicesPercentage.value = vb.views["randomize_slider_track"].value
+    preferences.RandomizeSettings.pakettiRandomizeSelectedPluginPercentage.value = vb.views["randomize_slider_plugin"].value
+    preferences.RandomizeSettings.pakettiRandomizeAllPluginsPercentage.value = vb.views["randomize_slider_all_plugins"].value
   end
 
   local function set_user_preference(preference_slot, slider_id, text_id)
     local value = vb.views[slider_id].value
-    preferences[preference_slot].value = value
+    preferences.RandomizeSettings[preference_slot].value = value
     vb.views[text_id].text = string.format("%.1f%%", value)
   end
 
   local function load_user_preference(preference_slot, slider_id, text_id)
-    local value = preferences[preference_slot].value
+    local value = preferences.RandomizeSettings[preference_slot].value
     vb.views[slider_id].value = value
     vb.views[text_id].text = string.format("%.1f%%", value)
   end
@@ -1959,29 +1964,29 @@ local instrument_plugin_name = instrument.plugin_properties.plugin_device and in
       vb:text{font = "bold", text = "Selected Device"},
       vb:text{id = "device_short_name", font = "bold", text = device_short_name},
       vb:horizontal_aligner{mode = "center", vb:text{text = "Randomization Intensity (%)"}},
-      vb:slider{id = "randomize_slider_device", min = 0, max = 100, value = preferences.pakettiRandomizeSelectedDevicePercentage.value, width = 200, notifier = function()
+      vb:slider{id = "randomize_slider_device", min = 0, max = 100, value = preferences.RandomizeSettings.pakettiRandomizeSelectedDevicePercentage.value, width = 200, notifier = function()
         local slider_value = vb.views["randomize_slider_device"].value
         vb.views["slider_value_text_device"].text = string.format("%.1f%%", slider_value)
       end},
-      vb:horizontal_aligner{mode = "center", vb:text{id = "slider_value_text_device", text = string.format("%.1f%%", preferences.pakettiRandomizeSelectedDevicePercentage.value)}},
+      vb:horizontal_aligner{mode = "center", vb:text{id = "slider_value_text_device", text = string.format("%.1f%%", preferences.RandomizeSettings.pakettiRandomizeSelectedDevicePercentage.value)}},
       vb:horizontal_aligner{mode = "center", vb:button{text = "Randomize Selected Device", width = 200, notifier = function()
         local slider_value = vb.views["randomize_slider_device"].value
         randomizeSelectedDeviceFromGUI(slider_value)
         save_current_intensity()
       end}},
-      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference1_text_device", text = string.format("%.1f%%", preferences.pakettiRandomizeSelectedDevicePercentageUserPreference1.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
+      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference1_text_device", text = string.format("%.1f%%", preferences.RandomizeSettings.pakettiRandomizeSelectedDevicePercentageUserPreference1.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
         set_user_preference("pakettiRandomizeSelectedDevicePercentageUserPreference1", "randomize_slider_device", "user_preference1_text_device")
       end}},
-      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference2_text_device", text = string.format("%.1f%%", preferences.pakettiRandomizeSelectedDevicePercentageUserPreference2.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
+      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference2_text_device", text = string.format("%.1f%%", preferences.RandomizeSettings.pakettiRandomizeSelectedDevicePercentageUserPreference2.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
         set_user_preference("pakettiRandomizeSelectedDevicePercentageUserPreference2", "randomize_slider_device", "user_preference2_text_device")
       end}},
-      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference3_text_device", text = string.format("%.1f%%", preferences.pakettiRandomizeSelectedDevicePercentageUserPreference3.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
+      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference3_text_device", text = string.format("%.1f%%", preferences.RandomizeSettings.pakettiRandomizeSelectedDevicePercentageUserPreference3.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
         set_user_preference("pakettiRandomizeSelectedDevicePercentageUserPreference3", "randomize_slider_device", "user_preference3_text_device")
       end}},
-      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference4_text_device", text = string.format("%.1f%%", preferences.pakettiRandomizeSelectedDevicePercentageUserPreference4.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
+      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference4_text_device", text = string.format("%.1f%%", preferences.RandomizeSettings.pakettiRandomizeSelectedDevicePercentageUserPreference4.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
         set_user_preference("pakettiRandomizeSelectedDevicePercentageUserPreference4", "randomize_slider_device", "user_preference4_text_device")
       end}},
-      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference5_text_device", text = string.format("%.1f%%", preferences.pakettiRandomizeSelectedDevicePercentageUserPreference5.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
+      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference5_text_device", text = string.format("%.1f%%", preferences.RandomizeSettings.pakettiRandomizeSelectedDevicePercentageUserPreference5.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
         set_user_preference("pakettiRandomizeSelectedDevicePercentageUserPreference5", "randomize_slider_device", "user_preference5_text_device")
       end}},
       vb:horizontal_aligner{mode = "center", vb:button{text = "Show/Hide Track Device External Editor", width = 200, notifier = function()
@@ -1993,29 +1998,29 @@ local instrument_plugin_name = instrument.plugin_properties.plugin_device and in
       vb:text{font = "bold", text = "Selected Track"},
       vb:text{id = "track_name_text", font = "bold", text = track_name},
       vb:horizontal_aligner{mode = "center", vb:text{text = "Randomization Intensity (%)"}},
-      vb:slider{id = "randomize_slider_track", min = 0, max = 100, value = preferences.pakettiRandomizeAllDevicesPercentage.value, width = 200, notifier = function()
+      vb:slider{id = "randomize_slider_track", min = 0, max = 100, value = preferences.RandomizeSettings.pakettiRandomizeAllDevicesPercentage.value, width = 200, notifier = function()
         local slider_value = vb.views["randomize_slider_track"].value
         vb.views["slider_value_text_track"].text = string.format("%.1f%%", slider_value)
       end},
-      vb:horizontal_aligner{mode = "center", vb:text{id = "slider_value_text_track", text = string.format("%.1f%%", preferences.pakettiRandomizeAllDevicesPercentage.value)}},
+      vb:horizontal_aligner{mode = "center", vb:text{id = "slider_value_text_track", text = string.format("%.1f%%", preferences.RandomizeSettings.pakettiRandomizeAllDevicesPercentage.value)}},
       vb:horizontal_aligner{mode = "center", vb:button{text = "Randomize All Devices", width = 200, notifier = function()
         local slider_value = vb.views["randomize_slider_track"].value
         randomizeAllDevicesOnTrack(slider_value)
         save_current_intensity()
       end}},
-      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference1_text_track", text = string.format("%.1f%%", preferences.pakettiRandomizeAllDevicesPercentageUserPreference1.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
+      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference1_text_track", text = string.format("%.1f%%", preferences.RandomizeSettings.pakettiRandomizeAllDevicesPercentageUserPreference1.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
         set_user_preference("pakettiRandomizeAllDevicesPercentageUserPreference1", "randomize_slider_track", "user_preference1_text_track")
       end}},
-      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference2_text_track", text = string.format("%.1f%%", preferences.pakettiRandomizeAllDevicesPercentageUserPreference2.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
+      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference2_text_track", text = string.format("%.1f%%", preferences.RandomizeSettings.pakettiRandomizeAllDevicesPercentageUserPreference2.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
         set_user_preference("pakettiRandomizeAllDevicesPercentageUserPreference2", "randomize_slider_track", "user_preference2_text_track")
       end}},
-      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference3_text_track", text = string.format("%.1f%%", preferences.pakettiRandomizeAllDevicesPercentageUserPreference3.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
+      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference3_text_track", text = string.format("%.1f%%", preferences.RandomizeSettings.pakettiRandomizeAllDevicesPercentageUserPreference3.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
         set_user_preference("pakettiRandomizeAllDevicesPercentageUserPreference3", "randomize_slider_track", "user_preference3_text_track")
       end}},
-      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference4_text_track", text = string.format("%.1f%%", preferences.pakettiRandomizeAllDevicesPercentageUserPreference4.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
+      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference4_text_track", text = string.format("%.1f%%", preferences.RandomizeSettings.pakettiRandomizeAllDevicesPercentageUserPreference4.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
         set_user_preference("pakettiRandomizeAllDevicesPercentageUserPreference4", "randomize_slider_track", "user_preference4_text_track")
       end}},
-      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference5_text_track", text = string.format("%.1f%%", preferences.pakettiRandomizeAllDevicesPercentageUserPreference5.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
+      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference5_text_track", text = string.format("%.1f%%", preferences.RandomizeSettings.pakettiRandomizeAllDevicesPercentageUserPreference5.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
         set_user_preference("pakettiRandomizeAllDevicesPercentageUserPreference5", "randomize_slider_track", "user_preference5_text_track")
       end}},
       vb:horizontal_aligner{mode = "center", vb:button{text = "Show/Hide All Devices on Track External Editor", width = 200, notifier = function()
@@ -2027,29 +2032,29 @@ local instrument_plugin_name = instrument.plugin_properties.plugin_device and in
       vb:text{font = "bold", text = "Selected Instrument Plugin"},
       vb:text{id = "plugin_name_text", font = "bold", text = instrument_plugin_name},
       vb:horizontal_aligner{mode = "center", vb:text{text = "Randomization Intensity (%)"}},
-      vb:slider{id = "randomize_slider_plugin", min = 0, max = 100, value = preferences.pakettiRandomizeSelectedPluginPercentage.value, width = 200, notifier = function()
+      vb:slider{id = "randomize_slider_plugin", min = 0, max = 100, value = preferences.RandomizeSettings.pakettiRandomizeSelectedPluginPercentage.value, width = 200, notifier = function()
         local slider_value = vb.views["randomize_slider_plugin"].value
         vb.views["slider_value_text_plugin"].text = string.format("%.1f%%", slider_value)
       end},
-      vb:horizontal_aligner{mode = "center", vb:text{id = "slider_value_text_plugin", text = string.format("%.1f%%", preferences.pakettiRandomizeSelectedPluginPercentage.value)}},
+      vb:horizontal_aligner{mode = "center", vb:text{id = "slider_value_text_plugin", text = string.format("%.1f%%", preferences.RandomizeSettings.pakettiRandomizeSelectedPluginPercentage.value)}},
       vb:horizontal_aligner{mode = "center", vb:button{text = "Randomize Selected Plugin", width = 200, notifier = function()
         local slider_value = vb.views["randomize_slider_plugin"].value
         randomizeSelectedPluginFromGUI(slider_value)
         save_current_intensity()
       end}},
-      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference1_text_plugin", text = string.format("%.1f%%", preferences.pakettiRandomizeSelectedPluginPercentageUserPreference1.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
+      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference1_text_plugin", text = string.format("%.1f%%", preferences.RandomizeSettings.pakettiRandomizeSelectedPluginPercentageUserPreference1.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
         set_user_preference("pakettiRandomizeSelectedPluginPercentageUserPreference1", "randomize_slider_plugin", "user_preference1_text_plugin")
       end}},
-      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference2_text_plugin", text = string.format("%.1f%%", preferences.pakettiRandomizeSelectedPluginPercentageUserPreference2.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
+      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference2_text_plugin", text = string.format("%.1f%%", preferences.RandomizeSettings.pakettiRandomizeSelectedPluginPercentageUserPreference2.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
         set_user_preference("pakettiRandomizeSelectedPluginPercentageUserPreference2", "randomize_slider_plugin", "user_preference2_text_plugin")
       end}},
-      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference3_text_plugin", text = string.format("%.1f%%", preferences.pakettiRandomizeSelectedPluginPercentageUserPreference3.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
+      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference3_text_plugin", text = string.format("%.1f%%", preferences.RandomizeSettings.pakettiRandomizeSelectedPluginPercentageUserPreference3.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
         set_user_preference("pakettiRandomizeSelectedPluginPercentageUserPreference3", "randomize_slider_plugin", "user_preference3_text_plugin")
       end}},
-      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference4_text_plugin", text = string.format("%.1f%%", preferences.pakettiRandomizeSelectedPluginPercentageUserPreference4.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
+      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference4_text_plugin", text = string.format("%.1f%%", preferences.RandomizeSettings.pakettiRandomizeSelectedPluginPercentageUserPreference4.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
         set_user_preference("pakettiRandomizeSelectedPluginPercentageUserPreference4", "randomize_slider_plugin", "user_preference4_text_plugin")
       end}},
-      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference5_text_plugin", text = string.format("%.1f%%", preferences.pakettiRandomizeSelectedPluginPercentageUserPreference5.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
+      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference5_text_plugin", text = string.format("%.1f%%", preferences.RandomizeSettings.pakettiRandomizeSelectedPluginPercentageUserPreference5.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
         set_user_preference("pakettiRandomizeSelectedPluginPercentageUserPreference5", "randomize_slider_plugin", "user_preference5_text_plugin")
       end}},
       vb:horizontal_aligner{mode = "center", vb:button{text = "Show/Hide Plugin External Editor", width = 200, notifier = function()
@@ -2061,11 +2066,11 @@ local instrument_plugin_name = instrument.plugin_properties.plugin_device and in
       vb:text{font = "bold", text = "All Plugins in Song"},
       vb:space{height = 18},
       vb:horizontal_aligner{mode = "center", vb:text{text = "Randomization Intensity (%)"}},
-      vb:slider{id = "randomize_slider_all_plugins", min = 0, max = 100, value = preferences.pakettiRandomizeAllPluginsPercentage.value, width = 200, notifier = function()
+      vb:slider{id = "randomize_slider_all_plugins", min = 0, max = 100, value = preferences.RandomizeSettings.pakettiRandomizeAllPluginsPercentage.value, width = 200, notifier = function()
         local slider_value = vb.views["randomize_slider_all_plugins"].value
         vb.views["slider_value_text_all_plugins"].text = string.format("%.1f%%", slider_value)
       end},
-      vb:horizontal_aligner{mode = "center", vb:text{id = "slider_value_text_all_plugins", text = string.format("%.1f%%", preferences.pakettiRandomizeAllPluginsPercentage.value)}},
+      vb:horizontal_aligner{mode = "center", vb:text{id = "slider_value_text_all_plugins", text = string.format("%.1f%%", preferences.RandomizeSettings.pakettiRandomizeAllPluginsPercentage.value)}},
       vb:horizontal_aligner{mode = "center", vb:button{text = "Randomize All Plugins", width = 200, notifier = function()
         local slider_value = vb.views["randomize_slider_all_plugins"].value
  local song = renoise.song()
@@ -2088,19 +2093,19 @@ local instrument_plugin_name = instrument.plugin_properties.plugin_device and in
         end
         save_current_intensity()
       end}},
-      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference1_text_all_plugins", text = string.format("%.1f%%", preferences.pakettiRandomizeAllPluginsPercentageUserPreference1.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
+      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference1_text_all_plugins", text = string.format("%.1f%%", preferences.RandomizeSettings.pakettiRandomizeAllPluginsPercentageUserPreference1.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
         set_user_preference("pakettiRandomizeAllPluginsPercentageUserPreference1", "randomize_slider_all_plugins", "user_preference1_text_all_plugins")
       end}},
-      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference2_text_all_plugins", text = string.format("%.1f%%", preferences.pakettiRandomizeAllPluginsPercentageUserPreference2.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
+      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference2_text_all_plugins", text = string.format("%.1f%%", preferences.RandomizeSettings.pakettiRandomizeAllPluginsPercentageUserPreference2.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
         set_user_preference("pakettiRandomizeAllPluginsPercentageUserPreference2", "randomize_slider_all_plugins", "user_preference2_text_all_plugins")
       end}},
-      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference3_text_all_plugins", text = string.format("%.1f%%", preferences.pakettiRandomizeAllPluginsPercentageUserPreference3.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
+      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference3_text_all_plugins", text = string.format("%.1f%%", preferences.RandomizeSettings.pakettiRandomizeAllPluginsPercentageUserPreference3.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
         set_user_preference("pakettiRandomizeAllPluginsPercentageUserPreference3", "randomize_slider_all_plugins", "user_preference3_text_all_plugins")
       end}},
-      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference4_text_all_plugins", text = string.format("%.1f%%", preferences.pakettiRandomizeAllPluginsPercentageUserPreference4.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
+      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference4_text_all_plugins", text = string.format("%.1f%%", preferences.RandomizeSettings.pakettiRandomizeAllPluginsPercentageUserPreference4.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
         set_user_preference("pakettiRandomizeAllPluginsPercentageUserPreference4", "randomize_slider_all_plugins", "user_preference4_text_all_plugins")
       end}},
-      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference5_text_all_plugins", text = string.format("%.1f%%", preferences.pakettiRandomizeAllPluginsPercentageUserPreference5.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
+      vb:horizontal_aligner{mode = "center", vb:text{id = "user_preference5_text_all_plugins", text = string.format("%.1f%%", preferences.RandomizeSettings.pakettiRandomizeAllPluginsPercentageUserPreference5.value), width = 100}, vb:button{text = "Set", width = 100, notifier = function()
         set_user_preference("pakettiRandomizeAllPluginsPercentageUserPreference5", "randomize_slider_all_plugins", "user_preference5_text_all_plugins")
       end}},
       vb:horizontal_aligner{mode = "center", vb:button{text = "Show/Hide All Plugin External Editors", width = 200, notifier = function()
@@ -2160,4 +2165,76 @@ local instrument_plugin_name = instrument.plugin_properties.plugin_device and in
       vb.views["plugin_name_text"].text = new_instrument.plugin_properties.plugin_display_name or "Instrument has no Plugin"
     end
   end)
+end
+
+
+
+
+
+
+
+
+
+---------
+
+
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Randomize Selected Instrument Plugin Parameters",invoke=function()randomizeSelectedPlugin()end}
+renoise.tool():add_keybinding{name="Global:Paketti:Randomize Selected Plugin",invoke=function()randomizeSelectedPlugin()end}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Randomize Selected Instrument Plugin Parameters",invoke=function()randomizeSelectedPlugin()end}
+
+-- Function to randomize parameters of the selected plugin
+function randomizeSelectedPlugin()
+  local song = renoise.song()
+  local instrument = renoise.song().selected_instrument 
+
+  if not instrument or not instrument.plugin_properties then
+    renoise.app():show_status("The currently selected Instrument does not have a plugin loaded.")
+    return
+  end
+
+  local plugin_name = renoise.song().selected_instrument.plugin_properties.plugin_device.name
+  renoise.app():show_status("Randomizing parameters for plugin: " .. plugin_name)
+
+  local parameter_count = #instrument.plugin_properties.plugin_device.parameters
+  
+  for i = 1, parameter_count do
+    local parameter = instrument.plugin_properties.plugin_device.parameters[i]
+    local min = parameter.value_min
+    local max = parameter.value_max
+    local random_value = math.random() * (max - min) + min
+    parameter.value = random_value
+  end
+  
+  renoise.app():show_status("Randomized " .. parameter_count .. " parameters for plugin: " .. plugin_name)
+end
+
+
+
+
+-- Tool Registration
+renoise.tool():add_menu_entry{name="DSP Device:Paketti..:Randomize Selected Device Parameters",invoke=function()randomize_selected_device()end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Randomize Selected Device Parameters",invoke=function()randomize_selected_device()end}
+renoise.tool():add_keybinding{name="Global:Paketti:Randomize Selected Device",invoke=function()randomize_selected_device()end}
+
+-- Function to randomize parameters of the selected device
+function randomize_selected_device()
+  local song = renoise.song()
+  local device = song.selected_device
+  
+  if not device then
+    renoise.app():show_status("No DSP Device has been selected, cannot randomize parameters. Select a Track DSP Device and try again.")
+    return
+  end
+
+  local parameter_count = #device.parameters
+   local device_name = device.display_name
+  for i = 1, parameter_count do
+    local parameter = device:parameter(i)
+    local min = parameter.value_min
+    local max = parameter.value_max
+    local random_value = math.random() * (max - min) + min
+    parameter.value = random_value
+  end
+  
+  renoise.app():show_status("Randomized " .. parameter_count .. " parameters for device: " .. device_name)
 end

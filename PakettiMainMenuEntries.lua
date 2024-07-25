@@ -1,10 +1,70 @@
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:!!About..:!! Donate !!",invoke=function()
-renoise.app():open_url("http://paypal.me/esaruoho")
-end}
+local vb=renoise.ViewBuilder()
+local dialog
+local donations={
+  {"2012-02-06","Nate Schmold",76.51,{"3030.ca","https://3030.ca"},{"Ghost Cartridge","https://ghostcartridge.com"},{"YouTube","https://YouTube.com/@3030-tv"}},
+  {"2024-04-18","Casiino",17.98,{"Instagram","https://www.instagram.com/elcasiino/"}},
+  {"2024-06-30","Zoey Samples",13.43,{"BTD Records","https://linktr.ee/BTD_Records"}},
+  {"2024-07-19","Casiino",43.87,{"Instagram","https://www.instagram.com/elcasiino/"}}}
+
+local total_amount=0
+for _,donation in ipairs(donations)do total_amount=total_amount+donation[3]end
+
+local function my_keyhandler_func(dialog,key)
+  if not(key.modifiers==""and key.name=="exclamation")then return key
+  else dialog:close()end
+end
+
+local function open_url(url)
+  renoise.app():open_url(url)
+end
+
+local function pakettiDonationsDialog()
+  local dialog_content=vb:column{
+    margin=20,
+    vb:row{vb:text{text="Date",width=70},vb:text{text="Person",width=100},vb:text{text="Amount",width=50},vb:text{text="Links",width=100}}}
+
+  for _,donation in ipairs(donations)do
+    local link_buttons=vb:horizontal_aligner{mode="left"}
+    for i=4,6 do
+      if donation[i]then
+        link_buttons:add_child(vb:button{
+          text=donation[i][1],
+          notifier=function()open_url(donation[i][2])end
+        })
+      end
+    end
+
+    dialog_content:add_child(vb:row{vb:text{text=donation[1],width=70},vb:text{text=donation[2],width=100},
+      vb:text{text=string.format("%.2f",donation[3]).."€",width=50,font='bold'},
+      link_buttons
+    })
+  end
+  dialog_content:add_child(vb:space{height=5})
+  dialog_content:add_child(vb:text{text="Total: "..string.format("%.2f",total_amount).."€",font='bold'})
+  dialog_content:add_child(vb:space{height=20})
+  dialog_content:add_child(vb:text{text="Here's how to donate:",font='bold'})
+  dialog_content:add_child(vb:horizontal_aligner{
+    mode="distribute",
+    vb:button{text="PayPal.me",notifier=function()open_url("https://www.paypal.com/donate/?hosted_button_id=PHZ9XDQZ46UR8")end},
+    vb:button{text="Ko-fi",notifier=function()open_url("https://ko-fi.com/esaruoho")end},
+    vb:button{text="Bandcamp",notifier=function()open_url("http://lackluster.bandcamp.com/")end},
+    vb:button{text="GitHub Sponsors",notifier=function()open_url("https://github.com/sponsors/esaruoho")end},
+    vb:button{text="Linktr.ee",notifier=function()open_url("https://linktr.ee/esaruoho")end}
+    })
+  dialog_content:add_child(vb:space{height=20})
+  dialog_content:add_child(vb:horizontal_aligner{mode="distribute",
+    vb:button{text="OK",notifier=function()dialog:close()end},
+    vb:button{text="Cancel",notifier=function()dialog:close()end}})
+  dialog=renoise.app():show_custom_dialog("Paketti Donations",dialog_content,my_keyhandler_func)
+end
+
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:!!About..:__Donate__",invoke=function()pakettiDonationsDialog()end}
 
 
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:!!About..:Open Paketti Path",invoke=function() renoise.app():open_path(renoise.tool().bundle_path)
- end}
+
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:!Preferences:Open Paketti Path",invoke=function() renoise.app():open_path(renoise.tool().bundle_path)end}
+
+
 
 
 
@@ -64,7 +124,7 @@ renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor:E
 -------- Plugins/Devices
 -- Adding menu entries for listing available plugins by type
 renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Load Native Devices Dialog",
-    invoke=function() show_plugin_list_dialog() end}
+    invoke=function() PakettiShowDeviceListDialog() end}
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Load VST Devices Dialog",invoke=vstShowPluginListDialog}
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Load VST3/AU Devices Dialog",invoke=vst3ShowPluginListDialog}
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Load LADSPA/DSSI Devices Dialog",invoke=LADSPADSSIShowPluginListDialog}    

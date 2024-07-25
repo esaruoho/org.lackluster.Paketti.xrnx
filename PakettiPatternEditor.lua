@@ -2001,8 +2001,6 @@ renoise.tool():add_midi_mapping{name="Paketti:Interpolate Effect Column Paramete
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Interpolate Effect Column Parameters",invoke=pakettiInterpolateEffectColumnParameters}
 
 --------
--- Take a deep breath. Let's start.
-
 -- Function to flood fill the track with the current note and instrument
 function pakettiFloodFill()
   -- Obtain the currently selected song and pattern
@@ -2042,18 +2040,342 @@ function pakettiFloodFill()
   end
   
   -- Inform the user that the operation was successful
-  renoise.app():show_status("Track filled with the current note and instrument.")
+  renoise.app():show_status("Track or Selection filled with the Current Note and Instrument.")
 end
 
--- Add a menu entry to trigger the function
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Flood Fill Note and Instrument",invoke=pakettiFloodFill}
-
--- Add a keybinding to trigger the function
-renoise.tool():add_keybinding{name="Global:Paketti:Flood Fill Note and Instrument",invoke=pakettiFloodFill}
-
--- Add a MIDI mapping to trigger the function
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Flood Fill Note and Instrument",invoke=pakettiFloodFill}
 renoise.tool():add_midi_mapping{name="Paketti:Flood Fill Note and Instrument",invoke=pakettiFloodFill}
-
--- Add a menu entry to the Pattern Editor context menu
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Flood Fill Note and Instrument",invoke=pakettiFloodFill}
+-----------
+-- Function to Flood Fill the track with the current note and instrument with an edit step
+function pakettiFloodFillWithEditStep()
+  -- Obtain the currently selected song and pattern
+  local song = renoise.song()
+  local pattern_index = song.selected_pattern_index
+  local pattern = song.patterns[pattern_index]
+
+  -- Obtain the current track and line index
+  local track_index = song.selected_track_index
+  local line_index = song.selected_line_index
+
+  -- Obtain the current edit step
+  local edit_step = song.transport.edit_step
+
+  -- Obtain the current note column index
+  local note_column_index = song.selected_note_column_index
+
+  -- Get the selection in the pattern
+  local selection = song.selection_in_pattern
+  local start_line, end_line, start_track, end_track, start_column, end_column
+
+  if selection then
+    -- There is a selection, use the selection range
+    start_line = selection.start_line
+    end_line = selection.end_line
+    start_track = selection.start_track
+    end_track = selection.end_track
+    start_column = selection.start_column
+    end_column = selection.end_column
+  else
+    -- No selection, use from the current row onwards in the current track and note column
+    start_line = line_index
+    end_line = pattern.number_of_lines
+    start_track = track_index
+    end_track = track_index
+    start_column = note_column_index
+    end_column = note_column_index
+  end
+
+  -- Check if the edit step is larger than the number of lines in the pattern
+  if edit_step > (end_line - start_line + 1) then
+    renoise.app():show_status("Did not apply Flood Fill with EditStep because EditStep is larger than Amount of Lines in Pattern")
+    return
+  end
+
+  local found_note = false
+  local note_values = {}
+  local instrument_values = {}
+  local clear_columns = {}
+
+  -- Read the current row's note and instrument values for each track and column in the selection
+  for track_idx = start_track, end_track do
+    local track = song:track(track_idx)
+    if track.type ~= renoise.Track.TRACK_TYPE_GROUP and track.type ~= renoise.Track.TRACK_TYPE_SEND and track.type ~= renoise.Track.TRACK_TYPE_MASTER then
+      note_values[track_idx] = {}
+      instrument_values[track_idx] = {}
+      clear_columns[track_idx] = {}
+      local first_column = (track_idx == start_track) and start_column or 1
+      local last_column = (track_idx == end_track) and end_column or track.visible_note_columns
+      for column_index = first_column, last_column do
+        local current_note_column = song:pattern(pattern_index):track(track_idx):line(line_index).note_columns[column_index]
+        if current_note_column and not current_note_column.is_empty then
+          note_values[track_idx][column_index] = current_note_column.note_value
+          instrument_values[track_idx][column_index] = current_note_column.instrument_value
+          clear_columns[track_idx][column_index] = true
+          found_note = true
+          -- Debug message to track the note and instrument values
+          print(string.format("Read note %d and instrument %d from Track %d, Column %d", current_note_column.note_value, current_note_column.instrument_value, track_idx, column_index))
+        elseif current_note_column then
+          clear_columns[track_idx][column_index] = false
+        end
+      end
+    end
+  end
+
+  if not found_note then
+    renoise.app():show_status("There was nothing to Flood Fill with EditStep with.")
+    return
+  end
+
+  -- Clear all selected note columns except the current row (or start line if selection exists)
+  for track_idx = start_track, end_track do
+    local track = song:track(track_idx)
+    if track.type ~= renoise.Track.TRACK_TYPE_GROUP and track.type ~= renoise.Track.TRACK_TYPE_SEND and track.type ~= renoise.Track.TRACK_TYPE_MASTER then
+      local first_column = (track_idx == start_track) and start_column or 1
+      local last_column = (track_idx == end_track) and end_column or track.visible_note_columns
+      for column_index = first_column, last_column do
+        if clear_columns[track_idx][column_index] then
+          for i = start_line, end_line do
+            if selection then
+              if i ~= start_line then
+                local line = song:pattern(pattern_index):track(track_idx):line(i)
+                local note_column = line.note_columns[column_index]
+                note_column:clear()
+              end
+            else
+              if i ~= line_index then
+                local line = song:pattern(pattern_index):track(track_idx):line(i)
+                local note_column = line.note_columns[column_index]
+                note_column:clear()
+              end
+            end
+          end
+          -- Debug message to track the clearing of rows
+          print(string.format("Cleared Track %d, Column %d from Row %d to Row %d", track_idx, column_index, start_line, end_line))
+        end
+      end
+    end
+  end
+
+  -- Apply Flood Fill with edit step
+  for track_idx = start_track, end_track do
+    local track = song:track(track_idx)
+    if track.type ~= renoise.Track.TRACK_TYPE_GROUP and track.type ~= renoise.Track.TRACK_TYPE_SEND and track.type ~= renoise.Track.TRACK_TYPE_MASTER then
+      local first_column = (track_idx == start_track) and start_column or 1
+      local last_column = (track_idx == end_track) and end_column or track.visible_note_columns
+      for column_index = first_column, last_column do
+        if note_values[track_idx][column_index] then
+          local note_value = note_values[track_idx][column_index]
+          local instrument_value = instrument_values[track_idx][column_index]
+
+          -- Debug message to track the note and instrument values being applied
+          print(string.format("Applying Flood Fill to Selection In Pattern, with EditStep %d to Track %d, Column %d using note %d and instrument %d", edit_step, track_idx, column_index, note_value, instrument_value))
+
+          for i = start_line, end_line do
+            if edit_step == 0 or (i - start_line) % edit_step == 0 then
+              local line = song:pattern(pattern_index):track(track_idx):line(i)
+              local note_column = line.note_columns[column_index]
+              note_column.note_value = note_value
+              note_column.instrument_value = instrument_value
+            end
+          end
+        end
+      end
+    end
+  end
+
+  -- Inform the user that the operation was successful
+  renoise.app():show_status("Track / Selection filled with the Current Note and Instrument with EditStep.")
+end
+
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Flood Fill Note and Instrument with EditStep",invoke=pakettiFloodFillWithEditStep}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Flood Fill Note and Instrument with EditStep",invoke=pakettiFloodFillWithEditStep}
+renoise.tool():add_midi_mapping{name="Paketti:Flood Fill Note and Instrument with EditStep",invoke=pakettiFloodFillWithEditStep}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Flood Fill Note and Instrument with EditStep",invoke=pakettiFloodFillWithEditStep}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-----------
+local dialog
+local track_index = 1
+local selected_tracks = {}
+local vb = renoise.ViewBuilder()
+
+-- Function to show the track renamer dialog
+function PakettiTrackRenamerDialog()
+  -- Get the current selection in the pattern
+  local selection = renoise.song().selection_in_pattern
+  selected_tracks = {}
+
+  -- Check if there is a selection
+  if selection then
+    for i = selection.start_track, selection.end_track do
+      table.insert(selected_tracks, i)
+    end
+  else
+    -- If no selection, use the currently selected track
+    table.insert(selected_tracks, renoise.song().selected_track_index)
+  end
+
+  -- Reset track index
+  track_index = 1
+
+  -- Debugging: print selected tracks
+  print("Selected tracks: ", table.concat(selected_tracks, ", "))
+
+  -- Show the dialog for the first track in the selection
+  ShowRenameDialogForTrack(track_index)
+end
+
+-- Function to show the renaming dialog for a specific track
+function ShowRenameDialogForTrack(index)
+  local track_index = selected_tracks[index]
+  local selected_track = renoise.song().tracks[track_index]
+  local initial_name = selected_track.name
+
+  local function close_dialog()
+    if dialog and dialog.visible then
+      dialog:close()
+    end
+  end
+
+  local function rename_track_and_close(new_name)
+    selected_track.name = new_name
+    close_dialog()
+    -- Move to the next track in the selection
+    index = index + 1
+    if index <= #selected_tracks then
+      ShowRenameDialogForTrack(index)
+    end
+  end
+
+  -- Create a new ViewBuilder instance
+  vb = renoise.ViewBuilder()
+  local text_field = vb:textfield{
+    id = "track_name_field",
+    text = initial_name,
+    width = 200,
+    edit_mode = true,
+    notifier = function(new_name)
+      if new_name ~= initial_name then
+        rename_track_and_close(new_name)
+      end
+    end
+  }
+
+  -- Key handler for the text field
+  local function key_handler(dialog, key)
+    if key.name == "return" and not key.repeated then
+      rename_track_and_close(vb.views.track_name_field.text)
+      return
+    elseif key.name == "esc" then
+      close_dialog()
+      return
+    else
+      return key
+    end
+  end
+
+  local dialog_content = vb:column{
+    margin = 10,
+    vb:row{
+      vb:text{
+        text = "Track Name:"
+      },
+      text_field
+    },
+    vb:row{
+      margin = 10,
+      vb:button{
+        text = "OK",
+        width = 50,
+        notifier = function() rename_track_and_close(vb.views.track_name_field.text) end
+      },
+      vb:button{
+        text = "Cancel",
+        width = 50,
+        notifier = close_dialog
+      }
+    }
+  }
+
+  -- Show the dialog
+  dialog = renoise.app():show_custom_dialog("Paketti Track Renamer", dialog_content, key_handler)
+end
+
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Paketti Track Renamer",invoke=PakettiTrackRenamerDialog}
+renoise.tool():add_keybinding{name="Mixer:Paketti:Paketti Track Renamer",invoke=PakettiTrackRenamerDialog}
+renoise.tool():add_keybinding{name="Pattern Matrix:Paketti:Paketti Track Renamer",invoke=PakettiTrackRenamerDialog}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Paketti Track Renamer",invoke=PakettiTrackRenamerDialog}
+renoise.tool():add_midi_mapping{name="Tools:Paketti Track Renamer",invoke=PakettiTrackRenamerDialog}
+
+-----
+function effectbypasspattern()
+local currTrak = renoise.song().selected_track_index
+local number = (table.count(renoise.song().selected_track.devices))
+ for i=2,number  do 
+  --renoise.song().selected_track.devices[i].is_active=false
+  renoise.song().selected_track.visible_effect_columns=(table.count(renoise.song().selected_track.devices)-1)
+--This would be (1-8F)
+renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[1].number_string="10"
+renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[2].number_string="20"
+renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[3].number_string="30"
+renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[4].number_string="40"
+renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[5].number_string="50"
+renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[6].number_string="60"
+renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[7].number_string="70"
+renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[8].number_string="80"
+--this would be 00 for disabling
+local ooh=(i-1)
+renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[ooh].amount_string="00"
+ end
+end
+
+function effectenablepattern()
+local currTrak = renoise.song().selected_track_index
+local number = (table.count(renoise.song().selected_track.devices))
+for i=2,number  do 
+--enable all plugins on selected track right now
+--renoise.song().selected_track.devices[i].is_active=true
+--display max visible effects
+local helper=(table.count(renoise.song().selected_track.devices)-1)
+renoise.song().selected_track.visible_effect_columns=helper
+--This would be (1-8F)
+renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[1].number_string="10"
+renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[2].number_string="20"
+renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[3].number_string="30"
+renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[4].number_string="40"
+renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[5].number_string="50"
+renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[6].number_string="60"
+renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[7].number_string="70"
+renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[8].number_string="80"
+
+--this would be 01 for enabling
+local ooh=(i-1)
+renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[ooh].amount_string="01"
+end
+end
+------
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Bypass 8 Track DSP Devices (Write to Pattern)", invoke=function() effectbypasspattern() end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Enable 8 Track DSP Devices (Write to Pattern)", invoke=function() effectenablepattern()  end}
+-----
+function patternEditorSelectedLastTrack()
+renoise.song().selected_track_index=#renoise.song().tracks
+end
+
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Select Last Track",invoke=function() patternEditorSelectedLastTrack() end}
 

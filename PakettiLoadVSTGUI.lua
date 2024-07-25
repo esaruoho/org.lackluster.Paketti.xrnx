@@ -1,4 +1,3 @@
--- Declare variables at the beginning of the script to ensure they're available globally
 local vb = renoise.ViewBuilder()
 local checkboxes = {}
 local deviceReadableNames = {}
@@ -10,17 +9,14 @@ function vstAddAsShortcut()
       local keyBindingName = "Global:Track Devices:Load Device (VST) " .. cb_info.name
       local midiMappingName = "Tools:Track Devices:Load Device (VST) " .. cb_info.name
 
-      -- Check if we've already attempted to add this keybinding
       if not addedKeyBindings[keyBindingName] then
         print("Adding shortcut for: " .. cb_info.name)
 
-        -- Attempt to add the keybinding, using pcall to catch any errors gracefully
         local success, err = pcall(function()
           renoise.tool():add_keybinding{name=keyBindingName, invoke=function() loadvst(cb_info.path) end}
           renoise.tool():add_midi_mapping{name=midiMappingName, invoke=function() loadvst(cb_info.path) end}
         end)
 
-        -- Check if the keybinding was added successfully
         if success then
           addedKeyBindings[keyBindingName] = true
           saveToPreferencesFile(keyBindingName, midiMappingName, cb_info.path)
@@ -33,12 +29,9 @@ function vstAddAsShortcut()
     end
   end
   renoise.app():show_status("Devices added. Open Settings -> Keys, search for 'Load Device' or Midi Mappings and search for 'Load Device'")
-
- -- renoise.app():show_status("Added " .. #checkboxes .. " shortcuts for opening devices")
 end
 
 function vstCreateScrollableVSTList()
-    -- Sort the devices alphabetically, case-insensitive
     table.sort(deviceReadableNames, function(a, b)
         return a.name:lower() < b.name:lower()
     end)
@@ -90,6 +83,22 @@ function vstResetSelection()
     end
 end
 
+function vstRandomizeSelection()
+    vstResetSelection()  -- Clear previous selections
+
+    local numDevices = #checkboxes
+    local numSelections = math.random(1, numDevices)
+
+    local selectedIndices = {}
+    while #selectedIndices < numSelections do
+        local randIndex = math.random(1, numDevices)
+        if not selectedIndices[randIndex] then
+            selectedIndices[randIndex] = true
+            checkboxes[randIndex].checkbox.value = true
+        end
+    end
+end
+
 function vstShowPluginListDialog()
     checkboxes = {}  -- Reinitialize the checkboxes table to avoid carrying over previous states
     local track_index = renoise.song().selected_track_index
@@ -105,7 +114,6 @@ function vstShowPluginListDialog()
 
     local custom_dialog
 
-    -- Define the action buttons and their behaviors
     local button_height = renoise.ViewBuilder.DEFAULT_DIALOG_BUTTON_HEIGHT
     local button_spacing = renoise.ViewBuilder.DEFAULT_DIALOG_SPACING
     local action_buttons = vb:column {
@@ -134,6 +142,13 @@ function vstShowPluginListDialog()
             text = "Add Device(s) as Shortcut(s)",
             height = button_height,
             notifier = vstAddAsShortcut
+        },
+        vb:button {
+            text = "Randomize Selection",
+            height = button_height,
+            notifier = function()
+                vstRandomizeSelection()
+            end
         },
         vb:button {
             text = "Reset Selection",

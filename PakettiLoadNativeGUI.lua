@@ -1,4 +1,5 @@
-local vb=renoise.ViewBuilder()
+local vb -- ViewBuilder will be initialized within the function scope
+
 local addedKeyBindings = {}
 local preferencesFile = renoise.tool().bundle_path .. "preferences_deviceLoaders.xml"
 local checkboxes = {}  -- Initialize the checkboxes table
@@ -34,7 +35,6 @@ function addAsShortcut()
     end
   end
   renoise.app():show_status("Devices added. Open Settings -> Keys, search for 'Load Device' or Midi Mappings and search for 'Load Device'")
-  
 end
 
 -- Function to save keybinding and MIDI mapping to PreferencesLoaders.xml
@@ -101,9 +101,7 @@ end
 initializePreferencesFile()
 loadFromPreferencesFile()
 
------- Part2
-
-function create_scrollable_native_list()
+function create_scrollable_native_list(vb)
     local left_column = vb:column {}
     local right_column = vb:column {}
     local num_devices = #deviceReadableNames
@@ -160,7 +158,24 @@ function resetSelection()
     end
 end
 
-function show_plugin_list_dialog()
+function randomizeSelection()
+    resetSelection()  -- Clear previous selections
+
+    local numDevices = #checkboxes
+    local numSelections = math.random(1, numDevices)
+
+    local selectedIndices = {}
+    while #selectedIndices < numSelections do
+        local randIndex = math.random(1, numDevices)
+        if not selectedIndices[randIndex] then
+            selectedIndices[randIndex] = true
+            checkboxes[randIndex].checkbox.value = true
+        end
+    end
+end
+
+function PakettiShowDeviceListDialog()
+    vb = renoise.ViewBuilder()  -- Create a new instance of ViewBuilder
     checkboxes = {}  -- Reinitialize the checkboxes table to avoid carrying over previous states
     local track_index = renoise.song().selected_track_index
     local available_devices = renoise.song().tracks[track_index].available_devices
@@ -199,6 +214,9 @@ function show_plugin_list_dialog()
         vb:button {text = "Add Device(s) as Shortcut(s)",
             height = button_height,
             notifier = addAsShortcut},
+        vb:button {text = "Randomize Selection",
+            height = button_height,
+            notifier = randomizeSelection},
         vb:button {text = "Reset Selection",
             height = button_height,
             notifier = resetSelection},
@@ -211,8 +229,9 @@ function show_plugin_list_dialog()
     local dialog_content = vb:column {
         margin = 10,
         spacing = 5,
-        create_scrollable_native_list(),
+        create_scrollable_native_list(vb),
         action_buttons}
 
     custom_dialog = renoise.app():show_custom_dialog("Load Native Device(s)", dialog_content)
 end
+

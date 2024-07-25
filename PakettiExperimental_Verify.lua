@@ -1,319 +1,1821 @@
--- Function to set the scheduled sequence as the current section
-function tknaSetCurrentSectionAsScheduledSequence()
+function tknaSetScheduledSequenceToCurrentSequenceAndLoop()
   local song = renoise.song()
-  local sequencer = song.sequencer
-  local transport = song.transport
-  local current_sequence_index = song.selected_sequence_index
-  local total_sequences = #sequencer.pattern_sequence
+  local selection_start = song.selected_sequence_index
+  local selection_end = song.selected_sequence_index
 
-  -- Helper function to find all sections
-  local function findSections()
-    local sections = {}
-    for i = 1, total_sequences do
-      if sequencer:sequence_is_start_of_section(i) then
-        table.insert(sections, i)
-      end
-    end
-    return sections
-  end
-
-  -- Helper function to find the section index for a given sequence index
-  local function findSectionIndex(sections, sequence_index)
-    local total_sections = #sections
-    for i, section_start in ipairs(sections) do
-      local section_end = (i < total_sections) and (sections[i + 1] - 1) or total_sequences
-      if sequence_index >= section_start and sequence_index <= section_end then
-        return i, section_start, section_end
-      end
-    end
-    return nil
-  end
-
-  local sections = findSections()
-  local current_section_index, current_section_start, current_section_end = findSectionIndex(sections, current_sequence_index)
-
-  -- Set the scheduled sequence to the current section if it exists
-  if current_section_index then
-    transport:set_scheduled_sequence(current_section_start)
-    for i = current_section_start + 1, current_section_end do
-      transport:add_scheduled_sequence(i)
-    end
-    renoise.app():show_status("Set scheduled sequence to current section: " .. current_section_start .. " to " .. current_section_end)
+  if song.transport.loop_sequence_range[1] == selection_start and 
+     song.transport.loop_sequence_range[2] == selection_end then
+    song.transport.loop_sequence_range = {}
   else
-    renoise.app():show_status("Current sequence is not inside any section.")
+    song.transport.loop_sequence_range = { selection_start, selection_end }
+  end
+
+  local current_sequence_index = song.selected_sequence_index
+  if song.transport.playing then else song.transport.playing=true end
+  local total_sequences = #song.sequencer.pattern_sequence
+  if current_sequence_index <= total_sequences then
+    song.transport:set_scheduled_sequence(current_sequence_index)
+  else
+    renoise.app():show_status("This sequence position does not exist.")
   end
 end
 
--- Function to add the current section to the scheduled sequences
-function tknaAddCurrentSectionToScheduledSequences()
+-- Add keybinding for the new function
+renoise.tool():add_keybinding{name="Global:Paketti:Set Current Sequence as Scheduled and Loop", invoke=tknaSetScheduledSequenceToCurrentSequenceAndLoop}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---------
+
+
+
+
+
+
+
+------------------------
+
+function PakettiCreateUnisonSamples()
+-- HELLO THIS IS 21st July 2024 08.07am Finnish time calling
   local song = renoise.song()
-  local sequencer = song.sequencer
-  local transport = song.transport
-  local current_sequence_index = song.selected_sequence_index
-  local total_sequences = #sequencer.pattern_sequence
+  local selected_instrument_index = song.selected_instrument_index
+  local instrument = song.selected_instrument
+  renoise.app():show_error("Hello this is 21st July 2024 08.07am Finnish time calling")
+  
+  if not instrument then
+    renoise.app():show_status("No instrument selected.")
+    return
+  end
 
-  -- Helper function to find all sections
-  local function findSections()
-    local sections = {}
-    for i = 1, total_sequences do
-      if sequencer:sequence_is_start_of_section(i) then
-        table.insert(sections, i)
+  if #instrument.samples == 0 then
+    renoise.app():show_status("The selected instrument has no samples.")
+    return
+  end
+
+  if #instrument.samples == 1 then
+    local original_instrument = instrument
+    local original_sample = original_instrument.samples[1]
+    local original_sample_name = original_sample.name
+    local original_instrument_name = original_instrument.name
+    original_sample.loop_mode = 2
+    -- Create a new instrument underneath the selected instrument
+    local new_instrument_index = selected_instrument_index + 1
+    song:insert_instrument_at(new_instrument_index)
+    song.selected_instrument_index = new_instrument_index
+    local new_instrument = renoise.song().selected_instrument
+    
+    pakettiPreferencesDefaultInstrumentLoader()
+    
+    if preferences.pakettiPitchbendLoaderEnvelope.value then
+renoise.song().selected_instrument.sample_modulation_sets[1].devices[2].is_active = true else end
+
+    
+    -- Copy sample buffer from the original instrument to the new instrument
+    renoise.song().selected_instrument.samples[1]:copy_from(original_sample)
+    
+    -- Rename the new instrument to match the original instrument's name
+    renoise.song().selected_instrument.name = original_instrument.name .. " (Unison)"
+--    new_instrument.name = original_instrument_name
+    local og=renoise.song().selected_instrument_index-1
+    local original_sample_index = renoise.song().instruments[og].samples[1]
+    -- Create 7 additional sample slots.
+    for i = 2, 8 do
+      renoise.song().selected_instrument:insert_sample_at(i)
+      local new_sample = renoise.song().selected_instrument:sample(i)
+      renoise.song().selected_instrument.samples[i]:copy_from(renoise.song().selected_instrument.samples[1])
+      renoise.song().selected_instrument.samples[i].loop_mode = 2
+    end
+    
+    -- Define the finetune adjustments.
+    local finetune_values = {-3, -2, -1, 1, 2, 3, 4}
+    local fraction_values = {1/8, 2/8, 3/8, 4/8, 5/8, 6/8, 7/8}
+    
+    -- Adjust finetune and sample buffer content.
+    for i = 2, 8 do
+      local sample = renoise.song().selected_instrument.samples[i]
+      local new_sample_buffer = sample.sample_buffer
+      local fraction = fraction_values[i - 1]
+      
+      -- Adjust finetune, force Forwards
+      if i <= 8 then
+        sample.fine_tune = finetune_values[i - 1] or 0
+        sample.loop_mode = 2
       end
-    end
-    return sections
-  end
-
-  -- Helper function to find the section index for a given sequence index
-  local function findSectionIndex(sections, sequence_index)
-    local total_sections = #sections
-    for i, section_start in ipairs(sections) do
-      local section_end = (i < total_sections) and (sections[i + 1] - 1) or total_sequences
-      if sequence_index >= section_start and sequence_index <= section_end then
-        return i, section_start, section_end
+      
+      -- Adjust sample buffer.
+      if original_sample.sample_buffer.has_sample_data then
+        new_sample_buffer:prepare_sample_data_changes()
+        for channel = 1, original_sample.sample_buffer.number_of_channels do
+          for frame = 1, original_sample.sample_buffer.number_of_frames do
+            local new_frame_index = frame + math.floor(original_sample.sample_buffer.number_of_frames * fraction)
+            if new_frame_index > original_sample.sample_buffer.number_of_frames then
+              new_frame_index = new_frame_index - original_sample.sample_buffer.number_of_frames
+            end
+            new_sample_buffer:set_sample_data(channel, new_frame_index, original_sample.sample_buffer:sample_data(channel, frame))
+          end
+        end
+        new_sample_buffer:finalize_sample_data_changes()
       end
+      
+      -- Rename the sample to match the original sample's name
+      sample.name = string.format("%s (Unison %d [%d])", original_sample_name, i - 1, sample.fine_tune)
     end
-    return nil
-  end
-
-  local sections = findSections()
-  local current_section_index, current_section_start, current_section_end = findSectionIndex(sections, current_sequence_index)
-
-  -- Add the current section to the scheduled sequences if it exists
-  if current_section_index then
-    for i = current_section_start, current_section_end do
-      transport:add_scheduled_sequence(i)
-    end
-    renoise.app():show_status("Added current section to scheduled sequences: " .. current_section_start .. " to " .. current_section_end)
-  else
-    renoise.app():show_status("Current sequence is not inside any section.")
-  end
-end
-
--- Adding keybindings for the functions
-renoise.tool():add_keybinding{name="Global:Paketti:Set Current Section as Scheduled Sequence",invoke=tknaSetCurrentSectionAsScheduledSequence}
-renoise.tool():add_keybinding{name="Global:Paketti:Add Current Section to Scheduled Sequences",invoke=tknaAddCurrentSectionToScheduledSequences}
-
--- Adding menu entries for the functions
-renoise.tool():add_menu_entry{name="Pattern Sequencer:Paketti..:Set Current Section as Scheduled Sequence",invoke=tknaSetCurrentSectionAsScheduledSequence}
-renoise.tool():add_menu_entry{name="Pattern Sequencer:Paketti..:Add Current Section to Scheduled Sequences",invoke=tknaAddCurrentSectionToScheduledSequences}
-
--- Adding MIDI mappings for the functions
-renoise.tool():add_midi_mapping{name="Tools:Paketti:Set Current Section as Scheduled Sequence",invoke=tknaSetCurrentSectionAsScheduledSequence}
-renoise.tool():add_midi_mapping{name="Tools:Paketti:Add Current Section to Scheduled Sequences",invoke=tknaAddCurrentSectionToScheduledSequences}
-
-
--- Function to expand the section loop step-by-step, adding the next section
-function expandSectionLoopNext()
-  local song = renoise.song()
-  local sequencer = song.sequencer
-  local transport = song.transport
-  local current_sequence_index = song.selected_sequence_index
-  local total_sequences = #sequencer.pattern_sequence
-
-  -- Helper function to find all sections
-  local function findSectionsA()
-    local sections = {}
-    for i = 1, total_sequences do
-      if sequencer:sequence_is_start_of_section(i) then
-        table.insert(sections, i)
-      end
-    end
-    return sections
-  end
-
-  local sections = findSectionsA()
-  local total_sections = #sections
-
-  -- Helper function to find the section index for a given sequence index
-  local function findSectionIndexA(sequence_index)
-    for i, section_start in ipairs(sections) do
-      local section_end = (i < total_sections) and (sections[i + 1] - 1) or total_sequences
-      if sequence_index >= section_start and sequence_index <= section_end then
-        return i, section_start, section_end
-      end
-    end
-    return nil
-  end
-
-  local current_section_index, current_section_start, current_section_end = findSectionIndexA(current_sequence_index)
-  local loop_range = transport.loop_sequence_range
-
-  -- If no loop range or an invalid loop range exists, set it to the current section
-  if not loop_range or #loop_range ~= 2 or 
-      (loop_range[1] == 0 and loop_range[2] == 0) then
-    if current_section_index then
-      transport.loop_sequence_range = {current_section_start, current_section_end}
-    else
-      renoise.app():show_status("Current sequence is not inside any section.")
-    end
-  else
-    local loop_end = loop_range[2]
-    local next_section_index = findSectionIndexA(loop_end + 1)
-
-    -- If there's a next section to add
-    if next_section_index then
-      local next_section_start, next_section_end = sections[next_section_index], (next_section_index < total_sections) and (sections[next_section_index + 1] - 1) or total_sequences
-      transport.loop_sequence_range = {loop_range[1], next_section_end}
-    else
-      -- No more sections to add to the loop
-      renoise.app():show_status("No more sections to add to the loop.")
-    end
-  end
-end
-
--- Function to expand the section loop step-by-step, adding the previous section
-function expandSectionLoopPrevious()
-  local song = renoise.song()
-  local sequencer = song.sequencer
-  local transport = song.transport
-  local current_sequence_index = song.selected_sequence_index
-  local total_sequences = #sequencer.pattern_sequence
-
-  -- Helper function to find all sections
-  local function findSectionsB()
-    local sections = {}
-    for i = 1, total_sequences do
-      if sequencer:sequence_is_start_of_section(i) then
-        table.insert(sections, i)
-      end
-    end
-    return sections
-  end
-
-  local sections = findSectionsB()
-  local total_sections = #sections
-
-  -- Helper function to find the section index for a given sequence index
-  local function findSectionIndexB(sequence_index)
-    for i, section_start in ipairs(sections) do
-      local section_end = (i < total_sections) and (sections[i + 1] - 1) or total_sequences
-      if sequence_index >= section_start and sequence_index <= section_end then
-        return i, section_start, section_end
-      end
-    end
-    return nil
-  end
-
-  local current_section_index, current_section_start, current_section_end = findSectionIndexB(current_sequence_index)
-  local loop_range = transport.loop_sequence_range
-
-  -- If no loop range or an invalid loop range exists, set it to the current section
-  if not loop_range or #loop_range ~= 2 or 
-      (loop_range[1] == 0 and loop_range[2] == 0) then
-    if current_section_index then
-      transport.loop_sequence_range = {current_section_start, current_section_end}
-    else
-      renoise.app():show_status("Current sequence is not inside any section.")
+    
+    -- Set the volume to -7 dB for each sample in the instrument.
+    local volume = math.db2lin(-14)
+    for i = 1, #renoise.song().selected_instrument.samples do
+      renoise.song().selected_instrument.samples[i].volume = volume
     end
   else
-    local loop_start = loop_range[1]
-    local previous_section_index = findSectionIndexB(loop_start - 1)
-
-    -- If there's a previous section to add
-    if previous_section_index then
-      local previous_section_start, previous_section_end = sections[previous_section_index], (previous_section_index < total_sections) and (sections[previous_section_index + 1] - 1) or total_sequences
-      transport.loop_sequence_range = {previous_section_start, loop_range[2]}
-    else
-      -- No more sections to add to the loop
-      renoise.app():show_status("No more sections to add to the loop.")
-    end
+    renoise.app():show_status("Cannot create Unison because Instrument has more than 1 Sample.")
   end
+  
+local info=""
+local loop_modes={"No Loop","Forward","Backward","PingPong"}
+for i=1,#renoise.song().selected_instrument.samples do
+  local sample=renoise.song().selected_instrument.samples[i]
+  sample.loop_mode = 2
+  info=info.."Sample is called "..sample.name..", and loop is "..loop_modes[sample.loop_mode].."\n"
+end
+renoise.app():show_warning("Here's the info: "..info)
+  
+  
+  
 end
 
--- Adding keybinding for the functions
-renoise.tool():add_keybinding{name="Global:Paketti:Section Loop (Next)",invoke=expandSectionLoopNext}
-renoise.tool():add_keybinding{name="Global:Paketti:Section Loop (Previous)",invoke=expandSectionLoopPrevious}
-
--- Adding menu entry for the functions
-renoise.tool():add_menu_entry{name="Pattern Sequencer:Paketti..:Section Loop (Next)",invoke=expandSectionLoopNext}
-renoise.tool():add_menu_entry{name="Pattern Sequencer:Paketti..:Section Loop (Previous)",invoke=expandSectionLoopPrevious}
-
--- Adding MIDI mapping for the functions
-renoise.tool():add_midi_mapping{name="Tools:Paketti:Section Loop (Next)",invoke=expandSectionLoopNext}
-renoise.tool():add_midi_mapping{name="Tools:Paketti:Section Loop (Previous)",invoke=expandSectionLoopPrevious}
+-- Adding keybinding and menu entries
+renoise.tool():add_keybinding{name="Global:Paketti:Paketti Unison Generator",invoke=PakettiCreateUnisonSamples}
+renoise.tool():add_menu_entry{name="Sample Navigator:Paketti..:Unison Generator",invoke=PakettiCreateUnisonSamples}
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Unison Generator",invoke=PakettiCreateUnisonSamples}
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Unison Generator",invoke=PakettiCreateUnisonSamples}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Unison Generator",invoke=PakettiCreateUnisonSamples}
 
 
 
--- Function to expand the sequence selection step-by-step
-function tknaSequenceSelectionPlusOne()
+
+
+
+
+
+
+
+
+
+
+local vb=renoise.ViewBuilder()
+local column2=vb:column{style="group"}
+local column3=vb:column{style="group"}
+local hex_text2=vb:text{text="0", style="normal"}
+local hex_text3=vb:text{text="0", style="normal"}
+local combined_text1=vb:text{text="00", style="strong"}
+local value_labels2={}
+local value_labels3={}
+local label_map2 = {}
+local label_map3 = {}
+local writing_enabled = false
+
+local function update_combined_value()
+  local combined_value=hex_text3.text..hex_text2.text
+  combined_text1.text=combined_value
+  renoise.app():show_status(combined_text1.text)
+
+  if not renoise.song() or not writing_enabled then return end
+
   local song = renoise.song()
-  local sequencer = song.sequencer
-  local current_sequence_index = song.selected_sequence_index
-  local selection_range = sequencer.selection_range
-  local total_sequences = #sequencer.pattern_sequence
+  local start_pos, end_pos
+  local start_track, end_track
 
-  -- If no selection range exists or if it is {0, 0}, select the current sequence
-  if not selection_range or #selection_range ~= 2 or 
-      (selection_range[1] == 0 and selection_range[2] == 0) then
-    sequencer.selection_range = {current_sequence_index, current_sequence_index}
+  if song.selection_in_pattern then
+    start_pos = song.selection_in_pattern.start_line
+    end_pos = song.selection_in_pattern.end_line
+    start_track = song.selection_in_pattern.start_track
+    end_track = song.selection_in_pattern.end_track
   else
-    local start_index = selection_range[1]
-    local end_index = selection_range[2]
+    start_pos = song.selected_line_index
+    end_pos = start_pos
+    start_track = song.selected_track_index
+    end_track = start_track
+  end
 
-    -- If the end index is less than the total number of sequences
-    if end_index < total_sequences then
-      -- Extend the selection range by including the next sequence
-      sequencer.selection_range = {start_index, end_index + 1}
-    else
-      -- No more sequences to add to the selection
-      renoise.app():show_status("No more sequences left to add to the selection.")
+  for track = start_track, end_track do
+    for line = start_pos, end_pos do
+      song:pattern(song.selected_pattern_index):track(track):line(line):effect_column(1).amount_string = combined_value
     end
   end
 end
 
--- Function to reduce the sequence selection step-by-step
-function tknaSequenceSelectionMinusOne()
+local function create_valuebox(i, column, hex_text, value_labels, label_map, position, id_prefix)
+  local hex=string.format("%X",i)
+  local label_id = id_prefix .. "_label_" .. hex
+  local number_label=vb:text{text=hex, width=2,style="normal"}
+  label_map[label_id] = number_label
+  value_labels[#value_labels + 1] = number_label
+  
+  local valuebox=vb:valuebox{
+    value=i,min=i,max=i,width=8,
+    tostring=function(v)
+      local hex_value=string.format("%X",v)
+      hex_text.text=hex_value
+      update_combined_value()
+      for _, label in ipairs(value_labels) do 
+        if label.text ~= hex_value then
+          label.style="normal"
+        end
+      end
+      number_label.style="strong"
+      return hex_value
+    end,
+    tonumber=function(str)
+      return tonumber(str,16)
+    end,
+    notifier=function(val)
+      local hex_value=string.format("%X",val)
+      for _, label in ipairs(value_labels) do 
+        if label.text ~= hex_value then
+          label.style="normal"
+        end
+      end
+      label_map[id_prefix .. "_label_" .. hex_value].style = "strong"
+    end
+  }
+
+  if position == "number_first" then
+    column:add_child(vb:row{number_label,valuebox})
+  elseif position == "valuebox_first" then
+    column:add_child(vb:row{valuebox,number_label})
+  end
+end
+
+for i=0,15 do
+  create_valuebox(i, column3, hex_text3, value_labels3, label_map3, "number_first", "col3")
+  create_valuebox(i, column2, hex_text2, value_labels2, label_map2, "valuebox_first", "col2")
+end
+
+-- Ensure that all text styles are "normal" at the start
+for _, label in ipairs(value_labels2) do
+  label.style = "normal"
+end
+
+for _, label in ipairs(value_labels3) do
+  label.style = "normal"
+end
+
+local separator = vb:space{width=10}
+
+local dialog_content=vb:column{
+  margin=10,
+  vb:row{
+    vb:checkbox{
+      value = writing_enabled,
+      notifier = function(val)
+        writing_enabled = val
+      end
+    },
+    vb:text{text="Write", style="strong"}
+  },
+  vb:row{
+    vb:column{column3, vb:space{width=35}},
+    vb:column{column2}
+  },
+  vb:horizontal_aligner{
+    vb:row{combined_text1}
+  }
+}
+
+--renoise.app():show_custom_dialog("FX", dialog_content)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+----
+local vb = renoise.ViewBuilder()
+local dialog
+
+local note_names = {"C-", "C#", "D-", "D#", "E-", "F-", "F#", "G-", "G#", "A-", "A#", "B-"}
+local notes = {}
+for octave = 0, 9 do
+  for _, note in ipairs(note_names) do
+    table.insert(notes, note .. octave)
+  end
+end
+table.insert(notes, "000") -- Adding "---" as "000"
+table.insert(notes, "OFF")
+
+local switch_group = {"Off", "Off"}
+local volume_switch_group = {"Off", "Off"}
+
+local effect_descriptions = {
+  "0Axy - Arpeggio (x=base note offset1, y=base note offset 2) *",
+  "0Uxx - Pitch Slide up (00-FF) *",
+  "0Dxx - Pitch Slide down (00-FF) *",
+  "0Mxx - Set Channel volume (00-FF)",
+  "0Cxy - Volume slicer -- x=factor (0=0.0, F=1.0), slice at tick y. *",
+  "0Gxx - Glide to note with step xx (00-FF)*",
+  "0Ixx - Volume Slide Up with step xx (00-64) (64x0601 or 2x0632 = slide0-full) *",
+  "0Oxx - Volume Slide Down with step xx (00-64) *",
+  "0Pxx - Set Panning (00-FF) (00: left; 80: center; FF: right)",
+  "0Sxx - Trigger Sample Offset, 00 is sample start, FF is sample end. *",
+  "0Wxx - Surround Width (00-FF) *",
+  "0Bxx - Play Sample Backwards (B00) or forwards again (B01) *",
+  "0Lxx - Set track-Volume (00-FF)",
+  "0Qxx - Delay notes in track-row xx ticks before playing. (00-speed)",
+  "0Rxy - Retrig notes in track-row every xy ticks (x=volume; y=ticks 0 - speed) **",
+  "0Vxy - Set Vibrato x= speed, y= depth; x=(0-F); y=(0-F)*",
+  "0Txy - Set Tremolo x= speed, y= depth",
+  "0Nxy - Set Auto Pan, x= speed, y= depth",
+  "0Exx - Set Active Sample Envelope's Position to Offset XX",
+  "0Jxx - Set Track's Output Routing to channel XX",
+  "0Xxx - Stop all notes and FX (xx = 00), or only effect xx (xx > 00)"
+}
+
+local function update_instrument_popup()
+  local instrument_items = {"<None>"}
+  for i = 0, #renoise.song().instruments - 1 do
+    local instrument = renoise.song().instruments[i + 1]
+    table.insert(instrument_items, string.format("%02d: %s", i, (instrument.name or "Untitled")))
+  end
+  if vb.views["instrument_popup"] then
+    vb.views["instrument_popup"].items = instrument_items
+  end
+end
+
+local function pakettiPlayerProInsertIntoLine(line, col, note, instrument, effect, effect_argument, volume)
+  if note then
+    line:note_column(col).note_string = note
+  end
+  if instrument and note ~= "---" and note ~= "OFF" then
+    line:note_column(col).instrument_value = instrument
+  end
+  if effect and effect ~= "Off" and note ~= "---" and note ~= "OFF" then
+    line:effect_column(col).number_string = effect
+    line:effect_column(col).amount_string = effect_argument ~= "Off" and effect_argument or ".."
+  end
+  if volume and volume ~= "Off" and note ~= "---" and note ~= "OFF" then
+    line:note_column(col).volume_string = volume
+  end
+end
+
+local function pakettiPlayerProInsertNoteInPattern(note, instrument, effect, effect_argument, volume)
   local song = renoise.song()
-  local sequencer = song.sequencer
-  local current_sequence_index = song.selected_sequence_index
-  local selection_range = sequencer.selection_range
+  local sel = song.selection_in_pattern
+  local pattern_index = song.selected_pattern_index
+  local note_to_insert = note == "000" and "---" or note
+  local note_column_selected = false
 
-  -- If no selection range exists or if it is {0, 0}, select the current sequence
-  if not selection_range or #selection_range ~= 2 or 
-      (selection_range[1] == 0 and selection_range[2] == 0) then
-    sequencer.selection_range = {current_sequence_index, current_sequence_index}
+  -- Debug logs
+  print("Inserting note: " .. (note or "N/A"))
+  if instrument then print("Instrument: " .. instrument) end
+  if effect then print("Effect: " .. effect) end
+  if effect_argument then print("Effect Argument: " .. effect_argument) end
+  if volume then print("Volume: " .. volume) end
+
+  if sel then
+    print("Selection in pattern:")
+    print("  start_track: " .. sel.start_track .. ", end_track: " .. sel.end_track)
+    print("  start_line: " .. sel.start_line .. ", end_line: " .. sel.end_line)
+    print("  start_column: " .. sel.start_column .. ", end_column: " .. sel.end_column)
   else
-    local start_index = selection_range[1]
-    local end_index = selection_range[2]
+    print("No selection in pattern.")
+  end
 
-    -- If the start index is greater than 1
-    if start_index > 1 then
-      -- Reduce the selection range by excluding the first sequence
-      sequencer.selection_range = {start_index - 1, end_index}
+  if sel == nil then
+    local line = song.selected_line
+    local col = song.selected_note_column_index
+    local visible_note_columns = song.selected_track.visible_note_columns
+    if col > 0 and col <= visible_note_columns then
+      pakettiPlayerProInsertIntoLine(line, col, note_to_insert, instrument, effect, effect_argument, volume)
+      note_column_selected = true
+      print("Inserted note (" .. (note_to_insert or "N/A") .. ") at track " .. song.selected_track_index .. " (" .. song.selected_track.name .. "), line " .. song.selected_line_index .. ", column " .. col)
+    end
+  else
+    for track_index = sel.start_track, sel.end_track do
+      local pattern_track = song.patterns[pattern_index]:track(track_index)
+      local visible_note_columns = song:track(track_index).visible_note_columns
+      for line_index = sel.start_line, sel.end_line do
+        local line = pattern_track:line(line_index)
+        for col_index = 1, renoise.song().tracks[track_index].visible_note_columns do
+          if (track_index > sel.start_track) or (col_index >= sel.start_column) then
+            if col_index <= visible_note_columns then
+              pakettiPlayerProInsertIntoLine(line, col_index, note_to_insert, instrument, effect, effect_argument, volume)
+              note_column_selected = true
+              print("Inserted note (" .. (note_to_insert or "N/A") .. ") at track " .. track_index .. " (" .. song:track(track_index).name .. "), line " .. line_index .. ", column " .. col_index)
+            end
+          end
+        end
+      end
+    end
+  end
+
+  if not note_column_selected then
+    local message = "No Note Columns were selected, doing nothing."
+    print(message)
+    renoise.app():show_status(message)
+  end
+end
+
+local function pakettiPlayerProCreateNoteGrid()
+  local grid_rows = 11
+  local grid_columns = 12
+  local grid = vb:column{}
+  for row = 1, grid_rows do
+    local row_items = vb:row{}
+    for col = 1, grid_columns do
+      local index = (row - 1) * grid_columns + col
+      if notes[index] then
+        row_items:add_child(vb:button{
+          text = notes[index],
+          width = 30,
+          height = 15,
+          notifier = function()
+            local instrument_value = vb.views["instrument_popup"].value - 2
+            local instrument = instrument_value >= 0 and instrument_value or nil
+            local effect = vb.views["effect_popup"].value > 1 and vb.views["effect_popup"].items[vb.views["effect_popup"].value] or nil
+            local effect_argument = vb.views["effect_argument_display"].text
+            local volume = vb.views["volume_display"].text
+            pakettiPlayerProInsertNoteInPattern(notes[index], instrument, effect, effect_argument, volume)
+            print("Inserted: " .. notes[index])
+            -- Return focus to the Pattern Editor
+            renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
+          end
+        })
+      end
+    end
+    grid:add_child(row_items)
+  end
+  return grid
+end
+
+local function pakettiPlayerProCreateArgumentColumn(column_index, switch_group, update_display)
+  return vb:switch{
+    items = {"Off", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"},
+    width = 200,
+    height = 30,
+    value = 1, -- default to "Off"
+    notifier = function(idx)
+      switch_group[column_index] = idx == 1 and "Off" or string.format("%X", idx - 1)
+      update_display()
+    end
+  }
+end
+
+local function pakettiPlayerProUpdateEffectArgumentDisplay()
+  local arg_display = switch_group[1] .. switch_group[2]
+  vb.views["effect_argument_display"].text = arg_display == "OffOff" and ".." or arg_display
+end
+
+local function pakettiPlayerProUpdateVolumeDisplay()
+  local vol_display = volume_switch_group[1] .. volume_switch_group[2]
+  vb.views["volume_display"].text = vol_display == "OffOff" and ".." or vol_display
+end
+
+local function pakettiPlayerProShowMainDialog()
+  local instrument_items = {"<None>"}
+  for i = 0, #renoise.song().instruments - 1 do
+    local instrument = renoise.song().instruments[i + 1]
+    table.insert(instrument_items, string.format("%02d: %s", i, (instrument.name or "Untitled")))
+  end
+
+  local dialog_content = vb:column{
+    margin = 10,
+    vb:row{
+      vb:text{
+        text = "Instrument:"
+      },
+      vb:popup{
+        items = instrument_items,
+        width = 200,
+        id = "instrument_popup"
+      },
+      vb:button{
+        text = "Refresh",
+        width = 100,
+        notifier = function()
+          update_instrument_popup()
+        end
+      }
+    },
+    vb:row{
+      vb:text{
+        text = "Note:"
+      },
+      pakettiPlayerProCreateNoteGrid()
+    },
+    vb:row{
+      vb:text{
+        text = "Effect:"
+      },
+      vb:popup{
+        items = {"None", "Effect 1", "Effect 2", "Effect 3"}, -- Add actual effects here
+        width = 200,
+        id = "effect_popup"
+      }
+    },
+    vb:row{
+      vb:text{
+        text = "Argument:"
+      },
+      vb:row{
+        vb:column{
+          vb:text{text = "Volume"},
+          pakettiPlayerProCreateArgumentColumn(1, volume_switch_group, pakettiPlayerProUpdateVolumeDisplay),
+          vb:text{id = "volume_display", text = "..", width = 40, align = "center"},
+        },
+        vb:column{
+          vb:text{text = "Volume"},
+          pakettiPlayerProCreateArgumentColumn(2, volume_switch_group, pakettiPlayerProUpdateVolumeDisplay),
+        },
+        vb:column{},
+        vb:column{
+          vb:text{text = "Effect"},
+          pakettiPlayerProCreateArgumentColumn(1, switch_group, pakettiPlayerProUpdateEffectArgumentDisplay),
+          vb:text{id = "effect_argument_display", text = "..", width = 40, align = "center"},
+        },
+        vb:column{
+          vb:text{text = "Effect"},
+          pakettiPlayerProCreateArgumentColumn(2, switch_group, pakettiPlayerProUpdateEffectArgumentDisplay),
+        },
+      }
+    },
+    vb:row{
+      spacing = 10,
+      vb:button{
+        text = "Apply",
+        width = 100,
+        notifier = function()
+          local instrument_value = vb.views["instrument_popup"].value - 2
+          local instrument = instrument_value >= 0 and instrument_value or nil
+          local effect_value = vb.views["effect_popup"].value
+          local effect = effect_value > 1 and vb.views["effect_popup"].items[effect_value] or nil
+          local effect_argument = vb.views["effect_argument_display"].text
+          local volume = vb.views["volume_display"].text
+          -- Insert all selected values
+          pakettiPlayerProInsertNoteInPattern(nil, instrument, effect, effect_argument, volume)
+          -- Return focus to the Pattern Editor
+          renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
+        end
+      },
+      vb:button{
+        text = "Cancel",
+        width = 100,
+        notifier = function()
+          dialog:close()
+        end
+      }
+    }
+  }
+
+  local function my_keyhandler_func(dialog, key)
+    if not (key.modifiers == "" and key.name == "exclamation") then
+      return key
     else
-      -- No more sequences to remove from the selection
-      renoise.app():show_status("No more sequences left to add to the selection.")
+      dialog:close()
+    end
+  end
+
+  dialog = renoise.app():show_custom_dialog("Player Pro Main Dialog", dialog_content, my_keyhandler_func)
+end
+
+renoise.tool():add_menu_entry{name = "Pattern Editor:Paketti..:Open Player Pro Tools Dialog", invoke = pakettiPlayerProShowMainDialog}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Open Player Pro Tools Dialog", invoke = pakettiPlayerProShowMainDialog}
+
+
+-----------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- Utility function to check if a table contains a value
+function table_contains(tbl, value)
+  for _, v in ipairs(tbl) do
+    if v == value then
+      return true
+    end
+  end
+  return false
+end
+
+-- Function to unmute all tracks and send tracks except the master track
+function PakettiToggleSoloTracksUnmuteAllTracks()
+  local song = renoise.song()
+  local total_track_count = song.sequencer_track_count + 1 + song.send_track_count
+
+  print("----")
+  print("Unmuting all tracks")
+  for i = 1, total_track_count do
+    if song:track(i).type ~= renoise.Track.TRACK_TYPE_MASTER then
+      song:track(i).mute_state = renoise.Track.MUTE_STATE_ACTIVE
+      print("Unmuting track index: " .. i .. " (" .. song:track(i).name .. ")")
     end
   end
 end
 
--- Adding keybinding for the functions
-renoise.tool():add_keybinding{name="Global:Paketti:Sequence Selection (Next)",invoke=tknaSequenceSelectionPlusOne}
-renoise.tool():add_keybinding{name="Global:Paketti:Sequence Selection (Previous)",invoke=tknaSequenceSelectionMinusOne}
+-- Function to mute all tracks except a specific range, and not the master track
+function PakettiToggleSoloTracksMuteAllExceptRange(start_track, end_track)
+  local song = renoise.song()
+  local total_track_count = song.sequencer_track_count + 1 + song.send_track_count
+  local group_parents = {}
 
--- Adding menu entry for the functions
-renoise.tool():add_menu_entry{name="Pattern Sequencer:Paketti..:Sequence Selection (Next)",invoke=tknaSequenceSelectionPlusOne}
-renoise.tool():add_menu_entry{name="Pattern Sequencer:Paketti..:Sequence Selection (Previous)",invoke=tknaSequenceSelectionMinusOne}
+  print("----")
+  print("Muting all tracks except range: " .. start_track .. " to " .. end_track)
+  for i = start_track, end_track do
+    if song:track(i).group_parent then
+      local group_parent = song:track(i).group_parent.name
+      if not table_contains(group_parents, group_parent) then
+        table.insert(group_parents, group_parent)
+      end
+    end
+  end
 
--- Adding MIDI mapping for the functions
-renoise.tool():add_midi_mapping{name="Tools:Paketti:Sequence Selection (Next)",invoke=tknaSequenceSelectionPlusOne}
-renoise.tool():add_midi_mapping{name="Tools:Paketti:Sequence Selection (Previous)",invoke=tknaSequenceSelectionMinusOne}
+  for i = 1, total_track_count do
+    if song:track(i).type ~= renoise.Track.TRACK_TYPE_MASTER then
+      if i < start_track or i > end_track then
+        song:track(i).mute_state = renoise.Track.MUTE_STATE_OFF
+        print("Muting track index: " .. i .. " (" .. song:track(i).name .. ")")
+      end
+    end
+  end
 
+  for i = start_track, end_track do
+    if song:track(i).type ~= renoise.Track.TRACK_TYPE_MASTER then
+      song:track(i).mute_state = renoise.Track.MUTE_STATE_ACTIVE
+      print("Unmuting track index: " .. i .. " (" .. song:track(i).name .. ")")
+    end
+  end
 
-
-
-
-
-
-
-
-
--------
-function patternEditorSelectedLastTrack()
-renoise.song().selected_track_index=#renoise.song().tracks
+  for _, group_parent_name in ipairs(group_parents) do
+    local group_parent_index = nil
+    for i = 1, song.sequencer_track_count do
+      if song:track(i).name == group_parent_name then
+        group_parent_index = i
+        break
+      end
+    end
+    if group_parent_index then
+      local group_parent = song:track(group_parent_index)
+      group_parent.mute_state = renoise.Track.MUTE_STATE_ACTIVE
+      print("Unmuting group track: " .. group_parent.name)
+    end
+  end
 end
 
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Select Last Track",invoke=function() patternEditorSelectedLastTrack() end}
+-- Function to mute all tracks except a specific track and its group, and not the master track
+function PakettiToggleSoloTracksMuteAllExceptSelectedTrack(track_index)
+  local song = renoise.song()
+  local total_track_count = song.sequencer_track_count + 1 + song.send_track_count
+  local selected_track = song:track(track_index)
+  local group_tracks = {}
+
+  print("----")
+  print("Muting all tracks except selected track: " .. track_index .. " (" .. selected_track.name .. ")")
+
+  if selected_track.type == renoise.Track.TRACK_TYPE_GROUP then
+    table.insert(group_tracks, track_index)
+    print("Group name is " .. selected_track.name .. ", Number of Members is " .. #selected_track.members)
+    for i = track_index + 1, track_index + #selected_track.members do
+      if song:track(i).group_parent and song:track(i).group_parent.name == selected_track.name then
+        table.insert(group_tracks, i)
+        print("Member index: " .. i .. " (" .. song:track(i).name .. ")")
+      else
+        break
+      end
+    end
+  elseif selected_track.group_parent then
+    local group_parent = selected_track.group_parent.name
+    for i = 1, song.sequencer_track_count do
+      if song:track(i).type == renoise.Track.TRACK_TYPE_GROUP and song:track(i).name == group_parent then
+        table.insert(group_tracks, i)
+        print("Group parent: " .. group_parent .. " at index " .. i)
+        break
+      end
+    end
+    table.insert(group_tracks, track_index)
+    print("Member index: " .. track_index .. " (" .. selected_track.name .. ")")
+  else
+    table.insert(group_tracks, track_index)
+    print("Single track index: " .. track_index .. " (" .. selected_track.name .. ")")
+  end
+
+  for i = 1, total_track_count do
+    if song:track(i).type ~= renoise.Track.TRACK_TYPE_MASTER and not table_contains(group_tracks, i) then
+      song:track(i).mute_state = renoise.Track.MUTE_STATE_OFF
+      print("Muting track index: " .. i .. " (" .. song:track(i).name .. ")")
+    end
+  end
+
+  for _, group_track in ipairs(group_tracks) do
+    if song:track(group_track).type ~= renoise.Track.TRACK_TYPE_MASTER then
+      song:track(group_track).mute_state = renoise.Track.MUTE_STATE_ACTIVE
+      print("Unmuting track index: " .. group_track .. " (" .. song:track(group_track).name .. ")")
+    end
+  end
+end
+
+-- Function to check if all tracks and send tracks are unmuted
+function PakettiToggleSoloTracksAllTracksUnmuted()
+  local song = renoise.song()
+  local total_track_count = song.sequencer_track_count + 1 + song.send_track_count
+
+  for i = 1, total_track_count do
+    if song:track(i).type ~= renoise.Track.TRACK_TYPE_MASTER and song:track(i).mute_state ~= renoise.Track.MUTE_STATE_ACTIVE then
+      return false
+    end
+  end
+  return true
+end
+
+-- Function to check if all tracks except the selected track and its group are muted
+function PakettiToggleSoloTracksAllOthersMutedExceptSelected(track_index)
+  local song = renoise.song()
+  local selected_track = song:track(track_index)
+  local group_tracks = {}
+  local total_track_count = song.sequencer_track_count + 1 + song.send_track_count
+
+  if selected_track.type == renoise.Track.TRACK_TYPE_GROUP then
+    table.insert(group_tracks, track_index)
+    for i = track_index + 1, song.sequencer_track_count do
+      if song:track(i).group_parent and song:track(i).group_parent.name == selected_track.name then
+        table.insert(group_tracks, i)
+      else
+        break
+      end
+    end
+  elseif selected_track.group_parent then
+    local group_parent = selected_track.group_parent.name
+    for i = 1, song.sequencer_track_count do
+      if song:track(i).type == renoise.Track.TRACK_TYPE_GROUP and song:track(i).name == group_parent then
+        table.insert(group_tracks, i)
+        break
+      end
+    end
+    table.insert(group_tracks, track_index)
+  else
+    table.insert(group_tracks, track_index)
+  end
+
+  for i = 1, total_track_count do
+    if song:track(i).type ~= renoise.Track.TRACK_TYPE_MASTER and not table_contains(group_tracks, i) and song:track(i).mute_state ~= renoise.Track.MUTE_STATE_OFF then
+      return false
+    end
+  end
+  return selected_track.mute_state == renoise.Track.MUTE_STATE_ACTIVE
+end
+
+-- Function to check if all tracks except the selected range are muted
+function PakettiToggleSoloTracksAllOthersMutedExceptRange(start_track, end_track)
+  local song = renoise.song()
+  local total_track_count = song.sequencer_track_count + 1 + song.send_track_count
+  local group_parents = {}
+
+  print("Selection In Pattern is from index " .. start_track .. " to index " .. end_track)
+  for i = start_track, end_track do
+    print("Track index: " .. i .. " (" .. song:track(i).name .. ")")
+    if song:track(i).group_parent then
+      local group_parent = song:track(i).group_parent.name
+      if not table_contains(group_parents, group_parent) then
+        table.insert(group_parents, group_parent)
+        print("Group parent: " .. group_parent)
+      end
+    end
+  end
+
+  for i = 1, total_track_count do
+    if song:track(i).type ~= renoise.Track.TRACK_TYPE_MASTER and (i < start_track or i > end_track) and song:track(i).mute_state ~= renoise.Track.MUTE_STATE_OFF then
+      return false
+    end
+  end
+  for i = start_track, end_track do
+    if song:track(i).mute_state ~= renoise.Track.MUTE_STATE_ACTIVE then
+      return false
+    end
+  end
+
+  for _, group_parent_name in ipairs(group_parents) do
+    local group_parent_index = nil
+    for i = 1, song.sequencer_track_count do
+      if song:track(i).name == group_parent_name then
+        group_parent_index = i
+        break
+      end
+    end
+    if group_parent_index then
+      local group_parent = song:track(group_parent_index)
+      if group_parent.mute_state ~= renoise.Track.MUTE_STATE_ACTIVE then
+        return false
+      end
+    end
+  end
+  return true
+end
+
+-- Main function to toggle mute states
+function PakettiToggleSoloTracks()
+  local song = renoise.song()
+  local sip = song.selection_in_pattern
+  local selected_track_index = song.selected_track_index
+  local selected_track = song:track(selected_track_index)
+
+  print("----")
+  print("Running PakettiToggleSoloTracks")
+
+  if sip then
+    -- If a selection in pattern exists
+    print("Selection In Pattern is from index " .. sip.start_track .. " to " .. sip.end_track)
+    for i = sip.start_track, sip.end_track do
+      print("Track index: " .. i .. " (" .. song:track(i).name .. ")")
+    end
+    if PakettiToggleSoloTracksAllOthersMutedExceptRange(sip.start_track, sip.end_track) then
+      print("Detecting all-tracks-should-be-unmuted situation")
+      PakettiToggleSoloTracksUnmuteAllTracks()
+    else
+      print("Detecting Muting situation")
+      PakettiToggleSoloTracksMuteAllExceptRange(sip.start_track, sip.end_track)
+    end
+  elseif selected_track.type == renoise.Track.TRACK_TYPE_GROUP then
+    -- If the selected track is a group, mute all tracks and then unmute the group and its members
+    print("Selected track is a group")
+    print("Group name is " .. selected_track.name .. ", Number of Members is " .. #selected_track.members)
+    if PakettiToggleSoloTracksAllOthersMutedExceptSelected(selected_track_index) then
+      print("Detecting all-tracks-should-be-unmuted situation")
+      PakettiToggleSoloTracksUnmuteAllTracks()
+    else
+      for i = 1, song.sequencer_track_count + song.send_track_count do
+        if song:track(i).type ~= renoise.Track.TRACK_TYPE_MASTER then
+          song:track(i).mute_state = renoise.Track.MUTE_STATE_OFF
+          print("Muting track index: " .. i .. " (" .. song:track(i).name .. ")")
+        end
+      end
+      for i = selected_track_index - #selected_track.members, selected_track_index do
+        song:track(i).mute_state = renoise.Track.MUTE_STATE_ACTIVE
+        print("Unmuting track index: " .. i .. " (" .. song:track(i).name .. ")")
+      end
+    end
+  else
+    -- If no selection in pattern and selected track is not a group
+    print("No selection in pattern, using selected track: " .. selected_track_index .. " (" .. selected_track.name .. ")")
+    if PakettiToggleSoloTracksAllOthersMutedExceptSelected(selected_track_index) then
+      print("Detecting all-tracks-should-be-unmuted situation")
+      PakettiToggleSoloTracksUnmuteAllTracks()
+    else
+      print("Detecting Muting situation")
+      PakettiToggleSoloTracksMuteAllExceptSelectedTrack(selected_track_index)
+    end
+  end
+end
+
+-- Add menu entry, keybinding, and MIDI mapping for the toggle solo tracks function
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Toggle Solo Tracks",invoke=PakettiToggleSoloTracks}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Toggle Solo Tracks",invoke=PakettiToggleSoloTracks}
+renoise.tool():add_keybinding{name="Global:Paketti:Toggle Solo Tracks",invoke=PakettiToggleSoloTracks}
+renoise.tool():add_midi_mapping{name="Paketti:Toggle Solo Tracks",invoke=PakettiToggleSoloTracks}
+
+
+
+
+
+
+
+
+
+
+--------
+-- Function to initialize selection if it is nil
+function PakettiImpulseTrackerShiftInitializeSelection()
+  local song = renoise.song()
+  local pos = song.transport.edit_pos
+  local selected_track_index = song.selected_track_index
+  local selected_column_index = song.selected_note_column_index > 0 and song.selected_note_column_index or song.selected_effect_column_index
+
+  song.selection_in_pattern = {
+    start_track = selected_track_index,
+    end_track = selected_track_index,
+    start_column = selected_column_index,
+    end_column = selected_column_index,
+    start_line = pos.line,
+    end_line = pos.line
+  }
+end
+
+-- Function to ensure selection is valid and swap if necessary
+function PakettiImpulseTrackerShiftEnsureValidSelection()
+  local song = renoise.song()
+  local selection = song.selection_in_pattern
+
+  if selection.start_track > selection.end_track then
+    local temp = selection.start_track
+    selection.start_track = selection.end_track
+    selection.end_track = temp
+  end
+
+  if selection.start_column > selection.end_column then
+    local temp = selection.start_column
+    selection.start_column = selection.end_column
+    selection.end_column = temp
+  end
+
+  if selection.start_line > selection.end_line then
+    local temp = selection.start_line
+    selection.start_line = selection.end_line
+    selection.end_line = temp
+  end
+
+  song.selection_in_pattern = selection
+end
+
+-- Debug function to print selection details
+local function debug_print_selection(message)
+  local song = renoise.song()
+  local selection = song.selection_in_pattern
+  print(message)
+print("--------")
+  print("Start Track: " .. selection.start_track .. ", End Track: " .. selection.end_track)
+  print("Start Column: " .. selection.start_column .. ", End Column: " .. selection.end_column)
+  print("Start Line: " .. selection.start_line .. ", End Line: " .. selection.end_line)
+print("--------")
+
+end
+
+-- Function to select the next column or track to the right
+function PakettiImpulseTrackerShiftRight()
+  local song = renoise.song()
+  local selection = song.selection_in_pattern
+
+  if not selection then
+    PakettiImpulseTrackerShiftInitializeSelection()
+    selection = song.selection_in_pattern
+  end
+
+  debug_print_selection("Before Right Shift")
+
+  if song.selected_track_index == selection.end_track and (song.selected_note_column_index == selection.end_column or song.selected_effect_column_index == selection.end_column) then
+    if selection.end_column < song:track(selection.end_track).visible_note_columns then
+      selection.end_column = selection.end_column + 1
+    elseif selection.end_track < #song.tracks then
+      selection.end_track = selection.end_track + 1
+      local track = song:track(selection.end_track)
+      if track.visible_note_columns > 0 then
+        selection.end_column = 1
+      else
+        selection.end_column = track.visible_effect_columns > 0 and 1 or 0
+      end
+    else
+      renoise.app():show_status("You are on the last track. No more can be selected in that direction.")
+      return
+    end
+  else
+    if song.selected_track_index < selection.start_track then
+      local temp_track = selection.start_track
+      selection.start_track = selection.end_track
+      selection.end_track = temp_track
+
+      local temp_column = selection.start_column
+      selection.start_column = selection.end_column
+      selection.end_column = temp_column
+    end
+    selection.start_track = song.selected_track_index
+    selection.start_column = song.selected_note_column_index > 0 and song.selected_note_column_index or song.selected_effect_column_index
+  end
+
+  PakettiImpulseTrackerShiftEnsureValidSelection()
+  song.selection_in_pattern = selection
+
+  if song:track(selection.end_track).visible_note_columns > 0 then
+    song.selected_note_column_index = selection.end_column
+  else
+    song.selected_effect_column_index = selection.end_column
+  end
+
+  debug_print_selection("After Right Shift")
+end
+
+-- Function to select the previous column or track to the left
+function PakettiImpulseTrackerShiftLeft()
+  local song = renoise.song()
+  local selection = song.selection_in_pattern
+
+  if not selection then
+    PakettiImpulseTrackerShiftInitializeSelection()
+    selection = song.selection_in_pattern
+  end
+
+  debug_print_selection("Before Left Shift")
+
+  if song.selected_track_index == selection.end_track and (song.selected_note_column_index == selection.end_column or song.selected_effect_column_index == selection.end_column) then
+    if selection.end_column > 1 then
+      selection.end_column = selection.end_column - 1
+    elseif selection.end_track > 1 then
+      selection.end_track = selection.end_track - 1
+      local track = song:track(selection.end_track)
+      if track.visible_note_columns > 0 then
+        selection.end_column = track.visible_note_columns
+      else
+        selection.end_column = track.visible_effect_columns > 0 and track.visible_effect_columns or 0
+      end
+    else
+      renoise.app():show_status("You are on the first track. No more can be selected in that direction.")
+      return
+    end
+  else
+    if song.selected_track_index > selection.start_track then
+      local temp_track = selection.start_track
+      selection.start_track = selection.end_track
+      selection.end_track = temp_track
+
+      local temp_column = selection.start_column
+      selection.start_column = selection.end_column
+      selection.end_column = temp_column
+    end
+    selection.start_track = song.selected_track_index
+    selection.start_column = song.selected_note_column_index > 0 and song.selected_note_column_index or song.selected_effect_column_index
+  end
+
+  PakettiImpulseTrackerShiftEnsureValidSelection()
+  song.selection_in_pattern = selection
+
+  if song:track(selection.end_track).visible_note_columns > 0 then
+    song.selected_note_column_index = selection.end_column
+  else
+    song.selected_effect_column_index = selection.end_column
+  end
+
+  debug_print_selection("After Left Shift")
+end
+
+-- Function to extend the selection down by one line
+function PakettiImpulseTrackerShiftDown()
+  local song = renoise.song()
+  local selection = song.selection_in_pattern
+  local current_pattern = song.selected_pattern_index
+
+  if not selection then
+    PakettiImpulseTrackerShiftInitializeSelection()
+    selection = song.selection_in_pattern
+  end
+
+  debug_print_selection("Before Down Shift")
+
+  if song.transport.edit_pos.line == selection.end_line then
+    if selection.end_line < song:pattern(current_pattern).number_of_lines then
+      selection.end_line = selection.end_line + 1
+    else
+      renoise.app():show_status("You are at the end of the pattern. No more can be selected.")
+      return
+    end
+  else
+    if song.transport.edit_pos.line < selection.start_line then
+      local temp_line = selection.start_line
+      selection.start_line = selection.end_line
+      selection.end_line = temp_line
+    end
+    selection.start_line = song.transport.edit_pos.line
+  end
+
+  PakettiImpulseTrackerShiftEnsureValidSelection()
+  song.selection_in_pattern = selection
+  song.transport.edit_pos = renoise.SongPos(song.selected_sequence_index, selection.end_line)
+
+  debug_print_selection("After Down Shift")
+end
+
+-- Main function to determine which shift up function to call
+function PakettiImpulseTrackerShiftUp()
+  local song = renoise.song()
+  local selection = song.selection_in_pattern
+
+  if not selection then
+    PakettiImpulseTrackerShiftInitializeSelection()
+    selection = song.selection_in_pattern
+  end
+
+  if selection.start_column == selection.end_column then
+    PakettiImpulseTrackerShiftUpSingleColumn()
+  else
+    PakettiImpulseTrackerShiftUpMultipleColumns()
+  end
+end
+
+-- Function to extend the selection up by one line in a single column
+function PakettiImpulseTrackerShiftUpSingleColumn()
+  local song = renoise.song()
+  local selection = song.selection_in_pattern
+  local edit_pos = song.transport.edit_pos
+
+  debug_print_selection("Before Up Shift (Single Column)")
+
+  -- Determine the current column index based on the track type
+  local current_column_index
+  if song:track(song.selected_track_index).visible_note_columns > 0 then
+    current_column_index = song.selected_note_column_index
+  else
+    current_column_index = song.selected_effect_column_index
+  end
+
+  -- Check if the cursor is within the current selection
+  local cursor_in_selection = song.selected_track_index == selection.start_track and
+                              song.selected_track_index == selection.end_track and
+                              current_column_index == selection.start_column and
+                              edit_pos.line >= selection.start_line and
+                              edit_pos.line <= selection.end_line
+
+  if not cursor_in_selection then
+    -- Reset the selection to start from the current cursor position if the cursor is not within the selection
+    selection.start_track = song.selected_track_index
+    selection.end_track = song.selected_track_index
+    selection.start_column = current_column_index
+    selection.end_column = current_column_index
+    selection.start_line = edit_pos.line
+    selection.end_line = edit_pos.line
+
+    if selection.start_line > 1 then
+      selection.start_line = selection.start_line - 1
+      song.transport.edit_pos = renoise.SongPos(song.selected_sequence_index, selection.start_line)
+    else
+      renoise.app():show_status("You are at the beginning of the pattern. No more can be selected.")
+      return
+    end
+  else
+    -- Extend the selection upwards if the cursor is within the selection
+    if edit_pos.line == selection.end_line then
+      if selection.end_line > selection.start_line then
+        selection.end_line = selection.end_line - 1
+        song.transport.edit_pos = renoise.SongPos(song.selected_sequence_index, selection.end_line)
+      elseif selection.end_line == selection.start_line then
+        if selection.start_line > 1 then
+          selection.start_line = selection.start_line - 1
+          song.transport.edit_pos = renoise.SongPos(song.selected_sequence_index, selection.start_line)
+        else
+          renoise.app():show_status("You are at the beginning of the pattern. No more can be selected.")
+          return
+        end
+      end
+    elseif edit_pos.line == selection.start_line then
+      if selection.start_line > 1 then
+        selection.start_line = selection.start_line - 1
+        song.transport.edit_pos = renoise.SongPos(song.selected_sequence_index, selection.start_line)
+      else
+        renoise.app():show_status("You are at the beginning of the pattern. No more can be selected.")
+        return
+      end
+    else
+      if edit_pos.line < selection.start_line then
+        selection.start_line = edit_pos.line
+        song.transport.edit_pos = renoise.SongPos(song.selected_sequence_index, selection.start_line)
+      else
+        selection.end_line = edit_pos.line - 1
+        song.transport.edit_pos = renoise.SongPos(song.selected_sequence_index, selection.end_line)
+      end
+    end
+  end
+
+  -- Ensure start_line is always <= end_line
+  if selection.start_line > selection.end_line then
+    local temp = selection.start_line
+    selection.start_line = selection.end_line
+    selection.end_line = temp
+  end
+
+  PakettiImpulseTrackerShiftEnsureValidSelection()
+  song.selection_in_pattern = selection
+
+  debug_print_selection("After Up Shift (Single Column)")
+end
+
+-- Function to extend the selection up by one line in multiple columns
+function PakettiImpulseTrackerShiftUpMultipleColumns()
+  local song = renoise.song()
+  local selection = song.selection_in_pattern
+  local edit_pos = song.transport.edit_pos
+
+  -- Print separator and current state
+  print("----")
+  print("Before Up Shift (Multiple Columns)")
+  print("Current Line Index: " .. edit_pos.line)
+  print("Start Track: " .. selection.start_track .. ", End Track: " .. selection.end_track)
+  print("Start Column: " .. selection.start_column .. ", End Column: " .. selection.end_column)
+  print("Start Line: " .. selection.start_line .. ", End Line: " .. selection.end_line)
+
+  -- Determine the current column index based on the track type
+  local current_column_index
+  if song:track(song.selected_track_index).visible_note_columns > 0 then
+    current_column_index = song.selected_note_column_index
+  else
+    current_column_index = song.selected_effect_column_index
+  end
+
+  -- Print the current column index and edit position line
+  print("Current Column Index: " .. current_column_index)
+  print("Edit Position Line: " .. edit_pos.line)
+
+  -- Check if the cursor is within the current selection
+  local cursor_in_selection = song.selected_track_index == selection.start_track and
+                              song.selected_track_index == selection.end_track and
+                              current_column_index >= selection.start_column and
+                              current_column_index <= selection.end_column and
+                              edit_pos.line >= selection.start_line and
+                              edit_pos.line <= selection.end_line
+
+  print("Cursor in Selection: " .. tostring(cursor_in_selection))
+
+  if not cursor_in_selection then
+    -- Reset the selection to start from the current cursor position if the cursor is not within the selection
+    print("Cursor not in selection, resetting selection.")
+    selection.start_track = song.selected_track_index
+    selection.end_track = song.selected_track_index
+    selection.start_column = current_column_index
+    selection.end_column = current_column_index
+    selection.start_line = edit_pos.line
+    selection.end_line = edit_pos.line
+
+    if selection.start_line > 1 then
+      selection.start_line = selection.start_line - 1
+      song.transport.edit_pos = renoise.SongPos(song.selected_sequence_index, selection.start_line)
+    else
+      renoise.app():show_status("You are at the beginning of the pattern. No more can be selected.")
+      return
+    end
+  else
+    -- Extend the selection upwards if the cursor is within the selection
+    print("Cursor in selection, extending selection upwards.")
+    if edit_pos.line == selection.end_line and current_column_index == selection.end_column then
+      if selection.end_line > selection.start_line then
+        print("Decrementing end_line")
+        selection.end_line = selection.end_line - 1
+        song.transport.edit_pos = renoise.SongPos(song.selected_sequence_index, selection.end_line)
+      elseif selection.start_line > 1 then
+        print("Decrementing start_line")
+        selection.start_line = selection.start_line - 1
+        song.transport.edit_pos = renoise.SongPos(song.selected_sequence_index, selection.start_line)
+      else
+        renoise.app():show_status("You are at the beginning of the pattern. No more can be selected.")
+        return
+      end
+    elseif edit_pos.line == selection.start_line and current_column_index == selection.start_column then
+      if selection.start_line > 1 then
+        print("Decrementing start_line")
+        selection.start_line = selection.start_line - 1
+        song.transport.edit_pos = renoise.SongPos(song.selected_sequence_index, selection.start_line)
+      else
+        renoise.app():show_status("You are at the beginning of the pattern. No more can be selected.")
+        return
+      end
+    else
+      if edit_pos.line < selection.start_line then
+        print("Adjusting start_line to edit position")
+        selection.start_line = edit_pos.line
+        song.transport.edit_pos = renoise.SongPos(song.selected_sequence_index, selection.start_line)
+      else
+        print("Adjusting end_line to edit position")
+        selection.end_line = edit_pos.line
+        song.transport.edit_pos = renoise.SongPos(song.selected_sequence_index, selection.end_line)
+      end
+    end
+  end
+
+  -- Ensure start_line is always <= end_line
+  if selection.start_line > selection.end_line then
+    print("Swapping start_line and end_line to ensure start_line <= end_line")
+    local temp = selection.start_line
+    selection.start_line = selection.end_line
+    selection.end_line = temp
+  end
+
+  PakettiImpulseTrackerShiftEnsureValidSelection()
+  song.selection_in_pattern = selection
+
+  -- Print separator and current state after the operation
+  print("After Up Shift (Multiple Columns)")
+  print("Current Line Index: " .. song.transport.edit_pos.line)
+  print("Start Track: " .. selection.start_track .. ", End Track: " .. selection.end_track)
+  print("Start Column: " .. selection.start_column .. ", End Column: " .. selection.end_column)
+  print("Start Line: " .. selection.start_line .. ", End Line: " .. selection.end_line)
+  print("----")
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- Add key bindings for the functions
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Impulse Tracker Shift-Right Selection In Pattern",invoke=PakettiImpulseTrackerShiftRight}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Impulse Tracker Shift-Left Selection In Pattern",invoke=PakettiImpulseTrackerShiftLeft}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Impulse Tracker Shift-Down Selection In Pattern",invoke=PakettiImpulseTrackerShiftDown}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Impulse Tracker Shift-Up Selection In Pattern",invoke=PakettiImpulseTrackerShiftUp}
+
+
+
+
+
+
+
+
+
+
+
+-- Function to copy a single note column
+function PakettiImpulseTrackerSlideSelectedNoteColumnCopy(src, dst)
+  if src and dst then
+    dst.note_value = src.note_value
+    dst.instrument_value = src.instrument_value
+    dst.volume_value = src.volume_value
+    dst.panning_value = src.panning_value
+    dst.delay_value = src.delay_value
+    dst.effect_number_value = src.effect_number_value
+    dst.effect_amount_value = src.effect_amount_value
+  elseif dst then
+    dst:clear()
+  end
+end
+
+-- Function to copy a single effect column
+function PakettiImpulseTrackerSlideSelectedEffectColumnCopy(src, dst)
+  if src and dst then
+    dst.number_value = src.number_value
+    dst.amount_value = src.amount_value
+  elseif dst then
+    dst:clear()
+  end
+end
+
+-- Slide selected column content down by one row in the current pattern
+function PakettiImpulseTrackerSlideSelectedColumnDown()
+  local song = renoise.song()
+  local pattern_index = song.selected_pattern_index
+  local track_index = song.selected_track_index
+  local pattern = song:pattern(pattern_index)
+  local track = pattern:track(track_index)
+  local number_of_lines = pattern.number_of_lines
+  local column_index = song.selected_note_column_index
+  local is_note_column = column_index > 0
+
+  if not is_note_column then
+    column_index = song.selected_effect_column_index
+  end
+
+  -- Store the content of the last row to move it to the first row
+  local last_row_content
+  if is_note_column then
+    last_row_content = track:line(number_of_lines).note_columns[column_index]
+  else
+    last_row_content = track:line(number_of_lines).effect_columns[column_index]
+  end
+
+  -- Slide content down
+  for line = number_of_lines, 2, -1 do
+    local src_line = track:line(line - 1)
+    local dst_line = track:line(line)
+    if is_note_column then
+      PakettiImpulseTrackerSlideSelectedNoteColumnCopy(src_line.note_columns[column_index], dst_line.note_columns[column_index])
+    else
+      PakettiImpulseTrackerSlideSelectedEffectColumnCopy(src_line.effect_columns[column_index], dst_line.effect_columns[column_index])
+    end
+  end
+
+  -- Move the last row content to the first row and clear the last row
+  local first_line = track:line(1)
+  if is_note_column then
+    PakettiImpulseTrackerSlideSelectedNoteColumnCopy(last_row_content, first_line.note_columns[column_index])
+    track:line(number_of_lines).note_columns[column_index]:clear()
+  else
+    PakettiImpulseTrackerSlideSelectedEffectColumnCopy(last_row_content, first_line.effect_columns[column_index])
+    track:line(number_of_lines).effect_columns[column_index]:clear()
+  end
+end
+
+-- Slide selected column content up by one row in the current pattern
+function PakettiImpulseTrackerSlideSelectedColumnUp()
+  local song = renoise.song()
+  local pattern_index = song.selected_pattern_index
+  local track_index = song.selected_track_index
+  local pattern = song:pattern(pattern_index)
+  local track = pattern:track(track_index)
+  local number_of_lines = pattern.number_of_lines
+  local column_index = song.selected_note_column_index
+  local is_note_column = column_index > 0
+
+  if not is_note_column then
+    column_index = song.selected_effect_column_index
+  end
+
+  -- Store the content of the first row to move it to the last row
+  local first_row_content
+  if is_note_column then
+    first_row_content = track:line(1).note_columns[column_index]
+  else
+    first_row_content = track:line(1).effect_columns[column_index]
+  end
+
+  -- Slide content up
+  for line = 1, number_of_lines - 1 do
+    local src_line = track:line(line + 1)
+    local dst_line = track:line(line)
+    if is_note_column then
+      PakettiImpulseTrackerSlideSelectedNoteColumnCopy(src_line.note_columns[column_index], dst_line.note_columns[column_index])
+    else
+      PakettiImpulseTrackerSlideSelectedEffectColumnCopy(src_line.effect_columns[column_index], dst_line.effect_columns[column_index])
+    end
+  end
+
+  -- Move the first row content to the last row and clear the first row
+  local last_line = track:line(number_of_lines)
+  if is_note_column then
+    PakettiImpulseTrackerSlideSelectedNoteColumnCopy(first_row_content, last_line.note_columns[column_index])
+    track:line(1).note_columns[column_index]:clear()
+  else
+    PakettiImpulseTrackerSlideSelectedEffectColumnCopy(first_row_content, last_line.effect_columns[column_index])
+    track:line(1).effect_columns[column_index]:clear()
+  end
+end
+
+-- Functions to slide selected columns up or down within a selection
+local function slide_selected_columns_up(track, start_line, end_line, selected_note_columns, selected_effect_columns)
+  local first_row_content_note_columns = {}
+  local first_row_content_effect_columns = {}
+
+  for _, column_index in ipairs(selected_note_columns) do
+    first_row_content_note_columns[column_index] = track:line(start_line).note_columns[column_index]
+  end
+  for _, column_index in ipairs(selected_effect_columns) do
+    first_row_content_effect_columns[column_index] = track:line(start_line).effect_columns[column_index]
+  end
+
+  for line = start_line, end_line - 1 do
+    local src_line = track:line(line + 1)
+    local dst_line = track:line(line)
+    for _, column_index in ipairs(selected_note_columns) do
+      PakettiImpulseTrackerSlideSelectedNoteColumnCopy(src_line.note_columns[column_index], dst_line.note_columns[column_index])
+    end
+    for _, column_index in ipairs(selected_effect_columns) do
+      PakettiImpulseTrackerSlideSelectedEffectColumnCopy(src_line.effect_columns[column_index], dst_line.effect_columns[column_index])
+    end
+  end
+
+  local last_line = track:line(end_line)
+  for _, column_index in ipairs(selected_note_columns) do
+    PakettiImpulseTrackerSlideSelectedNoteColumnCopy(first_row_content_note_columns[column_index], last_line.note_columns[column_index])
+    track:line(start_line).note_columns[column_index]:clear()
+  end
+  for _, column_index in ipairs(selected_effect_columns) do
+    PakettiImpulseTrackerSlideSelectedEffectColumnCopy(first_row_content_effect_columns[column_index], last_line.effect_columns[column_index])
+    track:line(start_line).effect_columns[column_index]:clear()
+  end
+end
+
+local function slide_selected_columns_down(track, start_line, end_line, selected_note_columns, selected_effect_columns)
+  local last_row_content_note_columns = {}
+  local last_row_content_effect_columns = {}
+
+  for _, column_index in ipairs(selected_note_columns) do
+    last_row_content_note_columns[column_index] = track:line(end_line).note_columns[column_index]
+  end
+  for _, column_index in ipairs(selected_effect_columns) do
+    last_row_content_effect_columns[column_index] = track:line(end_line).effect_columns[column_index]
+  end
+
+  for line = end_line, start_line + 1, -1 do
+    local src_line = track:line(line - 1)
+    local dst_line = track:line(line)
+    for _, column_index in ipairs(selected_note_columns) do
+      PakettiImpulseTrackerSlideSelectedNoteColumnCopy(src_line.note_columns[column_index], dst_line.note_columns[column_index])
+    end
+    for _, column_index in ipairs(selected_effect_columns) do
+      PakettiImpulseTrackerSlideSelectedEffectColumnCopy(src_line.effect_columns[column_index], dst_line.effect_columns[column_index])
+    end
+  end
+
+  local first_line = track:line(start_line)
+  for _, column_index in ipairs(selected_note_columns) do
+    PakettiImpulseTrackerSlideSelectedNoteColumnCopy(last_row_content_note_columns[column_index], first_line.note_columns[column_index])
+  end
+  for _, column_index in ipairs(selected_effect_columns) do
+    PakettiImpulseTrackerSlideSelectedEffectColumnCopy(last_row_content_effect_columns[column_index], first_line.effect_columns[column_index])
+  end
+end
+
+-- Function to get selected columns in the current selection
+local function get_selected_columns(track, start_line, end_line)
+  local selected_note_columns = {}
+  local selected_effect_columns = {}
+
+  for column_index = 1, #track:line(start_line).note_columns do
+    for line = start_line, end_line do
+      if track:line(line).note_columns[column_index].is_selected then
+        table.insert(selected_note_columns, column_index)
+        break
+      end
+    end
+  end
+
+  for column_index = 1, #track:line(start_line).effect_columns do
+    for line = start_line, end_line do
+      if track:line(line).effect_columns[column_index].is_selected then
+        table.insert(selected_effect_columns, column_index)
+        break
+      end
+    end
+  end
+
+  return selected_note_columns, selected_effect_columns
+end
+
+-- Slide selected column content down by one row or the selection if it exists
+function PakettiImpulseTrackerSlideDown()
+  local song = renoise.song()
+  local selection = song.selection_in_pattern
+
+  if selection then
+    local pattern_index = song.selected_pattern_index
+    local track_index = song.selected_track_index
+    local pattern = song:pattern(pattern_index)
+    local track = pattern:track(track_index)
+    local start_line = selection.start_line
+    local end_line = math.min(selection.end_line, pattern.number_of_lines)
+    local selected_note_columns, selected_effect_columns = get_selected_columns(track, start_line, end_line)
+    slide_selected_columns_down(track, start_line, end_line, selected_note_columns, selected_effect_columns)
+  else
+    PakettiImpulseTrackerSlideSelectedColumnDown()
+  end
+end
+
+-- Slide selected column content up by one row or the selection if it exists
+function PakettiImpulseTrackerSlideUp()
+  local song = renoise.song()
+  local selection = song.selection_in_pattern
+
+  if selection then
+    local pattern_index = song.selected_pattern_index
+    local track_index = song.selected_track_index
+    local pattern = song:pattern(pattern_index)
+    local track = pattern:track(track_index)
+    local start_line = selection.start_line
+    local end_line = math.min(selection.end_line, pattern.number_of_lines)
+    local selected_note_columns, selected_effect_columns = get_selected_columns(track, start_line, end_line)
+    slide_selected_columns_up(track, start_line, end_line, selected_note_columns, selected_effect_columns)
+  else
+    PakettiImpulseTrackerSlideSelectedColumnUp()
+  end
+end
+
+-- Add menu entry for sliding selected column content down
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Slide Selected Column Content Down",invoke=PakettiImpulseTrackerSlideDown}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Slide Selected Column Content Up",invoke=PakettiImpulseTrackerSlideUp}
+
+renoise.tool():add_midi_mapping{name="Global:Tools:Paketti:Slide Selected Column Content Down",invoke=PakettiImpulseTrackerSlideDown}
+renoise.tool():add_midi_mapping{name="Global:Tools:Paketti:Slide Selected Column Content Up",invoke=PakettiImpulseTrackerSlideUp}
+
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Slide Selected Column Content Down",invoke=PakettiImpulseTrackerSlideDown}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Slide Selected Column Content Up",invoke=PakettiImpulseTrackerSlideUp}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--------------
+-- Function to copy note columns
+function PakettiImpulseTrackerSlideTrackCopyNoteColumns(src, dst)
+  for i = 1, #src do
+    if src[i] and dst[i] then
+      dst[i].note_value = src[i].note_value
+      dst[i].instrument_value = src[i].instrument_value
+      dst[i].volume_value = src[i].volume_value
+      dst[i].panning_value = src[i].panning_value
+      dst[i].delay_value = src[i].delay_value
+      dst[i].effect_number_value = src[i].effect_number_value
+      dst[i].effect_amount_value = src[i].effect_amount_value
+    elseif dst[i] then
+      dst[i]:clear()
+    end
+  end
+end
+
+-- Function to copy effect columns
+function PakettiImpulseTrackerSlideTrackCopyEffectColumns(src, dst)
+  for i = 1, #src do
+    if src[i] and dst[i] then
+      dst[i].number_value = src[i].number_value
+      dst[i].amount_value = src[i].amount_value
+    elseif dst[i] then
+      dst[i]:clear()
+    end
+  end
+end
+
+-- Slide selected track content down by one row in the current pattern
+function PakettiImpulseTrackerSlideTrackDown()
+  local song = renoise.song()
+  local pattern_index = song.selected_pattern_index
+  local track_index = song.selected_track_index
+  local pattern = song:pattern(pattern_index)
+  local track = pattern:track(track_index)
+  local number_of_lines = pattern.number_of_lines
+
+  -- Store the content of the last row to move it to the first row
+  local last_row_note_columns = {}
+  local last_row_effect_columns = {}
+
+  for pos, column in song.pattern_iterator:note_columns_in_pattern_track(pattern_index, track_index) do
+    if pos.line == number_of_lines then
+      table.insert(last_row_note_columns, column)
+    end
+  end
+
+  for pos, column in song.pattern_iterator:effect_columns_in_pattern_track(pattern_index, track_index) do
+    if pos.line == number_of_lines then
+      table.insert(last_row_effect_columns, column)
+    end
+  end
+
+  -- Slide content down
+  for line = number_of_lines, 2, -1 do
+    local src_line = track:line(line - 1)
+    local dst_line = track:line(line)
+    PakettiImpulseTrackerSlideTrackCopyNoteColumns(src_line.note_columns, dst_line.note_columns)
+    PakettiImpulseTrackerSlideTrackCopyEffectColumns(src_line.effect_columns, dst_line.effect_columns)
+  end
+
+  -- Move the last row content to the first row
+  local first_line = track:line(1)
+  PakettiImpulseTrackerSlideTrackCopyNoteColumns(last_row_note_columns, first_line.note_columns)
+  PakettiImpulseTrackerSlideTrackCopyEffectColumns(last_row_effect_columns, first_line.effect_columns)
+end
+
+-- Slide selected track content up by one row in the current pattern
+function PakettiImpulseTrackerSlideTrackUp()
+  local song = renoise.song()
+  local pattern_index = song.selected_pattern_index
+  local track_index = song.selected_track_index
+  local pattern = song:pattern(pattern_index)
+  local track = pattern:track(track_index)
+  local number_of_lines = pattern.number_of_lines
+
+  -- Store the content of the first row to move it to the last row
+  local first_row_note_columns = {}
+  local first_row_effect_columns = {}
+
+  for pos, column in song.pattern_iterator:note_columns_in_pattern_track(pattern_index, track_index) do
+    if pos.line == 1 then
+      table.insert(first_row_note_columns, column)
+    end
+  end
+
+  for pos, column in song.pattern_iterator:effect_columns_in_pattern_track(pattern_index, track_index) do
+    if pos.line == 1 then
+      table.insert(first_row_effect_columns, column)
+    end
+  end
+
+  -- Slide content up
+  for line = 1, number_of_lines - 1 do
+    local src_line = track:line(line + 1)
+    local dst_line = track:line(line)
+    PakettiImpulseTrackerSlideTrackCopyNoteColumns(src_line.note_columns, dst_line.note_columns)
+    PakettiImpulseTrackerSlideTrackCopyEffectColumns(src_line.effect_columns, dst_line.effect_columns)
+  end
+
+  -- Move the first row content to the last row
+  local last_line = track:line(number_of_lines)
+  PakettiImpulseTrackerSlideTrackCopyNoteColumns(first_row_note_columns, last_line.note_columns)
+  PakettiImpulseTrackerSlideTrackCopyEffectColumns(first_row_effect_columns, last_line.effect_columns)
+end
+
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Slide Selected Track Content Down",invoke=PakettiImpulseTrackerSlideTrackDown}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Slide Selected Track Content Up",invoke=PakettiImpulseTrackerSlideTrackUp}
+
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Slide Selected Track Content Up",invoke=PakettiImpulseTrackerSlideTrackUp}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Slide Selected Track Content Down",invoke=PakettiImpulseTrackerSlideTrackDown}
+
+renoise.tool():add_midi_mapping{name="Global:Tools:Paketti:Slide Selected Track Content Up",invoke=PakettiImpulseTrackerSlideTrackUp}
+renoise.tool():add_midi_mapping{name="Global:Tools:Paketti:Slide Selected Track Content Down",invoke=PakettiImpulseTrackerSlideTrackDown}
+
 
 
 -- Toggle Note Off "===" On / Off in all selected tracks within the selection or current row.
@@ -424,594 +1926,6 @@ end}
 renoise.tool():add_midi_mapping{name="Global:Tools:Rotate Sample Buffer Content Backward [Set]",invoke=function(midi_message)
   rotate_sample_buffer_backward(midi_message.int_value)
 end}
-
-
-
-
-
-
-
-
-
-
-
-renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Randomize Selected Instrument Plugin Parameters",invoke=function()randomizeSelectedPlugin()end}
-renoise.tool():add_keybinding{name="Global:Paketti:Randomize Selected Plugin",invoke=function()randomizeSelectedPlugin()end}
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Randomize Selected Instrument Plugin Parameters",invoke=function()randomizeSelectedPlugin()end}
-
--- Function to randomize parameters of the selected plugin
-function randomizeSelectedPlugin()
-  local song = renoise.song()
-  local instrument = renoise.song().selected_instrument 
-
-  if not instrument or not instrument.plugin_properties then
-    renoise.app():show_status("The currently selected Instrument does not have a plugin loaded.")
-    return
-  end
-
-  local plugin_name = renoise.song().selected_instrument.plugin_properties.plugin_device.name
-  renoise.app():show_status("Randomizing parameters for plugin: " .. plugin_name)
-
-  local parameter_count = #instrument.plugin_properties.plugin_device.parameters
-  
-  for i = 1, parameter_count do
-    local parameter = instrument.plugin_properties.plugin_device.parameters[i]
-    local min = parameter.value_min
-    local max = parameter.value_max
-    local random_value = math.random() * (max - min) + min
-    parameter.value = random_value
-  end
-  
-  renoise.app():show_status("Randomized " .. parameter_count .. " parameters for plugin: " .. plugin_name)
-end
-
-
-
-
--- Tool Registration
-renoise.tool():add_menu_entry{name="DSP Device:Paketti..:Randomize Selected Device Parameters",invoke=function()randomize_selected_device()end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Randomize Selected Device Parameters",invoke=function()randomize_selected_device()end}
-renoise.tool():add_keybinding{name="Global:Paketti:Randomize Selected Device",invoke=function()randomize_selected_device()end}
-
--- Function to randomize parameters of the selected device
-function randomize_selected_device()
-  local song = renoise.song()
-  local device = song.selected_device
-  
-  if not device then
-    renoise.app():show_status("No DSP Device has been selected, cannot randomize parameters. Select a Track DSP Device and try again.")
-    return
-  end
-
-  local parameter_count = #device.parameters
-   local device_name = device.display_name
-  for i = 1, parameter_count do
-    local parameter = device:parameter(i)
-    local min = parameter.value_min
-    local max = parameter.value_max
-    local random_value = math.random() * (max - min) + min
-    parameter.value = random_value
-  end
-  
-  renoise.app():show_status("Randomized " .. parameter_count .. " parameters for device: " .. device_name)
-end
-
-
-
-
-
-
-
-
-
-
--- Function to toggle the sequence selection based on the provided sequence number
-function tknaToggleSequenceSelection(number)
-  local seq_index = number + 1 -- Adjusting to 1-based index as required by Renoise
-
-  -- Check if the current selection matches the specified sequence number
-  if renoise.song().sequencer.selection_range and
-     #renoise.song().sequencer.selection_range == 2 and
-     renoise.song().sequencer.selection_range[1] == seq_index and
-     renoise.song().sequencer.selection_range[2] == seq_index then
-    -- If so, clear the selection
-    renoise.song().sequencer.selection_range = {}
-  else
-    -- Otherwise, set the selection to the specified sequence number
-    renoise.song().sequencer.selection_range = {seq_index, seq_index}
-  end
-end
-
--- Loop to create keybindings for sequence numbers 00 to 32
-for i = 1, 33 do
-  local padded_number = string.format("%02d", i - 1)
-  local keybinding_name = "Global:Paketti:Toggle Sequence Selection " .. padded_number
-
-  -- Create a keybinding for each sequence number
-  renoise.tool():add_keybinding{name=keybinding_name, invoke=function() tknaToggleSequenceSelection(i - 1) end}
-end
-
-
--- Function to toggle the sequence selection based on the provided sequence number
--- If there is a selection_range, turn it into a sequence loop
-function SequenceSelectionToLoop()
-  local song = renoise.song()
-  local selection_start = song.sequencer.selection_range[1]
-  local selection_end = song.sequencer.selection_range[2]
-
-  -- Check if the loop range matches the current selection
-  if song.transport.loop_sequence_range[1] == selection_start and 
-     song.transport.loop_sequence_range[2] == selection_end then
-    -- If it matches, disable the loop by setting it to nil
-    song.transport.loop_sequence_range = {}
-  else
-    -- Otherwise, set the loop range to the current selection
-    song.transport.loop_sequence_range = { selection_start, selection_end }
-  end
-end
-
--- Adding a key binding for the function
-renoise.tool():add_keybinding{name="Global:Paketti:Toggle Sequence Selection to Loop",invoke=function() SequenceSelectionToLoop() end}
-
--- Adding a menu entry for the function
-renoise.tool():add_menu_entry{name="Pattern Sequencer:Paketti..:Toggle Sequence Selection to Loop",invoke=function() SequenceSelectionToLoop() end}
-
-renoise.tool():add_keybinding{name="Global:Paketti:Toggle Sequence Selection (All) On/Off",invoke=function()
-local sequencerCount=#renoise.song().sequencer.pattern_sequence
---if renoise.song().sequencer.selection_range=={1,sequencerCount} 
---then renoise.song().sequencer.selection_range={} else
-renoise.song().sequencer.selection_range={1,#renoise.song().sequencer.pattern_sequence}
---end
-end
-}
-
-
-function tknaUnselectSequenceSelection()
-renoise.song().sequencer.selection_range={}
-end
-
-renoise.tool():add_keybinding{name="Global:Paketti:Set Sequence Selection Off",invoke=tknaUnselectSequenceSelection}
-
--- Function to toggle the current sequence selection
-function tknaToggleCurrentSequenceSelection()
-  -- Check if the current selection matches the selected sequence index
-  if renoise.song().sequencer.selection_range and
-     #renoise.song().sequencer.selection_range == 2 and
-     renoise.song().sequencer.selection_range[1] == renoise.song().selected_sequence_index and
-     renoise.song().sequencer.selection_range[2] == renoise.song().selected_sequence_index then
-    -- If so, clear the selection
-    renoise.song().sequencer.selection_range = {}
-  else
-    -- Otherwise, set the selection to the current sequence index
-    renoise.song().sequencer.selection_range = {renoise.song().selected_sequence_index, renoise.song().selected_sequence_index}
-  end
-end
-
--- Add keybinding for the function
-renoise.tool():add_keybinding{name="Global:Paketti:Toggle Current Sequence Selection On/Off", invoke=tknaToggleCurrentSequenceSelection}
-
-
-
-
--- Helper function to select and loop a specific section
-function select_and_loop_section(section_number)
-  local song = renoise.song()
-  local sequencer = song.sequencer
-  local sequence_count = #sequencer.pattern_sequence
-
-  local current_section_start = nil
-  local current_section_index = 0
-
-  -- Find the start index of the specific section
-  for i = 1, sequence_count do
-    if sequencer:sequence_is_start_of_section(i) then
-      current_section_index = current_section_index + 1
-      if current_section_index == section_number then
-        current_section_start = i
-        break
-      end
-    end
-  end
-
-  -- If the specified section is not found, exit the function
-  if not current_section_start then
-    renoise.app():show_status("No such Section exists, doing nothing.")
-    return
-  end
-
-  -- Find the end index of the current section
-  local current_section_end = sequence_count
-  for i = current_section_start + 1, sequence_count do
-    if sequencer:sequence_is_start_of_section(i) then
-      current_section_end = i - 1
-      break
-    end
-  end
-
-  -- Set the loop to the current section
-  song.transport.loop_sequence_range = {current_section_start, current_section_end}
-  
-  -- Notify the user
-  renoise.app():show_status("Loop set to section " .. section_number .. " from sequence " .. current_section_start .. " to " .. current_section_end)
-end
-
--- Helper function to find the current section index
-function find_current_section_index()
-  local song = renoise.song()
-  local sequencer = song.sequencer
-  local sequence_count = #sequencer.pattern_sequence
-  local current_pos = song.transport.edit_pos.sequence
-  local loop_start = song.transport.loop_sequence_range[1]
-  local loop_end = song.transport.loop_sequence_range[2]
-
-  -- Check if a section is currently selected
-  if loop_start > 0 and loop_end > 0 and loop_start <= loop_end then
-    local current_section_index = 0
-    for i = 1, sequence_count do
-      if sequencer:sequence_is_start_of_section(i) then
-        current_section_index = current_section_index + 1
-        if loop_start == i then
-          return current_section_index
-        end
-      end
-    end
-  end
-
-  -- If no section is selected, find the section based on the current edit position
-  local current_section_index = 0
-  for i = 1, sequence_count do
-    if sequencer:sequence_is_start_of_section(i) then
-      current_section_index = current_section_index + 1
-      if i > current_pos then
-        return current_section_index - 1
-      end
-    end
-  end
-  return current_section_index
-end
-
--- Function to select and loop the next section
-function select_and_loop_section_next()
-  local current_section_index = find_current_section_index()
-  if current_section_index < 32 then
-    select_and_loop_section(current_section_index + 1)
-  else
-    renoise.app():show_status("There is no Next Section available.")
-  end
-end
-
--- Function to select and loop the previous section
-function select_and_loop_section_previous()
-  local current_section_index = find_current_section_index()
-  if current_section_index > 1 then
-    select_and_loop_section(current_section_index - 1)
-  else
-    renoise.app():show_status("There is no Previous Section available.")
-  end
-end
-
--- Function to turn off the sequence selection
-function set_sequence_selection_off()
-  local song = renoise.song()
-  song.transport.loop_sequence_range = {0, 0}
-  renoise.app():show_status("Sequence selection turned off.")
-end
-
--- Function to select and loop a specific section, or deselect it if already selected
-function select_and_loop_section(section_index)
-  local song = renoise.song()
-  local sequencer = song.sequencer
-  local sequence_count = #sequencer.pattern_sequence
-  local current_section_index = 0
-  local loop_start = 0
-  local loop_end = 0
-
-  for i = 1, sequence_count do
-    if sequencer:sequence_is_start_of_section(i) then
-      current_section_index = current_section_index + 1
-      if current_section_index == section_index then
-        loop_start = i
-        for j = i + 1, sequence_count do
-          if sequencer:sequence_is_start_of_section(j) then
-            loop_end = j - 1
-            break
-          end
-        end
-        if loop_end == 0 then
-          loop_end = sequence_count
-        end
-        break
-      end
-    end
-  end
-
-  if song.transport.loop_sequence_range[1] == loop_start and song.transport.loop_sequence_range[2] == loop_end then
-    set_sequence_selection_off()
-  else
-    song.transport.loop_sequence_range = {loop_start, loop_end}
-    renoise.app():show_status("Looped section " .. section_index)
-  end
-end
-
-for section_number = 1, 32 do
-  renoise.tool():add_keybinding{name="Global:Paketti..:Select and Loop Sequence Section " .. string.format("%02d", section_number),
-    invoke=function() select_and_loop_section(section_number) end
-  }
-end
-
-renoise.tool():add_keybinding{name="Global:Paketti:Select and Loop Section (Next)",invoke=select_and_loop_section_next}
-renoise.tool():add_keybinding{name="Global:Paketti:Select and Loop Section (Previous)",invoke=select_and_loop_section_previous}
-
-renoise.tool():add_keybinding{name="Global:Paketti:Set Sequence Loop Selection Off",invoke=set_sequence_selection_off}
-
-
-
-
-function tknaNextSequence(count)
-local currSeq = renoise.song().selected_sequence_index
-local nextSeq = currSeq + count
-local total_sequences = #renoise.song().sequencer.pattern_sequence
-
-if nextSeq < 1 then renoise.app():show_status("You are on the first sequence.") return else
-
-  if nextSeq <= total_sequences then
-    renoise.song().selected_sequence_index = nextSeq
-    else
-    renoise.app():show_status("No more sequences available.")
-  end
-end
-
-end
-
-renoise.tool():add_keybinding{name="Global:Paketti:Jump to Sequence (Next)",invoke=function() tknaNextSequence(1) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Jump to Sequence (Previous)",invoke=function() tknaNextSequence(-1) end}
-
-function tknaContinueSequenceFromSameLine(number)
-local storedSequence = renoise.song().selected_sequence_index
-local storedRow = renoise.song().selected_line_index
-  if number <= #renoise.song().sequencer.pattern_sequence then
-if renoise.song().transport.follow_player then
-renoise.song().selected_sequence_index = number
-else
-
-renoise.song().transport.follow_player = true 
-renoise.song().selected_sequence_index = number
-renoise.song().transport.follow_player = false
-renoise.song().selected_sequence_index=storedSequence
-renoise.song().selected_line_index=storedRow 
-end
-    else
-    renoise.app():show_status("Sequence does not exist, doing nothing.")
-  end
-
-end
-
-
-for i = 1, 32 do
-  -- Zero-pad the number for sequence naming
-  local padded_number = string.format("%02d", i - 1)
-  
-  -- Add keybinding for each sequence
-  renoise.tool():add_keybinding{name="Global:Paketti:Continue Sequence " .. padded_number .. " From Same Line", invoke=function() 
-  if i < #renoise.song().sequencer.pattern_sequence then
-  tknaContinueSequenceFromSameLine(i) 
-  else
-  renoise.song():show_status("Sequence does not exist, doing nothing.")
-  end
-  end}
-
-end
---------
-
-function tknaContinueCurrentSequenceFromCurrentLine()
-  local song = renoise.song()
-
-  local storedSequence = song.selected_sequence_index
-  local step = 1
-
-  local function processStep()
-    if step == 1 then
-      renoise.song().transport.follow_player = true
-      renoise.app():show_status("Jumping to Previously Selected (Current) Sequence")
-      step = step + 1
-    elseif step == 2 then
-      renoise.song().selected_sequence_index = storedSequence
-      step = step + 1
-    elseif step == 3 then
-      renoise.song().transport.follow_player = false
-      renoise.tool().app_idle_observable:remove_notifier(processStep)
-    end
-  end
-
-  renoise.tool().app_idle_observable:add_notifier(processStep)
-end
-
-
-  renoise.tool():add_keybinding{name="Global:Paketti:Continue Current Sequence From Same Line", invoke=function() 
-  tknaContinueCurrentSequenceFromCurrentLine() 
-end}
----------
-function tknaMidiMapSequence(value)
-  local max_seq = #renoise.song().sequencer.pattern_sequence - 1
-  local sequence_num = math.floor((value / 127) * max_seq) + 1
-  tknaContinueSequenceFromSameLine(sequence_num)
-end
-
--- Add MIDI mapping
-renoise.tool():add_midi_mapping{name="Global:Paketti:Continue Sequence From Same Line [Set Sequence]", invoke=function(message)
-  if message:is_abs_value() then
-    tknaMidiMapSequence(message.int_value)
-  end
-end}
-
---------
-for i = 1, 32 do
-  -- Zero-pad the number for sequence naming
-  local padded_number = string.format("%02d", i - 1)
-  
-  -- Add keybinding for each sequence
-  renoise.tool():add_keybinding{name="Global:Paketti:Selected Specific Sequence " .. padded_number, invoke=function() 
-  if i < #renoise.song().sequencer.pattern_sequence then 
-  renoise.song().selected_sequence_index = i
-  else renoise.app():show_status("Sequence does not exist, doing nothing.")
-  end
-     end}
-end
-
-
-
-
-function tknaTriggerSequence(number)
-  local total_sequences = #renoise.song().sequencer.pattern_sequence
-  if number < total_sequences then
-    renoise.song().transport:trigger_sequence(number)
-  else
-    renoise.app():show_status("This sequence position does not exist.")
-  end
-end
-
-for i = 1, 32 do
-  -- Zero-pad the number for sequence naming
-  local padded_number = string.format("%02d", i - 1)
-  
-  -- Add keybinding for each sequence
-  renoise.tool():add_keybinding{name="Global:Paketti:Trigger Sequence " .. padded_number, invoke=function() tknaTriggerSequence(i) end}
-end
-
-
-
-
-
-
-
-function tknaSetSequenceAsScheduledList(number)
-if renoise.song().transport.playing then  else renoise.song().transport.playing=true
-end
-local total_sequences = #renoise.song().sequencer.pattern_sequence
-if number < total_sequences then
-renoise.song().transport:set_scheduled_sequence(number)
-else
-renoise.app():show_status("This sequence position does not exist.")
-end
-end
-
-for i = 1,32 do
-  local padded_number = string.format("%02d", i - 1)
-  
-  -- Add keybinding for each sequence
-  renoise.tool():add_keybinding{name="Global:Paketti:Set Sequence " .. padded_number .. " as Scheduled List", invoke=function() tknaSetSequenceAsScheduledList(i) end}
-end
-
-  renoise.tool():add_keybinding{name="Global:Paketti:Set Current Sequence as Scheduled List", invoke=function() 
-  
-  renoise.song().transport:set_scheduled_sequence(renoise.song().selected_sequence_index) end}
-
-  renoise.tool():add_keybinding{name="Global:Paketti:Add Current Sequence to Scheduled List", invoke=function() 
-  
-  renoise.song().transport:add_scheduled_sequence(renoise.song().selected_sequence_index) end}
-
-
-function tknaAddSequenceToScheduledList(number)
-if renoise.song().transport.playing then  else renoise.song().transport.playing=true
-end
-local total_sequences = #renoise.song().sequencer.pattern_sequence
-if number < total_sequences then
-renoise.song().transport:add_scheduled_sequence(number)
-else
-renoise.app():show_status("This sequence position does not exist.")
-end
-end
-
-for i = 1,32 do
-  local padded_number = string.format("%02d", i - 1)
-  
-  -- Add keybinding for each sequence
-  renoise.tool():add_keybinding{name="Global:Paketti:Add Sequence " .. padded_number .. " to Scheduled List", invoke=function() tknaAddSequenceToScheduledList(i) end}
-end
-
-
-for i = 1, 32 do
-  local padded_number = string.format("%02d", i - 1)
-  renoise.tool():add_keybinding{
-    name="Global:Paketti:Toggle Sequence Loop to " .. padded_number,
-    invoke=function()
-      local total_sequences = #renoise.song().sequencer.pattern_sequence
-      if i <= total_sequences then
-        local current_range = renoise.song().transport.loop_sequence_range
-        if current_range[1] == i and current_range[2] == i then
-          -- Turn off the loop
-          renoise.song().transport.loop_sequence_range = {}
-          renoise.app():show_status("Sequence loop turned off.")
-        else
-          -- Set the loop to the specified range
-          renoise.song().transport.loop_sequence_range = {i, i}
-          renoise.app():show_status("Sequence loop set to " .. padded_number)
-        end
-      else
-        renoise.app():show_status("This sequence does not exist.")
-      end
-    end
-  }
-end
-
-
-
-
-renoise.tool():add_keybinding{name="Global:Paketti:Clear Pattern Sequence Loop",invoke=function()
-renoise.song().transport.loop_sequence_range = {} end}
-
-
-
--- Function to compare two tables for value equality
-function tables_equal(t1, t2)
-  if #t1 ~= #t2 then
-    return false
-  end
-  for i = 1, #t1 do
-    if t1[i] ~= t2[i] then
-      return false
-    end
-  end
-  return true
-end
-
--- Function to set the sequence loop from current loop position to specified position
-function setSequenceLoopFromCurrentTo(position)
-  local total_sequences = #renoise.song().sequencer.pattern_sequence
-  local current_range = renoise.song().transport.loop_sequence_range
-
-  -- Ensure the specified position is within the valid range
-  if position > total_sequences then
-    renoise.app():show_status("This sequence does not exist.")
-    return
-  end
-
-  -- Check if current_range is {0,0} using the tables_equal function
-  if tables_equal(current_range, {0,0}) then
-    renoise.song().transport.loop_sequence_range = {position, position}
-    return
-  end
-
-  local current_start = current_range[1]
-
-  -- Check if the specified position is valid for setting the loop
-  if position < current_start then
-    renoise.song().transport.loop_sequence_range = {position, current_start}
-    renoise.app():show_status("Sequence loop set from " .. position .. " to " .. current_start)
-  else
-    renoise.song().transport.loop_sequence_range = {current_start, position}
-    renoise.app():show_status("Sequence loop set from " .. current_start .. " to " .. position)
-  end
-end
-
--- Loop to create keybindings for setting the loop range from current to specified position
-for i = 1, 32 do
-  local padded_number = string.format("%02d", i - 1)
-  renoise.tool():add_keybinding{name="Global:Paketti:Set Sequence Loop from Current to " .. padded_number,invoke=function()
-    setSequenceLoopFromCurrentTo(i)
-  end}
-end
-
 ------
 
 function globalChangeVisibleColumnState(columnName)
@@ -1033,11 +1947,6 @@ end
 
 
 -----------
-------------------------------
-------------------------------
-------------------------------
-
-
 -- Define the XML content as a string
 local InstrautomationXML = [[
 <?xml version="1.0" encoding="UTF-8"?>
@@ -1368,7 +2277,7 @@ function Experimental()
     check_and_execute(config_path, bash_script)
 end
 
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Experimental",invoke=function() Experimental() end}
+--renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Experimental (macOS Only) Config.XML overwriter (Destructive)",invoke=function() Experimental() end}
 
 --Wipes the pattern data, but not the samples or instruments.
 --WARNING: Does not reset current filename.
@@ -1468,57 +2377,8 @@ end
 --
 --end
 --renoise.tool():add_keybinding{name="Global:Paketti:Stair", invoke=function() stairs() end}
-
-function effectbypasspattern()
-local currTrak = renoise.song().selected_track_index
-local number = (table.count(renoise.song().selected_track.devices))
- for i=2,number  do 
-  --renoise.song().selected_track.devices[i].is_active=false
-  renoise.song().selected_track.visible_effect_columns=(table.count(renoise.song().selected_track.devices)-1)
---This would be (1-8F)
-renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[1].number_string="10"
-renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[2].number_string="20"
-renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[3].number_string="30"
-renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[4].number_string="40"
-renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[5].number_string="50"
-renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[6].number_string="60"
-renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[7].number_string="70"
-renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[8].number_string="80"
---this would be 00 for disabling
-local ooh=(i-1)
-renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[ooh].amount_string="00"
- end
-end
-
-function effectenablepattern()
-local currTrak = renoise.song().selected_track_index
-local number = (table.count(renoise.song().selected_track.devices))
-for i=2,number  do 
---enable all plugins on selected track right now
---renoise.song().selected_track.devices[i].is_active=true
---display max visible effects
-local helper=(table.count(renoise.song().selected_track.devices)-1)
-renoise.song().selected_track.visible_effect_columns=helper
---This would be (1-8F)
-renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[1].number_string="10"
-renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[2].number_string="20"
-renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[3].number_string="30"
-renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[4].number_string="40"
-renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[5].number_string="50"
-renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[6].number_string="60"
-renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[7].number_string="70"
-renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[8].number_string="80"
-
---this would be 01 for enabling
-local ooh=(i-1)
-renoise.song().patterns[renoise.song().selected_pattern_index].tracks[currTrak].lines[1].effect_columns[ooh].amount_string="01"
-end
-end
-------
 renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Bypass All Devices on Channel", invoke=function() effectbypass() end}
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Enable All Devices on Channel", invoke=function() effectenable() end}
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Bypass 8 Track DSP Devices (Write to Pattern)", invoke=function() effectbypasspattern() end}
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Enable 8 Track DSP Devices (Write to Pattern)", invoke=function() effectenablepattern()  end}
 ----------------------------
 
 -- has-line-input + add-line-input
@@ -1844,34 +2704,26 @@ renoise.app().window:select_preset(8) end}
 renoise.tool():add_keybinding{name="Global:Paketti:Contour Shuttle Disk Browser Focus",invoke=function() renoise.app().window:select_preset(8) end}
 ------------------------------------------------------------------------------------------------
 function G01()
-local s=renoise.song()
+  local s=renoise.song()
   local currTrak=s.selected_track_index
   local currPatt=s.selected_pattern_index
-local rightinstrument=nil
-local rightinstrument=renoise.song().selected_instrument_index-1
-  if not preferences._0G01_Loader.value then return end
+  local rightinstrument=nil
+  local rightinstrument=renoise.song().selected_instrument_index-1
 
-local line=s.patterns[currPatt].tracks[currTrak].lines[1]
-    line.note_columns[1].note_string="C-4"
-    line.note_columns[1].instrument_value=rightinstrument
-    s.patterns[currPatt].tracks[currTrak].lines[1].effect_columns[1].number_string="0G"
-    s.patterns[currPatt].tracks[currTrak].lines[1].effect_columns[1].amount_string="01"
+  if preferences._0G01_Loader.value then
+    local new_track_index = currTrak + 1
+    s:insert_track_at(new_track_index)
+    s.selected_track_index = new_track_index
+    currTrak = new_track_index
+  end
+
+  local line=s.patterns[currPatt].tracks[currTrak].lines[1]
+  line.note_columns[1].note_string="C-4"
+  line.note_columns[1].instrument_value=rightinstrument
+  line.effect_columns[1].number_string="0G"
+  line.effect_columns[1].amount_string="01"
 end
---------- inspect
 
-function writeToClipboard(text)
-    -- Using AppleScript to handle clipboard operations
-    local safe_text = text:gsub('"', '\\"')  -- Escape double quotes for AppleScript
-    local command = 'osascript -e \'set the clipboard to "' .. safe_text .. '"\''
-
-    -- Execute the command and check for errors
-    local success, exit_code, exit_reason = os.execute(command)
-    if success then
-        print("Successfully copied to clipboard: " .. text)
-    else
-        print("Failed to copy to clipboard:", exit_reason, "(exit code " .. tostring(exit_code) .. ")")
-    end
-end
 ---------
 function move_up(chg)
 local sindex=renoise.song().selected_line_index
@@ -2033,6 +2885,4 @@ renoise.song().transport.edit_step=0
 renoise.song().selected_note_column_index=1
 startcolumncycling(12) end}
 ----------------------------
-
-
 

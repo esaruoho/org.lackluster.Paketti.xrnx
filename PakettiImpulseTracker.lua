@@ -189,7 +189,7 @@ if t.playing then t:panic() else end
   startpos.line = 1
   t.playback_pos = startpos
 local start_time = os.clock()
-  while (os.clock() - start_time < 0.4) do
+  while (os.clock() - start_time < 0.225) do
         -- Delay the start after panic. Don't go below 0.2 seconds 
         -- or you might tempt some plugins to crash and take Renoise in the fall!!    
         -- ^^^ I don't know or remember who wrote the above comments but it wasn't me -Esa  
@@ -745,82 +745,26 @@ function endend()
   local s = renoise.song()
   local number = s.patterns[s.selected_pattern_index].number_of_lines
   local song_pos = s.transport.edit_pos
-  local selcol = s.selected_note_column_index
+
+  -- Disable follow player and loop block
   s.transport.follow_player = false
-  s.transport.loop_block_enabled=false
-  
--- always set to pattern editor
-renoise.app().window.active_middle_frame=1
-  
---  s.selected_note_column_index=1 
-song_pos.line = number
-s.transport.edit_pos = song_pos
+  s.transport.loop_block_enabled = false
 
---[[if song_pos.line == 1 then song_pos.line = number else song_pos.line = number s.selected_track_index = renoise.song().sequencer_track_count
-return
-end  
---]]  
---  s.selected_track_index = 7
---  song_pos.line = 64
---song_pos.line = 2
-  
---[[
+  -- Always set to pattern editor
+  renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
 
--- If on Master or Send-track, detect and go to first effect column.
-if s.selected_note_column_index==0 and s.selected_effect_column_index > 1 and song_pos.line == 1 and renoise.song().tracks[renoise.song().selected_track_index].visible_note_columns==0 then
-s.selected_effect_column_index = 1
-return end
-
--- If on Master or Send-track, detect and go to 1st track and first note column.
-if s.selected_note_column_index==0 and song_pos.line == 1 and renoise.song().tracks[renoise.song().selected_track_index].visible_note_columns==0 then
-s.selected_track_index = renoise.song().sequencer_track_count
-s.selected_note_column_index = 0
-return end
-
--- If Effect-columns chosen, take you to current effect column's first row.
-if s.selected_note_column_index==0 and song_pos.line == number then
-s.selected_note_column_index=renoise.song().sequencer_track_count+1
-return end
---]]
-if s.selected_note_column_index==0 then 
-  song_pos.line = number
-  s.transport.edit_pos = song_pos return end
-
---[[--
--- If Song Position Line is already First Line - but Selected Note Column is not 1
--- Then go to Selected Note Column 1 First Line. Return outside of script immediately.
-if song_pos.line == number and s.selected_note_column_index > 1 then
-s.selected_note_column_index = 1
-return
-else end
-
--- If Song Position Line is not 1, and Selected Note Column is not 1
--- Then go to Selected Note Column's First Line. Return outside of script immediately.
-if (s.selected_note_column_index > 1) then
-s.selected_note_column_index = selcol
-song_pos.line = number
-s.transport.edit_pos = song_pos 
-return
-else 
-end
-
-  if (song_pos.line > number) then
-    song_pos.line = number          
-    s.transport.edit_pos = song_pos   
-      if s.selected_note_column_index==0 then 
-      s.selected_effect_column_index=1 
-      else s.selected_note_column_index=1
-      end
-    return    
-  end  
--- Go to first track
-  if (s.selected_track_index > 1) then
-    s.selected_track_index = 1
-    s.selected_note_column_index=1
-    return
+  -- Check if we are in the last row
+  if song_pos.line == number then
+    -- Move to the last row of the last track before the master track
+    song_pos.line = number
+    s.selected_track_index = renoise.song().sequencer_track_count
+  else
+    -- Move to the last row of the current note column
+    song_pos.line = number
   end
-  s.selected_note_column_index=1
-  --]]
+
+  -- Update the edit position
+  s.transport.edit_pos = song_pos
 end
 
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Impulse Tracker End *2 behaviour", invoke=function() 
@@ -878,8 +822,9 @@ local instruments_state = "Keep"
 local pattern_sequence_state = "Keep"
 local instrument_midi_outs_state = "Keep"
 local instrument_samples_state = "Keep"
+local instrument_plugins_state = "Keep"
 
--- Functions to clear patterns, instruments, pattern sequence, MIDI outs, and samples
+-- Functions to clear patterns, instruments, pattern sequence, MIDI outs, samples, and plugins
 function patternClear()
   local song = renoise.song()
   for i = 1, #song.patterns do
@@ -926,6 +871,13 @@ function instrumentSamplesClear()
   end
 end
 
+function instrumentPluginsClear()
+  local song = renoise.song()
+  for i = 1, #song.instruments do
+    song.instruments[i].plugin_properties:load_plugin("")
+  end
+end
+
 -- Function to handle switch changes
 function handle_switch_change(value, section)
   local state = value == 1 and "Keep" or "Clear"
@@ -939,6 +891,8 @@ function handle_switch_change(value, section)
     instrument_midi_outs_state = state
   elseif section == "Instrument Samples" then
     instrument_samples_state = state
+  elseif section == "Instrument Plugins" then
+    instrument_plugins_state = state
   end
 end
 
@@ -950,7 +904,7 @@ function handle_ok_click()
   return function()
     local actions = {}
     if patterns_state == "Clear" and instruments_state == "Clear" and pattern_sequence_state == "Clear" and 
-       instrument_midi_outs_state == "Clear" and instrument_samples_state == "Clear" then
+       instrument_midi_outs_state == "Clear" and instrument_samples_state == "Clear" and instrument_plugins_state == "Clear" then
       renoise.app():new_song()
     else
       if patterns_state == "Clear" then
@@ -973,6 +927,10 @@ function handle_ok_click()
         instrumentSamplesClear()
         table.insert(actions, "Instrument Samples")
       end
+      if instrument_plugins_state == "Clear" then
+        instrumentPluginsClear()
+        table.insert(actions, "Instrument Plugins")
+      end
     end 
 
     local status_message = ""
@@ -985,6 +943,7 @@ function handle_ok_click()
       if pattern_sequence_state == "Keep" then table.insert(kept, "Pattern Sequence") end
       if instrument_midi_outs_state == "Keep" then table.insert(kept, "Instrument MIDI Outs") end
       if instrument_samples_state == "Keep" then table.insert(kept, "Instrument Samples") end
+      if instrument_plugins_state == "Keep" then table.insert(kept, "Instrument Plugins") end
       if #kept > 0 then
         status_message = "Kept " .. table.concat(kept, ", ") .. "; "
       end
@@ -1040,6 +999,7 @@ function show_new_song_dialog()
       toggle_switch_group("Instruments", instruments_state),
       toggle_switch_group("Instrument Samples", instrument_samples_state),
       toggle_switch_group("Instrument MIDI Outs", instrument_midi_outs_state),
+      toggle_switch_group("Instrument Plugins", instrument_plugins_state),
       vb:space { height = 10 },
       vb:row {
         vb:button {text="OK", width=100, notifier=handle_ok_click()
@@ -1065,4 +1025,245 @@ renoise.tool():add_keybinding{name="Pattern Editor:Selection:Impulse Tracker Unm
 
 renoise.tool():add_keybinding{name="Phrase Editor:Selection:Impulse Tracker Unmark Selection (ALT-U)",invoke=function() Deselect_Phr() end}
 renoise.tool():add_keybinding{name="Phrase Editor:Selection:Impulse Tracker Unmark Selection (CTRL-U) (2nd)",invoke=function() Deselect_Phr() end}
+------------
+function PakettiImpulseTrackerSwapBlock()
+  local song = renoise.song()
+  local selection = song.selection_in_pattern
 
+  if not selection then
+    renoise.app():show_status("No selection in pattern.")
+    return
+  end
+
+  local start_line = selection.start_line
+  local end_line = selection.end_line
+  local num_lines = end_line - start_line + 1
+  local start_column = selection.start_column
+  local end_column = selection.end_column
+  local start_track = selection.start_track
+  local end_track = selection.end_track
+  local num_columns = end_column - start_column + 1
+
+  local cursor_pos = song.transport.edit_pos
+  local cursor_track = song.selected_track_index
+  local cursor_line = cursor_pos.line
+  local cursor_column = song.selected_note_column_index
+
+  -- Ensure there are enough lines from the cursor position to swap
+  if cursor_line + num_lines - 1 > #song:pattern(cursor_pos.sequence).tracks[cursor_track].lines then
+    renoise.app():show_status("Not enough lines from cursor position to swap.")
+    return
+  end
+
+  -- Adjust the number of visible note columns if necessary
+  if song:track(cursor_track).visible_note_columns < cursor_column + num_columns then
+    song:track(cursor_track).visible_note_columns = cursor_column + num_columns
+  end
+
+  -- Collect data from the selection in its original note columns and track
+  local selection_data = {}
+  for line = start_line, end_line do
+    local line_data = {}
+    for column = start_column, start_column + num_columns - 1 do
+      local pattern_line = song:pattern(song.selected_pattern_index).tracks[start_track].lines[line]
+      local note_column = pattern_line.note_columns[column]
+      table.insert(line_data, {
+        note_value = note_column.note_value,
+        instrument_value = note_column.instrument_value,
+        volume_value = note_column.volume_value,
+        panning_value = note_column.panning_value,
+        delay_value = note_column.delay_value,
+        effect_number_value = note_column.effect_number_value,
+        effect_amount_value = note_column.effect_amount_value
+      })
+    end
+    table.insert(selection_data, line_data)
+  end
+
+  -- Collect data from the cursor block in its current note columns and track
+  local cursor_data = {}
+  for line = 0, num_lines - 1 do
+    local line_data = {}
+    for column = 0, num_columns - 1 do
+      local pattern_line = song:pattern(song.selected_pattern_index).tracks[cursor_track].lines[cursor_line + line]
+      local note_column = pattern_line.note_columns[cursor_column + column]
+      table.insert(line_data, {
+        note_value = note_column.note_value,
+        instrument_value = note_column.instrument_value,
+        volume_value = note_column.volume_value,
+        panning_value = note_column.panning_value,
+        delay_value = note_column.delay_value,
+        effect_number_value = note_column.effect_number_value,
+        effect_amount_value = note_column.effect_amount_value
+      })
+    end
+    table.insert(cursor_data, line_data)
+  end
+
+  -- Print debug details
+  print("Selection Data:")
+  for i, line_data in ipairs(selection_data) do
+    print("Line", i + start_line - 1)
+    for j, column_data in ipairs(line_data) do
+      print("  Column", j + start_column - 1, column_data)
+    end
+  end
+
+  print("Cursor Data:")
+  for i, line_data in ipairs(cursor_data) do
+    print("Line", i + cursor_line - 1)
+    for j, column_data in ipairs(line_data) do
+      print("  Column", j + cursor_column, column_data)
+    end
+  end
+
+  -- Swap the blocks between the selected note columns and the cursor note columns across tracks
+  for line = 0, num_lines - 1 do
+    for column = 0, num_columns - 1 do
+      local pattern_line_at_cursor = song:pattern(song.selected_pattern_index).tracks[cursor_track].lines[cursor_line + line]
+      local pattern_line_at_selection = song:pattern(song.selected_pattern_index).tracks[start_track].lines[start_line + line]
+
+      local note_column_at_cursor = pattern_line_at_cursor.note_columns[cursor_column + column]
+      local note_column_at_selection = pattern_line_at_selection.note_columns[start_column + column]
+
+      local selection_column_data = selection_data[line + 1][column + 1]
+      local cursor_column_data = cursor_data[line + 1][column + 1]
+
+      -- Swap data between the selected note columns and the cursor note columns
+      note_column_at_cursor.note_value = selection_column_data.note_value
+      note_column_at_cursor.instrument_value = selection_column_data.instrument_value
+      note_column_at_cursor.volume_value = selection_column_data.volume_value
+      note_column_at_cursor.panning_value = selection_column_data.panning_value
+      note_column_at_cursor.delay_value = selection_column_data.delay_value
+      note_column_at_cursor.effect_number_value = selection_column_data.effect_number_value
+      note_column_at_cursor.effect_amount_value = selection_column_data.effect_amount_value
+
+      note_column_at_selection.note_value = cursor_column_data.note_value
+      note_column_at_selection.instrument_value = cursor_column_data.instrument_value
+      note_column_at_selection.volume_value = cursor_column_data.volume_value
+      note_column_at_selection.panning_value = cursor_column_data.panning_value
+      note_column_at_selection.delay_value = cursor_column_data.delay_value
+      note_column_at_selection.effect_number_value = cursor_column_data.effect_number_value
+      note_column_at_selection.effect_amount_value = cursor_column_data.effect_amount_value
+    end
+  end
+
+  renoise.app():show_status("Blocks swapped successfully.")
+end
+
+-- Add the keybinding for the ALT-Y action
+renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker ALT-Y Swap Block",invoke=PakettiImpulseTrackerSwapBlock}
+-----------
+
+-- Move to the next track, maintaining column type, with wrapping.
+function PakettiImpulseTrackerMoveForwardsTrackWrap()
+  local song = renoise.song()
+  local current_index = song.selected_track_index
+  local is_effect_column = song.selected_effect_column_index > 0
+  
+  if current_index < #song.tracks then
+    song.selected_track_index = current_index + 1
+  else
+    song.selected_track_index = 1
+  end
+  
+  if is_effect_column then
+    song.selected_effect_column_index = 1
+  else
+    song.selected_note_column_index = 1
+  end
+end
+
+-- Move to the previous track, maintaining column type, with wrapping.
+function PakettiImpulseTrackerMoveBackwardsTrackWrap()
+  local song = renoise.song()
+  local current_index = song.selected_track_index
+  local is_effect_column = song.selected_effect_column_index > 0
+  
+  if current_index > 1 then
+    song.selected_track_index = current_index - 1
+  else
+    song.selected_track_index = #song.tracks
+  end
+  
+  if is_effect_column then
+    song.selected_effect_column_index = 1
+  else
+    song.selected_note_column_index = 1
+  end
+end
+
+-- Move to the next track, maintaining column type, no wrapping.
+function PakettiImpulseTrackerMoveForwardsTrack()
+  local song = renoise.song()
+  local current_index = song.selected_track_index
+  local is_effect_column = song.selected_effect_column_index > 0
+  
+  if current_index < #song.tracks then
+    song.selected_track_index = current_index + 1
+  else
+    renoise.app():show_status("You are on the last track.")
+  end
+  
+  if is_effect_column then
+    song.selected_effect_column_index = 1
+  else
+    song.selected_note_column_index = 1
+  end
+end
+
+-- Move to the previous track, maintaining column type, no wrapping.
+function PakettiImpulseTrackerMoveBackwardsTrack()
+  local song = renoise.song()
+  local current_index = song.selected_track_index
+  local is_effect_column = song.selected_effect_column_index > 0
+  
+  if current_index > 1 then
+    song.selected_track_index = current_index - 1
+  else
+    renoise.app():show_status("You are on the first track.")
+  end
+  
+  if is_effect_column then
+    song.selected_effect_column_index = 1
+  else
+    song.selected_note_column_index = 1
+  end
+end
+
+-- Add keybindings for Pattern Editor
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Impulse Tracker Alt-Right Move Forwards One Channel (Wrap)", invoke=PakettiImpulseTrackerMoveForwardsTrackWrap}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Impulse Tracker Alt-Left Move Backwards One Channel (Wrap)", invoke=PakettiImpulseTrackerMoveBackwardsTrackWrap}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Impulse Tracker Alt-Right Move Forwards One Channel", invoke=PakettiImpulseTrackerMoveForwardsTrack}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Impulse Tracker Alt-Left Move Backwards One Channel", invoke=PakettiImpulseTrackerMoveBackwardsTrack}
+
+-- Add keybindings for Mixer
+renoise.tool():add_keybinding{name="Mixer:Paketti:Impulse Tracker Alt-Right Move Forwards One Channel (Wrap)", invoke=PakettiImpulseTrackerMoveForwardsTrackWrap}
+renoise.tool():add_keybinding{name="Mixer:Paketti:Impulse Tracker Alt-Left Move Backwards One Channel (Wrap)", invoke=PakettiImpulseTrackerMoveBackwardsTrackWrap}
+renoise.tool():add_keybinding{name="Mixer:Paketti:Impulse Tracker Alt-Right Move Forwards One Channel", invoke=PakettiImpulseTrackerMoveForwardsTrack}
+renoise.tool():add_keybinding{name="Mixer:Paketti:Impulse Tracker Alt-Left Move Backwards One Channel", invoke=PakettiImpulseTrackerMoveBackwardsTrack}
+
+-- Add MIDI mappings
+renoise.tool():add_midi_mapping{name="Global:Paketti:Move to Next Track (Wrap) [Knob]", invoke=function(message)
+  if message:is_abs_value() then
+    PakettiImpulseTrackerMoveForwardsTrackWrap()
+  end
+end}
+
+renoise.tool():add_midi_mapping{name="Global:Paketti:Move to Previous Track (Wrap) [Knob]", invoke=function(message)
+  if message:is_abs_value() then
+    PakettiImpulseTrackerMoveBackwardsTrackWrap()
+  end
+end}
+
+renoise.tool():add_midi_mapping{name="Global:Paketti:Move to Next Track [Knob]", invoke=function(message)
+  if message:is_abs_value() then
+    PakettiImpulseTrackerMoveForwardsTrack()
+  end
+end}
+
+renoise.tool():add_midi_mapping{name="Global:Paketti:Move to Previous Track [Knob]", invoke=function(message)
+  if message:is_abs_value() then
+    PakettiImpulseTrackerMoveBackwardsTrack()
+  end
+end}

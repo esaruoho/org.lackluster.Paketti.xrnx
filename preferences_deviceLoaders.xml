@@ -71,3 +71,39 @@
 <MIDIMapping name="Tools:Track Devices:Load Device (VST3/AU) ZRev">
   <Path>Audio/Effects/VST3/D39D5B69D6AF42FA1234567872655630</Path>
 </MIDIMapping>
+<KeyBinding name="Global:Track Devices:Load Device (Native) #Multiband Send">
+  <Path>Audio/Effects/Native/#Multiband Send</Path>
+</KeyBinding>
+<MIDIMapping name="Tools:Track Devices:Load Device (Native) #Multiband Send">
+  <Path>Audio/Effects/Native/#Multiband Send</Path>
+</MIDIMapping>
+<KeyBinding name="Global:Track Devices:Load Device (Native) #Send">
+  <Path>Audio/Effects/Native/#Send</Path>
+</KeyBinding>
+<MIDIMapping name="Tools:Track Devices:Load Device (Native) #Send">
+  <Path>Audio/Effects/Native/#Send</Path>
+</MIDIMapping>
+<KeyBinding name="Global:Track Devices:Load Device (Native) *Instr. Automation">
+  <Path>Audio/Effects/Native/*Instr. Automation</Path>
+</KeyBinding>
+<MIDIMapping name="Tools:Track Devices:Load Device (Native) *Instr. Automation">
+  <Path>Audio/Effects/Native/*Instr. Automation</Path>
+</MIDIMapping>
+<KeyBinding name="Global:Track Devices:Load Device (Native) *Instr. MIDI Control">
+  <Path>Audio/Effects/Native/*Instr. MIDI Control</Path>
+</KeyBinding>
+<MIDIMapping name="Tools:Track Devices:Load Device (Native) *Instr. MIDI Control">
+  <Path>Audio/Effects/Native/*Instr. MIDI Control</Path>
+</MIDIMapping>
+<KeyBinding name="Global:Track Devices:Load Device (Native) *Instr. Macros">
+  <Path>Audio/Effects/Native/*Instr. Macros</Path>
+</KeyBinding>
+<MIDIMapping name="Tools:Track Devices:Load Device (Native) *Instr. Macros">
+  <Path>Audio/Effects/Native/*Instr. Macros</Path>
+</MIDIMapping>
+<KeyBinding name="Global:Track Devices:Load Device (Native) *Key Tracker">
+  <Path>Audio/Effects/Native/*Key Tracker</Path>
+</KeyBinding>
+<MIDIMapping name="Tools:Track Devices:Load Device (Native) *Key Tracker">
+  <Path>Audio/Effects/Native/*Key Tracker</Path>
+</MIDIMapping>

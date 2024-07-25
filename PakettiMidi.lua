@@ -724,6 +724,14 @@ local function initialize_variables()
     table.insert(midi_output_devices, device)
   end
 
+  -- Ensure there are at least two items in the lists
+  if #midi_input_devices < 2 then
+    table.insert(midi_input_devices, "No MIDI Input Devices - do not select this")
+  end
+  if #midi_output_devices < 2 then
+    table.insert(midi_output_devices, "No MIDI Output Devices - do not select this")
+  end
+
   plugin_dropdown_items = {"<None>"}
   available_plugins = renoise.song().selected_instrument.plugin_properties.available_plugin_infos
   for _, plugin_info in ipairs(available_plugins) do
@@ -744,6 +752,7 @@ local function initialize_variables()
     selected_plugin[i] = plugin_dropdown_items[1]
   end
 end
+
 
 local note_columns_switch, effect_columns_switch, delay_column_switch, volume_column_switch, panning_column_switch, sample_effects_column_switch, collapsed_switch, incoming_audio_switch, populate_sends_switch, external_editor_switch
 

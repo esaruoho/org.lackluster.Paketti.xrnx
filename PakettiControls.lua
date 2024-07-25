@@ -134,13 +134,115 @@ end
 renoise.tool():add_keybinding{name="Global:Paketti:KeybOctave Up", invoke=function() KeybOctave(1) end}
 renoise.tool():add_keybinding{name="Global:Paketti:KeybOctave Down", invoke=function() KeybOctave(-1) end}
 -----
-function OctTranspose(UpOrDown)
-local note_column = renoise.song().selected_note_column 
-note_column.note_value = (note_column.note_value +UpOrDown) % 120
+-- Function to transpose notes
+function PakettiTranspose(steps)
+  local song = renoise.song()
+  local selection = song.selection_in_pattern
+  local pattern = song.selected_pattern
+
+  -- Determine the range to transpose
+  local start_track, end_track, start_line, end_line, start_column, end_column
+
+  if selection ~= nil then
+    start_track = selection.start_track
+    end_track = selection.end_track
+    start_line = selection.start_line
+    end_line = selection.end_line
+    start_column = selection.start_column
+    end_column = selection.end_column
+  else
+    start_track = song.selected_track_index
+    end_track = song.selected_track_index
+    start_line = 1
+    end_line = pattern.number_of_lines
+    start_column = 1
+    end_column = song.tracks[start_track].visible_note_columns
+  end
+
+  -- Iterate through each track in the determined range
+  for track_index = start_track, end_track do
+    local track = pattern:track(track_index)
+
+    -- Iterate through each line in the determined range
+    for line_index = start_line, end_line do
+      local line = track:line(line_index)
+
+      -- Iterate through each note column in the line within the determined range
+      for column_index = start_column, end_column do
+        local note_column = line:note_column(column_index)
+        if not note_column.is_empty then
+          note_column.note_value = (note_column.note_value + steps) % 120
+        end
+      end
+    end
+  end
 end
 
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Transpose Octave Up", invoke=function() OctTranspose(12) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Transpose Octave Down", invoke=function() OctTranspose(-12) end}
+-- Adding keybindings for octave and semitone transpose
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Transpose Octave Up (Selection/Track)",invoke=function() PakettiTranspose(12) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Transpose Octave Down (Selection/Track)",invoke=function() PakettiTranspose(-12) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Transpose +1 (Selection/Track)",invoke=function() PakettiTranspose(1) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Transpose -1 (Selection/Track)",invoke=function() PakettiTranspose(-1) end}
+
+--------------
+-- Function to transpose notes in selected note columns or current note column
+-- Function to transpose notes in selected note columns or current note column
+function PakettiTransposeNoteColumn(steps)
+  local song = renoise.song()
+  local selection = song.selection_in_pattern
+  local pattern = song.selected_pattern
+
+  -- Check if the cursor is in an effect column
+  if song.selected_note_column == nil then
+    renoise.app():show_status("You are in the Effect Column, nothing to transpose, exiting.")
+    return
+  end
+
+  -- Determine the range to transpose
+  local start_track, end_track, start_line, end_line, start_column, end_column
+
+  if selection ~= nil then
+    start_track = selection.start_track
+    end_track = selection.end_track
+    start_line = selection.start_line
+    end_line = selection.end_line
+    start_column = selection.start_column
+    end_column = selection.end_column
+  else
+    start_track = song.selected_track_index
+    end_track = song.selected_track_index
+    start_line = 1
+    end_line = pattern.number_of_lines
+    start_column = song.selected_note_column_index
+    end_column = song.selected_note_column_index
+  end
+
+  -- Iterate through each track in the determined range
+  for track_index = start_track, end_track do
+    local track = pattern:track(track_index)
+
+    -- Iterate through each line in the determined range
+    for line_index = start_line, end_line do
+      local line = track:line(line_index)
+
+      -- Iterate through each note column in the line within the determined range
+      for column_index = start_column, end_column do
+        local note_column = line:note_column(column_index)
+        if not note_column.is_empty then
+          note_column.note_value = (note_column.note_value + steps) % 120
+        end
+      end
+    end
+  end
+end
+
+-- Adding keybindings for octave and semitone transpose in note columns
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Transpose Octave Up Note Column (Selection/Note Column)",invoke=function() PakettiTransposeNoteColumn(12) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Transpose Octave Down Note Column (Selection/Note Column)",invoke=function() PakettiTransposeNoteColumn(-12) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Transpose +1 Note Column (Selection/Note Column)",invoke=function() PakettiTransposeNoteColumn(1) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Transpose -1 Note Column (Selection/Note Column)",invoke=function() PakettiTransposeNoteColumn(-1) end}
+
+
 ---------
 function simpleplay()
 if renoise.song().transport.playing == true
@@ -385,6 +487,9 @@ function set_group_mute_state(group, mute_state)
 end
 
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Toggle Mute Tracks",invoke=toggle_mute_tracks}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Toggle Mute Tracks",invoke=toggle_mute_tracks}
 renoise.tool():add_keybinding{name="Global:Paketti:Toggle Mute Tracks",invoke=toggle_mute_tracks}
 renoise.tool():add_midi_mapping{name="Paketti:Toggle Mute Tracks",invoke=toggle_mute_tracks}
+---------
+
 

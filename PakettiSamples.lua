@@ -16,7 +16,7 @@ function appSelectionBrowseForApp(index)
             -- Replace backslashes with double backslashes for Windows paths
             selected_file = string.gsub(selected_file, "\\", "\\\\")
         end
-        preferences["AppSelection"..index].value = selected_file
+        preferences.AppSelection["AppSelection"..index].value = selected_file
         if app_paths[index] then
             app_paths[index].text = selected_file
         end
@@ -28,11 +28,11 @@ end
 
 -- Function to browse for a smart folder and update the corresponding field
 function browseForSmartFolder(index)
-    local dialog_title = "Select a Smart Folder"
+    local dialog_title = "Select a Smart Folder / Backup Folder"
 
     local selected_folder = renoise.app():prompt_for_path(dialog_title)
     if selected_folder ~= "" then
-        preferences["SmartFoldersApp"..index].value = selected_folder
+        preferences.AppSelection["SmartFoldersApp"..index].value = selected_folder
         if smart_folder_paths[index] then
             smart_folder_paths[index].text = selected_folder
         end
@@ -89,13 +89,13 @@ local function create_dialog_content(close_dialog)
             vb:button{
                 text="Send Selected Sample to App",
                 notifier=function() 
-                    saveSelectedSampleToTempAndOpen(preferences.AppSelection1.value) 
+                    saveSelectedSampleToTempAndOpen(preferences.AppSelection.AppSelection1.value) 
                 end,
                 width=200
             },
             (function()
                 local path = vb:text{
-                    text=(preferences.AppSelection1.value ~= "" and preferences.AppSelection1.value or "None"),
+                    text=(preferences.AppSelection.AppSelection1.value ~= "" and preferences.AppSelection.AppSelection1.value or "None"),
                     width=600,
                     font="bold"
                 }
@@ -112,13 +112,13 @@ local function create_dialog_content(close_dialog)
             vb:button{
                 text="Send Selected Sample to App",
                 notifier=function() 
-                    saveSelectedSampleToTempAndOpen(preferences.AppSelection2.value) 
+                    saveSelectedSampleToTempAndOpen(preferences.AppSelection.AppSelection2.value) 
                 end,
                 width=200
             },
             (function()
                 local path = vb:text{
-                    text=(preferences.AppSelection2.value ~= "" and preferences.AppSelection2.value or "None"),
+                    text=(preferences.AppSelection.AppSelection2.value ~= "" and preferences.AppSelection.AppSelection2.value or "None"),
                     width=600,
                     font="bold"
                 }
@@ -135,13 +135,13 @@ local function create_dialog_content(close_dialog)
             vb:button{
                 text="Send Selected Sample to App",
                 notifier=function() 
-                    saveSelectedSampleToTempAndOpen(preferences.AppSelection3.value) 
+                    saveSelectedSampleToTempAndOpen(preferences.AppSelection.AppSelection3.value) 
                 end,
                 width=200
             },
             (function()
                 local path = vb:text{
-                    text=(preferences.AppSelection3.value ~= "" and preferences.AppSelection3.value or "None"),
+                    text=(preferences.AppSelection.AppSelection3.value ~= "" and preferences.AppSelection.AppSelection3.value or "None"),
                     width=600,
                     font="bold"
                 }
@@ -158,13 +158,13 @@ local function create_dialog_content(close_dialog)
             vb:button{
                 text="Send Selected Sample to App",
                 notifier=function() 
-                    saveSelectedSampleToTempAndOpen(preferences.AppSelection4.value) 
+                    saveSelectedSampleToTempAndOpen(preferences.AppSelection.AppSelection4.value) 
                 end,
                 width=200
             },
             (function()
                 local path = vb:text{
-                    text=(preferences.AppSelection4.value ~= "" and preferences.AppSelection4.value or "None"),
+                    text=(preferences.AppSelection.AppSelection4.value ~= "" and preferences.AppSelection.AppSelection4.value or "None"),
                     width=600,
                     font="bold"
                 }
@@ -181,13 +181,13 @@ local function create_dialog_content(close_dialog)
             vb:button{
                 text="Send Selected Sample to App",
                 notifier=function() 
-                    saveSelectedSampleToTempAndOpen(preferences.AppSelection5.value) 
+                    saveSelectedSampleToTempAndOpen(preferences.AppSelection.AppSelection5.value) 
                 end,
                 width=200
             },
             (function()
                 local path = vb:text{
-                    text=(preferences.AppSelection5.value ~= "" and preferences.AppSelection5.value or "None"),
+                    text=(preferences.AppSelection.AppSelection5.value ~= "" and preferences.AppSelection.AppSelection5.value or "None"),
                     width=600,
                     font="bold"
                 }
@@ -204,13 +204,13 @@ local function create_dialog_content(close_dialog)
             vb:button{
                 text="Send Selected Sample to App",
                 notifier=function() 
-                    saveSelectedSampleToTempAndOpen(preferences.AppSelection6.value) 
+                    saveSelectedSampleToTempAndOpen(preferences.AppSelection.AppSelection6.value) 
                 end,
                 width=200
             },
             (function()
                 local path = vb:text{
-                    text=(preferences.AppSelection6.value ~= "" and preferences.AppSelection6.value or "None"),
+                    text=(preferences.AppSelection.AppSelection6.value ~= "" and preferences.AppSelection.AppSelection6.value or "None"),
                     width=600,
                     font="bold"
                 }
@@ -218,7 +218,7 @@ local function create_dialog_content(close_dialog)
                 return path
             end)()
         },
-        vb:row{vb:text{text="Smart Folders", font="bold", style="strong"}},
+        vb:row{vb:text{text="Smart Folders / Backup Folders", font="bold", style="strong"}},
         vb:row{
             spacing=10,
             vb:button{
@@ -226,14 +226,14 @@ local function create_dialog_content(close_dialog)
                 notifier=function() browseForSmartFolder(1) end
             },
             vb:button{
-                text="Save Selected Sample to Smart Folder",
+                text="Save Selected Sample to Folder",
                 notifier=function() 
                     saveSampleToSmartFolder(1) 
                 end,
                 width=200
             },
             vb:button{
-                text="Save All Samples to Smart Folder",
+                text="Save All Samples to Folder",
                 notifier=function() 
                     saveSamplesToSmartFolder(1) 
                 end,
@@ -241,7 +241,7 @@ local function create_dialog_content(close_dialog)
             },
             (function()
                 local path = vb:text{
-                    text=(preferences.SmartFoldersApp1.value ~= "" and preferences.SmartFoldersApp1.value or "None"),
+                    text=(preferences.AppSelection.SmartFoldersApp1.value ~= "" and preferences.AppSelection.SmartFoldersApp1.value or "None"),
                     width=600,
                     font="bold"
                 }
@@ -256,14 +256,14 @@ local function create_dialog_content(close_dialog)
                 notifier=function() browseForSmartFolder(2) end
             },
             vb:button{
-                text="Save Selected Sample to Smart Folder",
+                text="Save Selected Sample to Folder",
                 notifier=function() 
                     saveSampleToSmartFolder(2) 
                 end,
                 width=200
             },
             vb:button{
-                text="Save All Samples to Smart Folder",
+                text="Save All Samples to Folder",
                 notifier=function() 
                     saveSamplesToSmartFolder(2) 
                 end,
@@ -271,7 +271,7 @@ local function create_dialog_content(close_dialog)
             },
             (function()
                 local path = vb:text{
-                    text=(preferences.SmartFoldersApp2.value ~= "" and preferences.SmartFoldersApp2.value or "None"),
+                    text=(preferences.AppSelection.SmartFoldersApp2.value ~= "" and preferences.AppSelection.SmartFoldersApp2.value or "None"),
                     width=600,
                     font="bold"
                 }
@@ -286,14 +286,14 @@ local function create_dialog_content(close_dialog)
                 notifier=function() browseForSmartFolder(3) end
             },
             vb:button{
-                text="Save Selected Sample to Smart Folder",
+                text="Save Selected Sample to Folder",
                 notifier=function() 
                     saveSampleToSmartFolder(3) 
                 end,
                 width=200
             },
             vb:button{
-                text="Save All Samples to Smart Folder",
+                text="Save All Samples to Folder",
                 notifier=function() 
                     saveSamplesToSmartFolder(3) 
                 end,
@@ -301,7 +301,7 @@ local function create_dialog_content(close_dialog)
             },
             (function()
                 local path = vb:text{
-                    text=(preferences.SmartFoldersApp3.value ~= "" and preferences.SmartFoldersApp3.value or "None"),
+                    text=(preferences.AppSelection.SmartFoldersApp3.value ~= "" and preferences.AppSelection.SmartFoldersApp3.value or "None"),
                     width=600,
                     font="bold"
                 }
@@ -321,7 +321,7 @@ end
 -- Show the dialog
 function show_app_selection_dialog()
     local dialog = nil
-    dialog = renoise.app():show_custom_dialog("App Selection & Smart Folders", create_dialog_content(function()
+    dialog = renoise.app():show_custom_dialog("App Selection & Smart Folders / Backup Folders", create_dialog_content(function()
         dialog:close()
     end))
 end
@@ -333,7 +333,7 @@ for i=1, 6 do
     renoise.tool():add_keybinding{
         name="Global:Paketti:Send Selected Sample to AppSelection" .. i,
         invoke=function()
-            saveSelectedSampleToTempAndOpen(preferences["AppSelection"..i].value)
+            saveSelectedSampleToTempAndOpen(preferences.AppSelection["AppSelection"..i].value)
         end
     }
 
@@ -341,50 +341,34 @@ for i=1, 6 do
         name="Global:Paketti:Send Selected Sample to AppSelection" .. i,
         invoke=function(message)
             if message:is_trigger() then
-                saveSelectedSampleToTempAndOpen(preferences["AppSelection"..i].value)
+                saveSelectedSampleToTempAndOpen(preferences.AppSelection["AppSelection"..i].value)
             end
         end
     }
 end
 
--- Add key bindings and MIDI mappings for SmartFolders shortcuts
 for i=1, 3 do
-    renoise.tool():add_keybinding{
-        name="Global:Paketti:Save Sample to Smart Folder " .. i,
-        invoke=function()
-            saveSampleToSmartFolder(i)
-        end
-    }
-
-    renoise.tool():add_midi_mapping{
-        name="Global:Paketti:Save Sample to Smart Folder " .. i,
-        invoke=function(message)
-            if message:is_trigger() then
-                saveSampleToSmartFolder(i)
-            end
-        end
-    }
-
-    renoise.tool():add_keybinding{
-        name="Global:Paketti:Save All Samples to Smart Folder " .. i,
-        invoke=function()
-            saveSamplesToSmartFolder(i)
-        end
-    }
-
-    renoise.tool():add_midi_mapping{
-        name="Global:Paketti:Save All Samples to Smart Folder " .. i,
-        invoke=function(message)
-            if message:is_trigger() then
-                saveSamplesToSmartFolder(i)
-            end
-        end
-    }
+    renoise.tool():add_keybinding{name="Global:Paketti:Save Sample to Smart/Backup Folder " .. i, invoke=function() saveSampleToSmartFolder(i) end }
+    renoise.tool():add_menu_entry{name="Sample Navigator:Paketti..:Save Sample to Smart/Backup Folder " .. i, invoke=function() saveSampleToSmartFolder(i) end }
+    renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Save Sample to Smart/Backup Folder " .. i, invoke=function() saveSampleToSmartFolder(i) end }
+    renoise.tool():add_midi_mapping{name="Global:Paketti:Save Sample to Smart/Backup Folder " .. i, invoke=function(message)
+            if message:is_trigger() then saveSampleToSmartFolder(i) end end}
 end
+
+for i=1, 3 do
+    renoise.tool():add_keybinding{name="Global:Paketti:Save All Samples to Smart/Backup Folder " .. i, invoke=function() saveSamplesToSmartFolder(i) end}
+    renoise.tool():add_menu_entry{name="Sample Navigator:Paketti..:Save All Samples to Smart/Backup Folder " .. i, invoke=function() saveSamplesToSmartFolder(i) end }
+    renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Save All Samples to Smart/Backup Folder " .. i, invoke=function() saveSamplesToSmartFolder(i) end }
+    renoise.tool():add_midi_mapping{ name="Global:Paketti:Save All Samples to Smart/Backup Folder " .. i, invoke=function(message)
+    if message:is_trigger() then saveSamplesToSmartFolder(i) end end}
+end
+
+
+
 ----------------
 -- Function to save selected sample to the specified Smart Folder
 function saveSampleToSmartFolder(index)
-    local smart_folder_path = preferences["SmartFoldersApp"..index].value
+    local smart_folder_path = preferences.AppSelection["SmartFoldersApp"..index].value
     if smart_folder_path == "" then
         renoise.app():show_status("Please set the Smart Folder path for " .. index)
         renoise.app():show_custom_dialog("Set Smart Folder Path", create_dialog_content())
@@ -418,7 +402,7 @@ end
 
 -- Function to save all samples to the specified Smart Folder
 function saveSamplesToSmartFolder(index)
-    local smart_folder_path = preferences["SmartFoldersApp"..index].value
+    local smart_folder_path = preferences.AppSelection["SmartFoldersApp"..index].value
     if smart_folder_path == "" then
         renoise.app():show_status("Please set the Smart Folder path for " .. index)
         renoise.app():show_custom_dialog("Set Smart Folder Path", create_dialog_content())
@@ -455,8 +439,31 @@ function saveSamplesToSmartFolder(index)
 end
 
 
+-------------
 
+function pakettiPreferencesDefaultInstrumentLoader()
+  local defaultInstrument = preferences.pakettiDefaultXRNI.value
+  local fallbackInstrument = "Presets/12st_Pitchbend.xrni"
 
+  -- Function to check if a file exists
+  local function file_exists(file)
+    local f = io.open(file, "r")
+    if f then f:close() end
+    return f ~= nil
+  end
+
+  -- Check if the defaultInstrument is nil or the file doesn't exist
+  if not defaultInstrument or not file_exists(defaultInstrument) then
+    defaultInstrument = fallbackInstrument
+    renoise.app():show_status("The Default XRNI has not been set, using Paketti/Presets/12st_Pitchbend.xrni")
+  end
+
+  print("Loading instrument from path: " .. defaultInstrument)
+  renoise.app():load_instrument(defaultInstrument)
+  if preferences.pakettiPitchbendLoaderEnvelope.value then
+renoise.song().selected_instrument.sample_modulation_sets[1].devices[2].is_active = true else end
+
+end
 
 
 ---------------
@@ -579,6 +586,7 @@ end
 
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments:Paketti PitchBend Drumkit Sample Loader", invoke=function() pitchBendDrumkitLoader() end}
 renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Paketti PitchBend Drumkit Sample Loader", invoke=function() pitchBendDrumkitLoader() end}
+renoise.tool():add_menu_entry{name="--Disk Browser Files:Paketti..:Paketti PitchBend Drumkit Sample Loader", invoke=function() pitchBendMultipleSampleLoader() end}
 
 renoise.tool():add_keybinding{name="Global:Paketti:Paketti PitchBend Drumkit Sample Loader", invoke=function() pitchBendDrumkitLoader() end}
 
@@ -623,12 +631,11 @@ function create_new_instrument_from_selection()
   print("Inserted new instrument at index " .. new_instrument_index)
 
   -- Load the 12st_Pitchbend instrument into the new instrument slot
-  if not renoise.app():load_instrument("Presets/12st_Pitchbend.xrni") then
-    renoise.app():show_error("Failed to load instrument Presets/12st_Pitchbend.xrni")
-    print("Error: Failed to load instrument Presets/12st_Pitchbend.xrni")
-    return
-  end
-  print("Loaded 12st_Pitchbend instrument into the new instrument slot.")
+  
+  pakettiPreferencesDefaultInstrumentLoader()
+
+  
+  print("Loaded Default XRNI instrument into the new instrument slot.")
 
   local new_instrument = song:instrument(new_instrument_index)
   new_instrument.name = "Pitchbend Instrument"
@@ -727,63 +734,47 @@ function pitchBendMultipleSampleLoader()
   local selected_sample_filenames = renoise.app():prompt_for_multiple_filenames_to_read({"*.wav", "*.aif", "*.flac", "*.mp3", "*.aiff"}, "Paketti PitchBend Multiple Sample Loader")
 
   if #selected_sample_filenames > 0 then
-    -- Print all selected filenames
     rprint(selected_sample_filenames)
-
-    -- Iterate over each selected filename
     for index, filename in ipairs(selected_sample_filenames) do
-      -- Insert a new instrument at the next index
       local next_instrument = renoise.song().selected_instrument_index + 1
       renoise.song():insert_instrument_at(next_instrument)
-      renoise.song().selected_instrument_index = renoise.song().selected_instrument_index + 1
+      renoise.song().selected_instrument_index = next_instrument
 
-      -- Ensure the new instrument is selected
-      local current_instrument_index = renoise.song().selected_instrument_index
+      pakettiPreferencesDefaultInstrumentLoader()
 
-      -- Load the 12st_Pitchbend instrument
-      renoise.app():load_instrument("Presets/12st_Pitchbend.xrni")
       local selected_instrument = renoise.song().selected_instrument
       selected_instrument.name = "Pitchbend Instrument"
       selected_instrument.macros_visible = true
       selected_instrument.sample_modulation_sets[1].name = "Pitchbend"
 
-      -- Adjust pitch here if necessary
       if #selected_instrument.samples == 0 then
         selected_instrument:insert_sample_at(1)
       end
       renoise.song().selected_sample_index = 1
 
-      -- Extract just the file name from each path
       local filename_only = filename:match("^.+[/\\](.+)$")
-
-      -- Assume the new instrument is now the selected one due to insertion at selected index + 1
-      local current_sample = selected_instrument.samples[1]
-
-      -- Set the instrument name using hexadecimal format
-      local instrument_slot_hex = string.format("%02X", current_instrument_index - 1)
+      local instrument_slot_hex = string.format("%02X", next_instrument - 1)
 
       if selected_instrument.samples[1].sample_buffer:load_from(filename) then
         renoise.app():show_status("Sample " .. filename_only .. " loaded successfully.")
-        current_sample.name = string.format("%s_%s", instrument_slot_hex, filename_only) -- Set the sample name
-        selected_instrument.name = string.format("%s_%s", instrument_slot_hex, filename_only) -- Set the instrument name
+        local current_sample = selected_instrument.samples[1]
+        current_sample.name = string.format("%s_%s", instrument_slot_hex, filename_only)
+        selected_instrument.name = string.format("%s_%s", instrument_slot_hex, filename_only)
 
-        -- Set sample properties
-  current_sample.interpolation_mode=preferences.pakettiLoaderInterpolation.value
-  current_sample.oversample_enabled=true
-  current_sample.autofade=true
-  oprint (preferences.pakettiLoaderLoopMode.value)
-  current_sample.loop_mode = preferences.pakettiLoaderLoopMode.value
-  current_sample.new_note_action = 1
+        current_sample.interpolation_mode = preferences.pakettiLoaderInterpolation.value
+        current_sample.oversample_enabled = true
+        current_sample.autofade = true
+        current_sample.loop_mode = preferences.pakettiLoaderLoopMode.value
+        current_sample.new_note_action = 1
 
-        -- Load the *Instr. Macros device and rename it
+        renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
+
+        G01()
+
         loadnative("Audio/Effects/Native/*Instr. Macros")
         local macro_device = renoise.song().selected_track:device(2)
         macro_device.display_name = string.format("%s_%s", instrument_slot_hex, filename_only)
         renoise.song().selected_track.devices[2].is_maximized = false
-
-        -- Focus on the sample editor
-        renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
-        G01()
       else
         renoise.app():show_status("Failed to load the sample " .. filename_only)
       end
@@ -799,6 +790,7 @@ renoise.tool():add_menu_entry{name="Disk Browser Files:Paketti..:Paketti PitchBe
 renoise.tool():add_keybinding{name="Global:Paketti:Paketti PitchBend Multiple Sample Loader", invoke=function() pitchBendMultipleSampleLoader() end}
 renoise.tool():add_midi_mapping{name="Global:Paketti:Midi PakettiPitchBend Multiple Sample Loader", invoke=function(message)
   if message.int_value > 1 then pitchBendMultipleSampleLoader() end end}
+
 
 -----------
 function noteOnToNoteOff(noteoffPitch)
@@ -857,19 +849,23 @@ function noteOnToNoteOff(noteoffPitch)
 end
 
 -- Add menu entries for various transpositions
-renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy Sample in Note-On to Note-Off Layer +24", invoke=function() noteOnToNoteOff(24) end}
+renoise.tool():add_menu_entry{name="--Sample Mappings:Paketti..:Copy Sample in Note-On to Note-Off Layer +24", invoke=function() noteOnToNoteOff(24) end}
 renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy Sample in Note-On to Note-Off Layer +12", invoke=function() noteOnToNoteOff(12) end}
 renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy Sample in Note-On to Note-Off Layer", invoke=function() noteOnToNoteOff(0) end}
 renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy Sample in Note-On to Note-Off Layer -12", invoke=function() noteOnToNoteOff(-12) end}
 renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Copy Sample in Note-On to Note-Off Layer -24", invoke=function() noteOnToNoteOff(-24) end}
 
-renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Copy Sample in Note-On to Note-Off Layer +24", invoke=function() noteOnToNoteOff(24) end}
+renoise.tool():add_menu_entry{name="--Sample Editor:Paketti..:Copy Sample in Note-On to Note-Off Layer +24", invoke=function() noteOnToNoteOff(24) end}
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Copy Sample in Note-On to Note-Off Layer +12", invoke=function() noteOnToNoteOff(12) end}
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Copy Sample in Note-On to Note-Off Layer", invoke=function() noteOnToNoteOff(0) end}
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Copy Sample in Note-On to Note-Off Layer -12", invoke=function() noteOnToNoteOff(-12) end}
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Copy Sample in Note-On to Note-Off Layer -24", invoke=function() noteOnToNoteOff(-24) end}
 
-
+renoise.tool():add_menu_entry{name="--Sample Navigator:Paketti..:Copy Sample in Note-On to Note-Off Layer +24", invoke=function() noteOnToNoteOff(24) end}
+renoise.tool():add_menu_entry{name="Sample Navigator:Paketti..:Copy Sample in Note-On to Note-Off Layer +12", invoke=function() noteOnToNoteOff(12) end}
+renoise.tool():add_menu_entry{name="Sample Navigator:Paketti..:Copy Sample in Note-On to Note-Off Layer", invoke=function() noteOnToNoteOff(0) end}
+renoise.tool():add_menu_entry{name="Sample Navigator:Paketti..:Copy Sample in Note-On to Note-Off Layer -12", invoke=function() noteOnToNoteOff(-12) end}
+renoise.tool():add_menu_entry{name="Sample Navigator:Paketti..:Copy Sample in Note-On to Note-Off Layer -24", invoke=function() noteOnToNoteOff(-24) end}
 
 
 ------------
@@ -962,16 +958,16 @@ manage_sample_count_observer(preferences._0G01_Loader.value)
 
     -- Assuming that preferences are defined somewhere globally accessible in your script
 local prefs = {
-    loop_mode = preferences.WipeSlicesLoopMode,
-    loop_release = preferences.WipeSlicesLoopRelease,  -- Use the correct preference key
-    new_note_action = preferences.WipeSlicesNNA,
-    oneshot = preferences.WipeSlicesOneShot,
+    loop_mode = preferences.WipeSlices.WipeSlicesLoopMode,
+    loop_release = preferences.WipeSlices.WipeSlicesLoopRelease,  -- Use the correct preference key
+    new_note_action = preferences.WipeSlices.WipeSlicesNNA,
+    oneshot = preferences.WipeSlices.WipeSlicesOneShot,
     autofade = true,
-    autoseek = preferences.WipeSlicesAutoseek,
+    autoseek = preferences.WipeSlices.WipeSlicesAutoseek,
     transpose = currentTranspose,
-    mute_group = preferences.WipeSlicesMuteGroup,
+    mute_group = preferences.WipeSlices.WipeSlicesMuteGroup,
     interpolation_mode = 4,  -- High Quality Interpolation
-    beat_sync_mode = preferences.WipeSlicesBeatSyncMode,
+    beat_sync_mode = preferences.WipeSlices.WipeSlicesBeatSyncMode,
     oversample_enabled = true
 }
 
@@ -990,7 +986,7 @@ local prefs = {
 
 -- Apply settings to all samples created by the slicing
 for i, sample in ipairs(s.instruments[currInst].samples) do
-    sample.new_note_action = preferences.WipeSlicesNNA.value
+    sample.new_note_action = preferences.WipeSlices.WipeSlicesNNA.value
     sample.oneshot = prefs.oneshot.value
     sample.autofade = prefs.autofade
     sample.autoseek = prefs.autoseek.value
@@ -1002,7 +998,7 @@ for i, sample in ipairs(s.instruments[currInst].samples) do
     sample.loop_mode = prefs.loop_mode.value
     sample.beat_sync_enabled = true
     sample.beat_sync_lines = beatsynclines
-    sample.loop_release = preferences.WipeSlicesLoopRelease.value
+    sample.loop_release = preferences.WipeSlices.WipeSlicesLoopRelease.value
 end
 
     -- Ensure beat sync is enabled for the original sample
@@ -1128,6 +1124,10 @@ renoise.tool():add_keybinding{name="Global:Paketti:Paketti Save Selected Sample 
 renoise.tool():add_keybinding{name="Global:Paketti:Paketti Save Selected Sample .FLAC",invoke=function() pakettiSaveSample("flac") end}
 renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Paketti Save Selected Sample .WAV",invoke=function() pakettiSaveSample("wav") end}
 renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Paketti Save Selected Sample .FLAC",invoke=function() pakettiSaveSample("flac") end}
+renoise.tool():add_menu_entry{name="--Sample Editor:Paketti..:Paketti Save Selected Sample .WAV",invoke=function() pakettiSaveSample("wav") end}
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Paketti Save Selected Sample .FLAC",invoke=function() pakettiSaveSample("flac") end}
+renoise.tool():add_menu_entry{name="--Sample Navigator:Paketti..:Paketti Save Selected Sample .WAV",invoke=function() pakettiSaveSample("wav") end}
+renoise.tool():add_menu_entry{name="Sample Navigator:Paketti..:Paketti Save Selected Sample .FLAC",invoke=function() pakettiSaveSample("flac") end}
 
 
 
@@ -1272,8 +1272,7 @@ function rendering_done_callback()
     song.tracks[renderTrack].collapsed = true
     -- Change Selected Track to Rendered Track
     renoise.song().selected_track_index = renoise.song().selected_track_index + 1
-    -- Load Pitched Instrument
-    pitchedInstrument(12)
+    pakettiPreferencesDefaultInstrumentLoader()
     -- Add *Instr. Macros to Rendered Track
     --song:insert_instrument_at(renderedInstrument)
     local new_instrument = song:instrument(renoise.song().selected_instrument_index)
@@ -1478,7 +1477,7 @@ function selectNextSliceInOriginalSample()
     return
   end
 
-  local currentSliceIndex = preferences.sliceCounter.value
+  local currentSliceIndex = preferences.WipeSlices.sliceCounter.value
   local nextSliceIndex = currentSliceIndex + 1
   if nextSliceIndex > #sliceMarkers then
     nextSliceIndex = 1
@@ -1496,7 +1495,7 @@ function selectNextSliceInOriginalSample()
 
   renoise.app():show_status(string.format("Slice Info - Current index: %d, Next index: %d, Slice Start: %d, Slice End: %d", currentSliceIndex, nextSliceIndex, thisSlicePadding, nextSlicePadding))
   
-  preferences.sliceCounter.value = nextSliceIndex
+  preferences.WipeSlices.sliceCounter.value = nextSliceIndex
 end
 
 -- Function to select the previous slice with proper handling of slice wrapping
@@ -1526,7 +1525,7 @@ function selectPreviousSliceInOriginalSample()
     return
   end
   
-  local currentSliceIndex = preferences.sliceCounter.value
+  local currentSliceIndex = preferences.WipeSlices.sliceCounter.value
   local previousSliceIndex = currentSliceIndex - 1
   
   if previousSliceIndex < 1 then
@@ -1554,12 +1553,12 @@ function selectPreviousSliceInOriginalSample()
   -- Show status and update slice counter
   renoise.app():show_status(string.format("Slice Info - Previous index: %d, Current index: %d, Slice Start: %d, Slice End: %d", previousSliceIndex, nextSliceIndex, previousSlicePadding, nextSlicePadding))
   
-  preferences.sliceCounter.value = previousSliceIndex
+  preferences.WipeSlices.sliceCounter.value = previousSliceIndex
 end
 
 -- Function to reset the slice counter
 function resetSliceCounter()
-  preferences.sliceCounter.value = 1
+  preferences.WipeSlices.sliceCounter.value = 1
   renoise.app():show_status("Slice counter reset to 1. Will start from the first slice.")
   selectNextSliceInOriginalSample()
 end
@@ -1588,7 +1587,7 @@ function selectPaddedSliceFromCurrentSlice()
     -- Set the selected sample index to 1 (the original sample)
     renoise.song().selected_sample_index = 1
   else
-    currentSliceIndex = preferences.sliceCounter.value
+    currentSliceIndex = preferences.WipeSlices.sliceCounter.value
   end
 
   -- Get the original sample
@@ -1719,4 +1718,61 @@ renoise.tool():add_keybinding{name="Global:Paketti:All Samples Loop Cycler (Forw
 -- Add key binding for cycling loop mode backwards for all samples in an instrument
 renoise.tool():add_keybinding{name="Global:Paketti:All Samples Loop Cycler (Backwards)",
   invoke=function() Global_Paketti_cycle_loop_mode_all_samples(false) end}
+-------------
+
+
+function PakettiReverseSampleBuffer(sample_buffer)
+  local num_frames = sample_buffer.number_of_frames
+  local num_channels = sample_buffer.number_of_channels
+
+  -- Create a temporary buffer to store reversed data
+  local temp_buffer = {}
+  for frame = 1, num_frames do
+    temp_buffer[frame] = {}
+    for channel = 1, num_channels do
+      temp_buffer[frame][channel] = sample_buffer:sample_data(channel, num_frames - frame + 1)
+    end
+  end
+
+  -- Copy the reversed data back to the original sample buffer
+  for frame = 1, num_frames do
+    for channel = 1, num_channels do
+      sample_buffer:set_sample_data(channel, frame, temp_buffer[frame][channel])
+    end
+  end
+end
+
+-- Main function to duplicate instrument and reverse its sample
+function PakettiDuplicateAndReverseInstrument()
+  local song = renoise.song()
+  local current_index = song.selected_instrument_index
+  local current_instrument = song.selected_instrument
+  local new_instrument = song:insert_instrument_at(current_index + 1)
+
+  -- Copy all properties from the current instrument to the new one
+  new_instrument:copy_from(current_instrument)
+
+  -- Iterate through each sample in the new instrument and reverse its sample buffer
+  for _, sample in ipairs(new_instrument.samples) do
+    local sample_buffer = sample.sample_buffer
+    if sample_buffer.has_sample_data then
+      sample_buffer:prepare_sample_data_changes()
+      PakettiReverseSampleBuffer(sample_buffer)
+      sample_buffer:finalize_sample_data_changes()
+    end
+  end
+
+  -- Select the new instrument
+  song.selected_instrument_index = current_index + 1
+  renoise.song().selected_instrument.name = renoise.song().instruments[current_index].name .. " (Reversed)"
+end
+
+-- Add a keybinding to trigger the function
+renoise.tool():add_keybinding{name="Global:Paketti:Duplicate and Reverse Instrument",invoke=PakettiDuplicateAndReverseInstrument}
+
+-- Add a menu entry to trigger the function
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments:Duplicate and Reverse Instrument",invoke=PakettiDuplicateAndReverseInstrument}
+
+-- Add a MIDI mapping to trigger the function
+renoise.tool():add_midi_mapping{name="Tools:Paketti:Duplicate and Reverse Instrument [Trigger]",invoke=PakettiDuplicateAndReverseInstrument}
 

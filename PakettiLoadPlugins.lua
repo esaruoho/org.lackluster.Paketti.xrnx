@@ -1,4 +1,3 @@
--- Declare variables at the beginning of the script to ensure they're available globally
 local vb = renoise.ViewBuilder()
 local checkboxes = {}
 local deviceReadableNames = { VST = {}, VST3 = {}, AU = {} }
@@ -184,6 +183,23 @@ local function resetSelection()
   end
 end
 
+-- Function to randomize the selection
+local function randomizeSelection()
+  resetSelection()  -- Clear previous selections
+
+  local numDevices = #checkboxes
+  local numSelections = math.random(1, numDevices)
+
+  local selectedIndices = {}
+  while #selectedIndices < numSelections do
+    local randIndex = math.random(1, numDevices)
+    if not selectedIndices[randIndex] then
+      selectedIndices[randIndex] = true
+      checkboxes[randIndex].checkbox.value = true
+    end
+  end
+end
+
 -- Function to show the plugin list dialog
 local function showPluginListDialog()
   checkboxes = {}  -- Reinitialize the checkboxes table to avoid carrying over previous states
@@ -240,6 +256,7 @@ local function showPluginListDialog()
       }
     },
     vb:button{text="Add Plugin(s) as Shortcut(s)",height=button_height,notifier=addAsShortcut},
+    vb:button{text="Randomize Selection", height=button_height, notifier=function() randomizeSelection() end},
     vb:button{text="Reset Selection", height=button_height, notifier=function() resetSelection() end},
     vb:button{text="Cancel", height=button_height, notifier=function() custom_dialog:close() end}
   }

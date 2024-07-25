@@ -13,80 +13,172 @@ local function find_sample_rate_index(rate)
     return 1 -- default to 22050 if not found
 end
 
+local function pakettiGetXRNIDefaultPresetFiles()
+    local presetsFolder = "Presets/"
+    local files = {}
+    local handle = io.popen('ls "' .. presetsFolder .. '"')
+    if handle then
+        for file in handle:lines() do
+            if file:match("%.xrni$") then
+                table.insert(files, file)
+            end
+        end
+        handle:close()
+    end
+    return files
+end
+
+local presetFiles = pakettiGetXRNIDefaultPresetFiles()
+
+
+local os_name=os.platform()
+local default_executable
+if os_name=="WINDOWS"then
+  default_executable="C:\\Program Files\\espeak\\espeak.exe"
+elseif os_name=="MACINTOSH"then
+  default_executable="/opt/homebrew/bin/espeak-ng"
+else
+  default_executable="/usr/bin/espeak-ng"
+end
+
+-- Main Preferences Document with Segments
 preferences = renoise.Document.create("ScriptingToolPreferences") {
-    upperFramePreference = 0,
-    _0G01_Loader = false,
-    RandomBPM = false,
-    loadPaleGreenTheme = false,
-    WipeSlicesLoopMode = 2,
-    WipeSlicesLoopRelease = false,
-    WipeSlicesBeatSyncMode = 1,
-    WipeSlicesOneShot = false,
-    WipeSlicesAutoseek = false,
-    WipeSlicesMuteGroup = 1,
-    WipeSlicesNNA = 1,
-    WipeSlicesBeatSyncGlobal = false,
-    sliceCounter = 1,
-    slicePreviousDirection = 1,
-    renderSampleRate = 88200,
-    renderBitDepth = 32,
-    pakettiEditMode = 2,
-    pakettiLoaderInterpolation = 1,
-    pakettiLoaderOverSampling = true,
-    pakettiLoaderAutoFade = true,
-    pakettiLoaderLoopMode = 1,
-    selectionNewInstrumentSelect = false,
-    selectionNewInstrumentLoop = 2,
-    shortcuts = renoise.Document.create("KeyBindings") {},
-    midimappings = renoise.Document.create("MidiMappings") {},
-    AppSelection1 = "",
-    AppSelection2 = "",
-    AppSelection3 = "",
-    AppSelection4 = "",
-    AppSelection5 = "",
-    AppSelection6 = "",
-    SmartFoldersApp1 = "",
-    SmartFoldersApp2 = "",
-    SmartFoldersApp3 = "",
-    pakettiRandomizeSelectedDevicePercentage = 50,
-    pakettiRandomizeSelectedDevicePercentageUserPreference1 = 10,
-    pakettiRandomizeSelectedDevicePercentageUserPreference2 = 25,
-    pakettiRandomizeSelectedDevicePercentageUserPreference3 = 50,
-    pakettiRandomizeSelectedDevicePercentageUserPreference4 = 75,
-    pakettiRandomizeSelectedDevicePercentageUserPreference5 = 90,
-    pakettiRandomizeAllDevicesPercentage = 50,
-    pakettiRandomizeAllDevicesPercentageUserPreference1 = 10,
-    pakettiRandomizeAllDevicesPercentageUserPreference2 = 25,
-    pakettiRandomizeAllDevicesPercentageUserPreference3 = 50,
-    pakettiRandomizeAllDevicesPercentageUserPreference4 = 75,
-    pakettiRandomizeAllDevicesPercentageUserPreference5 = 90,
-    pakettiRandomizeSelectedPluginPercentage = 50,
-    pakettiRandomizeSelectedPluginPercentageUserPreference1 = 10,
-    pakettiRandomizeSelectedPluginPercentageUserPreference2 = 20,
-    pakettiRandomizeSelectedPluginPercentageUserPreference3 = 30,
-    pakettiRandomizeSelectedPluginPercentageUserPreference4 = 40,
-    pakettiRandomizeSelectedPluginPercentageUserPreference5 = 50,
-    pakettiRandomizeAllPluginsPercentage = 50,
-    pakettiRandomizeAllPluginsPercentageUserPreference1 = 10,
-    pakettiRandomizeAllPluginsPercentageUserPreference2 = 20,
-    pakettiRandomizeAllPluginsPercentageUserPreference3 = 30,
-    pakettiRandomizeAllPluginsPercentageUserPreference4 = 40,
-    pakettiRandomizeAllPluginsPercentageUserPreference5 = 50
+  -- General Settings
+  
+  -- no changes required
+  upperFramePreference=0,
+  _0G01_Loader=false,
+  RandomBPM=false,
+  loadPaleGreenTheme=false,
+  renderSampleRate=88200,
+  renderBitDepth=32,
+  pakettiEditMode=2,
+  pakettiLoaderInterpolation=1,
+  pakettiLoaderOverSampling=true,
+  pakettiLoaderAutoFade=true,
+  pakettiLoaderLoopMode=1,
+  selectionNewInstrumentSelect=false,
+  selectionNewInstrumentLoop=2,
+  pakettiPitchbendLoaderEnvelope=false,
+  pakettiSlideContentAutomationToo=true,
+  pakettiDefaultXRNI="Presets/12st_Pitchbend.xrni",
+
+-- changes made
+  -- WipeSlices Segment
+  WipeSlices = {
+    WipeSlicesLoopMode=2,
+    WipeSlicesLoopRelease=false,
+    WipeSlicesBeatSyncMode=1,
+    WipeSlicesOneShot=false,
+    WipeSlicesAutoseek=false,
+    WipeSlicesMuteGroup=1,
+    WipeSlicesNNA=1,
+    WipeSlicesBeatSyncGlobal=false,
+    sliceCounter=1,
+    slicePreviousDirection=1
+  },
+-- changes made
+  -- AppSelection and SmartFolders Segment
+  AppSelection = {
+    AppSelection1="",
+    AppSelection2="",
+    AppSelection3="",
+    AppSelection4="",
+    AppSelection5="",
+    AppSelection6="",
+    SmartFoldersApp1="",
+    SmartFoldersApp2="",
+    SmartFoldersApp3=""
+  },
+-- changes made
+  pakettiThemeSelector = {
+    PreviousSelectedTheme = "",
+    FavoritedList = { "<No Theme Selected>" }, -- Initialize as a simple table
+    RenoiseLaunchFavoritesLoad = true
+  },
+  
+-- changes made
+  -- Paketti ReSpeak Segment
+  pakettiReSpeak = {
+    word_gap=3,
+    capitals=5,
+    pitch=35,
+    amplitude=40,
+    speed=150,
+    language=40,
+    voice=2,
+    text="Good afternoon, this is eSpeak, a Text-to-Speech engine, speaking. Shall we play a game?",
+    executable=default_executable,
+    clear_all_samples=true,
+    render_on_change=false
+  },
+
+-- done
+  -- Randomize Settings Segment
+  RandomizeSettings = {
+    pakettiRandomizeSelectedDevicePercentage=50,
+    pakettiRandomizeSelectedDevicePercentageUserPreference1=10,
+    pakettiRandomizeSelectedDevicePercentageUserPreference2=25,
+    pakettiRandomizeSelectedDevicePercentageUserPreference3=50,
+    pakettiRandomizeSelectedDevicePercentageUserPreference4=75,
+    pakettiRandomizeSelectedDevicePercentageUserPreference5=90,
+    pakettiRandomizeAllDevicesPercentage=50,
+    pakettiRandomizeAllDevicesPercentageUserPreference1=10,
+    pakettiRandomizeAllDevicesPercentageUserPreference2=25,
+    pakettiRandomizeAllDevicesPercentageUserPreference3=50,
+    pakettiRandomizeAllDevicesPercentageUserPreference4=75,
+    pakettiRandomizeAllDevicesPercentageUserPreference5=90,
+    pakettiRandomizeSelectedPluginPercentage=50,
+    pakettiRandomizeSelectedPluginPercentageUserPreference1=10,
+    pakettiRandomizeSelectedPluginPercentageUserPreference2=20,
+    pakettiRandomizeSelectedPluginPercentageUserPreference3=30,
+    pakettiRandomizeSelectedPluginPercentageUserPreference4=40,
+    pakettiRandomizeSelectedPluginPercentageUserPreference5=50,
+    pakettiRandomizeAllPluginsPercentage=50,
+    pakettiRandomizeAllPluginsPercentageUserPreference1=10,
+    pakettiRandomizeAllPluginsPercentageUserPreference2=20,
+    pakettiRandomizeAllPluginsPercentageUserPreference3=30,
+    pakettiRandomizeAllPluginsPercentageUserPreference4=40,
+    pakettiRandomizeAllPluginsPercentageUserPreference5=50
+  },
+-- done
+  -- Paketti Coluga Segment
+  pakettiColuga = {
+    pakettiColugaLoopMode=2,
+    pakettiColugaClipLength=10,
+    pakettiColugaAmountOfVideos=1,
+    pakettiColugaLoadWholeVideo=true,
+    pakettiColugaOutputDirectory="Set this yourself, please.",
+    pakettiColugaFormatToSave=1,
+    pakettiColugaPathToSave="<No path set>",
+    pakettiColugaNewInstrumentOrSameInstrument=true
+  }
 }
 
+-- Assigning Preferences to renoise.tool
 renoise.tool().preferences = preferences
 
+-- Accessing Segments
+ReSpeak = renoise.tool().preferences.pakettiReSpeak
+pakettiThemeSelector = renoise.tool().preferences.pakettiThemeSelector
+WipeSlices = renoise.tool().preferences.WipeSlices
+AppSelection = renoise.tool().preferences.AppSelection
+RandomizeSettings = renoise.tool().preferences.RandomizeSettings
+pakettiColuga = renoise.tool().preferences.pakettiColuga
+
+
 function load_preferences()
-    if io.exists("preferences.xml") then
-        preferences:load_from("preferences.xml")
-    end
+  if io.exists("preferences.xml") then
+    preferences:load_from("preferences.xml")
+  end
 end
+
 
 function update_random_bpm_preferences()
 end
 
 function update_loadPaleGreenTheme_preferences()
-    renoise.app():load_theme("Presets/palegreen.xrnc")
+    renoise.app():load_theme("Themes/palegreen.xrnc")
 end
 
 function loadPlaidZap()
@@ -131,6 +223,8 @@ end
 
 function show_paketti_preferences()
     if dialog and dialog.visible then return end
+
+    local pakettiDefaultXRNIDisplayId = "pakettiDefaultXRNIDisplay_" .. tostring(os.time())
 
     local dialog_content = vb:column{margin = 10,
         vb:text{text = "UpperFrame Control F2 F3 F4 F11", font = "bold"},
@@ -191,57 +285,97 @@ function show_paketti_preferences()
                         update_interpolation_mode(value)
                     end}},
             vb:row{vb:text{text = "Loop Mode", width = 150},
-                create_loop_mode_switch(preferences.pakettiLoaderLoopMode)}},
+                create_loop_mode_switch(preferences.pakettiLoaderLoopMode)},
+                   vb:row{vb:text{text = "Enable Pitchbend Loader Envelope", width = 200},
+                vb:checkbox{
+                    value = preferences.pakettiPitchbendLoaderEnvelope.value,
+                    notifier = function(value)
+                        preferences.pakettiPitchbendLoaderEnvelope.value = value
+                       -- update_pitchbend_loader_envelope()
+                    end
+                }},
+
+            vb:row{vb:text{text = "Default XRNI to use:", width = 150},
+                vb:textfield{
+                    text = preferences.pakettiDefaultXRNI.value:match("[^/\\]+$"),
+                    width = 300, -- Updated width
+                    id = pakettiDefaultXRNIDisplayId, -- Ensure unique ID
+                    notifier = function(value)
+                        preferences.pakettiDefaultXRNI.value = value
+                    end
+                },
+                vb:button{text = "Browse", width = 100, notifier = function()
+                    local filePath = renoise.app():prompt_for_filename_to_read({"*.XRNI"}, "Paketti Default XRNI Selector Dialog")
+                    if filePath and filePath ~= "" then
+                        preferences.pakettiDefaultXRNI.value = filePath
+                        vb.views[pakettiDefaultXRNIDisplayId].text = filePath:match("[^/\\]+$")
+                    else
+                        renoise.app():show_status("No XRNI Instrument was selected")
+                    end
+                end}
+            },
+            vb:row{vb:text{text = "Preset Files:", width = 150},
+                vb:popup{
+                    items = presetFiles,
+                    width = 300,
+                    notifier = function(value)
+                        local selectedFile = presetFiles[value]
+                        preferences.pakettiDefaultXRNI.value = "Presets/" .. selectedFile
+                        vb.views[pakettiDefaultXRNIDisplayId].text = selectedFile
+                    end
+                }
+            }
+        },
+        
+       
         horizontal_rule(),
         vb:column{style = "group", margin = 10,
             vb:text{style = "strong", text = "Wipe & Slices Settings"},
             vertical_space(5),
             vb:row{vb:text{text = "Slice Loop Mode", width = 150},
-                create_loop_mode_switch(preferences.WipeSlicesLoopMode)},
+                create_loop_mode_switch(preferences.WipeSlices.WipeSlicesLoopMode)},
             vb:row {
-  vb:text {text = "Slice Loop Release/Exit Mode", width = 200},
-  vb:checkbox {
-    value = preferences.WipeSlicesLoopRelease.value,
-    notifier = function(value)
-      preferences.WipeSlicesLoopRelease.value = value
-    end
-  }},
-            
-            
+                vb:text {text = "Slice Loop Release/Exit Mode", width = 200},
+                vb:checkbox {
+                    value = preferences.WipeSlices.WipeSlicesLoopRelease.value,
+                    notifier = function(value)
+                    preferences.WipeSlices.WipeSlicesLoopRelease.value = value
+                    end
+                }},
             vb:row{vb:text{text = "Slice BeatSync Mode", width = 150},
                 vb:switch{items = {"Repitch", "Time-Stretch (Percussion)", "Time-Stretch (Texture)"},
-                    value = preferences.WipeSlicesBeatSyncMode.value,
+                    value = preferences.WipeSlices.WipeSlicesBeatSyncMode.value,
                     width = 400,
                     notifier = function(value)
-                        preferences.WipeSlicesBeatSyncMode.value = value
+                        preferences.WipeSlices.WipeSlicesBeatSyncMode.value = value
                     end}},
             vb:row{vb:text{text = "Slice One-Shot", width = 150},
                 vb:switch{items = {"Off", "On"},
-                    value = preferences.WipeSlicesOneShot.value and 2 or 1,
+                    value = preferences.WipeSlices.WipeSlicesOneShot.value and 2 or 1,
                     width = 200,
                     notifier = function(value)
-                        preferences.WipeSlicesOneShot.value = (value == 2)
+                        preferences.WipeSlices.WipeSlicesOneShot.value = (value == 2)
                     end}},
             vb:row{vb:text{text = "Slice Autoseek", width = 150},
                 vb:switch{items = {"Off", "On"},
-                    value = preferences.WipeSlicesAutoseek.value and 2 or 1,
+                    value = preferences.WipeSlices.WipeSlicesAutoseek.value and 2 or 1,
                     width = 200,
                     notifier = function(value)
-                        preferences.WipeSlicesAutoseek.value = (value == 2)
+                        preferences.WipeSlices.WipeSlicesAutoseek.value = (value == 2)
                     end}},
             vb:row{vb:text{text = "New Note Action (NNA) Mode", width = 150},
                 vb:switch{items = {"Cut", "Note-Off", "Continue"},
-                    value = preferences.WipeSlicesNNA.value,
+                    value = preferences.WipeSlices.WipeSlicesNNA.value,
                     width = 300,
                     notifier = function(value)
-                        preferences.WipeSlicesNNA.value = value
+                        preferences.WipeSlices.WipeSlicesNNA.value = value
                     end}},
             vb:row{vb:text{text = "Mute Group", width = 150},
                 vb:switch{items = {"Off", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"},
-                    value = preferences.WipeSlicesMuteGroup.value + 1,
+                    value = preferences.WipeSlices.WipeSlicesMuteGroup.value + 1,
                     width = 400,
                     notifier = function(value)
-                        preferences.WipeSlicesMuteGroup.value = value - 1
+                        preferences.WipeSlices.WipeSlicesMuteGroup.value = value - 1
                     end}}},
         horizontal_rule(),
         vb:column{style = "group", margin = 10,
@@ -263,32 +397,32 @@ function show_paketti_preferences()
                         preferences.renderBitDepth.value = (value == 1 and 16 or value == 2 and 24 or 32)
                     end}}},
         horizontal_rule(),
-  
-  
-  
-  vb:column{style = "group", margin = 10,
-    vb:text{style = "strong", text = "Edit Mode Colouring"},
-    vertical_space(5),
-    vb:row{
-        vb:text{text = "Edit Mode", width = 150},
-        vb:switch{
-            items = {"None", "Selected Track", "All Tracks"},
-            value = preferences.pakettiEditMode.value,
-            width = 300,
-            notifier = function(value)
-                preferences.pakettiEditMode.value = value
-            end
+        vb:column{style = "group", margin = 10,
+            vb:text{style = "strong", text = "Edit Mode Colouring"},
+            vertical_space(5),
+            vb:row{
+                vb:text{text = "Edit Mode", width = 150},
+                vb:switch{
+                    items = {"None", "Selected Track", "All Tracks"},
+                    value = preferences.pakettiEditMode.value,
+                    width = 300,
+                    notifier = function(value)
+                        preferences.pakettiEditMode.value = value
+                    end
+                },
+                vb:text{
+                    style = "strong",
+                    text = "Enable Scope Highlight by going to Settings -> GUI -> Show Track Color Blends."
+                }
+            },
+            vb:space{height = 10},
         },
-        vb:text{
-            style = "strong",
-            text = "Enable Scope Highlight by going to Settings -> GUI -> Show Track Color Blends."
-        }
-    },
-    vb:space{height = 10},
-},      vb:horizontal_aligner{mode = "distribute",
+        vb:horizontal_aligner{mode = "distribute",
             vb:button{text = "OK", width = "50%", notifier = function() preferences:save_as("preferences.xml"); dialog:close() end},
-            vb:button{text = "Cancel", width = "50%", notifier = function() dialog:close() end}}}
-    
+            vb:button{text = "Cancel", width = "50%", notifier = function() dialog:close() end}
+        }
+    }
+
     dialog = renoise.app():show_custom_dialog("Paketti Preferences", dialog_content)
 end
 
