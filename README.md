@@ -1,6 +1,8 @@
 # org.lackluster.Paketti.xrnx
 Renoise tool made with LUA scripting - multiple shortcuts + midi. Serious work in progress. 
 
+Discord at https://discord.gg/Qex7k5j4wG
+
 
 If you want to see screenshots or animated GIFs, check out https://imgur.com/a/JTLnZ
 
