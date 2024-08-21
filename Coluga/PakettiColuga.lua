@@ -3,6 +3,7 @@ local RUNTIME = tostring(os.time())
 local SAMPLE_LENGTH = 10
 local dialog = nil
 local pakettiColugaMacOSBashScriptPath = "Coluga/PakettiColuga.sh"
+local loop_modes = {"Off", "Forward", "Backward", "PingPong"}
 
 -- Function to execute a bash script
 local function pakettiColugaExecuteBashScript(search_phrase, youtube_url, download_dir, clip_length, full_video)
@@ -17,6 +18,7 @@ FULL_VIDEO="%s"
 TEMP_DIR="$DOWNLOAD_DIR/tempfolder"
 COMPLETION_SIGNAL_FILE="$TEMP_DIR/download_completed.txt"
 FILENAMES_FILE="$TEMP_DIR/filenames.txt"
+SEARCH_RESULTS_FILE="$TEMP_DIR/search_results.txt"
 
 echo "Starting PakettiColuga.sh with arguments:"
 echo "SEARCH_PHRASE: $SEARCH_PHRASE"
@@ -31,11 +33,27 @@ mkdir -p "$TEMP_DIR"
 rm -f "$TEMP_DIR"/*.wav
 rm -f "$COMPLETION_SIGNAL_FILE"
 > "$FILENAMES_FILE"
+> "$SEARCH_RESULTS_FILE"
 
 cd "$TEMP_DIR" || exit
 
 sanitize_filename() {
   echo "$1" | tr -cd '[:alnum:]._-'
+}
+
+get_random_url() {
+  yt-dlp "ytsearch30:%s" --get-id > "$SEARCH_RESULTS_FILE"
+  if [ ! -s "$SEARCH_RESULTS_FILE" ]; then
+    echo "No URLs found for the search term."
+    exit 1
+  fi
+  urls=()
+  while IFS= read -r line; do
+    urls+=("$line")
+  done < "$SEARCH_RESULTS_FILE"
+  random_index=$((RANDOM %% ${#urls[@]}))
+  selected_url="https://www.youtube.com/watch?v=${urls[$random_index]}"
+  echo "$selected_url"
 }
 
 if [ "$YOUTUBE_URL" != "" ]; then
@@ -47,12 +65,13 @@ if [ "$YOUTUBE_URL" != "" ]; then
     yt-dlp --download-sections "*0-${CLIP_LENGTH}" -f ba --extract-audio --audio-format wav -o "${TEMP_DIR}/%%(title)s-%%(id)s.%%(ext)s" "$YOUTUBE_URL"
   fi
 else
+  selected_url=$(get_random_url)
   if [ "$FULL_VIDEO" == "true" ]; then
     echo "Downloading full video as audio..."
-    yt-dlp -f ba --extract-audio --audio-format wav -o "${TEMP_DIR}/%%(title)s-%%(id)s.%%(ext)s" "ytsearch1:$SEARCH_PHRASE"
+    yt-dlp -f ba --extract-audio --audio-format wav -o "${TEMP_DIR}/%%(title)s-%%(id)s.%%(ext)s" "$selected_url"
   else
     echo "Downloading clip of length ${CLIP_LENGTH} seconds..."
-    yt-dlp --download-sections "*0-${CLIP_LENGTH}" -f ba --extract-audio --audio-format wav -o "${TEMP_DIR}/%%(title)s-%%(id)s.%%(ext)s" "ytsearch1:$SEARCH_PHRASE"
+    yt-dlp --download-sections "*0-${CLIP_LENGTH}" -f ba --extract-audio --audio-format wav -o "${TEMP_DIR}/%%(title)s-%%(id)s.%%(ext)s" "$selected_url"
   fi
 fi
 
@@ -71,7 +90,7 @@ done
 touch "$COMPLETION_SIGNAL_FILE"
 
 echo "PakettiColuga.sh finished."
-]], search_phrase, youtube_url, download_dir, clip_length, tostring(full_video))
+]], search_phrase, youtube_url, download_dir, clip_length, tostring(full_video), search_phrase)
 
   local script_file = io.open(pakettiColugaMacOSBashScriptPath, "w")
   script_file:write(script_content)
@@ -88,7 +107,7 @@ local function pakettiColugaLoadVideoAudioIntoRenoise(download_dir, loop_mode, c
   local temp_dir = download_dir .. "/tempfolder"
   local completion_signal_file = temp_dir .. "/download_completed.txt"
   local filenames_file = temp_dir .. "/filenames.txt"
-  
+
   -- Wait until the completion signal file is created
   while not io.open(completion_signal_file, "r") do
     os.execute('sleep 1')
@@ -122,41 +141,33 @@ local function pakettiColugaLoadVideoAudioIntoRenoise(download_dir, loop_mode, c
   for _, file in ipairs(sample_files) do
     local file_size = -1
     repeat
-      local current_file_size = io.open(file, "r"):seek("end")
-      if current_file_size == file_size then break end
-      file_size = current_file_size
+      local f = io.open(file, "r")
+      if f then
+        local current_file_size = f:seek("end")
+        f:close()
+        if current_file_size == file_size then break end
+        file_size = current_file_size
+      end
       os.execute('sleep 1')
     until false
   end
 
   local selected_instrument_index = renoise.song().selected_instrument_index
 
-if create_new_instrument then
-  print("This is what I have selected now")
-  print(renoise.song().selected_instrument_index)
-
-  selected_instrument_index = renoise.song().selected_instrument_index + 1
-  print("Changed Selected Instrument Index")
-  
-  renoise.song():insert_instrument_at(selected_instrument_index)
-  print("I have inserted an instrument at selected_instrument_index which is selected_instrument_index + 1")
-  
-  print("Selected instrument index before setting: ", renoise.song().selected_instrument_index)
-  renoise.song().selected_instrument_index = selected_instrument_index
-  print("Selected instrument index after setting: ", renoise.song().selected_instrument_index)
-  
-  pakettiPreferencesDefaultInstrumentLoader()
-  print("I have now used the Default Instrument Loader.")
-  
-  print("Selected instrument index after loading instrument: ", renoise.song().selected_instrument_index)
-end
-
+  if create_new_instrument then
+    selected_instrument_index = renoise.song().selected_instrument_index + 1
+    renoise.song():insert_instrument_at(selected_instrument_index)
+    renoise.song().selected_instrument_index = selected_instrument_index
+    pakettiPreferencesDefaultInstrumentLoader()
+  end
 
   local instrument = renoise.song().instruments[selected_instrument_index]
 
   for _, file in ipairs(sample_files) do
     print("Checking file: " .. file)
-    if io.open(file, "r") then
+    local f = io.open(file, "r")
+    if f then
+      f:close()
       local sample = instrument:insert_sample_at(1)
       sample.sample_buffer:load_from(file)
       sample.name = file:match("^.+/(.+)$")
@@ -182,9 +193,9 @@ end
 
 -- Key Handler function for the dialog
 local function PakettiColugaKeyHandlerFunc(dialog, key)
-  if key.modifiers == "" and key.name == "exclamation" then
-    print("Exclamation key pressed, closing dialog.")
-    dialog:close()
+  if key.modifiers == "" and key.name == "return" then
+    print("Enter key pressed, starting process.")
+    startYTDLP(dialog.content_view)
   else
     return key
   end
@@ -194,60 +205,142 @@ end
 local os_name = os.platform()
 
 if os_name == "WINDOWS" then
-  renoise.app():show_warning("Coluga is not yet ready to run a script in Windows")
+  renoise.app():show_status("Coluga is not yet ready to run a script in Windows")
   return
+end
+
+-- Function to prompt for output directory
+local function prompt_for_output_dir(vb)
+  renoise.app():show_warning("Please set the folder that Coluga will download to")
+  local dir = renoise.app():prompt_for_path("Select Output Directory")
+  if dir then
+    vb.views.output_dir.text = dir
+    preferences.pakettiColuga.pakettiColugaOutputDirectory.value = dir
+    print("Saved Output Directory to " .. dir)
+  end
+end
+
+-- Function to prompt for save path
+local function prompt_for_save_path(vb)
+  renoise.app():show_warning("Please set the folder to save WAV or FLAC as")
+  local dir = renoise.app():prompt_for_path("Select Save Path")
+  if dir then
+    vb.views.save_path.text = dir
+    preferences.pakettiColuga.pakettiColugaPathToSave.value = dir
+    print("Saved Save Path to " .. dir)
+  end
+end
+
+-- Function to print saved preferences
+local function print_preferences()
+  print("Preferences:")
+  print("  Output Directory: " .. preferences.pakettiColuga.pakettiColugaOutputDirectory.value)
+  print("  Clip Length: " .. preferences.pakettiColuga.pakettiColugaClipLength.value)
+  print("  Loop Mode: " .. preferences.pakettiColuga.pakettiColugaLoopMode.value)
+  print("  Amount of Videos: " .. preferences.pakettiColuga.pakettiColugaAmountOfVideos.value)
+  print("  Load Whole Video: " .. tostring(preferences.pakettiColuga.pakettiColugaLoadWholeVideo.value))
+  print("  New Instrument: " .. tostring(preferences.pakettiColuga.pakettiColugaNewInstrumentOrSameInstrument.value))
+  print("  Save Format: " .. preferences.pakettiColuga.pakettiColugaFormatToSave.value)
+  print("  Save Path: " .. preferences.pakettiColuga.pakettiColugaPathToSave.value)
+end
+
+-- Function to start the YT-DLP process
+function startYTDLP(vb)
+  local search_phrase = vb.views.search_phrase.text
+  local youtube_url = vb.views.youtube_url.text
+  local output_dir = vb.views.output_dir.text
+  if search_phrase == "" and youtube_url == "" then
+    renoise.app():show_warning("Please set URL or search term")
+    return
+  end
+  if output_dir == "" or output_dir == "Set this yourself, please." then
+    prompt_for_output_dir(vb)
+    return
+  end
+  local clip_length = vb.views.clip_length.value
+  local full_video = vb.views.full_video.value
+  local loop_mode = vb.views.loop_mode.value
+  local create_new_instrument = vb.views.create_new_instrument.value
+  local save_format = vb.views.save_format.items[vb.views.save_format.value]
+  local save_to_folder = save_format ~= "Off"
+  local save_path = vb.views.save_path.text
+
+  if save_to_folder and save_path == "<No path set>" then
+    prompt_for_save_path(vb)
+    return
+  end
+
+  preferences.pakettiColuga.pakettiColugaOutputDirectory.value = output_dir
+  preferences.pakettiColuga.pakettiColugaClipLength.value = clip_length
+  preferences.pakettiColuga.pakettiColugaLoopMode.value = loop_mode
+  preferences.pakettiColuga.pakettiColugaAmountOfVideos.value = vb.views.video_amount.value
+  preferences.pakettiColuga.pakettiColugaLoadWholeVideo.value = full_video
+  preferences.pakettiColuga.pakettiColugaNewInstrumentOrSameInstrument.value = create_new_instrument
+  preferences.pakettiColuga.pakettiColugaFormatToSave.value = vb.views.save_format.value
+  preferences.pakettiColuga.pakettiColugaPathToSave.value = save_path
+
+  print("Starting process with:")
+  print("  Search Phrase: " .. search_phrase)
+  print("  URL: " .. youtube_url)
+  print("  Output Directory: " .. output_dir)
+  print("  Clip Length: " .. tostring(clip_length))
+  print("  Download Full Video: " .. tostring(full_video))
+  print("  Loop Mode: " .. loop_modes[loop_mode])
+  print("  Create New Instrument: " .. tostring(create_new_instrument))
+  print("  Save Format: " .. save_format)
+  print("  Save to Folder: " .. tostring(save_to_folder))
+  print("  Save Path: " .. save_path)
+
+  pakettiColugaExecuteBashScript(search_phrase, youtube_url, output_dir, clip_length, full_video)
+  pakettiColugaLoadVideoAudioIntoRenoise(output_dir, loop_mode, create_new_instrument)
 end
 
 -- GUI Dialog Content Creation function
 local function PakettiColugaDialogContent()
   local vb = renoise.ViewBuilder()
   local loop_modes = {"Off", "Forward", "Backward", "PingPong"}
+
+  print("Loading Preferences:")
+  print_preferences()
+
   local dialog_content = vb:column {
     margin = 10,
-    vb:row { margin = 5, vb:column { width = 150, vb:text { text = "Search Phrase:" }, vb:text { text = "YouTube URL:" }, vb:text { text = "Output Directory:" }, vb:text { text = "Clip Length (seconds):" }, vb:text { text = "Loop Mode:" }, vb:text { text = "Amount of Videos to Search for:" } },
-      vb:column { width = 600, vb:textfield { id = "search_phrase", width = 400 }, vb:textfield { id = "youtube_url", width = 400 }, vb:row { vb:textfield { id = "output_dir", width = 400, text = preferences.pakettiColuga.pakettiColugaOutputDirectory.value }, vb:button { text = "Browse", notifier = function() local dir = renoise.app():prompt_for_path("Select Output Directory") if dir then vb.views.output_dir.text = dir preferences.pakettiColuga.pakettiColugaOutputDirectory.value = dir end end }, }, vb:valuebox { id = "clip_length", min = 1, max = 60, value = preferences.pakettiColuga.pakettiColugaClipLength.value or SAMPLE_LENGTH, notifier = function(value) preferences.pakettiColuga.pakettiColugaClipLength.value = value end }, vb:switch { id = "loop_mode", items = loop_modes, value = preferences.pakettiColuga.pakettiColugaLoopMode.value or 2, width=300 }, vb:valuebox { id = "video_amount", min = 1, max = 100, value = preferences.pakettiColuga.pakettiColugaAmountOfVideos.value or 1, notifier = function(value) preferences.pakettiColuga.pakettiColugaAmountOfVideos.value = value end }, }, },
-    vb:row {vb:checkbox { id = "full_video", value = preferences.pakettiColuga.pakettiColugaLoadWholeVideo.value, notifier = function(value) if value then vb.views.clip_length.value = SAMPLE_LENGTH end end }, vb:text { text = "Download Whole Video as Audio" }, },
-    vb:row {vb:checkbox { id = "create_new_instrument", value = preferences.pakettiColuga.pakettiColugaNewInstrumentOrSameInstrument.value }, vb:text { text = "Create New Instrument for Each Downloaded Audio" }, },
-    vb:row {vb:text { text = "Save Successfully Downloaded Audio to Selected Folder" } },
-    vb:row {vb:switch { id = "save_format", items = {"Off", "Save WAV", "Save FLAC"}, value = preferences.pakettiColuga.pakettiColugaFormatToSave.value or 1, width=300 }, },
-    vb:row {vb:text { text = "Save Path: " }, vb:text { id = "save_path", text = preferences.pakettiColuga.pakettiColugaPathToSave.value or "<No path set>", font = "bold" }, vb:button { text = "Browse", notifier = function() local dir = renoise.app():prompt_for_path("Select Save Path") if dir then vb.views.save_path.text = dir preferences.pakettiColuga.pakettiColugaPathToSave.value = dir end end }, },
-    vb:row {vb:button { text = "Start", notifier = function()
-      local search_phrase = vb.views.search_phrase.text
-      local youtube_url = vb.views.youtube_url.text
-      local output_dir = vb.views.output_dir.text
-      if output_dir == "" or output_dir == "<No path set>" then
-        renoise.app():show_status("You need to set the Output Directory before we can start downloading audio")
-        renoise.app():show_message("You need to set the Output Directory before we can start downloading audio")
-        return
+    vb:text { text = "YT-DLP is able to download content from YouTube, SoundCloud, Bandcamp and Instagram (tested).", font = "bold" },
+    vb:row { margin = 5, vb:column { width = 150, vb:text { text = "Search Phrase:" }, vb:text { text = "URL:" }, vb:text { text = "Output Directory:" }, vb:text { text = "Clip Length (seconds):" }, vb:text { text = "Loop Mode:" }, vb:text { text = "Amount of Videos to Search for:" } },
+      vb:column { width = 600, vb:textfield { id = "search_phrase", width = 400 }, vb:textfield { id = "youtube_url", width = 400, edit_mode = true, notifier = function(value)
+        if value ~= "" then
+          startYTDLP(vb)
+        end
+      end }, vb:row { vb:textfield { id = "output_dir", width = 400, text = preferences.pakettiColuga.pakettiColugaOutputDirectory.value }, vb:button { text = "Browse", notifier = function() prompt_for_output_dir(vb) end }, }, vb:valuebox { id = "clip_length", min = 1, max = 60, value = preferences.pakettiColuga.pakettiColugaClipLength.value or SAMPLE_LENGTH, notifier = function(value)
+        preferences.pakettiColuga.pakettiColugaClipLength.value = value
+        print("Saved Clip Length to " .. value)
+      end }, vb:switch { id = "loop_mode", items = loop_modes, value = preferences.pakettiColuga.pakettiColugaLoopMode.value or 2, width = 300, notifier = function(value)
+        preferences.pakettiColuga.pakettiColugaLoopMode.value = value
+        print("Saved Loop Mode to " .. value)
+      end }, vb:valuebox { id = "video_amount", min = 1, max = 100, value = preferences.pakettiColuga.pakettiColugaAmountOfVideos.value or 1, notifier = function(value)
+        preferences.pakettiColuga.pakettiColugaAmountOfVideos.value = value
+        print("Saved Amount of Videos to " .. value)
+      end }, }, },
+    vb:row { vb:checkbox { id = "full_video", value = preferences.pakettiColuga.pakettiColugaLoadWholeVideo.value, notifier = function(value)
+        preferences.pakettiColuga.pakettiColugaLoadWholeVideo.value = value
+        if value then vb.views.clip_length.value = SAMPLE_LENGTH end
+        print("Saved Load Whole Video to " .. tostring(value))
+      end }, vb:text { text = "Download Whole Video as Audio" }, },
+    vb:row { vb:checkbox { id = "create_new_instrument", value = preferences.pakettiColuga.pakettiColugaNewInstrumentOrSameInstrument.value, notifier = function(value)
+        preferences.pakettiColuga.pakettiColugaNewInstrumentOrSameInstrument.value = value
+        print("Saved Create New Instrument to " .. tostring(value))
+      end }, vb:text { text = "Create New Instrument for Each Downloaded Audio" }, },
+    vb:row { vb:text { text = "Save Successfully Downloaded Audio to Selected Folder" } },
+    vb:row { vb:switch { id = "save_format", items = {"Off", "Save WAV", "Save FLAC"}, value = preferences.pakettiColuga.pakettiColugaFormatToSave.value or 1, width = 300, notifier = function(value)
+      preferences.pakettiColuga.pakettiColugaFormatToSave.value = value
+      if (value == 2 or value == 3) and vb.views.save_path.text == "<No path set>" then
+        prompt_for_save_path(vb)
       end
-      local clip_length = vb.views.clip_length.value
-      local full_video = vb.views.full_video.value
-      local loop_mode = vb.views.loop_mode.value
-      local create_new_instrument = vb.views.create_new_instrument.value
-      local save_format = vb.views.save_format.items[vb.views.save_format.value]
-      local save_to_folder = save_format ~= "Off"
-      local save_path = vb.views.save_path.text
-
-      if save_to_folder and save_path == "<No path set>" then
-        renoise.app():show_status("You need to set the Save Path before we can start downloading audio")
-        renoise.app():show_message("You need to set the Save Path before we can start downloading audio")
-        return
-      end
-
-      print("Starting process with:")
-      print("  Search Phrase: " .. search_phrase)
-      print("  YouTube URL: " .. youtube_url)
-      print("  Output Directory: " .. output_dir)
-      print("  Clip Length: " .. tostring(clip_length))
-      print("  Download Full Video: " .. tostring(full_video))
-      print("  Loop Mode: " .. loop_modes[loop_mode])
-      print("  Create New Instrument: " .. tostring(create_new_instrument))
-      print("  Save Format: " .. save_format)
-      print("  Save to Folder: " .. tostring(save_to_folder))
-      print("  Save Path: " .. save_path)
-
-      pakettiColugaExecuteBashScript(search_phrase, youtube_url, output_dir, clip_length, full_video)
-      pakettiColugaLoadVideoAudioIntoRenoise(output_dir, loop_mode, create_new_instrument)
+      print("Saved Save Format to " .. value)
+    end }, },
+    vb:row { vb:text { text = "Save Path: " }, vb:text { id = "save_path", text = preferences.pakettiColuga.pakettiColugaPathToSave.value or "<No path set>", font = "bold" }, vb:button { text = "Browse", notifier = function() prompt_for_save_path(vb) end } },
+    vb:row { vb:button { id = "start_button", text = "Start", notifier = function()
+      startYTDLP(vb)
     end }, vb:button { text = "Save", notifier = function()
       preferences.pakettiColuga.pakettiColugaOutputDirectory.value = vb.views.output_dir.text
       preferences.pakettiColuga.pakettiColugaClipLength.value = vb.views.clip_length.value
@@ -257,6 +350,8 @@ local function PakettiColugaDialogContent()
       preferences.pakettiColuga.pakettiColugaNewInstrumentOrSameInstrument.value = vb.views.create_new_instrument.value
       preferences.pakettiColuga.pakettiColugaFormatToSave.value = vb.views.save_format.value
       preferences.pakettiColuga.pakettiColugaPathToSave.value = vb.views.save_path.text
+
+      print_preferences()
     end }, vb:button { text = "Save & Close", notifier = function()
       preferences.pakettiColuga.pakettiColugaOutputDirectory.value = vb.views.output_dir.text
       preferences.pakettiColuga.pakettiColugaClipLength.value = vb.views.clip_length.value
@@ -266,6 +361,8 @@ local function PakettiColugaDialogContent()
       preferences.pakettiColuga.pakettiColugaNewInstrumentOrSameInstrument.value = vb.views.create_new_instrument.value
       preferences.pakettiColuga.pakettiColugaFormatToSave.value = vb.views.save_format.value
       preferences.pakettiColuga.pakettiColugaPathToSave.value = vb.views.save_path.text
+
+      print_preferences()
       PakettiColugaCloseDialog()
     end } }
   }
@@ -294,12 +391,8 @@ function PakettiColugaCloseDialog()
 end
 
 -- GUI and Tool registration
-renoise.tool():add_menu_entry { name = "Main Menu:Tools:Paketti..:Paketti Coluga Downloader", invoke = PakettiColugaShowDialog }
-renoise.tool():add_keybinding { name = "Global:Tools:Paketti Coluga Downloader", invoke = PakettiColugaShowDialog }
-renoise.tool():add_midi_mapping { name = "Paketti:Paketti Coluga Downloader", invoke = PakettiColugaShowDialog }
-renoise.tool():add_menu_entry { name = "Sample Editor:Paketti..:Paketti Coluga Downloader", invoke = PakettiColugaShowDialog }
-renoise.tool():add_menu_entry { name = "Sample Navigator:Paketti..:Paketti Coluga Downloader", invoke = PakettiColugaShowDialog }
-renoise.tool():add_menu_entry { name = "Instrument Box:Paketti..:Paketti Coluga Downloader", invoke = PakettiColugaShowDialog }
-
-
+renoise.tool():add_keybinding { name = "Global:Tools:Paketti Coluga Downloader", invoke = function() PakettiColugaShowDialog() end}
+renoise.tool():add_menu_entry { name = "Sample Editor:Paketti..:Paketti Coluga Downloader...", invoke = function() PakettiColugaShowDialog() end}
+renoise.tool():add_menu_entry { name = "Sample Navigator:Paketti..:Paketti Coluga Downloader...", invoke = function() PakettiColugaShowDialog() end}
+renoise.tool():add_menu_entry { name = "Instrument Box:Paketti..:Paketti Coluga Downloader...", invoke = function() PakettiColugaShowDialog() end}
 
