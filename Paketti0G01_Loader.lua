@@ -83,6 +83,7 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
   pakettiPitchbendLoaderEnvelope=false,
   pakettiSlideContentAutomationToo=true,
   pakettiDefaultXRNI="Presets/12st_Pitchbend.xrni",
+  pakettiDefaultDrumkitXRNI="Presets/12st_Pitchbend_Drumkit_C0.xrni",
 
 -- changes made
   -- WipeSlices Segment
@@ -115,7 +116,8 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
   pakettiThemeSelector = {
     PreviousSelectedTheme = "",
     FavoritedList = { "<No Theme Selected>" }, -- Initialize as a simple table
-    RenoiseLaunchFavoritesLoad = true
+    RenoiseLaunchFavoritesLoad = true,
+    RenoiseLaunchRandomLoad = false
   },
   
 -- changes made
@@ -334,6 +336,8 @@ local upperbuttonwidth=160
 local initial_value = get_filter_type_index(preferences.pakettiLoaderFilterType.value)
 
     local pakettiDefaultXRNIDisplayId = "pakettiDefaultXRNIDisplay_" .. tostring(os.time())
+    local pakettiDefaultDrumkitXRNIDisplayId = "pakettiDefaultDrumkitXRNIDisplay_" .. tostring(os.time())
+
 local dialog_content = vb:column {
   margin=10,
 
@@ -483,8 +487,15 @@ horizontal_rule(),
           local filePath=renoise.app():prompt_for_filename_to_read({"*.XRNI"},"Paketti Default XRNI Selector Dialog")
           if filePath and filePath~="" then preferences.pakettiDefaultXRNI.value=filePath vb.views[pakettiDefaultXRNIDisplayId].text=filePath:match("[^/\\]+$") else renoise.app():show_status("No XRNI Instrument was selected") end end} },
         vb:row { vb:text{text="Preset Files:",width=150},vb:popup{items=presetFiles,width=300,notifier=function(value)
-          local selectedFile=presetFiles[value] preferences.pakettiDefaultXRNI.value="Presets/"..selectedFile vb.views[pakettiDefaultXRNIDisplayId].text=selectedFile end} }
+          local selectedFile=presetFiles[value] preferences.pakettiDefaultXRNI.value="Presets/"..selectedFile vb.views[pakettiDefaultXRNIDisplayId].text=selectedFile end} },
+     
+        vb:row { vb:text{text="Default Drumkit XRNI to use:",width=150},vb:textfield{text=preferences.pakettiDefaultDrumkitXRNI.value:match("[^/\\]+$"),width=300,id=pakettiDefaultDrumkitXRNIDisplayId,notifier=function(value) preferences.pakettiDefaultDrumkitXRNI.value=value end},vb:button{text="Browse",width=100,notifier=function()
+          local filePath=renoise.app():prompt_for_filename_to_read({"*.XRNI"},"Paketti Default Drumkit XRNI Selector Dialog")
+          if filePath and filePath~="" then preferences.pakettiDefaultDrumkitXRNI.value=filePath vb.views[pakettiDefaultDrumkitXRNIDisplayId].text=filePath:match("[^/\\]+$") else renoise.app():show_status("No XRNI Drumkit Instrument was selected") end end} },
+        vb:row { vb:text{text="Preset Files:",width=150},vb:popup{items=presetFiles,width=300,notifier=function(value)
+          local selectedFile=presetFiles[value] preferences.pakettiDefaultDrumkitXRNI.value="Presets/"..selectedFile vb.views[pakettiDefaultDrumkitXRNIDisplayId].text=selectedFile end} }
       },
+
 
       -- Wipe & Slice Settings wrapped in group
       horizontal_rule(),

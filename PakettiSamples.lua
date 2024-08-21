@@ -492,7 +492,8 @@ function pitchBendDrumkitLoader()
   current_instrument = song:instrument(current_instrument_index)
 
   -- Load the preset instrument
-  renoise.app():load_instrument("Presets/12st_Pitchbend_Drumkit_C0.xrni")
+  renoise.app():load_instrument("Presets/" .. preferences.pakettiDefaultDrumkitXRNI.value)
+--  renoise.app():load_instrument("Presets/12st_Pitchbend_Drumkit_C0.xrni")
 
   -- Ensure the new instrument is selected
   current_instrument_index = song.selected_instrument_index

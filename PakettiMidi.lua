@@ -1061,20 +1061,61 @@ end
 renoise.tool():add_keybinding{name="Global:Paketti:Paketti MIDI Populator Dialog...",invoke=function() generaMIDISetupShowCustomDialog() end}
 
 --------
--- Function to process MIDI values and set the appropriate property
 function pakettiMidiValuesColumn(minValue, maxValue, note_column_index, propertyName, midiInput)
   local scaledValue = pakettiScaleValuesColumn(midiInput, 0, 127, minValue, maxValue)
   local song = renoise.song()
   local selection = song.selection_in_pattern
+
+  -- Handle cases where no note column is selected
+  if renoise.song().selected_note_column_index == nil or renoise.song().selected_note_column_index == 0 then 
+    note_column_index = 1
+  end
   
   if selection then
-    for line = selection.start_line, selection.end_line do
-      local note_col = song:pattern(song.selected_pattern_index):track(song.selected_track_index):line(line).note_columns[note_column_index]
-      note_col[propertyName] = math.floor(math.max(minValue, math.min(scaledValue, maxValue)))
+    -- Loop through the selected tracks
+    for track_idx = selection.start_track, selection.end_track do
+      local track = song:track(track_idx)
+
+      -- Skip group, send, or master tracks (track types 2, 3, 4)
+      if track.type == renoise.Track.TRACK_TYPE_SEQUENCER  then
+        local visible_note_columns = track.visible_note_columns or 0 -- Handle cases with 0 or no note columns
+
+        -- Only process if the track has visible note columns
+        if visible_note_columns > 0 then
+          -- Loop through the selected lines
+          for line = selection.start_line, selection.end_line do
+            local line_data = song:pattern(song.selected_pattern_index):track(track_idx):line(line)
+            
+            -- Determine the column range for this track
+            local start_column = (track_idx == selection.start_track) and selection.start_column or 1
+            local end_column = (track_idx == selection.end_track) and selection.end_column or visible_note_columns
+
+            -- Modify the note columns in the selected range
+            for col_idx = start_column, end_column do
+              if col_idx <= visible_note_columns then
+                local note_col = line_data.note_columns[col_idx]
+                if note_col then
+                  note_col[propertyName] = math.floor(math.max(minValue, math.min(scaledValue, maxValue)))
+                end
+              end
+            end
+          end
+        end
+      end
     end
   else
-    local note_col = song.selected_line.note_columns[note_column_index]
-    note_col[propertyName] = math.floor(math.max(minValue, math.min(scaledValue, maxValue)))
+    -- Single-line modification if no selection
+    local track = song:track(song.selected_track_index)
+
+    -- Skip group, send, or master tracks
+    if track.type == renoise.Track.TRACK_TYPE_SEQUENCER then
+      if track.visible_note_columns and track.visible_note_columns > 0 then
+        local note_col = song.selected_line.note_columns[note_column_index]
+        if note_col then
+          note_col[propertyName] = math.floor(math.max(minValue, math.min(scaledValue, maxValue)))
+        end
+      end
+    end
   end
 end
 
@@ -1085,51 +1126,170 @@ function pakettiScaleValuesColumn(input, inputMin, inputMax, outputMin, outputMa
   return output
 end
 
-renoise.tool():add_midi_mapping{name="Paketti:Midi Change 01 Volume Column Value x[Knob]",invoke=function(message)
+
+
+
+-- Volume Column MIDI Mapping
+renoise.tool():add_midi_mapping{name="Paketti:Midi Change 01 Volume Column Value x[Knob]", invoke=function(message)
   if message:is_abs_value() then
-    renoise.song().selected_track.volume_column_visible=true
-    pakettiMidiValuesColumn(0, 128, renoise.song().selected_note_column_index, 'volume_value', message.int_value)
+    local song = renoise.song()
+    local selection = song.selection_in_pattern
+    
+    -- Check if there's an active selection in the pattern
+    if selection then
+      -- Iterate over all tracks in the selection
+      for track_idx = selection.start_track, selection.end_track do
+        local track = song:track(track_idx)
+        -- Set the volume column visible if the track is a sequencer track
+        if track.type == renoise.Track.TRACK_TYPE_SEQUENCER then
+          track.volume_column_visible = true
+        end
+      end
+    else
+      -- If no selection, apply to the currently selected track
+      local track = song.selected_track
+      if track.type == renoise.Track.TRACK_TYPE_SEQUENCER then
+        track.volume_column_visible = true
+      end
+    end
+    
+    -- Apply the volume value change using the pakettiMidiValuesColumn function
+    pakettiMidiValuesColumn(0, 128, song.selected_note_column_index, 'volume_value', message.int_value)
   end
 end}
 
-renoise.tool():add_midi_mapping{name="Paketti:Midi Change 02 Panning Column Value x[Knob]",invoke=function(message)
+-- Panning Column MIDI Mapping
+renoise.tool():add_midi_mapping{name="Paketti:Midi Change 02 Panning Column Value x[Knob]", invoke=function(message)
   if message:is_abs_value() then
-    renoise.song().selected_track.panning_column_visible=true
-    pakettiMidiValuesColumn(0, 128, renoise.song().selected_note_column_index, 'panning_value', message.int_value)
+    local song = renoise.song()
+    local selection = song.selection_in_pattern
+    
+    -- Check if there's an active selection in the pattern
+    if selection then
+      -- Iterate over all tracks in the selection
+      for track_idx = selection.start_track, selection.end_track do
+        local track = song:track(track_idx)
+        -- Set the panning column visible if the track is a sequencer track
+        if track.type == renoise.Track.TRACK_TYPE_SEQUENCER then
+          track.panning_column_visible = true
+        end
+      end
+    else
+      -- If no selection, apply to the currently selected track
+      local track = song.selected_track
+      if track.type == renoise.Track.TRACK_TYPE_SEQUENCER then
+        track.panning_column_visible = true
+      end
+    end
+    
+    -- Apply the panning value change using the pakettiMidiValuesColumn function
+    pakettiMidiValuesColumn(0, 128, song.selected_note_column_index, 'panning_value', message.int_value)
   end
 end}
 
-renoise.tool():add_midi_mapping{name="Paketti:Midi Change 03 Delay Column Value x[Knob]",invoke=function(message)
+-- Delay Column MIDI Mapping
+renoise.tool():add_midi_mapping{name="Paketti:Midi Change 03 Delay Column Value x[Knob]", invoke=function(message)
   if message:is_abs_value() then
-    renoise.song().selected_track.delay_column_visible=true
-    pakettiMidiValuesColumn(0, 255, renoise.song().selected_note_column_index, 'delay_value', message.int_value)
+    local song = renoise.song()
+    local selection = song.selection_in_pattern
+    
+    -- Check if there's an active selection in the pattern
+    if selection then
+      -- Iterate over all tracks in the selection
+      for track_idx = selection.start_track, selection.end_track do
+        local track = song:track(track_idx)
+        -- Set the delay column visible if the track is a sequencer track
+        if track.type == renoise.Track.TRACK_TYPE_SEQUENCER then
+          track.delay_column_visible = true
+        end
+      end
+    else
+      -- If no selection, apply to the currently selected track
+      local track = song.selected_track
+      if track.type == renoise.Track.TRACK_TYPE_SEQUENCER then
+        track.delay_column_visible = true
+      end
+    end
+    
+    -- Apply the delay value change using the pakettiMidiValuesColumn function
+    pakettiMidiValuesColumn(0, 255, song.selected_note_column_index, 'delay_value', message.int_value)
   end
 end}
 
-renoise.tool():add_midi_mapping{name="Paketti:Midi Change 04 Sample FX Column Value x[Knob]",invoke=function(message)
+-- Sample FX Column MIDI Mapping
+renoise.tool():add_midi_mapping{name="Paketti:Midi Change 04 Sample FX Column Value x[Knob]", invoke=function(message)
   if message:is_abs_value() then
-    renoise.song().selected_track.sample_effects_column_visible=true
-    pakettiMidiValuesColumn(0, 255, renoise.song().selected_note_column_index, 'effect_amount_value', message.int_value)
+    local song = renoise.song()
+    local selection = song.selection_in_pattern
+    
+    -- Check if there's an active selection in the pattern
+    if selection then
+      -- Iterate over all tracks in the selection
+      for track_idx = selection.start_track, selection.end_track do
+        local track = song:track(track_idx)
+        -- Set the sample effects column visible if the track is a sequencer track
+        if track.type == renoise.Track.TRACK_TYPE_SEQUENCER then
+          track.sample_effects_column_visible = true
+        end
+      end
+    else
+      -- If no selection, apply to the currently selected track
+      local track = song.selected_track
+      if track.type == renoise.Track.TRACK_TYPE_SEQUENCER then
+        track.sample_effects_column_visible = true
+      end
+    end
+    
+    -- Apply the sample FX value change using the pakettiMidiValuesColumn function
+    pakettiMidiValuesColumn(0, 255, song.selected_note_column_index, 'effect_amount_value', message.int_value)
   end
 end}
 
 -- Function to process MIDI values and set the appropriate property
 function pakettiMidiValuesEffectColumn(minValue, maxValue, effect_column_index, propertyName, midiInput)
   local scaledValue = pakettiScaleValuesColumn(midiInput, 0, 127, minValue, maxValue)
-  local song = renoise.song()
-  local selection = song.selection_in_pattern
-  
-  if selection then
+local song = renoise.song()
+local selection = song.selection_in_pattern
+
+if selection then
+  for track_idx = selection.start_track, selection.end_track do
+    local track = song:track(track_idx)
+    local visible_note_columns = track.visible_note_columns or 0 -- Handle cases where note columns might be 0 or nil
+    local visible_effect_columns = track.visible_effect_columns
+    local total_visible_columns = visible_note_columns + visible_effect_columns
+
+    -- For each line within the selected range
     for line = selection.start_line, selection.end_line do
-      local note_col = song:pattern(song.selected_pattern_index):track(song.selected_track_index):line(line).effect_columns[effect_column_index]
-      note_col[propertyName] = math.floor(math.max(minValue, math.min(scaledValue, maxValue)))
+      local line_data = song:pattern(song.selected_pattern_index):track(track_idx):line(line)
+
+      -- Determine the column range based on track index
+      local start_column = (track_idx == selection.start_track) and selection.start_column or 1
+      local end_column = (track_idx == selection.end_track) and selection.end_column or total_visible_columns
+
+      -- Adjust the selected columns to match the effect columns in this track
+      for col_idx = start_column, end_column do
+        if col_idx > visible_note_columns then
+          local effect_col_idx = col_idx - visible_note_columns
+          if effect_col_idx <= visible_effect_columns then
+            -- Modify the effect column
+            local effect_column = line_data.effect_columns[effect_col_idx]
+            if effect_column then
+              effect_column[propertyName] = math.floor(math.max(minValue, math.min(scaledValue, maxValue)))
+            end
+          end
+        end
+      end
     end
-  else
-    local note_col = song.selected_line.effect_columns[effect_column_index]
-    note_col[propertyName] = math.floor(math.max(minValue, math.min(scaledValue, maxValue)))
+  end
+else
+  -- Handle single-line modification if no selection is available
+  local effect_col_idx = renoise.song().selected_effect_column_index
+  local effect_column = song.selected_line.effect_columns[effect_col_idx]
+  if effect_column then
+    effect_column[propertyName] = math.floor(math.max(minValue, math.min(scaledValue, maxValue)))
   end
 end
-
+end
 -- Scales an input value from a given input range to a specified output range
 function pakettiScaleValuesEffectColumn(input, inputMin, inputMax, outputMin, outputMax)
   local scale = (outputMax - outputMin) / (inputMax - inputMin)

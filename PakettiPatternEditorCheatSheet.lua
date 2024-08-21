@@ -66,6 +66,8 @@ function sliderVisible(column)
           track.panning_column_visible = true
         elseif column == "delay" then
           track.delay_column_visible = true
+        elseif column == "samplefx" then
+        track.sample_effects_column_visible = true
         end
       end
     end
@@ -80,6 +82,8 @@ function sliderVisible(column)
         track.panning_column_visible = true
       elseif column == "delay" then
         track.delay_column_visible = true
+      elseif column == "samplefx" then
+      track.sample_effects_column_visible = true
       end
     end
   end
@@ -595,6 +599,55 @@ local max_increment_button = vb:button {
 
       }
     },
+        vb:horizontal_aligner {mode = "right", vb:text {style = "strong", text = "Sample FX"},
+      vb:minislider {
+        id = "samplefxslider",
+        width = 30,
+        height = 127,
+        min = 0,
+        max = 0x80,
+        notifier = function(v6)
+          sliderVisible("samplefx")
+          if s.selection_in_pattern then
+            for t = s.selection_in_pattern.start_track, s.selection_in_pattern.end_track do
+              local track = s:track(t)
+              if track.type == renoise.Track.TRACK_TYPE_MASTER or track.type == renoise.Track.TRACK_TYPE_SEND or track.type == renoise.Track.TRACK_TYPE_GROUP then
+                print("Track", t, "Does not have Note Columns, skipping.")
+              else
+                local note_columns_visible = track.visible_note_columns
+                local start_column = (t == s.selection_in_pattern.start_track) and s.selection_in_pattern.start_column or 1
+                local end_column = (t == s.selection_in_pattern.end_track) and s.selection_in_pattern.end_column or note_columns_visible
+                for i = s.selection_in_pattern.start_line, s.selection_in_pattern.end_line do
+                  for col = start_column, end_column do
+                    if col <= note_columns_visible then
+                      local note_column = s:pattern(s.selected_pattern_index):track(t):line(i).note_columns[col]
+                      if note_column then
+                        note_column.effect_amount_value = v6
+                      end
+                    end
+                  end
+                end
+              end
+            end
+          else
+            if s.selected_note_column == nil and renoise.song().selected_track.type == 1 then
+              renoise.song().selected_line.note_columns[1].effect_amount_value = v6
+            else
+              if s.selected_note_column == nil and (renoise.song().selected_track.type == renoise.Track.TRACK_TYPE_MASTER or renoise.song().selected_track.type == renoise.Track.TRACK_TYPE_SEND or renoise.song().selected_track.type == renoise.Track.TRACK_TYPE_GROUP) then
+                renoise.app():show_status("This track type does not have a Sample FX Column available.")
+              end
+              if s.selected_note_column then
+                s.selected_note_column.panning_value = v
+              end
+            end
+          end
+          renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
+        end
+
+      }
+    },
+    
+    
     vb:horizontal_aligner {mode = "right", vb:text {style = "strong", text = "Effect"},
       vb:minislider {
         id = "effectslider",

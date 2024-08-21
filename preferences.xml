@@ -147,11 +147,14 @@
       <Favorited>Default</Favorited>
       <Favorited>Pico-8 Dusty Chocolate</Favorited>
       <Favorited>Academic</Favorited>
+      <Favorited>gruvbox</Favorited>
     </FavoritedList>
     <RenoiseLaunchFavoritesLoad>true</RenoiseLaunchFavoritesLoad>
+    <RenoiseLaunchRandomLoad>false</RenoiseLaunchRandomLoad>
     <PreviousSelectedTheme>Academic</PreviousSelectedTheme>
   </pakettiThemeSelector>
   <pakettiLoaderNNA>2</pakettiLoaderNNA>
+  <pakettiDefaultDrumkitXRNI>12st_Pitchbend_Drumkit_C0.xrni</pakettiDefaultDrumkitXRNI>
   <pakettiLoaderLoopExit>false</pakettiLoaderLoopExit>
   <renderBypass>false</renderBypass>
   <pakettiPitchbendLoaderEnvelope>false</pakettiPitchbendLoaderEnvelope>

@@ -47,7 +47,7 @@ local selected_theme_index = nil
 --  print(i .. ": " .. theme)
 --end
 
-local function pakettiThemeSelectorRenoiseStartFavorites()
+function pakettiThemeSelectorRenoiseStartFavorites()
   if #preferences.pakettiThemeSelector.FavoritedList <= 1 then
     renoise.app():show_status("You currently have no Favorite Themes set.")
     return
@@ -64,6 +64,11 @@ local function pakettiThemeSelectorRenoiseStartFavorites()
   local cleaned_theme_name = tostring(random_theme):match(".*%. (.+)") or tostring(random_theme)
   selected_theme_index = table.find(themes, cleaned_theme_name)
 
+oprint (tostring(random_theme))
+
+renoise.app():load_theme(themes_path .. tostring(random_theme) .. ".xrnc")
+renoise.app():show_status("Randomized a theme out of your favorite list. " .. tostring(random_theme))
+--[[
   if selected_theme_index then
     local filename = themes[selected_theme_index]
 
@@ -73,7 +78,23 @@ local function pakettiThemeSelectorRenoiseStartFavorites()
   else
     renoise.app():show_status("Selected theme not found.")
   end
+--]]
 end
+
+local function pakettiThemeSelectorPickRandomThemeFromAll()
+local themes_path = renoise.tool().bundle_path .. "Themes/"
+local themes = os.filenames(themes_path, "*.xrnc")
+  local new_index = selected_theme_index
+  while new_index == selected_theme_index do
+    new_index = math.random(#themes - 1) + 1
+  end
+  selected_theme_index = new_index
+  renoise.app():load_theme(themes_path .. themes[selected_theme_index])
+  renoise.app():show_status("Picked a random theme from all themes. " .. themes[selected_theme_index])
+end
+
+
+
 
 
 function startup()  
@@ -82,12 +103,16 @@ function startup()
      -- renoise.app().window:select_preset(1)
       s.sequencer.keep_sequence_sorted=false
       t.groove_enabled=true
-        if preferences.pakettiThemeSelector.RenoiseLaunchFavoritesLoad.value then
+      if preferences.pakettiThemeSelector.RenoiseLaunchRandomLoad.value then 
+      pakettiThemeSelectorPickRandomThemeFromAll()
+      else if preferences.pakettiThemeSelector.RenoiseLaunchFavoritesLoad.value then
     pakettiThemeSelectorRenoiseStartFavorites()
-  else
-    print("Debug: RenoiseLaunchFavoritesLoad is false.")
+  
+  --  print("Debug: RenoiseLaunchFavoritesLoad is false.")
   end
-       shuffle_oblique_strategies()
+  end
+  
+      -- shuffle_oblique_strategies()
 --      renoise.app():show_status("There was a save and the Startup Notifier ran.")
 end
 

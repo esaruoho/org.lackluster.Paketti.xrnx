@@ -27,6 +27,11 @@ if preferences.pakettiThemeSelector.RenoiseLaunchFavoritesLoad == nil then
   preferences.pakettiThemeSelector.RenoiseLaunchFavoritesLoad = false
 end
 
+if preferences.pakettiThemeSelector.RenoiseLaunchRandomLoad == nil then
+  preferences.pakettiThemeSelector.RenoiseLaunchRandomLoad = false
+end
+
+
 if #themes == 0 then
   renoise.app():show_status("No themes found in Themes folder.")
   return
@@ -98,6 +103,11 @@ local function pakettiThemeSelectorDialogClose(vb)
     end
     custom_dialog:close()
     save_preferences()
+    if vb.views["launch_randomrandom_checkbox"] then
+      preferences.pakettiThemeSelector.RenoiseLaunchRandomLoad.value = vb.views["launch_randomrandom_checkbox"].value
+      save_preferences()
+    end
+
     if vb.views["launch_random_checkbox"] then
       preferences.pakettiThemeSelector.RenoiseLaunchFavoritesLoad.value = vb.views["launch_random_checkbox"].value
       save_preferences()
@@ -238,7 +248,7 @@ local function pakettiThemeSelectorPickRandomThemeFromAll()
   end
   selected_theme_index = new_index
   pakettiThemeSelectorUpdateLoadTheme(themes[selected_theme_index])
-  renoise.app():show_status("Picked a random theme from all themes.")
+  renoise.app():show_status("Picked a random theme from all themes. " .. themes[selected_theme_index])
 end
 
 local function pakettiThemeSelectorPickRandomThemeFromFavorites(vb)
@@ -420,6 +430,14 @@ local function pakettiThemeSelectorDialogOpen(vb)
       vb:row{vb:text{text = "Paketti Theme Selector Settings", font="bold"}},
       vb:row{vb:button{text="Open Themes Path", notifier=pakettiThemeSelectorOpenThemesPath},
         vb:button{text="Refresh", notifier=function() pakettiThemeSelectorRefreshThemes(vb) end}},
+      vb:row{vb:checkbox {
+          id="launch_randomrandom_checkbox",
+          value=preferences.pakettiThemeSelector.RenoiseLaunchRandomLoad.value,  -- Correctly initialize the checkbox value
+          notifier=function(value)
+            preferences.pakettiThemeSelector.RenoiseLaunchRandomLoad.value = value
+            save_preferences() end},
+        vb:text { text = "On Renoise Launch, Randomize Any Theme" }},
+
       vb:row{vb:checkbox {
           id="launch_random_checkbox",
           value=preferences.pakettiThemeSelector.RenoiseLaunchFavoritesLoad.value,  -- Correctly initialize the checkbox value
