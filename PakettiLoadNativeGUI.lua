@@ -5,12 +5,30 @@ local preferencesFile = renoise.tool().bundle_path .. "preferences_deviceLoaders
 local checkboxes = {}  -- Initialize the checkboxes table
 local deviceReadableNames = {}  -- Initialize the deviceReadableNames table
 
+local additionalDevices = {
+  {name = "(Hidden) Chorus", path = "Audio/Effects/Native/Chorus"},
+  {name = "(Hidden) Comb Filter", path = "Audio/Effects/Native/Comb Filter"},
+  {name = "(Hidden) Distortion", path = "Audio/Effects/Native/Distortion"},
+  {name = "(Hidden) Filter", path = "Audio/Effects/Native/Filter"},
+  {name = "(Hidden) Filter 2", path = "Audio/Effects/Native/Filter 2"},
+  {name = "(Hidden) Filter 3", path = "Audio/Effects/Native/Filter 3"},
+  {name = "(Hidden) Flanger", path = "Audio/Effects/Native/Flanger"},
+  {name = "(Hidden) Gate", path = "Audio/Effects/Native/Gate"},
+  {name = "(Hidden) LofiMat", path = "Audio/Effects/Native/LofiMat"},
+  {name = "(Hidden) mpReverb", path = "Audio/Effects/Native/mpReverb"},
+  {name = "(Hidden) Phaser", path = "Audio/Effects/Native/Phaser"},
+  {name = "(Hidden) RingMod", path = "Audio/Effects/Native/RingMod"},
+  {name = "(Hidden) Scream Filter", path = "Audio/Effects/Native/Scream Filter"},
+  {name = "(Hidden) Shaper", path = "Audio/Effects/Native/Shaper"},
+  {name = "(Hidden) Stutter", path = "Audio/Effects/Native/Stutter"}
+}
+
 -- Function to add keybindings and MIDI mappings
 function addAsShortcut()
   for _, cb_info in ipairs(checkboxes) do
     if cb_info.checkbox.value then
       local keyBindingName = "Global:Track Devices:Load Device (Native) " .. cb_info.name
-      local midiMappingName = "Tools:Track Devices:Load Device (Native) " .. cb_info.name
+      local midiMappingName = "Track Devices:Paketti:Load Device (Native) " .. cb_info.name
 
       -- Check if we've already attempted to add this keybinding
       if not addedKeyBindings[keyBindingName] then
@@ -19,7 +37,8 @@ function addAsShortcut()
         -- Attempt to add the keybinding, using pcall to catch any errors gracefully
         local success, err = pcall(function()
           renoise.tool():add_keybinding{name=keyBindingName, invoke=function() loadnative(cb_info.path) end}
-          renoise.tool():add_midi_mapping{name=midiMappingName, invoke=function() loadnative(cb_info.path) end}
+          renoise.tool():add_midi_mapping{name=midiMappingName, invoke=function(message) if message:is_trigger() then
+          loadnative(cb_info.path) end end}
         end)
 
         -- Check if the keybinding was added successfully
@@ -77,7 +96,7 @@ function loadFromPreferencesFile()
   end
 
   for midiMappingName, path in content:gmatch('<MIDIMapping name="(.-)">.-<Path>(.-)</Path>.-</MIDIMapping>') do
-    renoise.tool():add_midi_mapping{name=midiMappingName, invoke=function() loadnative(path) end}
+    renoise.tool():add_midi_mapping{name=midiMappingName, invoke=function(message) if message:is_trigger() then loadnative(path) end end}
   end
 end
 
@@ -104,7 +123,7 @@ loadFromPreferencesFile()
 function create_scrollable_native_list(vb)
     local left_column = vb:column {}
     local right_column = vb:column {}
-    local num_devices = #deviceReadableNames
+    local num_devices = #deviceReadableNames + #additionalDevices
     local mid_point = math.ceil(num_devices / 2)
 
     for i, device in ipairs(deviceReadableNames) do
@@ -113,6 +132,18 @@ function create_scrollable_native_list(vb)
         local device_row = vb:row {checkbox, vb:text { text = device.name }}
 
         if i <= mid_point then
+            left_column:add_child(device_row)
+        else
+            right_column:add_child(device_row)
+        end
+    end
+
+    for i, device in ipairs(additionalDevices) do
+        local checkbox = vb:checkbox { value = false, id = "checkbox_native_hidden_" .. tostring(i) }
+        checkboxes[#checkboxes + 1] = { checkbox = checkbox, path = device.path, name = device.name }
+        local device_row = vb:row {checkbox, vb:text { text = device.name }}
+
+        if (#deviceReadableNames + i) <= mid_point then
             left_column:add_child(device_row)
         else
             right_column:add_child(device_row)
@@ -211,12 +242,21 @@ function PakettiShowDeviceListDialog()
                     loadSelectedNativeDevices()
                     custom_dialog:close()
                 end}},
-        vb:button {text = "Add Device(s) as Shortcut(s)",
+        vb:button {text = "Add Device(s) as Shortcut(s) & MidiMappings",
             height = button_height,
             notifier = addAsShortcut},
         vb:button {text = "Randomize Selection",
             height = button_height,
             notifier = randomizeSelection},
+        vb:button { text="Select All",
+        height=button_height,
+        notifier=function()
+        
+    for _, cb_info in ipairs(checkboxes) do
+        cb_info.checkbox.value = true
+    end
+end},            
+            
         vb:button {text = "Reset Selection",
             height = button_height,
             notifier = resetSelection},

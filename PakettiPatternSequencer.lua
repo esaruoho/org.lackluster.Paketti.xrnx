@@ -29,7 +29,7 @@ end
 renoise.tool():add_menu_entry{name="Pattern Sequencer:Paketti..:Clone Current Sequence",invoke=clone_current_sequence}
 renoise.tool():add_menu_entry{name="Pattern Matrix:Paketti..:Clone Current Sequence",invoke=clone_current_sequence}
 renoise.tool():add_keybinding{name="Global:Paketti:Clone Current Sequence",invoke=clone_current_sequence}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Clone Current Sequence",invoke=clone_current_sequence}
+renoise.tool():add_midi_mapping{name="Paketti:Clone Current Sequence",invoke=clone_current_sequence}
 
 ---------
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Keep Sequence Sorted False",invoke=function() renoise.song().sequencer.keep_sequence_sorted=false end}

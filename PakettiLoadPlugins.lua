@@ -61,7 +61,7 @@ local function loadFromPreferencesFile()
   end
 
   for midiMappingName, path in content:gmatch('<MIDIMapping name="(.-)">.-<Path>(.-)</Path>.-</MIDIMapping>') do
-    renoise.tool():add_midi_mapping{name=midiMappingName, invoke=function() loadPlugin(path) end}
+    renoise.tool():add_midi_mapping{name=midiMappingName, invoke=function(message) if message:is_trigger() then  loadPlugin(path) end end}
     addedKeyBindings[midiMappingName] = true
   end
 end
@@ -93,7 +93,7 @@ local function addAsShortcut()
       end
 
       local keyBindingName="Global:Paketti:Load Plugin" .. plugin_type .. " " .. cb_info.name
-      local midiMappingName="Tools:Paketti:Load Plugin" .. plugin_type .. " " .. cb_info.name
+      local midiMappingName="Paketti:Load Plugin" .. plugin_type .. " " .. cb_info.name
 
       -- Debug: Print the keybinding name
       print("Attempting to add keybinding:", keyBindingName)
@@ -105,7 +105,7 @@ local function addAsShortcut()
         -- Attempt to add the keybinding, using pcall to catch any errors gracefully
         local success, err = pcall(function()
           renoise.tool():add_keybinding{name=keyBindingName, invoke=function() loadPlugin(cb_info.path) end}
-          renoise.tool():add_midi_mapping{name=midiMappingName, invoke=function() loadPlugin(cb_info.path) end}
+          renoise.tool():add_midi_mapping{name=midiMappingName, invoke=function(message) if message:is_trigger() then  loadPlugin(cb_info.path) end end}
         end)
 
         -- Check if the keybinding was added successfully
@@ -201,7 +201,7 @@ local function randomizeSelection()
 end
 
 -- Function to show the plugin list dialog
-local function showPluginListDialog()
+function showPluginListDialog()
   checkboxes = {}  -- Reinitialize the checkboxes table to avoid carrying over previous states
   local available_plugins = renoise.song().selected_instrument.plugin_properties.available_plugins
   local available_plugin_infos = renoise.song().selected_instrument.plugin_properties.available_plugin_infos
@@ -255,8 +255,16 @@ local function showPluginListDialog()
         end
       }
     },
-    vb:button{text="Add Plugin(s) as Shortcut(s)",height=button_height,notifier=addAsShortcut},
+    vb:button{text="Add Plugin(s) as Shortcut(s) & MidiMappings",height=button_height,notifier=addAsShortcut},
     vb:button{text="Randomize Selection", height=button_height, notifier=function() randomizeSelection() end},
+            vb:button { text="Select All",
+        height=button_height,
+        notifier=function()
+        
+    for _, cb_info in ipairs(checkboxes) do
+        cb_info.checkbox.value = true
+    end
+end},
     vb:button{text="Reset Selection", height=button_height, notifier=function() resetSelection() end},
     vb:button{text="Cancel", height=button_height, notifier=function() custom_dialog:close() end}
   }
@@ -291,5 +299,5 @@ initializePreferencesFile()
 loadFromPreferencesFile()
 
 -- Register the menu entry to show the plugin list dialog
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Load AU/VST/VST3 Plugins Dialog",invoke=function() showPluginListDialog() end}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Load AU/VST/VST3 Plugins Dialog",invoke=function() showPluginListDialog() end}
 

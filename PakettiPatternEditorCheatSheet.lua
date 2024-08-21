@@ -1,388 +1,669 @@
-function CheatSheet()
-local vb=renoise.ViewBuilder()
-local a=renoise.app()
-local s=renoise.song()
-local w=a.window
-
-local arp="0Axy - Arpeggio (x=base note offset1, y=base noteoffset 2) *"
-local pup="0Uxx - Pitch Slide up (00-FF) *"
-local pdn="0Dxx - Pitch Slide down (00-FF) *"
-local chv="0Mxx - Set Channel volume (00-FF)"
-local vls="0Cxy - Volume slicer -- x=factor (0=0.0, F=1.0), slice at tick y. *"
-local gli="0Gxx - Glide to note with step xx (00-FF)*" 
-local vup="0Ixx - Volume Slide Up with step xx (0064) (64x0601 or 2x0632 = slide0-full) *"
-local vdn="0Oxx - Volume Slide Down with step xx (0064) *"
-local pan="0Pxx - Set Panning (00-FF) (00: left; 80: center; FF: right)"
-local off="0Sxx - Trigger Sample Offset, 00 is sample start, FF is sample end. *"
-local sur="0Wxx - Surround Width (00-FF) *"
-local rev="0Bxx - Play Sample Backwards (B00) or forwards again (B01) *"
-local trv="0Lxx - Set track-Volume (00-FF)"
-local del="0Qxx - Delay notes in track-row xx ticks before playing. (00-speed)"
-local ret="0Rxy - Retrig notes in track-row every xy ticks (x=volume; y=ticks 0 - speed) **"
-local vib="0Vxy - Set Vibrato x= speed, y= depth; x=(0-F); y=(0-F)*"
-local tre="0Txy - Set Tremolo x= speed, y= depth"
-local apan="0Nxy - Set Auto Pan, x= speed, y= depth"
-local aenv="0Exx - Set Active Sample Envelope's Position to Offset XX"
-local trout="0Jxx - Set Track's Output Routing to channel XX"
-local stopall="0Xxx - Stop all notes and FX (xx = 00), or only effect xx (xx > 00)"
-local globalwidth=50
--- Locals required to generate list
-local wiki="www"
-local wikitooltip="http://tutorials.renoise.com/wiki/Pattern_Effect_Commands#Effect_Listing"
-local wikibutton= vb:button {width=globalwidth, text=wiki, tooltip=wikitooltip,
-  pressed = function() a:open_url("http://tutorials.renoise.com/wiki/Pattern_Effect_Commands#Effect_Listing")
-  end}, vb:text {text=wikitooltip}
-
-local arpeggio="0Axy"
-local arpeggiotooltip="0Axy - Arpeggio (x=1st note offset, y=2nd note offset (in semitones)) *"
-local arpeggiobutton= vb:button {width=globalwidth, text=arpeggio, tooltip=arpeggiotooltip,
-  pressed = function() effect_write("0A",arp) end}, vb:text {text=arpeggiotooltip}
-
-local pitchslideup="0Uxx"
-local pitchslideuptooltip="0Uxx - Pitch Slide up (00-FF) *"
-local pitchslideupbutton = vb:button {width=globalwidth, text=pitchslideup, tooltip=pitchslideuptooltip,
-  pressed = function() effect_write("0U",pup) end}
-
-local pitchslidedown="0Dxx"
-local pitchslidedowntooltip="0Dxx - Pitch Slide down (00-FF) *"
-local pitchslidedownbutton=vb:button {width=globalwidth, text=pitchslidedown, tooltip=pitchslidedowntooltip,
-  pressed = function() effect_write("0D",pdn) end}
-
-local setchannelvol="0Mxx"
-local setchannelvoltooltip="0Mxx - Set Channel volume (00-FF)"
-local setchannelvolbutton=vb:button {width=globalwidth, text=setchannelvol, tooltip=setchannelvoltooltip,
-  pressed = function() effect_write("0M",chv) end}
-
-local volumeslicer="0Cxy"
-local volumeslicertooltip="0Cxy - Volume slicer  x=factor (0=0%, F=100%), slice at tick y. *"
-local volumeslicerbutton=vb:button {width=globalwidth, text=volumeslicer, tooltip=volumeslicertooltip,
-  pressed = function() effect_write("0C",vls) end}
-
-local glidetonote="0Gxx"
-local glidetonotetooltip="0Gxx - Glide to note with step xx (00-FF)*" 
-local glidetonotebutton=vb:button {width=globalwidth, text=glidetonote, tooltip=glidetonotetooltip,
-  pressed = function() effect_write("0G",gli) end}
-
-local volumeslideup="0Ixx"
-local volumeslideuptooltip="0Ixx - Volume slide up with step xx (0064) (64x0601 or 2x0632 = slide0-full) *"
-local volumeslideupbutton=vb:button {width=globalwidth, text=volumeslideup, tooltip=volumeslideuptooltip,
-  pressed = function() effect_write("0I",vup) end}
-
-local volumeslidedown="0Oxx"
-local volumeslidedowntooltip="0Oxx - Volume slide down with step xx (0064) *"
-local volumeslidedownbutton=vb:button {width=globalwidth, text=volumeslidedown, tooltip=volumeslidedowntooltip,
-  pressed = function() effect_write("0O",vdn) end}
-
-local setpanning="0Pxx"
-local setpanningtooltip="0Pxx - Set panning (00-FF) (00: left; 80: center; FF: right)"
-local setpanningbutton=vb:button {width=globalwidth, text=setpanning, tooltip=setpanningtooltip,
-  pressed = function() effect_write("0P",pan) end}
-
-local triggersample="0Sxx"
-local triggersampletooltip="0Sxx - Trigger sample offset, 00 is sample start, FF is sample end. *"
-local triggersamplebutton=vb:button {width=globalwidth, text=triggersample, tooltip=triggersampletooltip,
-  pressed = function() effect_write("0S",off) end}
-
-local surround="0Wxx"
-local surroundtooltip="0Wxx - Surround Width (00-FF) *"
-local surroundbutton=vb:button {width=globalwidth, text=surround, tooltip=surroundtooltip,
-  pressed = function() effect_write("0W",sur) end}
-
-local playsamplebackwards="0Bxx"
-local playsamplebackwardstooltip="0Bxx - Play sample backwards (B00) or forwards again (B01) *"
-local playsamplebackwardsbutton=vb:button {width=globalwidth, text=playsamplebackwards, tooltip=playsamplebackwardstooltip,
-  pressed = function() effect_write("0B",rev) end}
-
-local settrackvolume="0Lxx"
-local settrackvolumetooltip="0Lxx - Set Track-Volume (00-FF)"
-local settrackvolumebutton=vb:button {width=globalwidth, text=settrackvolume, tooltip=settrackvolumetooltip,
-  pressed = function() effect_write("0L",trv) end}
-
-local delaynotes="0Qxx"
-local delaynotestooltip="0Qxx - Delay notes in track-row xx ticks before playing. (00-speed)"
-local delaynotesbutton=vb:button {width=globalwidth, text=delaynotes, tooltip=delaynotestooltip,
-  pressed = function() effect_write("0Q",del) end}
-
-local retrig="0Rxy"
-local retrigtooltip="0Rxy - Retrig notes in track-row every xy ticks (x=volume; y=ticks 0 - speed) **"
-local retrigbutton=vb:button {width=globalwidth, text=retrig, tooltip=retrigtooltip,
-  pressed = function() effect_write("0R",ret) end}
-
-local vibrato="0Vxy"
-local vibratotooltip="0Vxy - Vibrato x= speed, y = depth; x=(0-F); y=(0-F)*"
-local vibratobutton=vb:button {width=globalwidth, text=vibrato, tooltip=vibratotooltip,
-  pressed = function() effect_write("0V",vib) end}
-
-local tremolo="0Txy"
-local tremolotooltip="0Txy - Set Tremolo x= speed, y= depth"
-local tremolobutton=vb:button {width=globalwidth, text=tremolo, tooltip=tremolotooltip,
-  pressed = function() effect_write("0T",tre) end}
-
-local autopan="0Nxy"
-local autopantooltip="0Nxy - Set Auto Pan, x= speed, y= depth"
-local autopanbutton=vb:button {width=globalwidth, text=autopan, tooltip=autopantooltip,
-  pressed = function() effect_write("0N",apan) end}
-
-local aenv="0Exy"
-local aenvtooltip="0Exy - Set Active Sample Envelope's Position to Offset XX"
-local aenvbutton=vb:button {width=globalwidth, text=aenv, tooltip=aenvtooltip,
-  pressed = function() effect_write("0E",aenv) end}
-
-local trout="0Jxy"
-local trouttooltip="0Jxx - Set Track's Output Routing to channel XX"
-local troutbutton=vb:button {width=globalwidth, text=trout, tooltip=trouttooltip,
-  pressed = function() effect_write("0J",trout) end}
-
-local stopall="0Xxy"
-local stopalltooltip="0Xxx - Stop all notes and FX (xx = 00) or only effect xx (xx >00)"
-local stopallbutton=vb:button {width=globalwidth, text=stopall, tooltip=stopalltooltip,
-  pressed = function() effect_write("0X",stopall) end}
-  
-local trigger="0Zxx"
-local triggertooltip="0Zxx - Trigger Phrase (xx = Phrase number (01 - 7E), 00 = none, 7F = keymap mode)"
-local triggerbutton=vb:button {width=globalwidth, text=trigger, tooltip=triggertooltip,
-  pressed = function() effect_write("0Z",trigger) end}  
-  
-local maybe="0Yxx"
-local maybetooltip="0Yxx - Probability of triggering line playback (xx) 00 = mutually exclusive mode"  
-local maybebutton=vb:button {width=globalwidth, text=maybe, tooltip=maybetooltip,
-  pressed = function() effect_write("0X",maybe) end}
--------
---Generation of Pattern Effect
-local dialog_title = "Paketti 0.354 - Pattern Effect Command CheatSheet"
-local DEFAULT_MARGIN = renoise.ViewBuilder.DEFAULT_CONTROL_MARGIN
-local DEFAULT_SPACING = renoise.ViewBuilder.DEFAULT_CONTROL_SPACING
-
-local effect_buttons = vb:column {
-arpeggiobutton,
-pitchslideupbutton,
-pitchslidedownbutton,
-glidetonotebutton,
-vibratobutton,
-volumeslideupbutton,
-volumeslidedownbutton,
-tremolobutton,
-volumeslicerbutton,
-setchannelvolbutton,
-settrackvolumebutton,
-triggersamplebutton,
-playsamplebackwardsbutton,
-aenvbutton,
-delaynotesbutton,
-retrigbutton,
-maybebutton,
-autopanbutton,
-setpanningbutton,
-surroundbutton,
-stopallbutton,
-triggerbutton,
-troutbutton,
-wikibutton}
-
-local effect_desc = vb:column {
-vb:text{text=arpeggiotooltip},
-vb:text{text=pitchslideuptooltip},
-vb:text{text=pitchslidedowntooltip},
-vb:text{text=glidetonotetooltip},
-vb:text{text=vibratotooltip},
-vb:text{text=volumeslideuptooltip},
-vb:text{text=volumeslidedowntooltip},
-vb:text{text=tremolotooltip},
-vb:text{text=volumeslicertooltip},
-vb:text{text=setchannelvoltooltip},
-vb:text{text=settrackvolumetooltip},
-vb:text{text=triggersampletooltip},
-vb:text{text=playsamplebackwardstooltip},
-vb:text{text=aenvtooltip},
-vb:text{text=delaynotestooltip},
-vb:text{text=retrigtooltip},
-vb:text{text=maybetooltip},
-vb:text{text=autopantooltip},
-vb:text{text=setpanningtooltip},
-vb:text{text=surroundtooltip},
-vb:text{text=stopalltooltip},
-vb:text{text=triggertooltip},
-vb:text{text=trouttooltip},
-vb:text{text=wikitooltip}
+local effects = {
+  {"0A", "-Axy", "Set arpeggio, x/y = first/second note offset in semitones"},
+  {"0U", "-Uxx", "Slide Pitch up by xx 1/16ths of a semitone"},
+  {"0D", "-Dxx", "Slide Pitch down by xx 1/16ths of a semitone"},
+  {"0G", "-Gxx", "Glide towards given note by xx 1/16ths of a semitone"},
+  {"0I", "-Ixx", "Fade Volume in by xx volume units"},
+  {"0O", "-Oxx", "Fade Volume out by xx volume units"},
+  {"0C", "-Cxy", "Cut volume to x after y ticks (x = volume factor: 0=0%, F=100%)", 0x00, 0x0F},
+  {"0Q", "-Qxx", "Delay note by xx ticks"},
+  {"0M", "-Mxx", "Set note volume to xx"},
+  {"0S", "-Sxx", "Trigger sample slice number xx or offset xx"},
+  {"0B", "-Bxx", "Play Sample Backwards (B00) or forwards again (B01) *", 0x00, 0x01},
+  {"0R", "-Rxy", "Retrigger line every y ticks with volume factor x"},
+  {"0Y", "-Yxx", "MaYbe trigger line with probability xx, 00 = mutually exclusive note columns"},
+  {"0Z", "-Zxx", "Trigger Phrase xx (Phrase Number (01-7E), 00 = none, 7F = keymap) for a specific note"},
+  {"0V", "-Vxy", "Set Vibrato x = speed, y = depth; x=(0-F); y=(0-F)*"},
+  {"0T", "-Txy", "Set Tremolo x = speed, y = depth"},
+  {"0N", "-Nxy", "Set Auto Pan, x = speed, y = depth"},
+  {"0E", "-Exx", "Set Active Sample Envelope's Position to Offset XX"},
+  {"0L", "-Lxx", "Set Track Volume Level, 00 = -INF, FF = +3dB"},
+  {"0P", "-Pxx", "Set Track Pan, 00 = full left, 80 = center, FF = full right"},
+  {"0W", "-Wxx", "Set Track Surround Width, 00 = Min, FF = Max"},
+  {"0J", "-Jxx", "Set Track Routing, 01 upwards = hardware channels, FF downwards = parent groups"},
+  {"0X", "-Xxx", "Stop all notes and FX (xx = 00), or only effect xx (xx > 00)"},
+  {"ZT", "ZTxx", "Set tempo to xx BPM (14-FF, 00 = stop song)"},
+  {"ZL", "ZLxx", "Set Lines Per Beat (LPB) to xx lines"},
+  {"ZK", "ZKxx", "Set Ticks Per Line (TPL) to xx ticks (01-10)", 0x01, 0x0A},
+  {"ZG", "ZGxx", "Enable (xx = 01) or disable (xx = 00) Groove", 0x00, 0x01},
+  {"ZB", "ZBxx", "Break pattern and jump to line xx in next"},
+  {"ZD", "ZDxx", "Delay (pause) pattern for xx lines"}
 }
 
-local vb = renoise.ViewBuilder()
+local dialog = nil
 
-local s = renoise.song()
+function load_preferences()
+  if io.exists("preferences.xml") then
+    preferences:load_from("preferences.xml")
+  end
+end
 
-local effect_slider=vb:column{vb:horizontal_aligner{mode="center",vb:text{style="Strong",text="Volume"},
-        vb:minislider{
-            id="volumeslider",
-            width=30,
-            height=127,
-            min=0,
-            max=0x80,
-            notifier=function(v3) 
-                s.selected_track.volume_column_visible = true
-                if s.selected_note_column then
-                    s.selected_note_column.volume_value = v3
-                end
-            end},},
-    vb:horizontal_aligner{mode="center",vb:text{style="Strong",text = "Panning"},
-        vb:minislider{
-            id="panningslider",
-            width=30,
-            height=127,
-            min=0,
-            max=0x80,
-            notifier=function(v2) 
-                s.selected_track.panning_column_visible = true
-                if s.selected_note_column then
-                    s.selected_note_column.panning_value = v2
-                end
-            end},},
-    vb:horizontal_aligner {mode = "center",vb:text{style="Strong",text = "Delay"},
-        vb:minislider{
-            id="delayslider",
-            width=30,
-            height=127,
-            min=0,
-            max=0xFF,
-            notifier=function(v1) 
-                s.selected_track.delay_column_visible = true
-                if s.selected_note_column then
-                    s.selected_note_column.delay_value = v1
-                end
-            end},},
-    vb:horizontal_aligner {mode = "center",vb:text {style="Strong",text = "Effect"},
-       vb:minislider{
-  id="effectslider",
-  width=30,
-  height=127,
-  min=0,
-  max=0xFF,
-  notifier=function(v4)
-    local s = renoise.song()
-    
-    if s.selected_track.visible_effect_columns == 0 and s.selected_track.type == 1 then 
-      s.selected_track.visible_effect_columns = 1
-    end
-    
-    if s.selection_in_pattern == nil then
-      -- If no selection is set, output to the row that the cursor is on
-      local nc = s.selected_note_column
-      local ec = s.selected_effect_column
-      
-      if nc == nil then 
-        -- Protect user if note column is nil
-        if ec == nil then 
-          return false  -- Also protect user if effect column is nil  
-        else 
-          ec.amount_value = v4
-          return
+function save_preferences()
+  preferences:save_as("preferences.xml")
+  renoise.app():show_status("CheatSheet preferences saved")
+end
+
+function get_preference_value(preference, default_value)
+  if preference == nil then
+    return default_value
+  else
+    return preference
+  end
+end
+
+-- Ensure visibility of specific columns (volume, panning, delay)
+function sliderVisible(column)
+  local s = renoise.song()
+  if s.selection_in_pattern then
+    for t = s.selection_in_pattern.start_track, s.selection_in_pattern.end_track do
+      local track = s:track(t)
+      if track.type == renoise.Track.TRACK_TYPE_MASTER or track.type == renoise.Track.TRACK_TYPE_SEND or track.type == renoise.Track.TRACK_TYPE_GROUP then
+        print("Track", t, "Does not have Note Columns, skipping.")
+      else
+        if column == "volume" then
+          track.volume_column_visible = true
+        elseif column == "panning" then
+          track.panning_column_visible = true
+        elseif column == "delay" then
+          track.delay_column_visible = true
         end
       end
-
-      local writenc = s.selected_note_column_index
-      s.selected_effect_column_index = 1
-      s.selected_effect_column.amount_value = v4
-      s.selected_note_column_index = writenc
+    end
+  else
+    local track = s.selected_track
+    if track.type == renoise.Track.TRACK_TYPE_MASTER or track.type == renoise.Track.TRACK_TYPE_SEND or track.type == renoise.Track.TRACK_TYPE_GROUP then
+      print("Track does not have Note Columns, skipping.")
     else
-      -- If a selection is set, process the selection range
-      for i = s.selection_in_pattern.start_line, s.selection_in_pattern.end_line do
-        for t = s.selection_in_pattern.start_track, s.selection_in_pattern.end_track do
-          local ec = s:pattern(s.selected_pattern_index):track(t):line(i):effect_column(1)
-          if ec ~= nil then
-            ec.amount_value = v4
+      if column == "volume" then
+        track.volume_column_visible = true
+      elseif column == "panning" then
+        track.panning_column_visible = true
+      elseif column == "delay" then
+        track.delay_column_visible = true
+      end
+    end
+  end
+end
+
+function randomizeSmatterEffectColumnCustom(effect_command, fill_percentage, min_value, max_value)
+  local song = renoise.song()
+  local selection = song.selection_in_pattern
+  local randomize_switch = get_preference_value(preferences.pakettiCheatSheet.pakettiCheatSheetRandomizeSwitch.value, false)
+  local dont_overwrite = get_preference_value(preferences.pakettiCheatSheet.pakettiCheatSheetRandomizeDontOverwrite.value, false)
+
+  if min_value > max_value then
+    min_value, max_value = max_value, min_value
+  end
+
+  local randomize = function()
+    if randomize_switch then
+      return string.format("%02X", math.random() < 0.5 and min_value or max_value)
+    else
+      return string.format("%02X", math.random(min_value, max_value))
+    end
+  end
+
+  local should_apply = function()
+    return math.random(100) <= fill_percentage
+  end
+
+  local apply_command = function(line, column_index)
+    local effect_column = line:effect_column(column_index)
+    if effect_column then
+      if dont_overwrite then
+        if effect_column.is_empty and should_apply() then
+          effect_column.number_string = effect_command
+          effect_column.amount_string = randomize()
+        end
+      else
+        if should_apply() then
+          effect_column.number_string = effect_command
+          effect_column.amount_string = randomize()
+        else
+          effect_column:clear()
+        end
+      end
+    end
+  end
+
+  if selection then
+    for line_index = selection.start_line, selection.end_line do
+      for t = selection.start_track, selection.end_track do
+        local track = song:pattern(song.selected_pattern_index):track(t)
+        local trackvis = song:track(t)
+        local note_columns_visible = trackvis.visible_note_columns
+        local effect_columns_visible = trackvis.visible_effect_columns
+        local total_columns_visible = note_columns_visible + effect_columns_visible
+
+        local start_column = (t == selection.start_track) and selection.start_column or 1
+        local end_column = (t == selection.end_track) and selection.end_column or total_columns_visible
+
+        for col = start_column, end_column do
+          local column_index = col - note_columns_visible
+          if col > note_columns_visible and column_index > 0 and column_index <= effect_columns_visible then
+            apply_command(track:line(line_index), column_index)
           end
         end
       end
     end
-  end}}}
-
-local dialog_content = vb:row {effect_buttons, effect_desc, effect_slider}
-local vb=renoise.ViewBuilder()
-  
-  local function my_keyhandler_func(dialog, key)
- if not (key.modifiers == "" and key.name == "exclamation") then
-    return key
- else
-   dialog:close()
- end
-end
-  a:show_custom_dialog(dialog_title, dialog_content,my_keyhandler_func)
-end
-      
------
---functions+ descriptions + etc + for 16 shortcuts for effects
---local status="0Axy - Arpeggio (x=base note offset1, y=base noteoffset 2) *"
---local status="0Uxx - Pitch Slide up (00-FF) *"
---local status="0Dxx - Pitch Slide down (00-FF) *"
---local status="0Mxx - Set Channel volume (00-FF)"
---local status="0Cxy - Volume slicer -- x=factor (0=0.0, F=1.0), slice at tick y. *"
---local status="0Gxx - Glide to note with step xx (00-FF)*" 
---local status="0Ixx - Volume slide up with step xx (0064) (64x0601 or 2x0632 = slide0-full) *"
---local status="0Oxx - Volume slide down with step xx (0064) *"
---local status="0Pxx - Set panning (00-FF) (00: left; 80: center; FF: right)"
---local status="0Sxx - Trigger sample offset, 00 is sample start, FF is sample end. *"
---local status="0Axx - Surround width (00-FF) *"
---local status="0Bxx - Play sample backwards (B00) or forwards again (B01) *"
---local status="0Lxx - Set track-volume (00-FF)"
---local status="0Qxx - Delay notes in track-row xx ticks before playing. (00-speed)"
---local status="0Rxy - Retrig notes in track-row every xy ticks (x=volume; y=ticks 0 - speed) **"
---local status="0Vxy - Vibrato x= speed, y = depth; x=(0-F); y=(0-F)*"
-
---Effect Functions
-function effect_write(effect, status)
-  local s = renoise.song()
-  local a = renoise.app()
-  local nc = s.selected_note_column
-  local ec = s.selected_effect_column
-  local nci = s.selected_note_column_index
-  local w = a.window
-  
-  if nc == nil then 
-    -- Protect user if note column is nil
-    if ec == nil then 
-      return false -- Also protect user if effect column is nil  
-    else 
-      s.selected_effect_column.number_string = effect
-      -- If effect column does exist, just write to it
-      a:show_status(status)
-      return
-    end
-  end
-
-  local writenc = nci
-  -- Store current note column index into a local variable
-
-  if s.selected_track.visible_effect_columns == 0 and s.selected_track.type == 1 then 
-    s.selected_track.visible_effect_columns = 1 
-  end
-
-  s.selected_effect_column_index = 1
-  -- Set the selection location to effect column index 1
-
-  if s.selection_in_pattern == nil then
-    -- If no selection is set, output to the row that the cursor is on
-    s.selected_effect_column.number_string = effect
-    -- Write to the amount value of the selected effect column
   else
-    -- If a selection is set, process the selection range
-    for i = s.selection_in_pattern.start_line, s.selection_in_pattern.end_line do
-      for t = s.selection_in_pattern.start_track, s.selection_in_pattern.end_track do
-        local ec = s:pattern(s.selected_pattern_index):track(t):line(i):effect_column(1)
-        if ec ~= nil then
-          ec.number_string = effect
+    local track_index = song.selected_track_index
+    for sequence_index, sequence in ipairs(song.sequencer.pattern_sequence) do
+      if song:pattern(sequence).tracks[track_index] then
+        local track = song:pattern(sequence).tracks[track_index]
+        local trackvis = renoise.song().selected_track
+        local lines = renoise.song().selected_pattern.number_of_lines
+        for line_index = 1, lines do
+          for column_index = 1, trackvis.visible_effect_columns do
+            apply_command(track:line(line_index), column_index)
+          end
         end
       end
     end
   end
 
-  s.selected_note_column_index = writenc
-  -- Return back to previous note column index.
-
-  a:show_status(status)
-  w.active_middle_frame = 1
-  w.lock_keyboard_focus = true
-  s.selected_note_column_index = writenc
+  renoise.app():show_status("Random " .. effect_command .. " commands applied to effect columns of the selected track(s).")
 end
 
-renoise.tool():add_keybinding{name = "Global:Paketti:Pattern Effect Command CheatSheet",invoke=function() CheatSheet() end}
 
+
+function randomizeSmatterEffectColumnC0(fill_all)
+  randomizeSmatterEffectColumnCustom("0C", fill_all, 0x00, 0x0F)
+end
+
+function randomizeSmatterEffectColumnB0(fill_all)
+  randomizeSmatterEffectColumnCustom("0B", fill_all, 0x00, 0x01)
+end
+
+function effect_write(effect, status, command, min_value, max_value)
+  local s = renoise.song()
+  local a = renoise.app()
+  local w = a.window
+  local randomize_cb = get_preference_value(preferences.pakettiCheatSheet.pakettiCheatSheetRandomize.value, false)
+  local fill_all_cb = get_preference_value(preferences.pakettiCheatSheet.pakettiCheatSheetFillAll.value, false)
+  local randomize_whole_track_cb = get_preference_value(preferences.pakettiCheatSheet.pakettiCheatSheetRandomizeWholeTrack.value, false)
+  min_value = min_value or get_preference_value(preferences.pakettiCheatSheet.pakettiCheatSheetRandomizeMin.value, 0)
+  max_value = max_value or get_preference_value(preferences.pakettiCheatSheet.pakettiCheatSheetRandomizeMax.value, 255)
+  if min_value > max_value then
+    min_value, max_value = max_value, min_value
+  end
+  local randomize = function()
+    return string.format("%02X", math.random(min_value, max_value))
+  end
+
+  if randomize_cb then
+    if effect == "0C" then
+      status = "Random C00/C0F commands applied to the first effect column of the selected track."
+      randomizeSmatterEffectColumnC0(fill_all_cb)
+    elseif effect == "0B" then
+      status = "Random B00/B01 commands applied to the first effect column of the selected track."
+      randomizeSmatterEffectColumnB0(fill_all_cb)
+    else
+      status = "Random " .. effect .. " commands applied to the first effect column of the selected track."
+      randomizeSmatterEffectColumnCustom(effect, fill_all_cb, min_value, max_value)
+    end
+  else
+    if s.selection_in_pattern == nil then
+      local nc = s.selected_note_column
+      local ec = s.selected_effect_column
+      if nc then
+        renoise.song().selected_line.effect_columns[1].number_string = effect
+      elseif ec then
+        ec.number_string = effect
+      else
+        return false
+      end
+    else
+      local effect_column_selected = false
+      for t = s.selection_in_pattern.start_track, s.selection_in_pattern.end_track do
+        local track = s:track(t)
+        local note_columns_visible = track.visible_note_columns
+        local effect_columns_visible = track.visible_effect_columns
+        local total_columns_visible = note_columns_visible + effect_columns_visible
+
+        local start_column = (t == s.selection_in_pattern.start_track) and s.selection_in_pattern.start_column or 1
+        local end_column = (t == s.selection_in_pattern.end_track) and s.selection_in_pattern.end_column or total_columns_visible
+
+        if t == s.selection_in_pattern.end_track and end_column <= note_columns_visible then
+          end_column = note_columns_visible + 1
+        end
+
+        for i = s.selection_in_pattern.start_line, s.selection_in_pattern.end_line do
+          for col = start_column, end_column do
+            local column_index = col - note_columns_visible
+            if col <= total_columns_visible then
+              if col <= note_columns_visible then
+              elseif column_index > 0 and column_index <= effect_columns_visible then
+                effect_column_selected = true
+                local effect_column = s:pattern(s.selected_pattern_index):track(t):line(i):effect_column(column_index)
+                if effect_column then
+                  effect_column.number_string = effect
+                end
+              end
+            end
+          end
+        end
+      end
+      if not effect_column_selected then
+        for i = s.selection_in_pattern.start_line, s.selection_in_pattern.end_line do
+          for t = s.selection_in_pattern.start_track, s.selection_in_pattern.end_track do
+            local track = s:track(t)
+            if track.visible_effect_columns > 0 then
+              local effect_column = s:pattern(s.selected_pattern_index):track(t):line(i):effect_column(1)
+              effect_column.number_string = effect
+            end
+          end
+        end
+      end
+    end
+  end
+  a:show_status(status)
+  renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
+end
+
+function CheatSheet()
+  local vb = renoise.ViewBuilder()
+  local a = renoise.app()
+  local s = renoise.song()
+  local w = a.window
+
+  if dialog and dialog.visible then
+    dialog:close()
+    return
+  end
+
+  local globalwidth = 50
+
+  local wikitooltip = "http://tutorials.renoise.com/wiki/Pattern_Effect_Commands#Effect_Listing"
+  local wikibutton = vb:button {width = globalwidth, text = "www", tooltip = wikitooltip, pressed = function() a:open_url(wikitooltip) end}
+
+  local effect_buttons = vb:column {}
+  for _, effect in ipairs(effects) do
+    local button = vb:button {width = globalwidth, text = effect[2], tooltip = effect[3], pressed = function() effect_write(effect[1], effect[2] .. " - " .. effect[3], effect[2], effect[4], effect[5]) end}
+    local desc = vb:text {text = effect[3]}
+    effect_buttons:add_child(vb:row {button, desc})
+  end
+
+  local randomize_cb = vb:checkbox {
+    value = get_preference_value(preferences.pakettiCheatSheet.pakettiCheatSheetRandomize.value, false),
+    notifier = function(v)
+      preferences.pakettiCheatSheet.pakettiCheatSheetRandomize.value = v
+      save_preferences()
+    end
+  }
+
+local fill_probability_text = vb:text {
+  style = "strong",
+  text = string.format("%d%% Fill Probability", get_preference_value(preferences.pakettiCheatSheet.pakettiCheatSheetFillAll.value, 0))
+}
+
+local fill_probability_slider = vb:slider {
+width= 300,
+  min = 0,
+  max = 1,
+  value = get_preference_value(preferences.pakettiCheatSheet.pakettiCheatSheetFillAll.value, 0) / 100, -- Convert to fractional
+  notifier = function(value)
+    local percentage_value = math.floor(value * 100 + 0.5) -- Convert to percentage and round
+    local original_value = get_preference_value(preferences.pakettiCheatSheet.pakettiCheatSheetFillAll.value, 0)
+
+    -- Check if the value changed significantly
+    if original_value ~= percentage_value then
+      preferences.pakettiCheatSheet.pakettiCheatSheetFillAll.value = percentage_value
+      fill_probability_text.text = string.format("%d%% Fill Probability", percentage_value)
+      save_preferences()
+    end
+  end
+}
+
+
+
+
+  
+--[[
+  local fill_all_cb = vb:checkbox {
+    value = get_preference_value(preferences.pakettiCheatSheet.pakettiCheatSheetFillAll.value, false),
+    notifier = function(v)
+      preferences.pakettiCheatSheet.pakettiCheatSheetFillAll.value = v
+      save_preferences()
+    end
+  }
+--]]  
+  local randomize_whole_track_cb = vb:checkbox {
+    value = get_preference_value(preferences.pakettiCheatSheet.pakettiCheatSheetRandomizeWholeTrack.value, false),
+    notifier = function(v)
+      preferences.pakettiCheatSheet.pakettiCheatSheetRandomizeWholeTrack.value = v
+      save_preferences()
+    end
+  }
+  local randomizeswitch_cb = vb:checkbox {
+    value = get_preference_value(preferences.pakettiCheatSheet.pakettiCheatSheetRandomizeSwitch.value, false),
+    notifier = function(v)
+      preferences.pakettiCheatSheet.pakettiCheatSheetRandomizeSwitch.value = v
+      save_preferences()
+    end
+  }
+  
+  local dontoverwrite_cb = vb:checkbox {
+    value = get_preference_value(preferences.pakettiCheatSheet.pakettiCheatSheetRandomizeDontOverwrite.value, false),
+    notifier = function(v)
+      preferences.pakettiCheatSheet.pakettiCheatSheetRandomizeDontOverwrite.value = v
+      save_preferences()
+    end
+  }  
+    
+ -- Minimum Slider
+local min_value = get_preference_value(preferences.pakettiCheatSheet.pakettiCheatSheetRandomizeMin.value, 0)
+
+local min_slider = vb:minislider {
+  id = "min_slider_unique",
+  width = 300,
+  min = 0,
+  max = 255,
+  value = min_value,
+  notifier = function(v)
+    preferences.pakettiCheatSheet.pakettiCheatSheetRandomizeMin.value = v
+    vb.views["min_text_unique"].text = string.format("%02X", v)
+    save_preferences()
+  end
+}
+
+local min_text = vb:text {
+  id = "min_text_unique",
+  text = string.format("%02X", min_value)
+}
+
+local min_decrement_button = vb:button {
+  text = "<",
+  notifier = function()
+    local current_value = preferences.pakettiCheatSheet.pakettiCheatSheetRandomizeMin.value
+    if current_value > 0 then
+      current_value = current_value - 1
+      min_slider.value = current_value
+    end
+  end
+}
+
+local min_increment_button = vb:button {
+  text = ">",
+  notifier = function()
+    local current_value = preferences.pakettiCheatSheet.pakettiCheatSheetRandomizeMin.value
+    if current_value < 255 then
+      current_value = current_value + 1
+      min_slider.value = current_value
+    end
+  end
+}
+
+-- Maximum Slider
+local max_value = get_preference_value(preferences.pakettiCheatSheet.pakettiCheatSheetRandomizeMax.value, 255)
+
+local max_slider = vb:minislider {
+  id = "max_slider_unique",
+  width = 300,
+  min = 0,
+  max = 255,
+  value = max_value,
+  notifier = function(v)
+    preferences.pakettiCheatSheet.pakettiCheatSheetRandomizeMax.value = v
+    vb.views["max_text_unique"].text = string.format("%02X", v)
+    save_preferences()
+  end
+}
+
+local max_text = vb:text {
+  id = "max_text_unique",
+  text = string.format("%02X", max_value)
+}
+
+local max_decrement_button = vb:button {
+  text = "<",
+  notifier = function()
+    local current_value = preferences.pakettiCheatSheet.pakettiCheatSheetRandomizeMax.value
+    if current_value > 0 then
+      current_value = current_value - 1
+      max_slider.value = current_value
+    end
+  end
+}
+
+local max_increment_button = vb:button {
+  text = ">",
+  notifier = function()
+    local current_value = preferences.pakettiCheatSheet.pakettiCheatSheetRandomizeMax.value
+    if current_value < 255 then
+      current_value = current_value + 1
+      max_slider.value = current_value
+    end
+  end
+}
+
+
+
+
+  local randomize_section = vb:column {
+    vb:text {style = "strong", text = "Randomize Effect Value content"},
+    vb:horizontal_aligner {mode = "left", randomize_cb, vb:text {text = "Randomize"}},
+    vb:horizontal_aligner {mode = "left", fill_probability_slider, fill_probability_text},
+    vb:horizontal_aligner {mode = "left", randomize_whole_track_cb, vb:text {text = "Randomize whole track if nothing is selected"}},
+    vb:horizontal_aligner {mode = "left", randomizeswitch_cb, vb:text {text = "Randomize Min/Max Only"}},
+    vb:horizontal_aligner {mode = "left", dontoverwrite_cb, vb:text {text = "Don't Overwrite Existing Data"}},
+    vb:horizontal_aligner {mode = "left", vb:text {text = "Min", font="mono"}, min_decrement_button, min_increment_button, min_slider, min_text},
+    vb:horizontal_aligner {mode = "left", vb:text {text = "Max", font="mono"}, max_decrement_button, max_increment_button, max_slider, max_text},
+    vb:button {text = "Close", width = globalwidth, pressed = function() dialog:close() end}
+  }
+      
+  local sliders = vb:column {
+    vb:horizontal_aligner {mode = "right", vb:text {style = "strong", text = "Volume"},
+      vb:minislider {
+        id = "volumeslider",
+        width = 30,
+        height = 127,
+        min = 0,
+        max = 0x80,
+        notifier = function(v3)
+          sliderVisible("volume")
+          if s.selection_in_pattern then
+            for t = s.selection_in_pattern.start_track, s.selection_in_pattern.end_track do
+              local track = s:track(t)
+              if track.type == renoise.Track.TRACK_TYPE_MASTER or track.type == renoise.Track.TRACK_TYPE_SEND or track.type == renoise.Track.TRACK_TYPE_GROUP then
+                print("Track", t, "Does not have Note Columns, skipping.")
+              else
+                local note_columns_visible = track.visible_note_columns
+                local start_column = (t == s.selection_in_pattern.start_track) and s.selection_in_pattern.start_column or 1
+                local end_column = (t == s.selection_in_pattern.end_track) and s.selection_in_pattern.end_column or note_columns_visible
+                for i = s.selection_in_pattern.start_line, s.selection_in_pattern.end_line do
+                  for col = start_column, end_column do
+                    if col <= note_columns_visible then
+                      local note_column = s:pattern(s.selected_pattern_index):track(t):line(i).note_columns[col]
+                      if note_column then
+                        note_column.volume_value = v3
+                      end
+                    end
+                  end
+                end
+              end
+            end
+          else
+            if s.selected_note_column == nil and renoise.song().selected_track.type == 1 then
+              renoise.song().selected_line.note_columns[1].volume_value = v3
+            else
+              if s.selected_note_column == nil and (renoise.song().selected_track.type == renoise.Track.TRACK_TYPE_MASTER or renoise.song().selected_track.type == renoise.Track.TRACK_TYPE_SEND or renoise.song().selected_track.type == renoise.Track.TRACK_TYPE_GROUP) then
+                renoise.app():show_status("This track type does not have a Volume Column available.")
+              end
+              if s.selected_note_column then
+                s.selected_note_column.volume_value = v3
+              end
+            end
+          end
+          renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
+
+        end
+  
+      }
+    },
+    vb:horizontal_aligner {mode = "right", vb:text {style = "strong", text = "Panning"},
+      vb:minislider {
+        id = "panningslider",
+        width = 30,
+        height = 127,
+        min = 0,
+        max = 0x80,
+        notifier = function(v2)
+          sliderVisible("panning")
+          if s.selection_in_pattern then
+            for t = s.selection_in_pattern.start_track, s.selection_in_pattern.end_track do
+              local track = s:track(t)
+              if track.type == renoise.Track.TRACK_TYPE_MASTER or track.type == renoise.Track.TRACK_TYPE_SEND or track.type == renoise.Track.TRACK_TYPE_GROUP then
+                print("Track", t, "Does not have Note Columns, skipping.")
+              else
+                local note_columns_visible = track.visible_note_columns
+                local start_column = (t == s.selection_in_pattern.start_track) and s.selection_in_pattern.start_column or 1
+                local end_column = (t == s.selection_in_pattern.end_track) and s.selection_in_pattern.end_column or note_columns_visible
+                for i = s.selection_in_pattern.start_line, s.selection_in_pattern.end_line do
+                  for col = start_column, end_column do
+                    if col <= note_columns_visible then
+                      local note_column = s:pattern(s.selected_pattern_index):track(t):line(i).note_columns[col]
+                      if note_column then
+                        note_column.panning_value = v2
+                      end
+                    end
+                  end
+                end
+              end
+            end
+          else
+            if s.selected_note_column == nil and renoise.song().selected_track.type == 1 then
+              renoise.song().selected_line.note_columns[1].panning_value = v2
+            else
+              if s.selected_note_column == nil and (renoise.song().selected_track.type == renoise.Track.TRACK_TYPE_MASTER or renoise.song().selected_track.type == renoise.Track.TRACK_TYPE_SEND or renoise.song().selected_track.type == renoise.Track.TRACK_TYPE_GROUP) then
+                renoise.app():show_status("This track type does not have a Panning Column available.")
+              end
+              if s.selected_note_column then
+                s.selected_note_column.panning_value = v2
+              end
+            end
+          end
+          renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
+        end
+
+      }
+    },
+    vb:horizontal_aligner {mode = "right", vb:text {style = "strong", text = "Delay"},
+      vb:minislider {
+        id = "delayslider",
+        width = 30,
+        height = 127,
+        min = 0,
+        max = 0xFF,
+        notifier = function(v1)
+          sliderVisible("delay")
+          if s.selection_in_pattern then
+            for t = s.selection_in_pattern.start_track, s.selection_in_pattern.end_track do
+              local track = s:track(t)
+              if track.type == renoise.Track.TRACK_TYPE_MASTER or track.type == renoise.Track.TRACK_TYPE_SEND or track.type == renoise.Track.TRACK_TYPE_GROUP then
+                print("Track", t, "Does not have Note Columns, skipping.")
+              else
+                local note_columns_visible = track.visible_note_columns
+                local start_column = (t == s.selection_in_pattern.start_track) and s.selection_in_pattern.start_column or 1
+                local end_column = (t == s.selection_in_pattern.end_track) and s.selection_in_pattern.end_column or note_columns_visible
+                for i = s.selection_in_pattern.start_line, s.selection_in_pattern.end_line do
+                  for col = start_column, end_column do
+                    if col <= note_columns_visible then
+                      local note_column = s:pattern(s.selected_pattern_index):track(t):line(i).note_columns[col]
+                      if note_column then
+                        note_column.delay_value = v1
+                      end
+                    end
+                  end
+                end
+              end
+            end
+          else
+            if s.selected_note_column == nil and renoise.song().selected_track.type == 1 then
+              renoise.song().selected_line.note_columns[1].delay_value = v1
+            else
+              if s.selected_note_column == nil and (renoise.song().selected_track.type == renoise.Track.TRACK_TYPE_MASTER or renoise.song().selected_track.type == renoise.Track.TRACK_TYPE_SEND or renoise.song().selected_track.type == renoise.Track.TRACK_TYPE_GROUP) then
+                renoise.app():show_status("This track type does not have a Delay Column available.")
+              end
+              if s.selected_note_column then
+                s.selected_note_column.delay_value = v1
+              end
+            end
+          end
+          renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
+        end
+
+      }
+    },
+    vb:horizontal_aligner {mode = "right", vb:text {style = "strong", text = "Effect"},
+      vb:minislider {
+        id = "effectslider",
+        width = 30,
+        height = 127,
+        min = 0,
+        max = 0xFF,
+        notifier = function(v4)
+          if s.selected_track.visible_effect_columns == 0 and s.selected_track.type == renoise.Track.TRACK_TYPE_SEQUENCER then
+            s.selected_track.visible_effect_columns = 1
+          end
+
+          if s.selection_in_pattern then
+            for t = s.selection_in_pattern.start_track, s.selection_in_pattern.end_track do
+              local track = s:track(t)
+              local note_columns_visible = track.visible_note_columns
+              local effect_columns_visible = track.visible_effect_columns
+              local total_columns_visible = note_columns_visible + effect_columns_visible
+              local start_column = (t == s.selection_in_pattern.start_track) and s.selection_in_pattern.start_column or 1
+              local end_column = (t == s.selection_in_pattern.end_track) and s.selection_in_pattern.end_column or total_columns_visible
+              for i = s.selection_in_pattern.start_line, s.selection_in_pattern.end_line do
+                for col = start_column, end_column do
+                  local column_index = col - note_columns_visible
+                  if col <= total_columns_visible and column_index > 0 and column_index <= effect_columns_visible then
+                    local effect_column = s:pattern(s.selected_pattern_index):track(t):line(i):effect_column(column_index)
+                    if effect_column then
+                      effect_column.amount_value = v4
+                    end
+                  end
+                end
+              end
+            end
+          else
+            local track = s.selected_track
+            local line = s.selected_line
+            local effect_column = line:effect_column(1)
+            if effect_column then
+              effect_column.amount_value = v4
+            end
+          end
+        end
+      }
+    }
+  }
+
+  local dialog_content = vb:column {
+    vb:row {
+      effect_buttons,
+      sliders
+    },
+    vb:row{
+      randomize_section
+    }
+  }
+
+  local function my_keyhandler_func(dialog, key)
+    if not (key.modifiers == "" and key.name == "exclamation") then
+      return key
+    else
+      dialog:close()
+    end
+  end
+
+  dialog = a:show_custom_dialog("Paketti Pattern Effect Command CheatSheet", dialog_content, my_keyhandler_func)
+  renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
+end
+
+renoise.tool():add_keybinding {name = "Global:Paketti:Pattern Effect Command CheatSheet", invoke = function() CheatSheet() end}
+
+-- Initialize preferences
+load_preferences()
 

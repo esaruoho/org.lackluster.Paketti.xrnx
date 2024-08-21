@@ -389,7 +389,7 @@ renoise.tool():add_keybinding{name="Global:Paketti:Sample Editor Tab Switcher (0
 renoise.tool():add_keybinding{name="Global:Paketti:Sample Editor Tab Switcher (07 Midi Editor)",invoke=function() sampleEditorTabSwitcher(7) end}
 
 -- Add MIDI mapping to cycle through middle frames
-renoise.tool():add_midi_mapping{name="Global:Paketti:Cycle Sample Editor Tabs",invoke=function(midiMessage) cycleMiddleFrames(midiMessage.int_value) end}
+renoise.tool():add_midi_mapping{name="Paketti:Cycle Sample Editor Tabs",invoke=function(midiMessage) cycleMiddleFrames(midiMessage.int_value) end}
 
 
 ----------
@@ -491,5 +491,6 @@ renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Toggle Mute Tracks"
 renoise.tool():add_keybinding{name="Global:Paketti:Toggle Mute Tracks",invoke=toggle_mute_tracks}
 renoise.tool():add_midi_mapping{name="Paketti:Toggle Mute Tracks",invoke=toggle_mute_tracks}
 ---------
+
 
 

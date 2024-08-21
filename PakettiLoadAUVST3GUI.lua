@@ -8,14 +8,14 @@ function vst3AddAsShortcut()
   for _, cb_info in ipairs(checkboxes) do
     if cb_info.checkbox.value then
       local keyBindingName = "Global:Track Devices:Load Device (VST3/AU) " .. cb_info.name
-      local midiMappingName = "Tools:Track Devices:Load Device (VST3/AU) " .. cb_info.name
+      local midiMappingName = "Track Devices:Paketti:Load Device (VST3/AU) " .. cb_info.name
 
       if not addedKeyBindings[keyBindingName] then
         print("Adding shortcut for: " .. cb_info.name)
 
         local success, err = pcall(function()
           renoise.tool():add_keybinding{name=keyBindingName, invoke=function() loadvst(cb_info.path) end}
-          renoise.tool():add_midi_mapping{name=midiMappingName, invoke=function() loadvst(cb_info.path) end}
+          renoise.tool():add_midi_mapping{name=midiMappingName, invoke=function(message) if message:is_trigger() then  loadvst(cb_info.path) end end}
         end)
 
         if success then
@@ -83,8 +83,8 @@ function createScrollableList(plugins, title)
     local num_plugins = #plugins
     local num_columns = 2
 
-    if num_plugins > 2 * 15 then  -- Assuming each column can hold 15 plugins
-        num_columns = math.ceil(num_plugins / 15)
+    if num_plugins > 2 * 20 then  -- Assuming each column can hold 15 plugins
+        num_columns = math.ceil(num_plugins / 20)
         for i = 3, num_columns do
             table.insert(columns, vb:column {})
         end
@@ -178,10 +178,43 @@ function vst3ShowPluginListDialog()
     local action_buttons = vb:column {
         uniform = true,
         width = "100%",
-        vb:horizontal_aligner {
+   
+        vb:button {
+            text = "Add Device(s) as Shortcut(s) & MidiMappings",
+            height = button_height,
+            width="100%",
+            notifier = vst3AddAsShortcut
+        },
+        vb:horizontal_aligner { width="100%",
+        vb:button {
+            text = "Randomize Selection",
+            height = button_height,
+            width="33%",
+            notifier = function()
+                vst3RandomizeSelection()
+            end
+        },
+        vb:button { text="Select All",
+        height=button_height,
+        width="33%",
+        notifier=function()
+        
+    for _, cb_info in ipairs(checkboxes) do
+        cb_info.checkbox.value = true
+    end
+end},
+            vb:button {
+            text = "Reset Selection",
+            height = button_height,
+            width="34%",
+            notifier = function()
+                vst3ResetSelection()
+            end
+        }},
+     vb:horizontal_aligner {
             vb:button {
                 text = "Load Device(s)",
-                width = "50%",
+                width = "33%",
                 height = button_height,
                 notifier = function()
                     vst3LoadSelectedDevices()
@@ -189,40 +222,22 @@ function vst3ShowPluginListDialog()
             },
             vb:button {
                 text = "Load Device(s) & Close",
-                width = "50%",
+                width = "33%",
                 height = button_height,
                 notifier = function()
                     vst3LoadSelectedDevices()
                     custom_dialog:close()
                 end
-            }
-        },
-        vb:button {
-            text = "Add Device(s) as Shortcut(s)",
-            height = button_height,
-            notifier = vst3AddAsShortcut
-        },
-        vb:button {
-            text = "Randomize Selection",
-            height = button_height,
-            notifier = function()
-                vst3RandomizeSelection()
-            end
-        },
-        vb:button {
-            text = "Reset Selection",
-            height = button_height,
-            notifier = function()
-                vst3ResetSelection()
-            end
-        },
+            },
+             
         vb:button {
             text = "Cancel",
             height = button_height,
+            width="34%",
             notifier = function()
                 custom_dialog:close()
             end
-        }
+        }},   
     }
 
     local dialog_content = vb:column {

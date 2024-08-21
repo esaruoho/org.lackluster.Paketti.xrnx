@@ -408,11 +408,7 @@ local menu_entries = {
   {"Track Automation:Paketti..:Selection Down->Center (Linear)", "down_center_linear"}
 }
 
-for _, entry in ipairs(menu_entries) do
-  tool:add_menu_entry({
-    name = entry[1],
-    invoke = function() apply_linear_automation_curveCenter(entry[2]) end
-  })
+for _, entry in ipairs(menu_entries) do tool:add_menu_entry({name = entry[1], invoke = function() apply_linear_automation_curveCenter(entry[2]) end})
 end
 
 -- Create the linear automation functions
@@ -547,6 +543,10 @@ renoise.tool():add_menu_entry{name="Track Automation:Paketti..:Show/Hide Externa
 
 -- 
 function showAutomationHard()
+if renoise.app().window.active_middle_frame == 5
+then renoise.app().window.active_middle_frame = 1
+end
+
 if renoise.app().window.active_lower_frame == renoise.ApplicationWindow.LOWER_FRAME_TRACK_AUTOMATION
 then
 renoise.app().window.active_lower_frame = renoise.ApplicationWindow.LOWER_FRAME_TRACK_DSPS

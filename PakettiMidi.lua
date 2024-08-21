@@ -1,3 +1,5 @@
+--- This is the way
+-- function(message) if message:is_trigger() then
 -------------------------------------------------------------------------------------------------------------------------------
 --Groove Settings, re-written and simplified by mxb
 --Control Grooves with a slider
@@ -36,17 +38,17 @@ renoise.tool():add_midi_mapping{name="Paketti:Groove Settings Groove #4 x[Knob]"
 -- Control Computer Keyboard Velocity with a slider.
 renoise.tool():add_midi_mapping{name="Paketti:Computer Keyboard Velocity Slider x[Knob]",
   invoke=function(midi_message) 
-  local s=renoise.song().transport
+  local t=renoise.song().transport
   if t.keyboard_velocity_enabled==false then t.keyboard_velocity_enabled=true end
      t.keyboard_velocity=midi_message.int_value end}
 
 -- Destructively control Sample volume with a slider
-renoise.tool():add_midi_mapping{name="Global:Paketti:Change Selected Sample Volume x[Slider]",invoke=function(midi_message)
+renoise.tool():add_midi_mapping{name="Paketti:Change Selected Sample Volume x[Slider]",invoke=function(midi_message)
 renoise.app().window.active_middle_frame=5
 renoise.song().selected_sample.volume=midi_message.int_value/127
 end}
 
-renoise.tool():add_midi_mapping{name="Global:Paketti:Delay Column (DEPRECATED) x[Slider]",invoke=function(midi_message)
+renoise.tool():add_midi_mapping{name="Paketti:Delay Column (DEPRECATED) x[Slider]",invoke=function(midi_message)
 renoise.song().selected_track.delay_column_visible=true
 renoise.app().window.active_middle_frame=1
 local results = nil
@@ -62,10 +64,10 @@ renoise.song().selected_note_column.delay_value = math.max(0, math.min(257, midi
 end}
 -------------------------------------------------------------------------------------------------------------------------------------
 --Midi Mapping for Metronome On/Off Toggle
-renoise.tool():add_midi_mapping{name="Global:Paketti:Metronome On/Off x[Toggle]",invoke=function() MetronomeOff() end}
+renoise.tool():add_midi_mapping{name="Paketti:Metronome On/Off x[Toggle]",invoke=function(message) if message:is_trigger() then MetronomeOff() end end}
 --Midi Mapping for Expand/Collapse
-renoise.tool():add_midi_mapping{name="Global:Paketti:Uncollapser",invoke=function() Uncollapser() end}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Collapser",invoke=function() Collapser() end} 
+renoise.tool():add_midi_mapping{name="Paketti:Uncollapser",invoke=function(message) if message:is_trigger() then Uncollapser() end end}
+renoise.tool():add_midi_mapping{name="Paketti:Collapser",invoke=function(message) if message:is_trigger() then Collapser() end end} 
 -------------------------------------------------------------------------------------------------------------------------------------
 --- Show or hide pattern matrix
 function showhidepatternmatrix()
@@ -73,9 +75,29 @@ local pmi=renoise.app().window.pattern_matrix_is_visible
   if pmi==true then pmi=false else pmi=true end
 end
 
-renoise.tool():add_midi_mapping{name="Global:Paketti:Show/Hide Pattern Matrix x[Toggle]", invoke=function() showhidepatternmatrix() end}
+renoise.tool():add_midi_mapping{name="Paketti:Show/Hide Pattern Matrix x[Toggle]", invoke=function(message) if message:is_trigger() then showhidepatternmatrix() end end}
 -----------------------------------------------------------------------------------------------------------------------------------------
-renoise.tool():add_midi_mapping{name="Global:Paketti:Record and Follow On/Off x[Knob]", invoke=function(midi_message) 
+--- Show or hide pattern matrix
+function MidiRecordAndFollowToggle()
+local t=renoise.song().transport
+local w=renoise.app().window
+if t.edit_mode == true then 
+t.edit_mode = false
+t.follow_player = false
+t.playing = false
+else
+t.edit_mode = true
+t.follow_player = true
+t.playing = true
+w.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
+w.lock_keyboard_focus = true
+
+end
+end
+
+renoise.tool():add_midi_mapping{name="Paketti:Record and Follow x[Toggle]", invoke=function(message) if message:is_trigger() then MidiRecordAndFollowToggle() end end}
+
+renoise.tool():add_midi_mapping{name="Paketti:Record and Follow On/Off x[Knob]", invoke=function(midi_message) 
 --Aided by dblue
 local t=renoise.song().transport
 local w=renoise.app().window
@@ -98,75 +120,76 @@ else end
 end}
 ---------------------------------------------------------------------------------------------------------------------------
 --Record Quantize On/Off for Midi_Mapping
-renoise.tool():add_midi_mapping{name="Global:Paketti:Record Quantize On/Off x[Toggle]",
-invoke=function()
+renoise.tool():add_midi_mapping{name="Paketti:Record Quantize On/Off x[Toggle]",
+invoke=function(message) if message:is_trigger() then
   if renoise.song().transport.record_quantize_enabled==true then
      renoise.song().transport.record_quantize_enabled=false
   else
      renoise.song().transport.record_quantize_enabled=true
-   end
+   end end
 end}
 -----------------------------------------------------------------------------------------------------------------------------------------
--- //TODO check that these work
-renoise.tool():add_midi_mapping{name="Global:Paketti:Start Playback from Cursor Row x[Toggle]",  invoke=function() ImpulseTrackerPlaySong() end}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Stop Playback (Panic) x[Toggle]",  invoke=function() ImpulseTrackerStop() end}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Play Current Line & Advance by EditStep x[Toggle]",  invoke=function() PlayCurrentLine() end}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Record and Follow On/Off x[Toggle]", invoke=function() RecordFollowToggle() 
-renoise.app().window.active_middle_frame=1 end}
-renoise.tool():add_midi_mapping{name="Global:Tools:Set Delay (+1) x[Toggle]", invoke=function() plusdelay(1) end}
-renoise.tool():add_midi_mapping{name="Global:Tools:Set Delay (-1) x[Toggle]", invoke=function() plusdelay(-1) end}
+renoise.tool():add_midi_mapping{name="Paketti:Impulse Tracker F7 Start Playback from Cursor Row x[Toggle]",  invoke=function(message) if message:is_trigger() then ImpulseTrackerPlayFromLine() end end}
+renoise.tool():add_midi_mapping{name="Paketti:Stop Playback (Panic) x[Toggle]",  invoke=function(message) if message:is_trigger() then  ImpulseTrackerStop() end end}
+renoise.tool():add_midi_mapping{name="Paketti:Play Current Line & Advance by EditStep x[Toggle]", invoke=function(message) if message:is_trigger() then  PlayCurrentLine() end end}
+renoise.tool():add_midi_mapping{name="Paketti:Impulse Tracker Pattern (Next) x[Toggle]", invoke=function(message) if message:is_trigger() then ImpulseTrackerNextPattern() end end}
+renoise.tool():add_midi_mapping{name="Paketti:Impulse Tracker Pattern (Previous) x[Toggle]", invoke=function(message) if message:is_trigger() then ImpulseTrackerPrevPattern() end end}
 
---renoise.tool():add_midi_mapping{name="Global:Paketti:Numpad SelectPlay 0 x[Toggle]",  invoke=function() selectplay(0) end}
---renoise.tool():add_midi_mapping{name="Global:Paketti:Numpad SelectPlay 1 x[Toggle]",  invoke=function() selectplay(1) end}
---renoise.tool():add_midi_mapping{name="Global:Paketti:Numpad SelectPlay 2 x[Toggle]",  invoke=function() selectplay(2) end}
---renoise.tool():add_midi_mapping{name="Global:Paketti:Numpad SelectPlay 3 x[Toggle]",  invoke=function() selectplay(3) end}
---renoise.tool():add_midi_mapping{name="Global:Paketti:Numpad SelectPlay 4 x[Toggle]",  invoke=function() selectplay(4) end}
---renoise.tool():add_midi_mapping{name="Global:Paketti:Numpad SelectPlay 5 x[Toggle]",  invoke=function() selectplay(5) end}
---renoise.tool():add_midi_mapping{name="Global:Paketti:Numpad SelectPlay 6 x[Toggle]",  invoke=function() selectplay(6) end}
---renoise.tool():add_midi_mapping{name="Global:Paketti:Numpad SelectPlay 7 x[Toggle]",  invoke=function() selectplay(7) end}
---renoise.tool():add_midi_mapping{name="Global:Paketti:Numpad SelectPlay 8 x[Toggle]",  invoke=function() selectplay(8) end}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Capture Nearest Instrument and Octave", invoke=function(repeated) capture_ins_oct() end} 
-renoise.tool():add_midi_mapping{name="Global:Paketti:Simple Play",invoke=function() simpleplay() end}
-renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Increase Delay (+1) x[Toggle]",invoke=function() columns(1,1) end}
-renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Decrease Delay (-1) x[Toggle]",invoke=function() columns(-1,1) end}
-
-renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Increase Panning (+1) x[Toggle]",invoke=function() columns(1,2) end}
-renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Decrease Panning (-1) x[Toggle]",invoke=function() columns(-1,2) end}
-renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Increase Volume (+1) x[Toggle]",invoke=function() columns(1,3) end}
-renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Decrease Volume (-1) x[Toggle]",invoke=function() columns(-1,3) end}
-renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Increase Effect Number (+1) x[Toggle]",invoke=function() columnspart2(1,4) end}
-renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Decrease Effect Number (-1) x[Toggle]",invoke=function() columnspart2(-1,4) end}
-renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Increase Effect Amount (+1) x[Toggle]",invoke=function() columnspart2(1,5) end}
-renoise.tool():add_midi_mapping{name="Global:Tools:Columnizer Decrease Effect Amount (-1) x[Toggle]",invoke=function() columnspart2(-1,5) end}
-
-renoise.tool():add_midi_mapping{name="Global:Paketti:Impulse Tracker Pattern (Next) x[Toggle]", invoke=function() ImpulseTrackerNextPattern() end}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Impulse Tracker Pattern (Previous) x[Toggle]", invoke=function() ImpulseTrackerPrevPattern() end}
-
---renoise.tool():add_midi_mapping{name="Global:Paketti:Start Playback from Cursor Row x[Toggle]",  invoke=function() ImpulseTrackerPlaySong() end}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Start Playback x[Toggle]",  invoke=function() ImpulseTrackerPlaySong() end}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Impulse Tracker F8 Stop Playback (Panic) x[Toggle]",  invoke=function() ImpulseTrackerStop() end}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Switch to Automation",invoke=function() 
+renoise.tool():add_midi_mapping{name="Paketti:Impulse Tracker F5 Start Playback x[Toggle]", invoke=function(message) if message:is_trigger() then  ImpulseTrackerPlaySong() end end}
+renoise.tool():add_midi_mapping{name="Paketti:Impulse Tracker F8 Stop Playback (Panic) x[Toggle]", invoke=function(message) if message:is_trigger() then ImpulseTrackerStop() end end}
+renoise.tool():add_midi_mapping{name="Paketti:Switch to Automation",invoke=function(message) if message:is_trigger() then  
   local w=renoise.app().window
   local raw=renoise.ApplicationWindow
 if raw.MIDDLE_FRAME_MIXER == false and w.active_lower_frame == raw.LOWER_FRAME_TRACK_AUTOMATION 
 then w.active_middle_frame=raw.MIDDLE_FRAME_MIXER return
 else w.active_middle_frame=raw.MIDDLE_FRAME_MIXER end
-showAutomation() end}
+showAutomation() end end}
 
-renoise.tool():add_midi_mapping{name="Global:Paketti:Wipe&Create Slices (004) x[Toggle]",invoke=function() slicerough(4) end}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Wipe&Create Slices (008) x[Toggle]",invoke=function() slicerough(8) end}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Wipe&Create Slices (016) x[Toggle]",invoke=function() slicerough(16) end}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Wipe&Create Slices (032) x[Toggle]",invoke=function() slicerough(32) end}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Wipe&Create Slices (064) x[Toggle]",invoke=function() slicerough(64) end}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Wipe&Create Slices (128) x[Toggle]",invoke=function() slicerough(128) end}
+renoise.tool():add_midi_mapping{name="Paketti:Wipe&Slice (004) x[Toggle]",invoke=function(message) if message:is_trigger() then slicerough(4) end end}
+renoise.tool():add_midi_mapping{name="Paketti:Wipe&Slice (008) x[Toggle]",invoke=function(message) if message:is_trigger() then slicerough(8) end end}
+renoise.tool():add_midi_mapping{name="Paketti:Wipe&Slice (016) x[Toggle]",invoke=function(message) if message:is_trigger() then slicerough(16) end end}
+renoise.tool():add_midi_mapping{name="Paketti:Wipe&Slice (032) x[Toggle]",invoke=function(message) if message:is_trigger() then slicerough(32) end end}
+renoise.tool():add_midi_mapping{name="Paketti:Wipe&Slice (064) x[Toggle]",invoke=function(message) if message:is_trigger() then slicerough(64) end end}
+renoise.tool():add_midi_mapping{name="Paketti:Wipe&Slice (128) x[Toggle]",invoke=function(message) if message:is_trigger() then slicerough(128) end end}
 
-renoise.tool():add_midi_mapping{name="Sample Editor:Paketti:Disk Browser Focus",invoke=function()
+renoise.tool():add_midi_mapping{name="Paketti:Set Delay (+1) x[Toggle]", invoke=function(message) if message:is_trigger() then delayInput(1) end end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Delay (-1) x[Toggle]", invoke=function(message) if message:is_trigger() then delayInput(-1) end end}
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+-- //TODO check that these work
+
+renoise.tool():add_midi_mapping{name="Paketti:Numpad SelectPlay 0 x[Toggle]",  invoke=function(message) if message:is_trigger() then selectplay(0) end end}
+renoise.tool():add_midi_mapping{name="Paketti:Numpad SelectPlay 1 x[Toggle]",  invoke=function(message) if message:is_trigger() then  selectplay(1) end end}
+renoise.tool():add_midi_mapping{name="Paketti:Numpad SelectPlay 2 x[Toggle]",  invoke=function(message) if message:is_trigger() then  selectplay(2) end end}
+renoise.tool():add_midi_mapping{name="Paketti:Numpad SelectPlay 3 x[Toggle]",  invoke=function(message) if message:is_trigger() then  selectplay(3) end end}
+renoise.tool():add_midi_mapping{name="Paketti:Numpad SelectPlay 4 x[Toggle]",  invoke=function(message) if message:is_trigger() then  selectplay(4) end end}
+renoise.tool():add_midi_mapping{name="Paketti:Numpad SelectPlay 5 x[Toggle]",  invoke=function(message) if message:is_trigger() then  selectplay(5) end end}
+renoise.tool():add_midi_mapping{name="Paketti:Numpad SelectPlay 6 x[Toggle]",  invoke=function(message) if message:is_trigger() then  selectplay(6) end end}
+renoise.tool():add_midi_mapping{name="Paketti:Numpad SelectPlay 7 x[Toggle]",  invoke=function(message) if message:is_trigger() then  selectplay(7) end end}
+renoise.tool():add_midi_mapping{name="Paketti:Numpad SelectPlay 8 x[Toggle]",  invoke=function(message) if message:is_trigger() then  selectplay(8) end end}
+
+renoise.tool():add_midi_mapping{name="Paketti:Capture Nearest Instrument and Octave", invoke=function(message) if message:is_trigger() then capture_ins_oct() end end} 
+renoise.tool():add_midi_mapping{name="Paketti:Simple Play",invoke=function(message) if message:is_trigger() then simpleplay() end end}
+renoise.tool():add_midi_mapping{name="Paketti:Columnizer Delay Increase (+1) x[Toggle]",invoke=function(message) if message:is_trigger() then  columns(1,1) end end}
+renoise.tool():add_midi_mapping{name="Paketti:Columnizer Delay Decrease (-1) x[Toggle]",invoke=function(message) if message:is_trigger() then  columns(-1,1) end end}
+renoise.tool():add_midi_mapping{name="Paketti:Columnizer Panning Increase (+1) x[Toggle]",invoke=function(message) if message:is_trigger() then  columns(1,2) end end}
+renoise.tool():add_midi_mapping{name="Paketti:Columnizer Panning Decrease (-1) x[Toggle]",invoke=function(message) if message:is_trigger() then  columns(-1,2) end end}
+renoise.tool():add_midi_mapping{name="Paketti:Columnizer Volume Increase (+1) x[Toggle]",invoke=function(message) if message:is_trigger() then  columns(1,3) end end}
+renoise.tool():add_midi_mapping{name="Paketti:Columnizer Volume Decrease (-1) x[Toggle]",invoke=function(message) if message:is_trigger() then  columns(-1,3) end end}
+renoise.tool():add_midi_mapping{name="Paketti:Columnizer Effect Number Increase (+1) x[Toggle]",invoke=function(message) if message:is_trigger() then  columnspart2(1,4) end end}
+renoise.tool():add_midi_mapping{name="Paketti:Columnizer Effect Number Decrease (-1) x[Toggle]",invoke=function(message) if message:is_trigger() then  columnspart2(-1,4) end end}
+renoise.tool():add_midi_mapping{name="Paketti:Columnizer Effect Amount Increase (+1) x[Toggle]",invoke=function(message) if message:is_trigger() then  columnspart2(1,5) end end}
+renoise.tool():add_midi_mapping{name="Paketti:Columnizer Effect Amount Decrease (-1) x[Toggle]",invoke=function(message) if message:is_trigger() then  columnspart2(-1,5) end end}
+
+--[[renoise.tool():add_midi_mapping{name="Sample Editor:Paketti:Disk Browser Focus",invoke=function()
 renoise.app().window.lock_keyboard_focus=false
 renoise.app().window:select_preset(7) end}
 
 renoise.tool():add_midi_mapping{name="Pattern Editor:Paketti:Disk Browser Focus",invoke=function() renoise.app().window:select_preset(8) end}
+]]--
 
-renoise.tool():add_midi_mapping{name="Global:Paketti:Change Selected Sample Loop Mode [x]Knob",
+renoise.tool():add_midi_mapping{name="Paketti:Change Selected Sample Loop Mode x[Knob]",
   invoke = function(midi_message)
     local value = midi_message.int_value
     local loop_modes = {
@@ -198,15 +221,15 @@ function toggleSelectedSampleLoopTo(loopMode)
       end
 end
 
-renoise.tool():add_midi_mapping{name="Global:Paketti:Selected Sample Loop to 1 No Loop x[On]", invoke=function() selectedSampleLoopTo(1) end}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Selected Sample Loop to 2 Forward x[On]", invoke=function() selectedSampleLoopTo(2) end}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Selected Sample Loop to 3 Backward x[On]", invoke=function() selectedSampleLoopTo(3) end}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Selected Sample Loop to 4 PingPong x[On]", invoke=function() selectedSampleLoopTo(4) end}
+renoise.tool():add_midi_mapping{name="Paketti:Selected Sample Loop to 1 No Loop x[On]", invoke=function() selectedSampleLoopTo(1) end}
+renoise.tool():add_midi_mapping{name="Paketti:Selected Sample Loop to 2 Forward x[On]", invoke=function() selectedSampleLoopTo(2) end}
+renoise.tool():add_midi_mapping{name="Paketti:Selected Sample Loop to 3 Backward x[On]", invoke=function() selectedSampleLoopTo(3) end}
+renoise.tool():add_midi_mapping{name="Paketti:Selected Sample Loop to 4 PingPong x[On]", invoke=function() selectedSampleLoopTo(4) end}
 
-renoise.tool():add_midi_mapping{name="Global:Paketti:Selected Sample Loop to 1 No Loop x[Toggle]", invoke=function() toggleSelectedSampleLoopTo(1) end}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Selected Sample Loop to 2 Forward x[Toggle]", invoke=function() toggleSelectedSampleLoopTo(2) end}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Selected Sample Loop to 3 Backward x[Toggle]", invoke=function() toggleSelectedSampleLoopTo(3) end}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Selected Sample Loop to 4 PingPong x[Toggle]", invoke=function() toggleSelectedSampleLoopTo(4) end}
+renoise.tool():add_midi_mapping{name="Paketti:Selected Sample Loop to 1 No Loop x[Toggle]", invoke=function() toggleSelectedSampleLoopTo(1) end}
+renoise.tool():add_midi_mapping{name="Paketti:Selected Sample Loop to 2 Forward x[Toggle]", invoke=function() toggleSelectedSampleLoopTo(2) end}
+renoise.tool():add_midi_mapping{name="Paketti:Selected Sample Loop to 3 Backward x[Toggle]", invoke=function() toggleSelectedSampleLoopTo(3) end}
+renoise.tool():add_midi_mapping{name="Paketti:Selected Sample Loop to 4 PingPong x[Toggle]", invoke=function() toggleSelectedSampleLoopTo(4) end}
 
 renoise.tool():add_midi_mapping{name="Paketti:Record to Current Track x[Toggle]", invoke=function() 
   recordtocurrenttrack()
@@ -224,7 +247,7 @@ renoise.tool():add_midi_mapping{name="Paketti:Record to Current Track x[Toggle]"
   -- t:start(renoise.Transport.PLAYMODE_CONTINUE_PATTERN)
 end}
 
-renoise.tool():add_midi_mapping{name="Global:Paketti:Simple Play Record Follow",invoke=function() simpleplayrecordfollow() end}
+renoise.tool():add_midi_mapping{name="Paketti:Simple Play Record Follow",invoke=function() simpleplayrecordfollow() end}
 
 --------------
 function midiEnableDSP(deviceNumber,onOrOff)
@@ -255,32 +278,32 @@ end
 end
 
 for i = 1, 9 do 
-renoise.tool():add_midi_mapping{name="Global:Paketti:Enable Track DSP Device 0" .. i, invoke=function() midiEnableDSP(i, true) end}
+renoise.tool():add_midi_mapping{name="Paketti:Enable Track DSP Device 0" .. i, invoke=function() midiEnableDSP(i, true) end}
 end
 
 for i = 10, 32 do 
-renoise.tool():add_midi_mapping{name="Global:Paketti:Enable Track DSP Device " .. i, invoke=function() midiEnableDSP(i, true) end}
+renoise.tool():add_midi_mapping{name="Paketti:Enable Track DSP Device " .. i, invoke=function() midiEnableDSP(i, true) end}
 end
 
 
 for i = 1, 9 do 
-renoise.tool():add_midi_mapping{name="Global:Paketti:Disable Track DSP Device 0" .. i, invoke=function() midiEnableDSP(i, false) end}
+renoise.tool():add_midi_mapping{name="Paketti:Disable Track DSP Device 0" .. i, invoke=function() midiEnableDSP(i, false) end}
 end
 
 for i = 10, 32 do 
-renoise.tool():add_midi_mapping{name="Global:Paketti:Disable Track DSP Device " .. i, invoke=function() midiEnableDSP(i, false) end}
+renoise.tool():add_midi_mapping{name="Paketti:Disable Track DSP Device " .. i, invoke=function() midiEnableDSP(i, false) end}
 end
 
 for i = 1, 9 do 
-renoise.tool():add_midi_mapping{name="Global:Paketti:Toggle Track DSP Device 0" .. i, invoke=function() midiToggleDSP(i) end}
+renoise.tool():add_midi_mapping{name="Paketti:Toggle Track DSP Device 0" .. i, invoke=function() midiToggleDSP(i) end}
 end
 
 for i = 10, 32 do 
-renoise.tool():add_midi_mapping{name="Global:Paketti:Toggle Track DSP Device " .. i, invoke=function() midiToggleDSP(i) end}
+renoise.tool():add_midi_mapping{name="Paketti:Toggle Track DSP Device " .. i, invoke=function() midiToggleDSP(i) end}
 end
 
 -------
-renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Change EditStep 1-64 x[Knob]",
+renoise.tool():add_midi_mapping{name="Paketti:Midi Change EditStep 1-64 x[Knob]",
   invoke = function(message)
     if message:is_abs_value() then
       -- Pass the actual property object, not just the value
@@ -288,7 +311,7 @@ renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Change EditStep 1-64 x
     end
   end}
 
-renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change EditStep 0-64 x[Knob]",
+renoise.tool():add_midi_mapping {name="Paketti:Midi Change EditStep 0-64 x[Knob]",
   invoke = function(message)
     if message:is_abs_value() then
       -- Pass the actual property object, not just the value
@@ -316,24 +339,17 @@ renoise.song().transport.edit_step = stepNumber
 end
 
 for i=0,9 do
-renoise.tool():add_midi_mapping{name="Global:Paketti:Set EditStep to 0" .. i, invoke=function() midiMappedEditStep(i) end}
+renoise.tool():add_midi_mapping{name="Paketti:Set EditStep to 0" .. i, invoke=function() midiMappedEditStep(i) end}
 end
 
 for i=10,64 do
-renoise.tool():add_midi_mapping{name="Global:Paketti:Set EditStep to " .. i, invoke=function() midiMappedEditStep(i) end}
+renoise.tool():add_midi_mapping{name="Paketti:Set EditStep to " .. i, invoke=function() midiMappedEditStep(i) end}
 end
 ------
-renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Select Group (Next)",invoke=function(message)
-  if message.int_value == 127 then selectNextGroupTrack() end end}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Select Group (Previous)",invoke=function(message)   if message.int_value == 127 then selectPreviousGroupTrack() end end}
-
-
-
-
-renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Select Track (Next)",invoke=function(message)
-  if message.int_value == 127 then selectNextTrack() end end}
-renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Select Track (Previous)",invoke=function(message)   if message.int_value == 127 then selectPreviousTrack() end end}
-
+renoise.tool():add_midi_mapping{name="Paketti:Midi Select Group (Previous)",invoke=function(message) if message:is_trigger() then selectPreviousGroupTrack() end end}
+renoise.tool():add_midi_mapping{name="Paketti:Midi Select Group (Next)",invoke=function(message) if message:is_trigger() then  selectNextGroupTrack() end end}
+renoise.tool():add_midi_mapping{name="Paketti:Midi Select Track (Previous)",invoke=function(message) if message:is_trigger() then  selectPreviousTrack() end end}
+renoise.tool():add_midi_mapping{name="Paketti:Midi Select Track (Next)",invoke=function(message) if message:is_trigger() then  selectNextTrack() end end}
 -----
 -- Retrieve all group track indices
 function groupTrackIndices()
@@ -365,18 +381,17 @@ function changeGroupTrackWithMidi(message)
     end
 end
 
-
-renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Select Group Tracks x[Knob]", invoke=changeGroupTrackWithMidi}
+renoise.tool():add_midi_mapping{name="Paketti:Midi Select Group Tracks x[Knob]", invoke=changeGroupTrackWithMidi}
 --------
 --
-renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Octave x[Knob]",
+renoise.tool():add_midi_mapping{name="Paketti:Midi Change Octave x[Knob]",
   invoke = function(message)
     if message:is_abs_value() then
       midiValues(0, 8, renoise.song().transport, 'octave', message.int_value)
     end
 end}
 
-renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Selected Track x[Knob]",
+renoise.tool():add_midi_mapping{name="Paketti:Midi Change Selected Track x[Knob]",
   invoke = function(message)
     if message:is_abs_value() then
     local trackCount = #renoise.song().tracks
@@ -384,7 +399,7 @@ renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Selected Track
     end
 end}
 
-renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Selected Track DSP Device x[Knob]",
+renoise.tool():add_midi_mapping{name="Paketti:Midi Change Selected Track DSP Device x[Knob]",
   invoke = function(message)
     if message:is_abs_value() then
     local deviceCount = #renoise.song().selected_track.devices
@@ -396,7 +411,7 @@ renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Selected Track
     end
 end}
 
-renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Selected Instrument x[Knob]",
+renoise.tool():add_midi_mapping{name="Paketti:Midi Change Selected Instrument x[Knob]",
   invoke = function(message)
     if message:is_abs_value() then
     local instrumentCount = #renoise.song().instruments
@@ -404,7 +419,7 @@ renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Selected Instr
     end
 end}
 ----------------
-renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Selected Sample Loop 01 Start x[Knob]",
+renoise.tool():add_midi_mapping{name="Paketti:Midi Change Selected Sample Loop 01 Start x[Knob]",
   invoke = function(message)
     if message:is_abs_value() then
     local sampleEndPosition = renoise.song().selected_sample.loop_end -1
@@ -412,7 +427,7 @@ renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Selected Sampl
     end
 end}
 
-renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Selected Sample Loop 02 End x[Knob]",
+renoise.tool():add_midi_mapping{name="Paketti:Midi Change Selected Sample Loop 02 End x[Knob]",
   invoke = function(message)
     if message:is_abs_value() then
     local loopStart = renoise.song().selected_sample.loop_start
@@ -420,7 +435,7 @@ renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Selected Sampl
     end
 end}
 
-renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Sample Editor Selection 01 Start x[Knob]",
+renoise.tool():add_midi_mapping{name="Sample Editor:Paketti:Sample Buffer Selection 01 Start x[Knob]",
   invoke = function(message)
     if message:is_abs_value() then
     local selectionEnd=renoise.song().selected_sample.sample_buffer.selection_end
@@ -430,7 +445,7 @@ renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Sample Editor 
     end
 end}
 
-renoise.tool():add_midi_mapping {name="Global:Paketti:Midi Change Sample Editor Selection 02 End x[Knob]",
+renoise.tool():add_midi_mapping{name="Sample Editor:Paketti:Sample Buffer Selection 02 End x[Knob]",
   invoke = function(message)
     if message:is_abs_value() then
     local selectionEnd=renoise.song().selected_sample.sample_buffer.selection_end
@@ -459,7 +474,7 @@ function apply_automation_curve_by_index(index, curves)
   end
 end
 
-renoise.tool():add_midi_mapping{name="Track Automation:Paketti..:Midi Automation Curve Draw Selection x[Knob]",
+renoise.tool():add_midi_mapping{name="Track Automation:Paketti:Midi Automation Curve Draw Selection x[Knob]",
   invoke=function(message)
     if message:is_abs_value() then
       local selected_parameter = renoise.song().selected_automation_parameter
@@ -469,6 +484,7 @@ renoise.tool():add_midi_mapping{name="Track Automation:Paketti..:Midi Automation
       -- Check if the selected automation parameter is PitchBend, Pitch, or Panning
       if selected_parameter and (
         selected_parameter.name == "PitchBend" or
+        selected_parameter.name == "Pitchbend" or
         selected_parameter.name == "Pitch" or
         selected_parameter.name == "Panning"
       ) then
@@ -499,9 +515,6 @@ renoise.tool():add_midi_mapping{name="Track Automation:Paketti..:Midi Automation
   end
 }
 
-
-
-
 -- Define the function to set the automation point value based on MIDI input
 function midiValuesAutomation(start_point, end_point, automation, property, value)
   -- Convert MIDI value (0-127) to automation range (start_point to end_point)
@@ -524,7 +537,7 @@ function midiValuesAutomation(start_point, end_point, automation, property, valu
 end
 
 -- MIDI mapping for changing the start point of the automation selection
-renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Automation Selection 01 Start x[Knob]",
+renoise.tool():add_midi_mapping{name="Paketti:Midi Automation Selection 01 Start x[Knob]",
   invoke=function(message)
     if message:is_abs_value() then
       local automation = renoise.song().selected_pattern_track:find_automation(renoise.song().selected_automation_parameter)
@@ -538,7 +551,7 @@ renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Automation Selection 0
 }
 
 -- MIDI mapping for changing the end point of the automation selection
-renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Automation Selection 02 End x[Knob]",
+renoise.tool():add_midi_mapping{name="Paketti:Midi Automation Selection 02 End x[Knob]",
   invoke=function(message)
     if message:is_abs_value() then
       local automation = renoise.song().selected_pattern_track:find_automation(renoise.song().selected_automation_parameter)
@@ -551,7 +564,7 @@ renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Automation Selection 0
   end
 }
 
-renoise.tool():add_midi_mapping{name="Global:Paketti:Create New Instrument & Loop from Selection", invoke=function() create_new_instrument_from_selection() end}
+renoise.tool():add_midi_mapping{name="Paketti:Create New Instrument & Loop from Selection", invoke=function(message) if message:is_trigger() then create_new_instrument_from_selection() end end}
 --------------
 
 -- Global table to keep track of added MIDI mappings
@@ -603,7 +616,7 @@ function add_custom_midi_mappings(mapping_names)
     -- Retrieve the custom name for the MIDI mapping
     local mapping_name = mapping_names[macro_index]
     if mapping_name then
-      local full_mapping_name = "Global:Tools:" .. mapping_name
+      local full_mapping_name = "Paketti:" .. mapping_name
       if not added_midi_mappings[full_mapping_name] then
         -- Create the MIDI mapping with the custom name
         renoise.tool():add_midi_mapping{name=full_mapping_name, invoke=function(midi_message)
@@ -629,8 +642,8 @@ local midiMacroMappingNames = {
   "Midi Selected Instrument Macro 4 (Cutoff LfoAmp)",
   "Midi Selected Instrument Macro 5 (Cutoff LfoFreq)",
   "Midi Selected Instrument Macro 6 (Overdrive)",
-  "Midi Selected Instrument Macro 7 (Volume LfoAmp)",
-  "Midi Selected Instrument Macro 8 (Volume LfoFreq)"
+  "Midi Selected Instrument Macro 7 (ParallelCompression)",
+  "Midi Selected Instrument Macro 8 (Glide Inertia)"
 }
 
 -- Observable to add MIDI mappings when a new song is loaded
@@ -649,8 +662,6 @@ if pcall(renoise.song) then
 else
   renoise.app():show_status("No song is currently loaded at script startup.")
 end
-
---------
 ----------------
 -- Script to map MIDI values to sample modulation set filter types in Renoise
 -- Ensure this script is named 'Paketti_Midi_Change_Sample_Modulation_Set_Filter.lua'
@@ -689,7 +700,7 @@ end}
 function midiprogram(change)  
 local midi=renoise.song().selected_instrument.midi_output_properties  
 local currentprg=midi.program  
- currentprg = math.max(1, math.min(128, currentprg + change))  
+ currentprg = math.max(0, math.min(128, currentprg + change))  
  rprint (currentprg)  
 renoise.song().selected_instrument.midi_output_properties.program = currentprg  
 renoise.song().transport:panic()  
@@ -697,7 +708,8 @@ end
   
 renoise.tool():add_keybinding{name="Global:Paketti:Selected Instrument Midi Program +1 (Next)", invoke=function() midiprogram(1) end}  
 renoise.tool():add_keybinding{name="Global:Paketti:Selected Instrument Midi Program -1 (Previous)", invoke=function() midiprogram(-1) end}  
-
+renoise.tool():add_midi_mapping{name="Paketti:Selected Instrument Midi Program +1 (Next)", invoke=function(message) if message:is_trigger() then midiprogram(1) end end}  
+renoise.tool():add_midi_mapping{name="Paketti:Selected Instrument Midi Program -1 (Previous)", invoke=function(message) if message:is_trigger() then midiprogram(-1) end end}  
 -----------
 local vb = renoise.ViewBuilder()
 local midi_input_devices, midi_output_devices, plugin_dropdown_items, available_plugins
@@ -960,8 +972,25 @@ local function clear_plugin_selection()
   end
 end
 
+function my_keyhandler_func(dialog, key)
+  if not (key.modifiers == "" and key.name == "exclamation") then
+    return key
+  else
+    custom_dialog:close()
+    custom_dialog = nil
+    return nil
+  end
+end
+
+
 -- Function to show the custom dialog
 function generaMIDISetupShowCustomDialog()
+  if custom_dialog and custom_dialog.visible then
+    custom_dialog:close()
+    custom_dialog = nil
+    return
+  end
+
   -- Initialize variables
   initialize_variables()
 
@@ -1017,20 +1046,19 @@ function generaMIDISetupShowCustomDialog()
     vb:horizontal_aligner{mode = "right", vb:row{vb:text{text = "Panning Column:"}, panning_column_switch}},
     vb:horizontal_aligner{mode = "right", vb:row{vb:text{text = "Sample Effects Column:"}, sample_effects_column_switch}},
     vb:horizontal_aligner{mode = "right", vb:row{vb:text{text = "Track State:"}, collapsed_switch}},
-    vb:horizontal_aligner{mode = "right", vb:row{vb:text{text = "Incoming Audio:"}, incoming_audio_switch}},
-    vb:horizontal_aligner{mode = "right", vb:row{vb:text{text = "Populate Track with Sends:"}, populate_sends_switch}},
-    vb:horizontal_aligner{mode = "right", vb:row{vb:text{text = "Open External Editor:"}, external_editor_switch}},
+    vb:horizontal_aligner{mode = "right", vb:row{vb:text{text = "Add #Line-Input Device for each Channel:"}, incoming_audio_switch}},
+    vb:horizontal_aligner{mode = "right", vb:row{vb:text{text = "Populate Channels with Send Devices:"}, populate_sends_switch}},
+    vb:horizontal_aligner{mode = "right", vb:row{vb:text{text = "Open External Editor for each Plugin:"}, external_editor_switch}},
     vb:row{
       vb:button{text = "OK", width = 100, notifier = function() on_ok_button_pressed(dialog_content) end},
       vb:button{text = "Close", width = 100, notifier = function() custom_dialog:close() end}
     }
   }
 
-  custom_dialog = renoise.app():show_custom_dialog("Paketti MIDI Populator", dialog_content)
+  custom_dialog = renoise.app():show_custom_dialog("Paketti MIDI Populator", dialog_content, my_keyhandler_func)
 end
 
--- Add menu entry to show the custom dialog
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Paketti MIDI Populator",invoke=generaMIDISetupShowCustomDialog}
+renoise.tool():add_keybinding{name="Global:Paketti:Paketti MIDI Populator Dialog...",invoke=function() generaMIDISetupShowCustomDialog() end}
 
 --------
 -- Function to process MIDI values and set the appropriate property
@@ -1057,31 +1085,150 @@ function pakettiScaleValuesColumn(input, inputMin, inputMax, outputMin, outputMa
   return output
 end
 
-renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Change 01 Volume Column Value x[Knob]",invoke=function(message)
+renoise.tool():add_midi_mapping{name="Paketti:Midi Change 01 Volume Column Value x[Knob]",invoke=function(message)
   if message:is_abs_value() then
     renoise.song().selected_track.volume_column_visible=true
     pakettiMidiValuesColumn(0, 128, renoise.song().selected_note_column_index, 'volume_value', message.int_value)
   end
 end}
 
-renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Change 02 Panning Column Value x[Knob]",invoke=function(message)
+renoise.tool():add_midi_mapping{name="Paketti:Midi Change 02 Panning Column Value x[Knob]",invoke=function(message)
   if message:is_abs_value() then
     renoise.song().selected_track.panning_column_visible=true
     pakettiMidiValuesColumn(0, 128, renoise.song().selected_note_column_index, 'panning_value', message.int_value)
   end
 end}
 
-renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Change 03 Delay Column Value x[Knob]",invoke=function(message)
+renoise.tool():add_midi_mapping{name="Paketti:Midi Change 03 Delay Column Value x[Knob]",invoke=function(message)
   if message:is_abs_value() then
     renoise.song().selected_track.delay_column_visible=true
     pakettiMidiValuesColumn(0, 255, renoise.song().selected_note_column_index, 'delay_value', message.int_value)
   end
 end}
 
-renoise.tool():add_midi_mapping{name="Global:Paketti:Midi Change 04 Effect Column Value x[Knob]",invoke=function(message)
+renoise.tool():add_midi_mapping{name="Paketti:Midi Change 04 Sample FX Column Value x[Knob]",invoke=function(message)
   if message:is_abs_value() then
     renoise.song().selected_track.sample_effects_column_visible=true
     pakettiMidiValuesColumn(0, 255, renoise.song().selected_note_column_index, 'effect_amount_value', message.int_value)
   end
 end}
 
+-- Function to process MIDI values and set the appropriate property
+function pakettiMidiValuesEffectColumn(minValue, maxValue, effect_column_index, propertyName, midiInput)
+  local scaledValue = pakettiScaleValuesColumn(midiInput, 0, 127, minValue, maxValue)
+  local song = renoise.song()
+  local selection = song.selection_in_pattern
+  
+  if selection then
+    for line = selection.start_line, selection.end_line do
+      local note_col = song:pattern(song.selected_pattern_index):track(song.selected_track_index):line(line).effect_columns[effect_column_index]
+      note_col[propertyName] = math.floor(math.max(minValue, math.min(scaledValue, maxValue)))
+    end
+  else
+    local note_col = song.selected_line.effect_columns[effect_column_index]
+    note_col[propertyName] = math.floor(math.max(minValue, math.min(scaledValue, maxValue)))
+  end
+end
+
+-- Scales an input value from a given input range to a specified output range
+function pakettiScaleValuesEffectColumn(input, inputMin, inputMax, outputMin, outputMax)
+  local scale = (outputMax - outputMin) / (inputMax - inputMin)
+  local output = (input - inputMin) * scale + outputMin
+  return output
+end
+
+
+renoise.tool():add_midi_mapping{name="Paketti:Midi Change 05 Effect Column Value x[Knob]",invoke=function(message)
+  if message:is_abs_value() then
+    if renoise.song().selected_track.visible_effect_columns == 0 then 
+    renoise.song().selected_track.visible_effect_columns = 1 end
+    
+        pakettiMidiValuesEffectColumn(0, 255, 1, 'amount_value', message.int_value)
+  
+  end
+end}
+
+
+--------
+-- Function to double the edit step
+function PakettiEditStepDouble()
+  local transport = renoise.song().transport
+  local current_step = transport.edit_step
+  if current_step == 0 then
+    current_step = 1
+  else
+    current_step = current_step * 2
+  end
+  transport.edit_step = math.min(current_step, 64)
+  renoise.app():show_status("EditStep doubled to " .. transport.edit_step)
+end
+
+-- Function to halve the edit step
+function PakettiEditStepHalve()
+  local transport = renoise.song().transport
+  local current_step = transport.edit_step
+  if current_step > 1 then
+    current_step = math.floor(current_step / 2)
+  end
+  transport.edit_step = current_step
+  renoise.app():show_status("EditStep halved to " .. transport.edit_step)
+end
+
+-- Adding the MIDI mappings
+renoise.tool():add_midi_mapping{name="Paketti:EditStep Double x[Button]",invoke=function(message) if message:is_trigger() then PakettiEditStepDouble() end end}
+renoise.tool():add_midi_mapping{name="Paketti:EditStep Halve x[Button]",invoke=function(message) if message:is_trigger() then PakettiEditStepHalve() end end}
+
+------
+renoise.tool():add_midi_mapping{name="Sample Editor:Paketti:Move Slice Start Left by 10",invoke=function(message) if message:is_trigger() then move_slice_start_left_10() end end}
+renoise.tool():add_midi_mapping{name="Sample Editor:Paketti:Move Slice Start Right by 10",invoke=function(message) if message:is_trigger() then move_slice_start_right_10() end end}
+renoise.tool():add_midi_mapping{name="Sample Editor:Paketti:Move Slice End Left by 10",invoke=function(message) if message:is_trigger() then move_slice_end_left_10() end end}
+renoise.tool():add_midi_mapping{name="Sample Editor:Paketti:Move Slice End Right by 10",invoke=function(message) if message:is_trigger() then move_slice_end_right_10() end end}
+renoise.tool():add_midi_mapping{name="Sample Editor:Paketti:Move Slice Start Left by 100",invoke=function(message) if message:is_trigger() then move_slice_start_left_100() end end}
+renoise.tool():add_midi_mapping{name="Sample Editor:Paketti:Move Slice Start Right by 100",invoke=function(message) if message:is_trigger() then move_slice_start_right_100() end end}
+renoise.tool():add_midi_mapping{name="Sample Editor:Paketti:Move Slice End Left by 100",invoke=function(message) if message:is_trigger() then move_slice_end_left_100() end end}
+renoise.tool():add_midi_mapping{name="Sample Editor:Paketti:Move Slice End Right by 100",invoke=function(message) if message:is_trigger() then move_slice_end_right_100() end end}
+renoise.tool():add_midi_mapping{name="Sample Editor:Paketti:Move Slice Start Left by 300",invoke=function(message) if message:is_trigger() then move_slice_start_left_300() end end}
+renoise.tool():add_midi_mapping{name="Sample Editor:Paketti:Move Slice Start Right by 300",invoke=function(message) if message:is_trigger() then move_slice_start_right_300() end end}
+renoise.tool():add_midi_mapping{name="Sample Editor:Paketti:Move Slice End Left by 300",invoke=function(message) if message:is_trigger() then move_slice_end_left_300() end end}
+renoise.tool():add_midi_mapping{name="Sample Editor:Paketti:Move Slice End Right by 300",invoke=function(message) if message:is_trigger() then move_slice_end_right_300() end end}
+renoise.tool():add_midi_mapping{name="Sample Editor:Paketti:Move Slice Start Left by 500",invoke=function(message) if message:is_trigger() then move_slice_start_left_500() end end}
+renoise.tool():add_midi_mapping{name="Sample Editor:Paketti:Move Slice Start Right by 500",invoke=function(message) if message:is_trigger() then move_slice_start_right_500() end end}
+renoise.tool():add_midi_mapping{name="Sample Editor:Paketti:Move Slice End Left by 500",invoke=function(message) if message:is_trigger() then move_slice_end_left_500() end end}
+renoise.tool():add_midi_mapping{name="Sample Editor:Paketti:Move Slice End Right by 500",invoke=function(message) if message:is_trigger() then move_slice_end_right_500() end end}
+
+----------------
+renoise.tool():add_midi_mapping{name="Paketti:Set Beatsync Value x[Knob]",invoke=function(message) 
+  if message:is_abs_value() then
+  if renoise.song().selected_instrument ~= nil and renoise.song().selected_sample ~= nil then
+    renoise.song().selected_sample.beat_sync_enabled=true
+    midiValues(1, 128, renoise.song().selected_sample, 'beat_sync_lines', message.int_value)
+  else renoise.app():show_status("There is no Instrument and no Sample.") end
+  end
+  end}
+  
+---
+function PakettiMidiSendBang(number)
+if #renoise.song().selected_track.devices < number
+then renoise.app():show_status("The Send at " .. number .. " does not exist, doing nothing.") return
+else end
+if renoise.song().selected_track.devices[number].name == "#Send"  then
+if renoise.song().selected_track.devices[number].parameters[1].value ~= 1 then
+renoise.song().selected_track.devices[number].parameters[1].value=1
+else
+renoise.song().selected_track.devices[number].parameters[1].value=0
+end
+else renoise.app():show_status("The Send at " .. number .. " does not exist, doing nothing.")
+end
+end
+
+for i = 2, 64 do
+  local actual_number = i - 1
+  renoise.tool():add_midi_mapping{
+    name = "Paketti:Selected Track Send " .. string.format("%02d", actual_number) .. " Amount Toggle",
+    invoke = function(message)
+      if message:is_trigger() then
+        PakettiMidiSendBang(i)
+      end
+    end
+  }
+end

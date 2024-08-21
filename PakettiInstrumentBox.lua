@@ -46,7 +46,13 @@ local resultant=nil
 
     s.selected_instrument_index=number+1
 
-if renoise.song().transport.edit_mode == false then return else end
+if renoise.song().transport.edit_mode==false then return end
+
+-- Check if a note column is selected
+if currColumn==0 then
+    renoise.app():show_status("Please Select a Note Column.")
+    return
+end
 
     currSample=s.selected_instrument_index-1
     s.patterns[currPatt].tracks[currTrak].lines[currLine].note_columns[currColumn].note_string="C-4"
@@ -54,10 +60,10 @@ if renoise.song().transport.edit_mode == false then return else end
 
   if renoise.song().transport.follow_player==false 
     then 
-resultant = renoise.song().selected_line_index+renoise.song().transport.edit_step
-    if renoise.song().selected_pattern.number_of_lines < resultant
-    then renoise.song().selected_line_index = renoise.song().selected_pattern.number_of_lines
-    else renoise.song().selected_line_index = renoise.song().selected_line_index+renoise.song().transport.edit_step
+resultant=renoise.song().selected_line_index+renoise.song().transport.edit_step
+    if renoise.song().selected_pattern.number_of_lines<resultant
+    then renoise.song().selected_line_index=renoise.song().selected_pattern.number_of_lines
+    else renoise.song().selected_line_index=renoise.song().selected_line_index+renoise.song().transport.edit_step
     end
   else return
   end

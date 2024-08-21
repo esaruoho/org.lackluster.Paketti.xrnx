@@ -7,14 +7,14 @@ function vstAddAsShortcut()
   for _, cb_info in ipairs(checkboxes) do
     if cb_info.checkbox.value then
       local keyBindingName = "Global:Track Devices:Load Device (VST) " .. cb_info.name
-      local midiMappingName = "Tools:Track Devices:Load Device (VST) " .. cb_info.name
+      local midiMappingName = "Track Devices:Paketti:Load Device (VST) " .. cb_info.name
 
       if not addedKeyBindings[keyBindingName] then
         print("Adding shortcut for: " .. cb_info.name)
 
         local success, err = pcall(function()
           renoise.tool():add_keybinding{name=keyBindingName, invoke=function() loadvst(cb_info.path) end}
-          renoise.tool():add_midi_mapping{name=midiMappingName, invoke=function() loadvst(cb_info.path) end}
+          renoise.tool():add_midi_mapping{name=midiMappingName, invoke=function(message) if message:is_trigger() then  loadvst(cb_info.path) end end}
         end)
 
         if success then
@@ -139,7 +139,7 @@ function vstShowPluginListDialog()
             }
         },
         vb:button {
-            text = "Add Device(s) as Shortcut(s)",
+            text = "Add Device(s) as Shortcut(s) & MidiMappings",
             height = button_height,
             notifier = vstAddAsShortcut
         },
@@ -150,6 +150,15 @@ function vstShowPluginListDialog()
                 vstRandomizeSelection()
             end
         },
+        vb:button { text="Select All",
+        height=button_height,
+        notifier=function()
+        
+    for _, cb_info in ipairs(checkboxes) do
+        cb_info.checkbox.value = true
+    end
+end},        
+        
         vb:button {
             text = "Reset Selection",
             height = button_height,

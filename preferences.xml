@@ -1,56 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ScriptingToolPreferences doc_version="0">
-  <pakettiLoaderOverSampling>true</pakettiLoaderOverSampling>
   <selectionNewInstrumentLoop>2</selectionNewInstrumentLoop>
   <pakettiLoaderLoopMode>2</pakettiLoaderLoopMode>
   <RandomBPM>false</RandomBPM>
   <pakettiReSpeak>
     <pitch>35</pitch>
     <capitals>5</capitals>
-    <text>Good afternoon, this is eSpeak2 speaking. Shall we play a game?</text>
-    <voice>5</voice>
+    <text>Good afternoon, this is eSpeak, a Text-to-Speech engine, speaking. Shall we play a game?</text>
+    <voice>2</voice>
     <executable>/opt/homebrew/bin/espeak-ng</executable>
-    <render_on_change>true</render_on_change>
+    <render_on_change>false</render_on_change>
     <amplitude>40</amplitude>
     <word_gap>3</word_gap>
     <clear_all_samples>true</clear_all_samples>
-    <language>56</language>
+    <language>40</language>
     <speed>150</speed>
   </pakettiReSpeak>
-  <upperFramePreference>0.0</upperFramePreference>
-  <pakettiDefaultXRNI>12st_Pitchbend.xrni</pakettiDefaultXRNI>
+  <pakettiLoaderInterpolation>4</pakettiLoaderInterpolation>
+  <pakettiDefaultXRNI>Presets/12st_Pitchbend.xrni</pakettiDefaultXRNI>
   <loadPaleGreenTheme>false</loadPaleGreenTheme>
   <RandomizeSettings>
     <pakettiRandomizeAllDevicesPercentageUserPreference1>10</pakettiRandomizeAllDevicesPercentageUserPreference1>
     <pakettiRandomizeAllDevicesPercentage>50</pakettiRandomizeAllDevicesPercentage>
     <pakettiRandomizeAllDevicesPercentageUserPreference3>50</pakettiRandomizeAllDevicesPercentageUserPreference3>
     <pakettiRandomizeAllPluginsPercentageUserPreference5>50</pakettiRandomizeAllPluginsPercentageUserPreference5>
-    <pakettiRandomizeSelectedDevicePercentageUserPreference1>10</pakettiRandomizeSelectedDevicePercentageUserPreference1>
+    <pakettiRandomizeSelectedDevicePercentageUserPreference1>2.80000000000005</pakettiRandomizeSelectedDevicePercentageUserPreference1>
     <pakettiRandomizeSelectedDevicePercentageUserPreference3>50</pakettiRandomizeSelectedDevicePercentageUserPreference3>
-    <pakettiRandomizeAllPluginsPercentageUserPreference4>40</pakettiRandomizeAllPluginsPercentageUserPreference4>
-    <pakettiRandomizeSelectedDevicePercentageUserPreference5>90</pakettiRandomizeSelectedDevicePercentageUserPreference5>
+    <pakettiRandomizeAllPluginsPercentageUserPreference4>56.799999999999976</pakettiRandomizeAllPluginsPercentageUserPreference4>
+    <pakettiRandomizeSelectedDevicePercentageUserPreference5>100</pakettiRandomizeSelectedDevicePercentageUserPreference5>
     <pakettiRandomizeSelectedPluginPercentageUserPreference3>30</pakettiRandomizeSelectedPluginPercentageUserPreference3>
     <pakettiRandomizeSelectedPluginPercentageUserPreference2>20</pakettiRandomizeSelectedPluginPercentageUserPreference2>
     <pakettiRandomizeAllPluginsPercentageUserPreference3>30</pakettiRandomizeAllPluginsPercentageUserPreference3>
     <pakettiRandomizeSelectedPluginPercentageUserPreference1>10</pakettiRandomizeSelectedPluginPercentageUserPreference1>
     <pakettiRandomizeAllPluginsPercentageUserPreference1>10</pakettiRandomizeAllPluginsPercentageUserPreference1>
-    <pakettiRandomizeAllDevicesPercentageUserPreference5>90</pakettiRandomizeAllDevicesPercentageUserPreference5>
+    <pakettiRandomizeAllDevicesPercentageUserPreference5>100</pakettiRandomizeAllDevicesPercentageUserPreference5>
     <pakettiRandomizeAllPluginsPercentage>50</pakettiRandomizeAllPluginsPercentage>
-    <pakettiRandomizeSelectedDevicePercentageUserPreference4>75</pakettiRandomizeSelectedDevicePercentageUserPreference4>
+    <pakettiRandomizeSelectedDevicePercentageUserPreference4>100</pakettiRandomizeSelectedDevicePercentageUserPreference4>
     <pakettiRandomizeSelectedPluginPercentageUserPreference5>50</pakettiRandomizeSelectedPluginPercentageUserPreference5>
     <pakettiRandomizeSelectedPluginPercentageUserPreference4>40</pakettiRandomizeSelectedPluginPercentageUserPreference4>
     <pakettiRandomizeAllPluginsPercentageUserPreference2>20</pakettiRandomizeAllPluginsPercentageUserPreference2>
-    <pakettiRandomizeSelectedDevicePercentage>100</pakettiRandomizeSelectedDevicePercentage>
+    <pakettiRandomizeSelectedDevicePercentage>2.80000000000005</pakettiRandomizeSelectedDevicePercentage>
     <pakettiRandomizeSelectedPluginPercentage>50</pakettiRandomizeSelectedPluginPercentage>
-    <pakettiRandomizeSelectedDevicePercentageUserPreference2>25</pakettiRandomizeSelectedDevicePercentageUserPreference2>
-    <pakettiRandomizeAllDevicesPercentageUserPreference4>75</pakettiRandomizeAllDevicesPercentageUserPreference4>
+    <pakettiRandomizeSelectedDevicePercentageUserPreference2>15.20000000000006</pakettiRandomizeSelectedDevicePercentageUserPreference2>
+    <pakettiRandomizeAllDevicesPercentageUserPreference4>100</pakettiRandomizeAllDevicesPercentageUserPreference4>
     <pakettiRandomizeAllDevicesPercentageUserPreference2>25</pakettiRandomizeAllDevicesPercentageUserPreference2>
   </RandomizeSettings>
-  <selectionNewInstrumentSelect>false</selectionNewInstrumentSelect>
+  <PakettiMoveSilenceThreshold>0.0121</PakettiMoveSilenceThreshold>
   <pakettiSlideContentAutomationToo>true</pakettiSlideContentAutomationToo>
   <pakettiEditMode>2</pakettiEditMode>
   <WipeSlices>
-    <sliceCounter>1.0</sliceCounter>
+    <sliceCounter>2</sliceCounter>
     <WipeSlicesBeatSyncMode>2</WipeSlicesBeatSyncMode>
     <WipeSlicesLoopRelease>false</WipeSlicesLoopRelease>
     <WipeSlicesMuteGroup>1.0</WipeSlicesMuteGroup>
@@ -61,12 +60,76 @@
     <WipeSlicesOneShot>false</WipeSlicesOneShot>
     <WipeSlicesNNA>1.0</WipeSlicesNNA>
   </WipeSlices>
+  <pakettiCheatSheet>
+    <pakettiCheatSheetRandomizeMax>8.0244755244755677</pakettiCheatSheetRandomizeMax>
+    <pakettiCheatSheetRandomizeMin>2</pakettiCheatSheetRandomizeMin>
+    <pakettiCheatSheetRandomizeDontOverwrite>false</pakettiCheatSheetRandomizeDontOverwrite>
+    <pakettiCheatSheetRandomizeWholeTrack>false</pakettiCheatSheetRandomizeWholeTrack>
+    <pakettiCheatSheetRandomizeSwitch>false</pakettiCheatSheetRandomizeSwitch>
+    <pakettiCheatSheetRandomize>true</pakettiCheatSheetRandomize>
+    <pakettiCheatSheetFillAll>100</pakettiCheatSheetFillAll>
+  </pakettiCheatSheet>
+  <renderSampleRate>88200</renderSampleRate>
+  <pakettiLoaderFilterType>LP Moog</pakettiLoaderFilterType>
+  <pakettiLoaderOverSampling>true</pakettiLoaderOverSampling>
+  <upperFramePreference>0.0</upperFramePreference>
+  <pakettiLoaderOneshot>false</pakettiLoaderOneshot>
+  <selectionNewInstrumentSelect>false</selectionNewInstrumentSelect>
+  <pakettiPhraseInitDialog>
+    <NoteColumns>1.0</NoteColumns>
+    <LPB>4</LPB>
+    <VolumeColumnVisible>true</VolumeColumnVisible>
+    <Autoseek>true</Autoseek>
+    <Name>Phrase 01</Name>
+    <Length>31</Length>
+    <SetName>false</SetName>
+    <Shuffle>0.0</Shuffle>
+    <EffectColumns>0.0</EffectColumns>
+    <InstrumentColumnVisible>false</InstrumentColumnVisible>
+    <DelayColumnVisible>false</DelayColumnVisible>
+    <PanningColumnVisible>false</PanningColumnVisible>
+  </pakettiPhraseInitDialog>
+  <pakettiGater>
+    <GateSelection07>
+      <GateSelection07Item/>
+    </GateSelection07>
+    <GateSelection10>
+      <GateSelection10Item/>
+    </GateSelection10>
+    <GateSelection02>
+      <GateSelection02Item/>
+    </GateSelection02>
+    <GateSelection04>
+      <GateSelection04Item/>
+    </GateSelection04>
+    <currentSelection>
+      <currentSelectionItem/>
+    </currentSelection>
+    <GateSelection05>
+      <GateSelection05Item/>
+    </GateSelection05>
+    <GateSelection06>
+      <GateSelection06Item/>
+    </GateSelection06>
+    <GateSelection09>
+      <GateSelection09Item/>
+    </GateSelection09>
+    <GateSelection01>
+      <GateSelection01Item/>
+    </GateSelection01>
+    <GateSelection08>
+      <GateSelection08Item/>
+    </GateSelection08>
+    <GateSelection03>
+      <GateSelection03Item/>
+    </GateSelection03>
+  </pakettiGater>
   <pakettiColuga>
     <pakettiColugaAmountOfVideos>1.0</pakettiColugaAmountOfVideos>
     <pakettiColugaNewInstrumentOrSameInstrument>true</pakettiColugaNewInstrumentOrSameInstrument>
-    <pakettiColugaPathToSave>&lt;No path set&gt;</pakettiColugaPathToSave>
+    <pakettiColugaPathToSave>/Users/esaruoho/Music/samples/colugatest/ColugaSampleSave/</pakettiColugaPathToSave>
     <pakettiColugaLoopMode>2</pakettiColugaLoopMode>
-    <pakettiColugaOutputDirectory>Set this yourself, please.</pakettiColugaOutputDirectory>
+    <pakettiColugaOutputDirectory>/Users/esaruoho/Music/samples/colugatest/</pakettiColugaOutputDirectory>
     <pakettiColugaClipLength>10</pakettiColugaClipLength>
     <pakettiColugaFormatToSave>1.0</pakettiColugaFormatToSave>
     <pakettiColugaLoadWholeVideo>true</pakettiColugaLoadWholeVideo>
@@ -74,29 +137,38 @@
   <pakettiThemeSelector>
     <FavoritedList>
       <Favorited>&lt;No Theme Selected&gt;</Favorited>
-      <Favorited>194. hlv_autumn.xrnc</Favorited>
-      <Favorited>018. Academic.xrnc</Favorited>
-      <Favorited>158. fladd_CM2.xrnc</Favorited>
-      <Favorited>286. Mono Blue (dblue).xrnc</Favorited>
+      <Favorited>kytdkut - base16 atelier cave</Favorited>
+      <Favorited>Pro Master 9000 (gj)</Favorited>
+      <Favorited>Architect Inverted</Favorited>
+      <Favorited>Little Phatty Theme</Favorited>
+      <Favorited>ulneiz_graycream</Favorited>
+      <Favorited>phase_plant</Favorited>
+      <Favorited>small_hours_r</Favorited>
+      <Favorited>Default</Favorited>
+      <Favorited>Pico-8 Dusty Chocolate</Favorited>
+      <Favorited>Academic</Favorited>
     </FavoritedList>
-    <RenoiseLaunchFavoritesLoad>false</RenoiseLaunchFavoritesLoad>
-    <PreviousSelectedTheme>020. Achenar_CityLights</PreviousSelectedTheme>
+    <RenoiseLaunchFavoritesLoad>true</RenoiseLaunchFavoritesLoad>
+    <PreviousSelectedTheme>Academic</PreviousSelectedTheme>
   </pakettiThemeSelector>
-  <pakettiPitchbendLoaderEnvelope>true</pakettiPitchbendLoaderEnvelope>
-  <renderSampleRate>88200</renderSampleRate>
+  <pakettiLoaderNNA>2</pakettiLoaderNNA>
+  <pakettiLoaderLoopExit>false</pakettiLoaderLoopExit>
+  <renderBypass>false</renderBypass>
+  <pakettiPitchbendLoaderEnvelope>false</pakettiPitchbendLoaderEnvelope>
+  <pakettiLoaderAutoseek>false</pakettiLoaderAutoseek>
   <AppSelection>
-    <SmartFoldersApp3>/Users/esaruoho/Music/samples/RenoiseAppSelectionBackupFolder/</SmartFoldersApp3>
+    <SmartFoldersApp3>/Users/esaruoho/Music/rMBP_2024_01_27 samples/_drums/</SmartFoldersApp3>
     <AppSelection1>/Applications/Audacity.app</AppSelection1>
-    <AppSelection6>/Applications/Kaleidoscope.app</AppSelection6>
+    <AppSelection6>/Applications/Firefox.app</AppSelection6>
     <SmartFoldersApp1>/Users/esaruoho/Music/samples/LiveSmartFolder/</SmartFoldersApp1>
     <SmartFoldersApp2>/Users/esaruoho/Music/samples/LogicSmartFolder/</SmartFoldersApp2>
-    <AppSelection3>/Applications/Ableton Live 12 Suite.app</AppSelection3>
+    <AppSelection3>/Applications/Logic Pro X.app</AppSelection3>
     <AppSelection5>/System/Applications/Music.app</AppSelection5>
     <AppSelection4>/Applications/Cog.app</AppSelection4>
-    <AppSelection2>/Applications/Logic Pro X.app</AppSelection2>
+    <AppSelection2>/Applications/Ableton Live 12 Suite.app</AppSelection2>
   </AppSelection>
   <pakettiLoaderAutoFade>true</pakettiLoaderAutoFade>
-  <pakettiLoaderInterpolation>4</pakettiLoaderInterpolation>
-  <_0G01_Loader>false</_0G01_Loader>
   <renderBitDepth>32</renderBitDepth>
+  <_0G01_Loader>false</_0G01_Loader>
+  <PakettiStripSilenceThreshold>0.0121</PakettiStripSilenceThreshold>
 </ScriptingToolPreferences>

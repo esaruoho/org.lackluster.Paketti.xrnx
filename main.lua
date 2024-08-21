@@ -1,11 +1,14 @@
 require "Paketti0G01_Loader"
+require "PakettiKeyBindings"
 require "PakettiThemeSelector"
-require "eSpeak/PakettieSpeak"
+require "PakettieSpeak"
 require "base64float"
 local rx = require 'rx'
 require "PakettiAutomation"
 
 require "PakettiControls"
+require "PakettiDeviceChains"
+require "PakettiGater"
 require "PakettiImpulseTracker"
 require "PakettiInstrumentBox"
 require "PakettiLoaders"
@@ -31,7 +34,6 @@ require "Coluga/PakettiColuga"
 -- Or post a feature on https://github.com/esaruoho/org.lackluster.Paketti.xrnx/issues/new
 require "PakettiRequests"
 
-
 ------------------------------------------------
 -- Autoexec.bat
 -- everytime a new Renoise song is created, run this
@@ -48,37 +50,28 @@ local selected_theme_index = nil
 local function pakettiThemeSelectorRenoiseStartFavorites()
   if #preferences.pakettiThemeSelector.FavoritedList <= 1 then
     renoise.app():show_status("You currently have no Favorite Themes set.")
-    print("Debug: No Favorite Themes set.")
     return
   end
   if #preferences.pakettiThemeSelector.FavoritedList == 2 then
     renoise.app():show_status("You only have 1 favorite, cannot randomize.")
-    print("Debug: Only one favorite, cannot randomize.")
     return
   end
 
-  print("Debug: Starting theme randomization process.")
   local current_index = math.random(2, #preferences.pakettiThemeSelector.FavoritedList)
   local random_theme = preferences.pakettiThemeSelector.FavoritedList[current_index]
   print("Randomized Favorite: " .. tostring(random_theme))
 
   local cleaned_theme_name = tostring(random_theme):match(".*%. (.+)") or tostring(random_theme)
-  print("Debug: Cleaned theme name: " .. cleaned_theme_name)
-
   selected_theme_index = table.find(themes, cleaned_theme_name)
-  print("Debug: Selected theme index: " .. tostring(selected_theme_index))
 
   if selected_theme_index then
     local filename = themes[selected_theme_index]
-    print("Debug: Found theme filename: " .. filename)
 
     local full_path = themes_path .. filename
-    print("Loading theme: " .. full_path)
     renoise.app():load_theme(full_path)
     renoise.app():show_status("Randomized a theme out of your favorite list.")
   else
     renoise.app():show_status("Selected theme not found.")
-    print("Debug: Selected theme not found.")
   end
 end
 
@@ -90,13 +83,12 @@ function startup()
       s.sequencer.keep_sequence_sorted=false
       t.groove_enabled=true
         if preferences.pakettiThemeSelector.RenoiseLaunchFavoritesLoad.value then
-    print("Debug: Notifier triggered.")
     pakettiThemeSelectorRenoiseStartFavorites()
   else
     print("Debug: RenoiseLaunchFavoritesLoad is false.")
   end
-      
-      renoise.app():show_status("There was a save and the Startup Notifier ran.")
+       shuffle_oblique_strategies()
+--      renoise.app():show_status("There was a save and the Startup Notifier ran.")
 end
 
 if not renoise.tool().app_new_document_observable:has_notifier(startup)   

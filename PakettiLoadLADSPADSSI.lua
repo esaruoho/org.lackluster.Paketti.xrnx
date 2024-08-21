@@ -8,7 +8,7 @@ function LADSPADSSIAddAsShortcut()
   for _, cb_info in ipairs(checkboxes) do
     if cb_info.checkbox.value then
       local keyBindingName = "Global:Track Devices:Load Device (LADSPA/DSSI) "..cb_info.name
-      local midiMappingName = "Tools:Track Devices:Load Device (LADSPA/DSSI) "..cb_info.name
+      local midiMappingName = "Track Devices:Paketti:Load Device (LADSPA/DSSI) "..cb_info.name
 
       if not addedKeyBindings[keyBindingName] then
         print("Adding shortcut for: "..cb_info.name)
@@ -207,7 +207,7 @@ function LADSPADSSIShowPluginListDialog()
       }
     },
     vb:button{
-      text="Add Device(s) as Shortcut(s)",
+      text="Add Device(s) as Shortcut(s) & MidiMappings",
       height=button_height,
       notifier=LADSPADSSIAddAsShortcut
     },
@@ -218,6 +218,14 @@ function LADSPADSSIShowPluginListDialog()
         LADSPADSSIRandomizeSelection()
       end
     },
+            vb:button { text="Select All",
+        height=button_height,
+        notifier=function()
+        
+    for _, cb_info in ipairs(checkboxes) do
+        cb_info.checkbox.value = true
+    end
+end},
     vb:button{
       text="Reset Selection",
       height=button_height,

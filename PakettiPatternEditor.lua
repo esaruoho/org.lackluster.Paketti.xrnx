@@ -86,10 +86,10 @@ function delayInput(chg)
  --end
 end
 
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Increase Delay (+1)",invoke=function() delayInput(1) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Decrease Delay (-1)",invoke=function() delayInput(-1) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Increase Delay (+10)",invoke=function() delayInput(10) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Decrease Delay (-10)",invoke=function() delayInput(-10) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Delay Column Increase (+1)",invoke=function() delayInput(1) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Delay Column Decrease (-1)",invoke=function() delayInput(-1) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Delay Column Increase (+10)",invoke=function() delayInput(10) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Delay Column Decrease (-10)",invoke=function() delayInput(-10) end}
 
 ----
 --Quantize +1 / -1
@@ -397,8 +397,8 @@ renoise.tool():add_keybinding{name="Global:Paketti:Computer Keyboard Velocity (+
 --BPM +1 / -1 / +0.1 / -0.1 (2024 update)
 function adjust_bpm(bpm_delta)
   local t = renoise.song().transport
-  t.bpm = math.max(32, math.min(999, t.bpm + bpm_delta))
-renoise.app():show_status("BPM : " .. t.bpm)
+  t.bpm = math.max(20, math.min(999, t.bpm + bpm_delta))
+renoise.app():show_status("BPM: " .. t.bpm)
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:BPM Decrease (-1)",invoke=function() adjust_bpm(-1, 0) end}
@@ -464,10 +464,10 @@ function pakettiPatternDoubler()
 
     -- Adjust the selected line index
     song.selected_line_index = current_line + old_patternlength
-    print("Pattern doubled successfully.")
+    renoise.app():show_status("Pattern doubled successfully.")
   else
     -- Print a message if the new pattern length exceeds the limit
-    print("New pattern length exceeds " .. renoise.Pattern.MAX_NUMBER_OF_LINES .. " lines, operation cancelled.")
+    renoise.app():show_status("New pattern length exceeds " .. renoise.Pattern.MAX_NUMBER_OF_LINES .. " lines, operation cancelled.")
   end
 end
 
@@ -573,7 +573,7 @@ local randombpm = {80, 100, 115, 123, 128, 132, 135, 138, 160}
     end
 end
 
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti..:Renoise Random BPM & Write BPM/LPB to Master",
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Renoise Random BPM & Write BPM/LPB to Master",
     invoke = function()
         local randombpm = {80, 100, 115, 123, 128, 132, 135, 138, 160}
         math.randomseed(os.time())
@@ -1311,7 +1311,8 @@ renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Effect Column B00 Rev
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Effect Columns..:B00 Reverse Sample Effect On/Off",invoke=function() effectColumnB00()end}
 
 
-renoise.tool():add_midi_mapping{name="Pattern Editor:Paketti:Effect Column B00 Reverse Sample Effect On/Off",invoke=function() 
+renoise.tool():add_midi_mapping{name="Paketti:Effect Column B00 Reverse Sample Effect On/Off",invoke=function() 
+renoise.app().window.active_middle_frame=1
 renoise.song().selected_effect_column_index=1
 revnote() 
 if renoise.song().selected_track.type==2 or renoise.song().selected_track.type==3 or renoise.song().selected_track.type==4 then return
@@ -1320,7 +1321,9 @@ else renoise.song().selected_note_column_index=1 end end}
 function displayEffectColumn(number) local rs=renoise.song() rs.tracks[rs.selected_track_index].visible_effect_columns=number end
 
 for dec=1,8 do
-  renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Display Effect Column " .. dec,invoke=function() displayEffectColumn(dec) end}
+  renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Display Effect Column " .. dec,invoke=function() 
+  renoise.app().window.active_middle_frame=1
+  displayEffectColumn(dec) end}
 end
 -- Display user-specific amount of note columns or effect columns:
 function displayNoteColumn(number) local rs=renoise.song() if rs.tracks[rs.selected_track_index].visible_note_columns == 0 then return else rs.tracks[rs.selected_track_index].visible_note_columns=number end end
@@ -1515,9 +1518,7 @@ renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Select Effect Column 
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Select Effect Column (Next)", invoke=function() nextEffectColumn() end}
 
 
-
---------------------------------------------------------------------------------------------------------------------------------------------------------
-renoise.tool():add_keybinding{name="Global:Paketti:Clone and Expand Pattern to LPB*2",invoke=function()
+function cloneAndExpandPatternToLPBDouble()
 local number=nil
 local numbertwo=nil
 local rs=renoise.song()
@@ -1545,9 +1546,17 @@ renoise.song().transport.lpb=number
   MarkTrackMarkPattern()
   ExpandSelection()
   Deselect_All()
+
+
+end
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------
+renoise.tool():add_keybinding{name="Global:Paketti:Clone and Expand Pattern to LPB*2",invoke=function() cloneAndExpandPatternToLPBDouble()
 end}
 
-renoise.tool():add_keybinding{name="Global:Paketti:Clone and Shrink Pattern to LPB/2",invoke=function()
+
+function cloneAndShrinkPatternToLPBHalve()
 local number=nil
 local numbertwo=nil
 local rs=renoise.song()
@@ -1570,6 +1579,11 @@ renoise.song().transport.lpb=number
 return end
 renoise.song().transport.lpb=number
   write_bpm()
+end
+
+
+renoise.tool():add_keybinding{name="Global:Paketti:Clone and Shrink Pattern to LPB/2",invoke=function()
+cloneAndShrinkPatternToLPBHalve()
 end}
 -----------------
 
@@ -1676,22 +1690,47 @@ nc.panning_value = pan
 end
 
 function columnspart2(chg,thing)
-local columns = {[4] = renoise.song().selected_effect_column.number_value,
-                 [5] = renoise.song().selected_effect_column.amount_value}
+    local song = renoise.song()
+local effect_column_index
+    -- Handle nil for selected_effect_column_index, default to 1
 
- local nc = renoise.song().selected_note_column
- local nci = renoise.song().selected_note_column_index
-
- local currPatt = renoise.song().selected_pattern_index
- local currTrak = renoise.song().selected_track_index
- local currLine = renoise.song().selected_line_index
-
-if thing == 4 then --effect number column
- renoise.song().patterns[currPatt].tracks[currTrak].lines[currLine].effect_columns[1].number_value = math.max(0, math.min(255, columns[thing] + chg)) 
-elseif thing == 5 then --effect amount column
- renoise.song().patterns[currPatt].tracks[currTrak].lines[currLine].effect_columns[1].amount_value = math.max(0, math.min(255, columns[thing] + chg)) 
-else end
+if renoise.song().selected_effect_column_index == nil or renoise.song().selected_effect_column_index == 0 then
+effect_column_index = 1
+else 
+effect_column_index = song.selected_effect_column_index
 end
+
+    local currPatt = song.selected_pattern_index
+    local currTrak = song.selected_track_index
+    local currLine = song.selected_line_index
+    local track = song.patterns[currPatt].tracks[currTrak]
+    
+    -- Ensure the effect column exists
+    if effect_column_index > renoise.song().tracks[currTrak].visible_effect_columns then
+        renoise.app():show_status("Effect column index out of range")
+        return
+    end
+    
+    local effect_column = track.lines[currLine].effect_columns[effect_column_index]
+    if not effect_column then
+        renoise.app():show_status("No effect column available at index " .. tostring(effect_column_index))
+        return
+    end
+
+    -- Fetch the current values for the selected effect column
+    local columns = {
+        [4] = effect_column.number_value,
+        [5] = effect_column.amount_value
+    }
+
+    -- Adjust the values based on the `thing` parameter
+    if thing == 4 then
+        effect_column.number_value = math.max(0, math.min(255, columns[thing] + chg))
+    elseif thing == 5 then
+        effect_column.amount_value = math.max(0, math.min(255, columns[thing] + chg))
+    end
+end
+
 
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Increase Delay (+1)",invoke=function() columns(1,1) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Increase Delay (+10)",invoke=function() columns(10,1) end}
@@ -1724,91 +1763,93 @@ renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Columnizer Decrease E
 
 --------
 -- Global variables to store the last track index and color
-last_track_index = nil
-last_track_color = nil
-track_notifier_added = false -- Flag to track if the notifier was added
+lastTrackIndex=nil
+lastTrackColor=nil
+trackNotifierAdded=false -- Flag to track if the notifier was added
 
 -- Function to set color blend for all tracks
-function set_all_tracks_color_blend(value)
-  for i = 1, #renoise.song().tracks do
-    renoise.song().tracks[i].color_blend = value
+function pakettiEditModeSignalerSetAllTracksColorBlend(value)
+  for i=1,#renoise.song().tracks do
+    renoise.song().tracks[i].color_blend=value
   end
 end
 
 -- Function to set color blend for a specific track
-function set_track_color_blend(index, value)
-  renoise.song().tracks[index].color_blend = value
+function pakettiEditModeSignalerSetTrackColorBlend(index,value)
+  renoise.song().tracks[index].color_blend=value
 end
 
 -- Function to handle edit mode enabled
-function on_edit_mode_enabled()
-  local song = renoise.song()
-  local selected_track_index = song.selected_track_index
+function pakettiEditModeSignalerOnEditModeEnabled()
+  local song=renoise.song()
+  local selectedTrackIndex=song.selected_track_index
 
-  last_track_index = selected_track_index
-  last_track_color = song.tracks[selected_track_index].color_blend
+  lastTrackIndex=selectedTrackIndex
+  lastTrackColor=song.tracks[selectedTrackIndex].color_blend
 
-  local pakettiEditMode = preferences.pakettiEditMode.value
+  local pakettiEditMode=preferences.pakettiEditMode.value
 
-  if pakettiEditMode == 3 then
-    set_all_tracks_color_blend(40)
-  elseif pakettiEditMode == 2 then
-    set_track_color_blend(selected_track_index, 40)
+  if pakettiEditMode==3 then
+    pakettiEditModeSignalerSetAllTracksColorBlend(40)
+  elseif pakettiEditMode==2 then
+    pakettiEditModeSignalerSetTrackColorBlend(selectedTrackIndex,40)
   end
 
   -- Add selected track index notifier if not already added
-  if not track_notifier_added then
-    song.selected_track_index_observable:add_notifier(track_index_notifier)
-    track_notifier_added = true
+  if not trackNotifierAdded then
+    song.selected_track_index_observable:add_notifier(pakettiEditModeSignalerTrackIndexNotifier)
+    trackNotifierAdded=true
   end
 end
 
 -- Function to handle edit mode disabled
-function on_edit_mode_disabled()
-  local song = renoise.song()
-  local pakettiEditMode = preferences.pakettiEditMode.value
+function pakettiEditModeSignalerOnEditModeDisabled()
+  local song=renoise.song()
+  local pakettiEditMode=preferences.pakettiEditMode.value
 
-  if last_track_index and pakettiEditMode ~= 1 then
-    set_track_color_blend(last_track_index, last_track_color)
+  if lastTrackIndex and pakettiEditMode~=1 then
+    pakettiEditModeSignalerSetTrackColorBlend(lastTrackIndex,lastTrackColor)
   end
 
   -- Set all tracks' color blend to 0
-  set_all_tracks_color_blend(0)
+  pakettiEditModeSignalerSetAllTracksColorBlend(0)
 
   -- Remove selected track index notifier if it was added
-  if track_notifier_added then
-    song.selected_track_index_observable:remove_notifier(track_index_notifier)
-    track_notifier_added = false
+  if trackNotifierAdded then
+    pcall(function()
+      song.selected_track_index_observable:remove_notifier(pakettiEditModeSignalerTrackIndexNotifier)
+    end)
+    trackNotifierAdded=false
   end
 end
 
 -- Notifier for edit mode change
-function edit_mode_notifier()
-  local transport = renoise.song().transport
+function pakettiEditModeSignalerEditModeNotifier()
+  local transport=renoise.song().transport
   if transport.edit_mode then
-    on_edit_mode_enabled()
+    pakettiEditModeSignalerOnEditModeEnabled()
   else
-    on_edit_mode_disabled()
+    pakettiEditModeSignalerOnEditModeDisabled()
   end
 end
 
 -- Notifier for track selection change
-function track_index_notifier()
-  local song = renoise.song()
-  local selected_track_index = song.selected_track_index
-  local pakettiEditMode = preferences.pakettiEditMode.value
+function pakettiEditModeSignalerTrackIndexNotifier()
+  local song=renoise.song()
+  local selectedTrackIndex=song.selected_track_index
+  local pakettiEditMode=preferences.pakettiEditMode.value
 
   if song.transport.edit_mode then
-    if pakettiEditMode == 3 then
-      set_all_tracks_color_blend(40)
+    if pakettiEditMode==3 then
+      pakettiEditModeSignalerSetAllTracksColorBlend(40)
     else
-      if last_track_index and last_track_index ~= selected_track_index and pakettiEditMode ~= 1 then
-        set_track_color_blend(last_track_index, last_track_color)
+      if lastTrackIndex and lastTrackIndex~=selectedTrackIndex and pakettiEditMode~=1 then
+        pakettiEditModeSignalerSetTrackColorBlend(lastTrackIndex,lastTrackColor)
       end
-      last_track_index = selected_track_index
-      last_track_color = song.tracks[selected_track_index].color_blend
-      if pakettiEditMode == 2 then
-        set_track_color_blend(selected_track_index, 40)
+      lastTrackIndex=selectedTrackIndex
+      lastTrackColor=song.tracks[selectedTrackIndex].color_blend
+      if pakettiEditMode==2 then
+        pakettiEditModeSignalerSetTrackColorBlend(selectedTrackIndex,40)
       end
     end
   end
@@ -1816,18 +1857,19 @@ end
 
 -- Add notifiers for edit mode change and initial track selection
 renoise.tool().app_new_document_observable:add_notifier(function()
-  local song = renoise.song()
-  song.transport.edit_mode_observable:add_notifier(edit_mode_notifier)
-  edit_mode_notifier() -- Call once to ensure the state is consistent
+  local song=renoise.song()
+  song.transport.edit_mode_observable:add_notifier(pakettiEditModeSignalerEditModeNotifier)
+  pakettiEditModeSignalerEditModeNotifier() -- Call once to ensure the state is consistent
 end)
 
 -- Keybinding and MIDI mapping
 function recordTint()
-  renoise.song().transport.edit_mode = not renoise.song().transport.edit_mode
+  renoise.song().transport.edit_mode=not renoise.song().transport.edit_mode
 end
 
-renoise.tool():add_keybinding{name="Global:Tools:Toggle Edit Mode and Tint Track",invoke=recordTint}
-renoise.tool():add_midi_mapping{name="Global:Tools:Toggle Edit Mode and Tint Track",invoke=recordTint}
+renoise.tool():add_keybinding{name="Global:Paketti:Toggle Edit Mode and Tint Track",invoke=recordTint}
+renoise.tool():add_midi_mapping{name="Paketti:Toggle Edit Mode and Tint Track",invoke=recordTint}
+
 
 ------------------
 function pakettiDuplicateEffectColumnToPatternOrSelection()
@@ -1872,20 +1914,12 @@ end
 
 -- Add a menu entry to trigger the function
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Duplicate Effect Column Content to Pattern or Selection",invoke=pakettiDuplicateEffectColumnToPatternOrSelection}
-
--- Add a keybinding to trigger the function
 renoise.tool():add_keybinding{name="Global:Paketti:Duplicate Effect Column Content to Pattern or Selection",invoke=pakettiDuplicateEffectColumnToPatternOrSelection}
-
--- Add a MIDI mapping to trigger the function
 renoise.tool():add_midi_mapping{name="Paketti:Duplicate Effect Column Content to Pattern or Selection",invoke=pakettiDuplicateEffectColumnToPatternOrSelection}
-
--- Add a menu entry to the Pattern Editor context menu
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Duplicate Effect Column Content to Pattern or Selection",invoke=pakettiDuplicateEffectColumnToPatternOrSelection}
 
 
 ------------
--- Take a deep breath. Let's start.
-
 -- Function to randomize effect column parameters
 function pakettiRandomizeEffectColumnParameters()
   -- Obtain the currently selected song and pattern
@@ -2195,6 +2229,152 @@ renoise.tool():add_midi_mapping{name="Paketti:Flood Fill Note and Instrument wit
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Flood Fill Note and Instrument with EditStep",invoke=pakettiFloodFillWithEditStep}
 
 
+--------------------
+-- Function to Flood Fill the track with the current note and instrument with an edit step
+function pakettiFloodFillWithNotReallyEditStep(notstep)
+  -- Obtain the currently selected song and pattern
+  local song = renoise.song()
+  local pattern_index = song.selected_pattern_index
+  local pattern = song.patterns[pattern_index]
+
+  -- Obtain the current track and line index
+  local track_index = song.selected_track_index
+  local line_index = song.selected_line_index
+
+  -- Obtain the current edit step
+  local edit_step = notstep
+
+  -- Obtain the current note column index
+  local note_column_index = song.selected_note_column_index
+
+  -- Get the selection in the pattern
+  local selection = song.selection_in_pattern
+  local start_line, end_line, start_track, end_track, start_column, end_column
+
+  if selection then
+    -- There is a selection, use the selection range
+    start_line = selection.start_line
+    end_line = selection.end_line
+    start_track = selection.start_track
+    end_track = selection.end_track
+    start_column = selection.start_column
+    end_column = selection.end_column
+  else
+    -- No selection, use from the current row onwards in the current track and note column
+    start_line = line_index
+    end_line = pattern.number_of_lines
+    start_track = track_index
+    end_track = track_index
+    start_column = note_column_index
+    end_column = note_column_index
+  end
+
+  -- Check if the edit step is larger than the number of lines in the pattern
+  if notstep > (end_line - start_line + 1) then
+    renoise.app():show_status("Did not apply Flood Fill with EditStep because EditStep is larger than Amount of Lines in Pattern")
+    return
+  end
+
+  local found_note = false
+  local note_values = {}
+  local instrument_values = {}
+  local clear_columns = {}
+
+  -- Read the current row's note and instrument values for each track and column in the selection
+  for track_idx = start_track, end_track do
+    local track = song:track(track_idx)
+    if track.type ~= renoise.Track.TRACK_TYPE_GROUP and track.type ~= renoise.Track.TRACK_TYPE_SEND and track.type ~= renoise.Track.TRACK_TYPE_MASTER then
+      note_values[track_idx] = {}
+      instrument_values[track_idx] = {}
+      clear_columns[track_idx] = {}
+      local first_column = (track_idx == start_track) and start_column or 1
+      local last_column = (track_idx == end_track) and end_column or track.visible_note_columns
+      for column_index = first_column, last_column do
+        local current_note_column = song:pattern(pattern_index):track(track_idx):line(line_index).note_columns[column_index]
+        if current_note_column and not current_note_column.is_empty then
+          note_values[track_idx][column_index] = current_note_column.note_value
+          instrument_values[track_idx][column_index] = current_note_column.instrument_value
+          clear_columns[track_idx][column_index] = true
+          found_note = true
+          -- Debug message to track the note and instrument values
+          print(string.format("Read note %d and instrument %d from Track %d, Column %d", current_note_column.note_value, current_note_column.instrument_value, track_idx, column_index))
+        elseif current_note_column then
+          clear_columns[track_idx][column_index] = false
+        end
+      end
+    end
+  end
+
+  if not found_note then
+    renoise.app():show_status("There was nothing to Flood Fill with EditStep with.")
+    return
+  end
+
+  -- Clear all selected note columns except the current row (or start line if selection exists)
+  for track_idx = start_track, end_track do
+    local track = song:track(track_idx)
+    if track.type ~= renoise.Track.TRACK_TYPE_GROUP and track.type ~= renoise.Track.TRACK_TYPE_SEND and track.type ~= renoise.Track.TRACK_TYPE_MASTER then
+      local first_column = (track_idx == start_track) and start_column or 1
+      local last_column = (track_idx == end_track) and end_column or track.visible_note_columns
+      for column_index = first_column, last_column do
+        if clear_columns[track_idx][column_index] then
+          for i = start_line, end_line do
+            if selection then
+              if i ~= start_line then
+                local line = song:pattern(pattern_index):track(track_idx):line(i)
+                local note_column = line.note_columns[column_index]
+                note_column:clear()
+              end
+            else
+              if i ~= line_index then
+                local line = song:pattern(pattern_index):track(track_idx):line(i)
+                local note_column = line.note_columns[column_index]
+                note_column:clear()
+              end
+            end
+          end
+          -- Debug message to track the clearing of rows
+          print(string.format("Cleared Track %d, Column %d from Row %d to Row %d", track_idx, column_index, start_line, end_line))
+        end
+      end
+    end
+  end
+
+  -- Apply Flood Fill with edit step
+  for track_idx = start_track, end_track do
+    local track = song:track(track_idx)
+    if track.type ~= renoise.Track.TRACK_TYPE_GROUP and track.type ~= renoise.Track.TRACK_TYPE_SEND and track.type ~= renoise.Track.TRACK_TYPE_MASTER then
+      local first_column = (track_idx == start_track) and start_column or 1
+      local last_column = (track_idx == end_track) and end_column or track.visible_note_columns
+      for column_index = first_column, last_column do
+        if note_values[track_idx][column_index] then
+          local note_value = note_values[track_idx][column_index]
+          local instrument_value = instrument_values[track_idx][column_index]
+
+          -- Debug message to track the note and instrument values being applied
+          print(string.format("Applying Flood Fill to Selection In Pattern, with EditStep %d to Track %d, Column %d using note %d and instrument %d", edit_step, track_idx, column_index, note_value, instrument_value))
+
+          for i = start_line, end_line do
+            if edit_step == 0 or (i - start_line) % edit_step == 0 then
+              local line = song:pattern(pattern_index):track(track_idx):line(i)
+              local note_column = line.note_columns[column_index]
+              note_column.note_value = note_value
+              note_column.instrument_value = instrument_value
+            end
+          end
+        end
+      end
+    end
+  end
+
+  -- Inform the user that the operation was successful
+  renoise.app():show_status("Track / Selection filled with the Current Note and Instrument every " .. notstep .. " step(s).")
+end
+
+
+for i=1,64 do
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Flood Fill Note and Instrument every " .. i .. " step",invoke=function() pakettiFloodFillWithNotReallyEditStep(i) end}
+end
 
 
 
@@ -2317,11 +2497,10 @@ function ShowRenameDialogForTrack(index)
   dialog = renoise.app():show_custom_dialog("Paketti Track Renamer", dialog_content, key_handler)
 end
 
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Paketti Track Renamer",invoke=PakettiTrackRenamerDialog}
-renoise.tool():add_keybinding{name="Mixer:Paketti:Paketti Track Renamer",invoke=PakettiTrackRenamerDialog}
-renoise.tool():add_keybinding{name="Pattern Matrix:Paketti:Paketti Track Renamer",invoke=PakettiTrackRenamerDialog}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Paketti Track Renamer",invoke=PakettiTrackRenamerDialog}
-renoise.tool():add_midi_mapping{name="Tools:Paketti Track Renamer",invoke=PakettiTrackRenamerDialog}
+renoise.tool():add_keybinding{name="Mixer:Paketti:Paketti Track Renamer Dialog...",invoke=PakettiTrackRenamerDialog}
+renoise.tool():add_keybinding{name="Pattern Matrix:Paketti:Paketti Track Renamer Dialog...",invoke=PakettiTrackRenamerDialog}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Paketti Track Renamer Dialog...",invoke=PakettiTrackRenamerDialog}
+renoise.tool():add_midi_mapping{name="Paketti:Paketti Track Renamer",invoke=PakettiTrackRenamerDialog}
 
 -----
 function effectbypasspattern()
