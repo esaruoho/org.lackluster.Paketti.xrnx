@@ -449,12 +449,17 @@ local function pakettiThemeSelectorDialogOpen(vb)
 end
 
 function pakettiThemeSelectorDialogShow()
-  if custom_dialog and custom_dialog.visible then
-    return -- Prevent opening the dialog multiple times
-  end
   local vb = renoise.ViewBuilder()
+
+ if custom_dialog and custom_dialog.visible then
+    -- Step 2: If it's open, close it
+    custom_dialog:close()
+    custom_dialog = nil  -- Reset the dialog reference
+  else
+
   custom_dialog = renoise.app():show_custom_dialog("Paketti Theme Selector", pakettiThemeSelectorDialogOpen(vb), pakettiThemeSelectorUpdateKeyHandler)
   pakettiThemeSelectorUpdateFavoritesDropdown(vb)
+end
 end
 
 function pakettiThemeSelectorPickRandomThemeFromFavoritesNoGUI()

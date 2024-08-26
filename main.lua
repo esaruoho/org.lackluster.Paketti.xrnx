@@ -112,7 +112,7 @@ function startup()
   end
   end
   
-      -- shuffle_oblique_strategies()
+       shuffle_oblique_strategies()
 --      renoise.app():show_status("There was a save and the Startup Notifier ran.")
 end
 

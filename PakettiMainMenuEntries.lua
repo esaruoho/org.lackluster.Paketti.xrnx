@@ -7,11 +7,11 @@ local dialog_content=vb:column{
   vb:text{text="Thanks for the support / assistance:"},
   vb:multiline_textfield{width=textfield_width,height=60,text="There's probably tons more, but: dBlue, danoise, cortex, pandabot, ffx, Joule, Avaruus, astu/flo, syflom, Protman, vV, Bantai, taktik, Snowrobot, MXB, Jenoki, Kmaki, aleksip, Unless, martblek and the whole Renoise community."},
   vb:text{text="Ideas provided by:"},
-  vb:multiline_textfield{width=textfield_width,height=80,text="tkna, Nate Schmold, Casiino, Royal Sexton, Bovaflux, Xerxes, ViZiON, Satoi, Kaneel, Ilkae, MigloJE, Ghostwerk, Michael Langer, Christopher Jooste, Zoey Samples, Avaruus, Pieter Koenekoop, Widgetphreak, Bálint Magyar, Mick Rippon, MMD (Mr. Mark Dollin), ne7, renoize-user, Dionysis, untilde, Greystar, Kaidiak, sousândrade, Brandon Hale, dmt, Dávid Halmi (Nagz), tEiS and many others."},
+  vb:multiline_textfield{width=textfield_width,height=80,text="tkna, Nate Schmold, Casiino, Royal Sexton, Bovaflux, Xerxes, ViZiON, Satoi, Kaneel, Ilkae, MigloJE, Ghostwerk, Michael Langer, Christopher Jooste, Zoey Samples, Avaruus, Pieter Koenekoop, Widgetphreak, Bálint Magyar, Mick Rippon, MMD (Mr. Mark Dollin), ne7, renoize-user, Dionysis, untilde, Greystar, Kaidiak, sousândrade, Brandon Hale, dmt, Dávid Halmi (Nagz), tEiS, Floppi J, Aleksi Eeben and many others."},
   vb:text{text="Who made it possible:"},
   vb:multiline_textfield{width=textfield_width,height=60,text="Thanks to @lpn (Brothomstates) for suggesting that I could pick up and learn LUA, that it would not be beyond me. Really appreciate your (sometimes misplaced and ahead-of-time) faith in me. And thanks for the inspiration."},
   vb:text{text="Kudos:"},
-  vb:multiline_textfield{width=textfield_width,height=40,text="Massive kudos to martblek for allowing me to take his abandoned ReSpeak tool and make it into a Paketti ReSpeak Text-to-Speech, and also for smdkun for letting me tweak their KeyBind Visualizer code and incorporate it into Paketti further down the line."},
+vb:multiline_textfield{width=textfield_width,height=60,text="Massive kudos to martblek for allowing me to take his abandoned ReSpeak tool and make it into a Paketti ReSpeak Text-to-Speech, and also for smdkun for letting me tweak their KeyBind Visualizer code and incorporate it into Paketti further down the line."},
   vb:row{
     spacing=5,
     vb:button{text="Paketti GitHub",notifier=function() renoise.app():open_url("https://github.com/esaruoho/org.lackluster.Paketti.xrnx") end},
@@ -28,8 +28,15 @@ local dialog_content=vb:column{
   }
 }
 
+
+local dialog -- Declare the dialog variable outside the function
+
 function show_about_dialog()
-  renoise.app():show_custom_dialog("Paketti, written by Esa Juhani Ruoho (C) 2024", dialog_content)
+  if dialog and dialog.visible then
+    dialog:close() -- Close the dialog if it's open
+  else
+    dialog = renoise.app():show_custom_dialog("Paketti, written by Esa Juhani Ruoho (C) 2024", dialog_content)
+  end
 end
 
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:!!About..:Donate...",invoke=function() pakettiDonationsDialog() end}
@@ -38,11 +45,8 @@ renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:!!About..:About 
 
 
 
-
-
-
 local vb=renoise.ViewBuilder()
-local dialog
+local dialog -- This will hold the reference to the dialog
 local donations={
   {"2012-02-06","Nate Schmold",76.51,{"3030.ca","https://3030.ca"},{"Ghost Cartridge","https://ghostcartridge.com"},{"YouTube","https://YouTube.com/@3030-tv"}},
   {"2024-04-18","Casiino",17.98,{"Instagram","https://www.instagram.com/elcasiino/"}},
@@ -65,6 +69,13 @@ local function open_url(url)
 end
 
 function pakettiDonationsDialog()
+  -- Check if the dialog is already visible
+  if dialog and dialog.visible then
+    dialog:close()
+    dialog = nil
+    return
+  end
+  
   local dialog_content=vb:column{
     margin=20,
     vb:row{vb:text{text="Date",width=70},vb:text{text="Person",width=100},vb:text{text="Amount",width=50},vb:text{text="Links",width=100}}}
@@ -101,9 +112,10 @@ function pakettiDonationsDialog()
   dialog_content:add_child(vb:horizontal_aligner{mode="distribute",
     vb:button{text="OK",notifier=function()dialog:close()end},
     vb:button{text="Cancel",notifier=function()dialog:close()end}})
+
+  -- Show the dialog
   dialog=renoise.app():show_custom_dialog("Paketti Donations",dialog_content,my_keyhandler_func)
 end
-
 
 
 

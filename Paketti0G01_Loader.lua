@@ -13,7 +13,10 @@ local function my_keyhandler_func(dialog, key)
   end
 end
 
+
+
 local sample_rates = {22050, 44100, 48000, 88200, 96000, 192000}
+
 
 
 
@@ -80,6 +83,9 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
   pakettiLoaderLoopExit=false,
   selectionNewInstrumentSelect=false,
   selectionNewInstrumentLoop=2,
+  selectionNewInstrumentInterpolation=4,
+  selectionNewInstrumentAutoFade=true,
+  selectionNewInstrumentAutoseek=false,
   pakettiPitchbendLoaderEnvelope=false,
   pakettiSlideContentAutomationToo=true,
   pakettiDefaultXRNI="Presets/12st_Pitchbend.xrni",
@@ -112,11 +118,10 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
     SmartFoldersApp2="",
     SmartFoldersApp3=""
   },
--- changes made
   pakettiThemeSelector = {
     PreviousSelectedTheme = "",
     FavoritedList = { "<No Theme Selected>" }, -- Initialize as a simple table
-    RenoiseLaunchFavoritesLoad = true,
+    RenoiseLaunchFavoritesLoad = false,
     RenoiseLaunchRandomLoad = false
   },
   
@@ -135,6 +140,22 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
     clear_all_samples=true,
     render_on_change=false
   },
+
+  OctaMEDPickPutSlots = {
+  SetSelectedInstrument=false,
+  UseEditStep=false,
+  
+   Slot01="",
+   Slot02="",
+   Slot03="",
+   Slot04="",
+   Slot05="",
+   Slot06="",
+   Slot07="",
+   Slot08="",
+   Slot09="",
+   Slot10=""
+   },
 
 -- done
   -- Randomize Settings Segment
@@ -231,6 +252,16 @@ WipeSlices = renoise.tool().preferences.WipeSlices
 AppSelection = renoise.tool().preferences.AppSelection
 RandomizeSettings = renoise.tool().preferences.RandomizeSettings
 pakettiColuga = renoise.tool().preferences.pakettiColuga
+
+
+  local threshold_label = vb:text {
+    text = string.format("%.3f%%", preferences.PakettiStripSilenceThreshold.value * 100)
+  }
+
+  local begthreshold_label = vb:text {
+    text = string.format("%.3f%%", preferences.PakettiMoveSilenceThreshold.value * 100)
+  }
+
 
 
 local filter_types = {
@@ -345,11 +376,8 @@ local dialog_content = vb:column {
   vb:column {
     style="group",margin=10, width="100%",
     vb:row {
-         vb:button{text="About Paketti...", width=50, notifier=function() show_about_dialog() end},
-        vb:button{text="Donate", width=50, 
-        notifier=function() pakettiDonationsDialog() end},   
-    
-    
+      vb:button{text="About Paketti...", width=50, notifier=function() show_about_dialog() end},
+      vb:button{text="Donate", width=50, notifier=function() pakettiDonationsDialog() end},   
       vb:button{text="Theme Selector",width=upperbuttonwidth-100,notifier=function() pakettiThemeSelectorDialogShow() end},
       vb:button{text="Gater",width=upperbuttonwidth-150,notifier=function()
         local max_rows=nil
@@ -365,7 +393,6 @@ local dialog_content = vb:column {
       openCombinedRandomizerDialog() end},
       vb:button{text="Configure Launch App selection / Paths", width=50, notifier=function()
       show_app_selection_dialog() end},
-      
       vb:button{text="MIDI Populator",width=upperbuttonwidth-100,notifier=function() generaMIDISetupShowCustomDialog() end},
       vb:button{text="KeyBindings",width=upperbuttonwidth-100,notifier=function() showPakettiKeyBindingsDialog() end},
       vb:button{text="Midi Mappings",width=upperbuttonwidth-100,notifier=function() show_midi_mappings_dialog() end}
@@ -422,8 +449,24 @@ horizontal_rule(),
                     notifier = function(value)
                         preferences.selectionNewInstrumentSelect.value = (value == 2)
                     end}},
-            vb:row{vb:text{text = "Loop on Newly Created", width = 150},
-                create_loop_mode_switch(preferences.selectionNewInstrumentLoop)}},
+      vb:row { vb:text{text="Sample Interpolation",width=150},vb:switch{items={"None","Linear","Cubic","Sinc"},value=preferences.selectionNewInstrumentInterpolation.value,width=200,
+          notifier=function(value) 
+              preferences.selectionNewInstrumentInterpolation.value = value end}
+        },
+                vb:row{vb:text{text = "Loop on Newly Created", width = 150},
+                create_loop_mode_switch(preferences.selectionNewInstrumentLoop)},
+        vb:row { vb:text{text="Autoseek",width=150},vb:switch{items={"Off","On"},value=preferences.selectionNewInstrumentAutoseek.value and 2 or 1,width=200,
+          notifier=function(value) preferences.selectionNewInstrumentAutoseek.value=(value ==2) end}
+        },
+        vb:row { vb:text{text="AutoFade",width=150},vb:switch{items={"Off","On"},value=preferences.selectionNewInstrumentAutoFade.value and 2 or 1,width=200,
+          notifier=function(value) 
+          print ("Value is: " .. value)
+          preferences.selectionNewInstrumentAutoFade.value=(value==2) 
+          print (preferences.selectionNewInstrumentAutoFade.value)
+          end}
+        }},
+                
+         
 
 
       -- Render Settings wrapped in group
@@ -441,6 +484,44 @@ horizontal_rule(),
           notifier=function(value) preferences.renderBypass.value=(value==2) end}
         }
       },
+
+      -- Strip Silence / Move Beginning Silence to End wrapped in group
+      horizontal_rule(),
+      vb:column {
+        style="group",margin=10, width="100%",
+      
+        vb:text{style="strong",font="bold",text="Silence Settings"}, -- Applied bold and strong
+    vb:row {
+      vb:text {text = "Strip Silence Threshold:", width=150},
+      vb:minislider {
+        min = 0,
+        max = 1,
+        value = preferences.PakettiStripSilenceThreshold.value,
+        width = 200,
+        notifier = function(value)
+          threshold_label.text = string.format("%.3f%%", value * 100)
+          preferences.PakettiStripSilenceThreshold.value = value
+        end
+      },
+      threshold_label
+    },
+    vb:row {
+      vb:text {text = "Move Silence Threshold:", width=150},
+      vb:minislider {
+        min = 0,
+        max = 1,
+        value = preferences.PakettiMoveSilenceThreshold.value,
+        width = 200,
+        notifier = function(value)
+          threshold_label.text = string.format("%.3f%%", value * 100)
+          preferences.PakettiMoveSilenceThreshold.value = value
+        end
+      },
+      begthreshold_label
+        },
+      },
+
+
 
       -- Edit Mode Coloring wrapped in group
       horizontal_rule(),

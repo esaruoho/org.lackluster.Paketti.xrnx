@@ -235,8 +235,11 @@ renoise.song().instruments[renoise.song().selected_instrument_index].phrases[ren
 
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 001",invoke=function() ptnLength(1) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 004",invoke=function() ptnLength(4) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 006",invoke=function() ptnLength(6) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 008",invoke=function() ptnLength(8) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 012",invoke=function() ptnLength(12) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 016",invoke=function() ptnLength(16) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 024",invoke=function() ptnLength(24) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 032",invoke=function() ptnLength(32) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 048",invoke=function() ptnLength(48) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 064",invoke=function() ptnLength(64) end}
@@ -249,8 +252,11 @@ renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to
 
 renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 001",invoke=function() phrLength(1) end}
 renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 004",invoke=function() phrLength(4) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 006",invoke=function() phrLength(6) end}
 renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 008",invoke=function() phrLength(8) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 012",invoke=function() phrLength(12) end}
 renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 016",invoke=function() phrLength(16) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 024",invoke=function() phrLength(24) end}
 renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 032",invoke=function() phrLength(32) end}
 renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 048",invoke=function() phrLength(48) end}
 renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 064",invoke=function() phrLength(64) end}
@@ -263,8 +269,11 @@ renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 5
 
 renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 001",invoke=function() ptnLength(1) end}
 renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 004",invoke=function() ptnLength(4) end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 006",invoke=function() ptnLength(6) end}
 renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 008",invoke=function() ptnLength(8) end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 012",invoke=function() ptnLength(12) end}
 renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 016",invoke=function() ptnLength(16) end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 024",invoke=function() ptnLength(24) end}
 renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 032",invoke=function() ptnLength(32) end}
 renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 048",invoke=function() ptnLength(48) end}
 renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 064",invoke=function() ptnLength(64) end}
@@ -2557,4 +2566,13 @@ renoise.song().selected_track_index=#renoise.song().tracks
 end
 
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Select Last Track",invoke=function() patternEditorSelectedLastTrack() end}
+----------
+function wipeSelectedTrackTrackDSPs()
+
+    for i = #renoise.song().selected_track.devices, 2, -1 do
+      renoise.song().selected_track:delete_device_at(i)
+    end
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Wipe Selected Track TrackDSPs",invoke=function() wipeSelectedTrackTrackDSPs() end}
 

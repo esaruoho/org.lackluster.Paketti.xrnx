@@ -607,6 +607,8 @@ function create_new_instrument_from_selection()
   local selected_instrument_index = song.selected_instrument_index
   local selected_instrument = song.selected_instrument
 
+if renoise.song().selected_sample ~= nil then 
+
   if not selected_sample.sample_buffer.has_sample_data then
     renoise.app():show_error("No sample buffer data found in the selected sample.")
     print("Error: No sample buffer data found in the selected sample.")
@@ -713,22 +715,29 @@ function create_new_instrument_from_selection()
   if preferences.selectionNewInstrumentSelect.value == true then
     song.selected_instrument_index = new_instrument_index
     song.selected_sample_index = 1
-    renoise.song().instruments[renoise.song().selected_instrument_index].samples[1].interpolation_mode = preferences.pakettiLoaderInterpolation.value
+    renoise.song().instruments[renoise.song().selected_instrument_index].samples[1].interpolation_mode = preferences.selectionNewInstrumentInterpolation.value
     renoise.song().instruments[renoise.song().selected_instrument_index].samples[1].oversample_enabled = preferences.pakettiLoaderOverSampling.value
-    renoise.song().instruments[renoise.song().selected_instrument_index].samples[1].autofade = preferences.pakettiLoaderAutoFade.value
-        renoise.song().instruments[renoise.song().selected_instrument_index].samples[1].autoseek = preferences.pakettiLoaderAutoseek.value
-        renoise.song().instruments[renoise.song().selected_instrument_index].samples[1].oneshot = preferences.pakettiLoaderOneshot.value
-        
-        
-
-    
+    renoise.song().instruments[renoise.song().selected_instrument_index].samples[1].autofade = preferences.selectionNewInstrumentAutoFade.value
+    renoise.song().instruments[renoise.song().selected_instrument_index].samples[1].autoseek = preferences.selectionNewInstrumentAutoseek.value
+    renoise.song().instruments[renoise.song().selected_instrument_index].samples[1].oneshot = preferences.pakettiLoaderOneshot.value
     print("Selected the new instrument and sample.")
   else
+  local plusOne=renoise.song().selected_instrument_index+1
     song.selected_instrument_index = selected_instrument_index
+    renoise.song().instruments[new_instrument_index].samples[1].interpolation_mode=preferences.selectionNewInstrumentInterpolation.value
+    renoise.song().instruments[new_instrument_index].samples[1].oversample_enabled=preferences.pakettiLoaderOverSampling.value
+    renoise.song().instruments[new_instrument_index].samples[1].autofade=preferences.selectionNewInstrumentAutoFade.value
+    renoise.song().instruments[new_instrument_index].samples[1].autoseek=preferences.selectionNewInstrumentAutoseek.value
+    renoise.song().instruments[new_instrument_index].samples[1].oneshot=preferences.pakettiLoaderOneshot.value
     print("Stayed in the current sample editor view of the instrument you chopped out of.")
   end
 
   renoise.app():show_status("New instrument created from selection with " .. loop_mode_message .. ".")
+else
+renoise.app():show_status("There is no sample in the sample slot, doing nothing.")
+end
+
+
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Create New Instrument & Loop from Selection", invoke=create_new_instrument_from_selection}
@@ -1143,6 +1152,10 @@ renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Paketti Save Sele
 renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Paketti Save Selected Sample .FLAC",invoke=function() pakettiSaveSample("flac") end}
 renoise.tool():add_menu_entry{name="--Sample Editor:Paketti..:Paketti Save Selected Sample .WAV",invoke=function() pakettiSaveSample("wav") end}
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Paketti Save Selected Sample .FLAC",invoke=function() pakettiSaveSample("flac") end}
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Paketti Save Selected Sample Range .WAV",invoke=function() pakettiSaveSampleRange("wav") end}
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Paketti Save Selected Sample Range .FLAC",invoke=function() pakettiSaveSampleRange("flac") end}
+
+
 renoise.tool():add_menu_entry{name="--Sample Navigator:Paketti..:Paketti Save Selected Sample .WAV",invoke=function() pakettiSaveSample("wav") end}
 renoise.tool():add_menu_entry{name="Sample Navigator:Paketti..:Paketti Save Selected Sample .FLAC",invoke=function() pakettiSaveSample("flac") end}
 
@@ -2382,10 +2395,8 @@ end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Paketti Save Selected Sample Range .WAV",invoke=function() pakettiSaveSampleRange("wav") end}
 renoise.tool():add_keybinding{name="Global:Paketti:Paketti Save Selected Sample Range .FLAC",invoke=function() pakettiSaveSampleRange("flac") end}
-renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Paketti Save Selected Sample Range .WAV",invoke=function() pakettiSaveSampleRange("wav") end}
-renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Paketti Save Selected Sample Range .FLAC",invoke=function() pakettiSaveSampleRange("flac") end}
-renoise.tool():add_midi_mapping{name="Paketti:Save Sample Range .WAV",invoke=function(message) if message:is_trigger() then pakettiSaveSampleRange("wav") end end}
-renoise.tool():add_midi_mapping{name="Paketti:Save Sample Range .FLAC",invoke=function(message) if message:is_trigger() then pakettiSaveSampleRange("flac") end end}
+renoise.tool():add_midi_mapping{name="Paketti:Save Selected Sample Range .WAV",invoke=function(message) if message:is_trigger() then pakettiSaveSampleRange("wav") end end}
+renoise.tool():add_midi_mapping{name="Paketti:Save Selected Sample Range .FLAC",invoke=function(message) if message:is_trigger() then pakettiSaveSampleRange("flac") end end}
 
 
 ---
@@ -2574,4 +2585,18 @@ renoise.tool():add_keybinding{name="Sample Editor:Paketti:Rotate Sample Buffer C
   rotate_sample_buffer_forward(10000) end}
 renoise.tool():add_keybinding{name="Sample Editor:Paketti:Rotate Sample Buffer Content Backward [Set]",invoke=function()
   rotate_sample_buffer_backward(10000) end}
+---------
+function filterTypeRandom()
+
+if renoise.song().selected_instrument ~= nil then
+if renoise.song().selected_sample ~= nil then
+if renoise.song().selected_instrument.sample_modulation_sets ~= nil then
+local randomized=math.random(2, 22)
+renoise.song().instruments[renoise.song().selected_instrument_index].sample_modulation_sets[1].filter_type=renoise.song().instruments[renoise.song().selected_instrument_index].sample_modulation_sets[1].available_filter_types[randomized]
+end end
+end
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Randomize Selected Instrument Modulation Filter Type", invoke=function()
+filterTypeRandom() end}
 

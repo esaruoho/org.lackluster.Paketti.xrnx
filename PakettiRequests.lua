@@ -2646,66 +2646,82 @@ end
 
 -- Add menu entries for toggling column visibility
 
-function globalChangeVisibleColumnState(columnName)
+function globalChangeVisibleColumnState(columnName,toggle)
   for i=1, renoise.song().sequencer_track_count do
     if renoise.song().tracks[i].type == 1 and columnName == "delay" then
-      renoise.song().tracks[i].delay_column_visible = true
+      renoise.song().tracks[i].delay_column_visible = toggle
     elseif renoise.song().tracks[i].type == 1 and columnName == "volume" then
-      renoise.song().tracks[i].volume_column_visible = true
+      renoise.song().tracks[i].volume_column_visible = toggle
     elseif renoise.song().tracks[i].type == 1 and columnName == "panning" then
-      renoise.song().tracks[i].panning_column_visible = true
+      renoise.song().tracks[i].panning_column_visible = toggle
     elseif renoise.song().tracks[i].type == 1 and columnName == "sample_effects" then
-      renoise.song().tracks[i].sample_effects_column_visible = true
+      renoise.song().tracks[i].sample_effects_column_visible = toggle
     else
       renoise.app():show_status("Invalid column name: " .. columnName)
     end
   end
 end
 
-renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Visible Columns..:Global Visible Column (All)",invoke=function() globalChangeVisibleColumnState("volume")
-globalChangeVisibleColumnState("panning") globalChangeVisibleColumnState("delay") globalChangeVisibleColumnState("sample_effects") end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Visible Columns..:Global Visible Column (All)",invoke=function() globalChangeVisibleColumnState("volume",true)
+globalChangeVisibleColumnState("panning",true) globalChangeVisibleColumnState("delay",true) globalChangeVisibleColumnState("sample_effects",true) end}
+
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Visible Columns..:Global Visible Column (None)",invoke=function() globalChangeVisibleColumnState("volume",false)
+globalChangeVisibleColumnState("panning",false) globalChangeVisibleColumnState("delay",false) globalChangeVisibleColumnState("sample_effects",false) end}
+
 
 renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Visible Columns..:Toggle Visible Column (Volume) Globally",invoke=function() globalToggleVisibleColumnState("volume") end}
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Visible Columns..:Toggle Visible Column (Panning) Globally",invoke=function() globalToggleVisibleColumnState("panning") end}
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Visible Columns..:Toggle Visible Column (Delay) Globally",invoke=function() globalToggleVisibleColumnState("delay") end}
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Visible Columns..:Toggle Visible Column (Sample Effects) Globally",invoke=function() globalToggleVisibleColumnState("sample_effects") end}
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Visible Columns..:Global Visible Column (Volume)",invoke=function() globalChangeVisibleColumnState("volume") end}
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Visible Columns..:Global Visible Column (Panning)",invoke=function() globalChangeVisibleColumnState("panning") end}
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Visible Columns..:Global Visible Column (Delay)",invoke=function() globalChangeVisibleColumnState("delay") end}
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Visible Columns..:Global Visible Column (Sample Effects)",invoke=function() globalChangeVisibleColumnState("sample_effects") end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Visible Columns..:Global Visible Column (Volume)",invoke=function() globalChangeVisibleColumnState("volume",true) end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Visible Columns..:Global Visible Column (Panning)",invoke=function() globalChangeVisibleColumnState("panning",true) end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Visible Columns..:Global Visible Column (Delay)",invoke=function() globalChangeVisibleColumnState("delay",true) end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Visible Columns..:Global Visible Column (Sample Effects)",invoke=function() globalChangeVisibleColumnState("sample_effects",true) end}
 
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Global Visible Column (All)",invoke=function() globalChangeVisibleColumnState("volume")
-globalChangeVisibleColumnState("panning") globalChangeVisibleColumnState("delay") globalChangeVisibleColumnState("sample_effects") end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Global Visible Column (All)",invoke=function() globalChangeVisibleColumnState("volume",true)
+globalChangeVisibleColumnState("panning",true) globalChangeVisibleColumnState("delay",true) globalChangeVisibleColumnState("sample_effects",true) end}
+
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Global Visible Column (None)",invoke=function() globalChangeVisibleColumnState("volume",false)
+globalChangeVisibleColumnState("panning",false) globalChangeVisibleColumnState("delay",false) globalChangeVisibleColumnState("sample_effects",false) end}
+
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Global Toggle Visible Column (Volume)",invoke=function() globalToggleVisibleColumnState("volume") end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Global Toggle Visible Column (Panning)",invoke=function() globalToggleVisibleColumnState("panning") end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Global Toggle Visible Column (Delay)",invoke=function() globalToggleVisibleColumnState("delay") end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Global Toggle Visible Column (Sample Effects)",invoke=function() globalToggleVisibleColumnState("sample_effects") end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Global Set Visible Column (Volume)",invoke=function() globalChangeVisibleColumnState("volume") end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Global Set Visible Column (Panning)",invoke=function() globalChangeVisibleColumnState("panning") end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Global Set Visible Column (Delay)",invoke=function() globalChangeVisibleColumnState("delay") end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Global Set Visible Column (Sample Effects)",invoke=function() globalChangeVisibleColumnState("sample_effects") end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Global Set Visible Column (Volume)",invoke=function() globalChangeVisibleColumnState("volume",true) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Global Set Visible Column (Panning)",invoke=function() globalChangeVisibleColumnState("panning",true) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Global Set Visible Column (Delay)",invoke=function() globalChangeVisibleColumnState("delay",true) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Global Set Visible Column (Sample Effects)",invoke=function() globalChangeVisibleColumnState("sample_effects",true) end}
 
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor:Visible Columns..:Global Visible Column (All)",invoke=function() globalChangeVisibleColumnState("volume")
-globalChangeVisibleColumnState("panning") globalChangeVisibleColumnState("delay") globalChangeVisibleColumnState("sample_effects") end}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor:Visible Columns..:Global Visible Column (All)",invoke=function() globalChangeVisibleColumnState("volume",true)
+globalChangeVisibleColumnState("panning",true) globalChangeVisibleColumnState("delay",true) globalChangeVisibleColumnState("sample_effects",true) end}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor:Visible Columns..:Global Visible Column (None)",invoke=function() globalChangeVisibleColumnState("volume",false)
+globalChangeVisibleColumnState("panning",false) globalChangeVisibleColumnState("delay",false) globalChangeVisibleColumnState("sample_effects",false) end}
+
+
 renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor:Visible Columns..:Toggle Visible Column (Volume) Globally",invoke=function() globalToggleVisibleColumnState("volume") end}
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Visible Columns..:Toggle Visible Column (Panning) Globally",invoke=function() globalToggleVisibleColumnState("panning") end}
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Visible Columns..:Toggle Visible Column (Delay) Globally",invoke=function() globalToggleVisibleColumnState("delay") end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Visible Columns..:Toggle Visible Column (Sample Effects)Globally",invoke=function() globalToggleVisibleColumnState("sample_effects") end}
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor:Visible Columns..:Global Visible Column (Volume)",invoke=function() globalChangeVisibleColumnState("volume") end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Visible Columns..:Global Visible Column (Panning)",invoke=function() globalChangeVisibleColumnState("panning") end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Visible Columns..:Global Visible Column (Delay)",invoke=function() globalChangeVisibleColumnState("delay") end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Visible Columns..:Global Visible Column (Sample Effects)",invoke=function() globalChangeVisibleColumnState("sample_effects") end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Visible Columns..:Toggle Visible Column (Sample Effects) Globally",invoke=function() globalToggleVisibleColumnState("sample_effects") end}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor:Visible Columns..:Global Visible Column (Volume)",invoke=function() globalChangeVisibleColumnState("volume",true) end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Visible Columns..:Global Visible Column (Panning)",invoke=function() globalChangeVisibleColumnState("panning",true) end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Visible Columns..:Global Visible Column (Delay)",invoke=function() globalChangeVisibleColumnState("delay",true) end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Visible Columns..:Global Visible Column (Sample Effects)",invoke=function() globalChangeVisibleColumnState("sample_effects",true) end}
 
-renoise.tool():add_menu_entry{name="--Main Menu:View:Paketti..:Pattern Editor:Visible Columns..:Global Visible Column (All)",invoke=function() globalChangeVisibleColumnState("volume")
-globalChangeVisibleColumnState("panning") globalChangeVisibleColumnState("delay") globalChangeVisibleColumnState("sample_effects") end}
+renoise.tool():add_menu_entry{name="--Main Menu:View:Paketti..:Pattern Editor:Visible Columns..:Global Visible Column (All)",invoke=function() globalChangeVisibleColumnState("volume",true)
+globalChangeVisibleColumnState("panning",true) globalChangeVisibleColumnState("delay",true) globalChangeVisibleColumnState("sample_effects",true) end}
+renoise.tool():add_menu_entry{name="--Main Menu:View:Paketti..:Pattern Editor:Visible Columns..:Global Visible Column (None)",invoke=function() globalChangeVisibleColumnState("volume",false)
+globalChangeVisibleColumnState("panning",false) globalChangeVisibleColumnState("delay",false) globalChangeVisibleColumnState("sample_effects",false) end}
+
+
 renoise.tool():add_menu_entry{name="--Main Menu:View:Paketti..:Pattern Editor:Visible Columns..:Toggle Visible Column (Volume) Globally",invoke=function() globalToggleVisibleColumnState("volume") end}
 renoise.tool():add_menu_entry{name="Main Menu:View:Paketti..:Pattern Editor:Visible Columns..:Toggle Visible Column (Panning) Globally",invoke=function() globalToggleVisibleColumnState("panning") end}
 renoise.tool():add_menu_entry{name="Main Menu:View:Paketti..:Pattern Editor:Visible Columns..:Toggle Visible Column (Delay) Globally",invoke=function() globalToggleVisibleColumnState("delay") end}
 renoise.tool():add_menu_entry{name="Main Menu:View:Paketti..:Pattern Editor:Visible Columns..:Toggle Visible Column (Sample Effects)Globally",invoke=function() globalToggleVisibleColumnState("sample_effects") end}
-renoise.tool():add_menu_entry{name="--Main Menu:View:Paketti..:Pattern Editor:Visible Columns..:Global Visible Column (Volume)",invoke=function() globalChangeVisibleColumnState("volume") end}
-renoise.tool():add_menu_entry{name="Main Menu:View:Paketti..:Pattern Editor:Visible Columns..:Global Visible Column (Panning)",invoke=function() globalChangeVisibleColumnState("panning") end}
-renoise.tool():add_menu_entry{name="Main Menu:View:Paketti..:Pattern Editor:Visible Columns..:Global Visible Column (Delay)",invoke=function() globalChangeVisibleColumnState("delay") end}
-renoise.tool():add_menu_entry{name="Main Menu:View:Paketti..:Pattern Editor:Visible Columns..:Global Visible Column (Sample Effects)",invoke=function() globalChangeVisibleColumnState("sample_effects") end}
+renoise.tool():add_menu_entry{name="--Main Menu:View:Paketti..:Pattern Editor:Visible Columns..:Global Visible Column (Volume)",invoke=function() globalChangeVisibleColumnState("volume",true) end}
+renoise.tool():add_menu_entry{name="Main Menu:View:Paketti..:Pattern Editor:Visible Columns..:Global Visible Column (Panning)",invoke=function() globalChangeVisibleColumnState("panning",true) end}
+renoise.tool():add_menu_entry{name="Main Menu:View:Paketti..:Pattern Editor:Visible Columns..:Global Visible Column (Delay)",invoke=function() globalChangeVisibleColumnState("delay",true) end}
+renoise.tool():add_menu_entry{name="Main Menu:View:Paketti..:Pattern Editor:Visible Columns..:Global Visible Column (Sample Effects)",invoke=function() globalChangeVisibleColumnState("sample_effects",true) end}
 
 -----------
 -- Create Identical Track Function
@@ -4391,7 +4407,7 @@ renoise.tool():add_keybinding {
 local vb = renoise.ViewBuilder()
 local rs = math.random
 local strategies
-local dialog
+local dialog -- Holds the reference to the dialog
 local message
 local img_path = "External/catinhat.png"
 local file_path = "External/obliquestrategies.txt"
@@ -4417,18 +4433,18 @@ local function get_random_message()
   end
 end
 
-local dialog = nil
-local dialog_content = nil
 function create_oblique_strategies_dialog()
-  if dialog_content and dialog_content.visible then
-    dialog_content = nil
+  -- Check if dialog is already visible
+  if dialog and dialog.visible then
+    dialog:close()
+    dialog = nil
     return
   end
 
   load_strategies()
   message = get_random_message()
   
-  local message_text = vb:text{width = 300, font="big",  style="strong",align = "center", text = message}
+  local message_text = vb:text{width = 300, font="big", style="strong", align = "center", text = message}
 
   local dialog_content = vb:column{
     margin = 20,
@@ -4476,7 +4492,7 @@ function create_oblique_strategies_dialog()
     }
   }
   
-  dialog = renoise.app():show_custom_dialog("Oblique Strategies", dialog_content, my_keyhandler_func)
+  dialog = renoise.app():show_custom_dialog("Oblique Strategies", dialog_content)
 end
 
 function shuffle_oblique_strategies()
@@ -4485,12 +4501,13 @@ function shuffle_oblique_strategies()
   renoise.app():show_status("Oblique Strategies: " .. message)
 end
 
+-- Add keybinding for opening/closing the dialog
 renoise.tool():add_keybinding{name="Global:Paketti:Open Oblique Strategies Dialog...",invoke=function() 
-create_oblique_strategies_dialog() end}
+  create_oblique_strategies_dialog() 
+end}
 
 -- Add keybinding for shuffling cards without opening the dialog
 renoise.tool():add_keybinding{name="Global:Paketti:Shuffle Oblique Strategies Cards",invoke=shuffle_oblique_strategies}
-
 -------
 
 
@@ -5164,4 +5181,42 @@ end
 
 renoise.tool():add_keybinding {name="Sample Editor:Paketti:15 Frame Fade In & Fade Out",invoke=apply_fade_in_out}
 renoise.tool():add_menu_entry {name="Sample Editor:Paketti..:15 Frame Fade In & Fade Out",invoke=apply_fade_in_out}
+
+---
+-- Function to create max amplitude DC offset kick
+function pakettiMaxAmplitudeDCOffsetKickCreator()
+  -- Insert a new instrument after the currently selected one
+  local selected_index = renoise.song().selected_instrument_index
+  local new_instrument_index = selected_index + 1
+  
+  renoise.song():insert_instrument_at(new_instrument_index)
+  renoise.song().selected_instrument_index = new_instrument_index
+
+  -- Insert a sample into the newly created instrument
+  local sample = renoise.song().instruments[new_instrument_index]:insert_sample_at(1)
+  sample.sample_buffer:create_sample_data(44100, 16, 1, 16800)
+
+  -- Access the sample buffer
+  local buffer = sample.sample_buffer
+
+  -- Make sure the sample buffer is loaded and ready
+  if buffer.has_sample_data then
+    -- Fill the buffer with maximum amplitude values
+    for frame = 1, buffer.number_of_frames do
+      buffer:set_sample_data(1, frame, 32767 / 32768) -- Max normalized value for 16-bit
+    end
+
+    -- Run recursive DC offset removal simulation (example)
+    local iterations = math.random(1, 50)
+    for i = 1, iterations do
+      remove_dc_offset_recursive()
+    end
+  end
+  
+  renoise.app():show_status("Max Amp DC Offset Kick Generated!")
+end
+
+-- Adding keybinding and menu entry on single lines
+renoise.tool():add_keybinding { name="Sample Editor:Paketti:Max Amp DC Offset Kick Generator", invoke=function() pakettiMaxAmplitudeDCOffsetKickCreator() end }
+renoise.tool():add_menu_entry { name="Sample Editor:Paketti..:Max Amp DC Offset Kick Generator", invoke=function() pakettiMaxAmplitudeDCOffsetKickCreator() end }
 

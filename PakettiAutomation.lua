@@ -677,3 +677,281 @@ renoise.tool():add_menu_entry{name="Track Automation List:Paketti..:Gainer Expon
 
 
 
+-- Function to read the selected slots in the pattern matrix for the currently selected track.
+local function read_pattern_matrix_selection()
+  local song = renoise.song()
+  local sequencer = song.sequencer
+  local track_index = song.selected_track_index
+  local selected_slots = {}
+  local total_patterns = #sequencer.pattern_sequence
+
+  -- Loop through the sequence slots and check selection status for the selected track
+  for sequence_index = 1, total_patterns do
+    if sequencer:track_sequence_slot_is_selected(track_index, sequence_index) then
+      table.insert(selected_slots, sequence_index)
+    end
+  end
+
+  return selected_slots
+end
+
+-- Helper function to get or create automation
+local function get_or_create_automation(parameter, pattern_index, track_index)
+  local automation = renoise.song().patterns[pattern_index].tracks[track_index]:find_automation(parameter)
+  if automation then
+    automation:clear()  -- Clear existing automation
+  else
+    automation = renoise.song().patterns[pattern_index].tracks[track_index]:create_automation(parameter)
+  end
+  return automation
+end
+
+-- Clamp a value to the range [0, 1]
+local function clamp(value)
+  return math.max(0.0, math.min(1.0, value))
+end
+
+-- Function to apply ramp to selected automation
+local function apply_ramp(selected_slots, ramp_type, is_exp, is_up)
+  local song = renoise.song()
+  local track_index = song.selected_track_index
+  local selected_parameter = song.selected_automation_parameter
+
+  if not selected_parameter then
+    renoise.app():show_status("No automation lane selected.")
+    return
+  end
+
+  -- Calculate total length of selected patterns
+  local total_length = 0
+  local pattern_lengths = {}
+  for _, sequence_index in ipairs(selected_slots) do
+    local pattern_index = song.sequencer.pattern_sequence[sequence_index]
+    local pattern_length = song.patterns[pattern_index].number_of_lines
+    pattern_lengths[#pattern_lengths + 1] = pattern_length
+    total_length = total_length + pattern_length
+  end
+
+  -- Set up exponential or linear ramp
+  local curve = is_exp and 1.1 or 1.0
+  local max_value = math.pow(curve, total_length - 1)
+
+  -- Apply the ramp to the automation parameter
+  local current_position = 0
+  for idx, sequence_index in ipairs(selected_slots) do
+    local pattern_index = song.sequencer.pattern_sequence[sequence_index]
+    local pattern_length = pattern_lengths[idx]
+    local envelope = get_or_create_automation(selected_parameter, pattern_index, track_index)
+
+    -- Clear the envelope and apply the ramp
+    envelope:clear()
+
+    for line = 0, pattern_length - 1 do
+      local global_position = current_position + line
+      local normalized_value
+
+      if is_exp then
+        -- Exponential calculation
+        normalized_value = math.pow(curve, global_position)
+        normalized_value = (normalized_value - 1) / (max_value - 1)
+      else
+        -- Linear calculation
+        normalized_value = global_position / (total_length - 1)
+      end
+
+      -- Clamp the value to the [0, 1] range
+      normalized_value = clamp(is_up and normalized_value or 1 - normalized_value)
+
+      -- Apply the point to the envelope
+      envelope:add_point_at(line + 1, normalized_value)
+    end
+
+    -- Update position for the next pattern
+    current_position = current_position + pattern_length
+  end
+
+  renoise.app():show_status(ramp_type .. " ramp applied to selected automation.")
+end
+
+-- Wrapper functions for the different ramp operations
+local function automation_volume_ramp_up_exp()
+  local selected_slots = read_pattern_matrix_selection()
+  apply_ramp(selected_slots, "Exponential Volume Up", true, true)
+end
+
+local function automation_volume_ramp_down_exp()
+  local selected_slots = read_pattern_matrix_selection()
+  apply_ramp(selected_slots, "Exponential Volume Down", true, false)
+end
+
+local function automation_volume_ramp_up_lin()
+  local selected_slots = read_pattern_matrix_selection()
+  apply_ramp(selected_slots, "Linear Volume Up", false, true)
+end
+
+local function automation_volume_ramp_down_lin()
+  local selected_slots = read_pattern_matrix_selection()
+  apply_ramp(selected_slots, "Linear Volume Down", false, false)
+end
+
+-- Automation ramps based on selected automation lane
+local function automation_ramp_up_exp()
+  local selected_slots = read_pattern_matrix_selection()
+  apply_ramp(selected_slots, "Exponential Automation Up", true, true)
+end
+
+local function automation_ramp_down_exp()
+  local selected_slots = read_pattern_matrix_selection()
+  apply_ramp(selected_slots, "Exponential Automation Down", true, false)
+end
+
+local function automation_ramp_up_lin()
+  local selected_slots = read_pattern_matrix_selection()
+  apply_ramp(selected_slots, "Linear Automation Up", false, true)
+end
+
+local function automation_ramp_down_lin()
+  local selected_slots = read_pattern_matrix_selection()
+  apply_ramp(selected_slots, "Linear Automation Down", false, false)
+end
+
+-- Optimized `menu_entry` and `key_binding` definitions for compactness
+renoise.tool():add_menu_entry { name = "Pattern Matrix:Paketti..:Automation Ramp Up (Exp) for Selection", invoke = automation_ramp_up_exp }
+renoise.tool():add_menu_entry { name = "Pattern Matrix:Paketti..:Automation Ramp Down (Exp) for Selection", invoke = automation_ramp_down_exp }
+renoise.tool():add_menu_entry { name = "Pattern Matrix:Paketti..:Automation Ramp Up (Lin) for Selection", invoke = automation_ramp_up_lin }
+renoise.tool():add_menu_entry { name = "Pattern Matrix:Paketti..:Automation Ramp Down (Lin) for Selection", invoke = automation_ramp_down_lin }
+
+renoise.tool():add_keybinding { name = "Global:Paketti..:Automation Ramp Up (Exp)", invoke = automation_ramp_up_exp }
+renoise.tool():add_keybinding { name = "Global:Paketti..:Automation Ramp Down (Exp)", invoke = automation_ramp_down_exp }
+renoise.tool():add_keybinding { name = "Global:Paketti..:Automation Ramp Up (Lin)", invoke = automation_ramp_up_lin }
+renoise.tool():add_keybinding { name = "Global:Paketti..:Automation Ramp Down (Lin)", invoke = automation_ramp_down_lin }
+
+-- Whitelist of center-based automation parameters
+local center_based_parameters = {
+  ["X_Pitchbend"] = true,
+  ["Panning"] = true,
+  ["Pitchbend"] = true
+}
+
+-- Function to apply special center-based ramp for certain parameters (linear and exponential)
+local function apply_center_based_ramp(selected_slots, ramp_type, is_up, is_exp)
+  local song = renoise.song()
+  local track_index = song.selected_track_index
+  local selected_parameter = song.selected_automation_parameter
+
+  if not selected_parameter then
+    renoise.app():show_status("No automation lane selected.")
+    return
+  end
+
+  -- Check if the selected parameter is in the center-based whitelist
+  if not center_based_parameters[selected_parameter.name] then
+    renoise.app():show_status("Selected parameter is not center-based.")
+    return
+  end
+
+  -- Calculate total length of selected patterns
+  local total_length = 0
+  local pattern_lengths = {}
+  for _, sequence_index in ipairs(selected_slots) do
+    local pattern_index = song.sequencer.pattern_sequence[sequence_index]
+    local pattern_length = song.patterns[pattern_index].number_of_lines
+    pattern_lengths[#pattern_lengths + 1] = pattern_length
+    total_length = total_length + pattern_length
+  end
+
+  -- Set up the exponential or linear ramp (0.5 based)
+  local curve = is_exp and 1.1 or 1
+  local max_value = math.pow(curve, total_length - 1)
+
+  -- Apply the ramp to the automation parameter
+  local current_position = 0
+  for idx, sequence_index in ipairs(selected_slots) do
+    local pattern_index = song.sequencer.pattern_sequence[sequence_index]
+    local pattern_length = pattern_lengths[idx]
+    local envelope = get_or_create_automation(selected_parameter, pattern_index, track_index)
+
+    -- Clear the envelope and apply the ramp
+    envelope:clear()
+
+    for line = 0, pattern_length - 1 do
+      local global_position = current_position + line
+      local normalized_value
+
+      -- Linear interpolation
+      if not is_exp then
+        local t = global_position / (total_length - 1)
+        if ramp_type == "Top to Center" then
+          normalized_value = 1.0 - (t * 0.5) -- 1.0 to 0.5
+        elseif ramp_type == "Bottom to Center" then
+          normalized_value = t * 0.5 -- 0.0 to 0.5
+        elseif ramp_type == "Center to Top" then
+          normalized_value = 0.5 + (t * 0.5) -- 0.5 to 1.0
+        elseif ramp_type == "Center to Bottom" then
+          normalized_value = 0.5 - (t * 0.5) -- 0.5 to 0.0
+        end
+      else
+        -- Exponential interpolation
+        normalized_value = math.pow(curve, global_position)
+        normalized_value = (normalized_value - 1) / (max_value - 1)
+        if ramp_type == "Top to Center" then
+          normalized_value = 1.0 - (normalized_value * 0.5) -- 1.0 to 0.5
+        elseif ramp_type == "Bottom to Center" then
+          normalized_value = normalized_value * 0.5 -- 0.0 to 0.5
+        elseif ramp_type == "Center to Top" then
+          normalized_value = 0.5 + (normalized_value * 0.5) -- 0.5 to 1.0
+        elseif ramp_type == "Center to Bottom" then
+          normalized_value = 0.5 - (normalized_value * 0.5) -- 0.5 to 0.0
+        end
+      end
+
+      -- Ensure the normalized_value is within valid bounds
+      normalized_value = math.max(0, math.min(1, normalized_value))
+
+      -- Apply the point to the envelope
+      envelope:add_point_at(line + 1, normalized_value)
+    end
+
+    -- Update position for the next pattern
+    current_position = current_position + pattern_length
+  end
+
+  renoise.app():show_status(ramp_type .. " center-based ramp applied to selected automation.")
+end
+
+-- Special center-based ramp operations (Exponential and Linear)
+local function automation_center_to_top_exp() apply_center_based_ramp(read_pattern_matrix_selection(), "Center to Top", true, true) end
+local function automation_top_to_center_exp() apply_center_based_ramp(read_pattern_matrix_selection(), "Top to Center", false, true) end
+local function automation_center_to_bottom_exp() apply_center_based_ramp(read_pattern_matrix_selection(), "Center to Bottom", false, true) end
+local function automation_bottom_to_center_exp() apply_center_based_ramp(read_pattern_matrix_selection(), "Bottom to Center", true, true) end
+
+local function automation_center_to_top_lin() apply_center_based_ramp(read_pattern_matrix_selection(), "Center to Top", true, false) end
+local function automation_top_to_center_lin() apply_center_based_ramp(read_pattern_matrix_selection(), "Top to Center", false, false) end
+local function automation_center_to_bottom_lin() apply_center_based_ramp(read_pattern_matrix_selection(), "Center to Bottom", false, false) end
+local function automation_bottom_to_center_lin() apply_center_based_ramp(read_pattern_matrix_selection(), "Bottom to Center", true, false) end
+
+-- Register menu entries and keybindings for all 8 center-based automations
+renoise.tool():add_menu_entry { name = "Pattern Matrix:Paketti..:Automation Center to Top (Exp)", invoke = automation_center_to_top_exp }
+renoise.tool():add_menu_entry { name = "Pattern Matrix:Paketti..:Automation Top to Center (Exp)", invoke = automation_top_to_center_exp }
+renoise.tool():add_menu_entry { name = "Pattern Matrix:Paketti..:Automation Center to Bottom (Exp)", invoke = automation_center_to_bottom_exp }
+renoise.tool():add_menu_entry { name = "Pattern Matrix:Paketti..:Automation Bottom to Center (Exp)", invoke = automation_bottom_to_center_exp }
+
+renoise.tool():add_menu_entry { name = "Pattern Matrix:Paketti..:Automation Center to Top (Lin)", invoke = automation_center_to_top_lin }
+renoise.tool():add_menu_entry { name = "Pattern Matrix:Paketti..:Automation Top to Center (Lin)", invoke = automation_top_to_center_lin }
+renoise.tool():add_menu_entry { name = "Pattern Matrix:Paketti..:Automation Center to Bottom (Lin)", invoke = automation_center_to_bottom_lin }
+renoise.tool():add_menu_entry { name = "Pattern Matrix:Paketti..:Automation Bottom to Center (Lin)", invoke = automation_bottom_to_center_lin }
+
+renoise.tool():add_keybinding { name = "Global:Paketti..:Automation Center to Top (Exp)", invoke = automation_center_to_top_exp }
+renoise.tool():add_keybinding { name = "Global:Paketti..:Automation Top to Center (Exp)", invoke = automation_top_to_center_exp }
+renoise.tool():add_keybinding { name = "Global:Paketti..:Automation Center to Bottom (Exp)", invoke = automation_center_to_bottom_exp }
+renoise.tool():add_keybinding { name = "Global:Paketti..:Automation Bottom to Center (Exp)", invoke = automation_bottom_to_center_exp }
+
+renoise.tool():add_keybinding { name = "Global:Paketti..:Automation Center to Top (Lin)", invoke = automation_center_to_top_lin }
+renoise.tool():add_keybinding { name = "Global:Paketti..:Automation Top to Center (Lin)", invoke = automation_top_to_center_lin }
+renoise.tool():add_keybinding { name = "Global:Paketti..:Automation Center to Bottom (Lin)", invoke = automation_center_to_bottom_lin }
+renoise.tool():add_keybinding { name = "Global:Paketti..:Automation Bottom to Center (Lin)", invoke = automation_bottom_to_center_lin }
+
+
+
+
+

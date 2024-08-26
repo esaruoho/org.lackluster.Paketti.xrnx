@@ -87,7 +87,11 @@ w.active_middle_frame = raw.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
 w.upper_frame_is_visible = true
 return else end
   if w.active_middle_frame == raw.MIDDLE_FRAME_INSTRUMENT_MIDI_EDITOR or 
-     w.active_middle_frame == raw.MIDDLE_FRAME_INSTRUMENT_PLUGIN_EDITOR then
+     w.active_middle_frame == raw.MIDDLE_FRAME_INSTRUMENT_PLUGIN_EDITOR or 
+     w.active_middle_frame == raw.MIDDLE_FRAME_INSTRUMENT_PHRASE_EDITOR or 
+     w.active_middle_frame == raw.MIDDLE_FRAME_INSTRUMENT_SAMPLE_KEYZONES or
+     w.active_middle_frame == raw.MIDDLE_FRAME_INSTRUMENT_SAMPLE_MODULATION 
+     then
     w.active_middle_frame = raw.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
     w.lock_keyboard_focus = true
     w.disk_browser_is_visible = true
@@ -187,6 +191,7 @@ local raw=renoise.ApplicationWindow
 --w.disk_browser_is_expanded=true
 if w.active_middle_frame == raw.MIDDLE_FRAME_INSTRUMENT_MIDI_EDITOR then
 w.active_middle_frame = raw.MIDDLE_FRAME_INSTRUMENT_PLUGIN_EDITOR
+w.active_middle_frame = raw.MIDDLE_FRAME_INSTRUMENT_PHRASE_EDITOR
 else w.active_middle_frame = raw.MIDDLE_FRAME_INSTRUMENT_MIDI_EDITOR end
 --if renoise.app().window.active_middle_frame==renoise.Instrument.TAB_PLUGIN then renoise.app().window.active_middle_frame=5 else
 --renoise.app().window.active_middle_frame=renoise.Instrument.TAB_PLUGIN end

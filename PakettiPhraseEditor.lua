@@ -239,8 +239,11 @@ function pakettiPhraseSettingsDialogShow()
           width = 100,
           notifier = function(value) preferences.pakettiPhraseInitDialog.Length.value = value end
         },
+        vb:button {text = "6", notifier = function() vb.views.length_valuebox.value = 6 preferences.pakettiPhraseInitDialog.Length.value = 6 end},
         vb:button {text = "8", notifier = function() vb.views.length_valuebox.value = 8 preferences.pakettiPhraseInitDialog.Length.value = 8 end},
+        vb:button {text = "12", notifier = function() vb.views.length_valuebox.value = 12 preferences.pakettiPhraseInitDialog.Length.value = 12 end},
         vb:button {text = "16", notifier = function() vb.views.length_valuebox.value = 16 preferences.pakettiPhraseInitDialog.Length.value = 16 end},
+        vb:button {text = "24", notifier = function() vb.views.length_valuebox.value = 24 preferences.pakettiPhraseInitDialog.Length.value = 24 end},
         vb:button {text = "32", notifier = function() vb.views.length_valuebox.value = 32 preferences.pakettiPhraseInitDialog.Length.value = 32 end},
         vb:button {text = "48", notifier = function() vb.views.length_valuebox.value = 48 preferences.pakettiPhraseInitDialog.Length.value = 48 end},
         vb:button {text = "64", notifier = function() vb.views.length_valuebox.value = 64 preferences.pakettiPhraseInitDialog.Length.value = 64 end},

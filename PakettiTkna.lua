@@ -351,9 +351,6 @@ for i = 1, 32 do
      end}
 end
 
-
-
-
 function tknaTriggerSequence(number)
   local total_sequences = #renoise.song().sequencer.pattern_sequence
   if number < total_sequences then
@@ -364,18 +361,9 @@ function tknaTriggerSequence(number)
 end
 
 for i = 1, 32 do
-  -- Zero-pad the number for sequence naming
   local padded_number = string.format("%02d", i - 1)
-  
-  -- Add keybinding for each sequence
   renoise.tool():add_keybinding{name="Global:Paketti:Trigger Sequence " .. padded_number, invoke=function() tknaTriggerSequence(i) end}
 end
-
-
-
-
-
-
 
 function tknaSetSequenceAsScheduledList(number)
 if renoise.song().transport.playing then  else renoise.song().transport.playing=true
@@ -447,13 +435,8 @@ for i = 1, 32 do
   }
 end
 
-
-
-
 renoise.tool():add_keybinding{name="Global:Paketti:Clear Pattern Sequence Loop",invoke=function()
 renoise.song().transport.loop_sequence_range = {} end}
-
-
 
 -- Function to compare two tables for value equality
 function tables_equal(t1, t2)
@@ -961,4 +944,187 @@ end
 renoise.tool():add_keybinding{name="Global:Paketti:Set Current Sequence as Scheduled and Loop", invoke=tknaSetScheduledSequenceToCurrentSequenceAndLoop}
 
 
+---
+
+-- Function to normalize the section name to a two-digit string, allowing for '.', '-', or ',' as separators
+local function normalizeSectionName(section_name)
+  -- Extract the numeric part before the separator (e.g., "01.", "01-", "01," -> "01")
+  local number_part = section_name:match("^(%d+)[.,%-]?")
+  if number_part then
+    return string.format("%02d.", tonumber(number_part))
+  end
+  return nil
+end
+
+-- Helper function to find all occurrences of a section by number
+local function findAllOccurrences(number)
+  local song = renoise.song()
+  local sequencer = song.sequencer
+  local total_sequences = #sequencer.pattern_sequence
+  local occurrences = {}
+
+  local section_prefix = string.format("%02d.", number)
+
+  for i = 1, total_sequences do
+    if sequencer:sequence_is_start_of_section(i) then
+      local section_name = sequencer:sequence_section_name(i)
+      local normalized_section_name = normalizeSectionName(section_name)
+
+      if normalized_section_name == section_prefix then
+        table.insert(occurrences, i)
+      end
+    end
+  end
+
+  return occurrences
+end
+
+-- Function to select the next occurrence of a section (or the first if none is currently selected)
+local function findNextOccurrence(occurrences, current_index)
+  for _, section_start in ipairs(occurrences) do
+    if section_start > current_index then
+      return section_start
+    end
+  end
+  return occurrences[1]  -- If no later occurrence, return the first occurrence
+end
+
+-- Helper function to find the section end based on the start index
+local function findSectionEnd(section_start)
+  local song = renoise.song()
+  local total_sequences = #song.sequencer.pattern_sequence
+
+  for j = section_start + 1, total_sequences do
+    if song.sequencer:sequence_is_start_of_section(j) then
+      return j - 1
+    end
+  end
+
+  return total_sequences
+end
+
+-- Function to select, trigger, and loop the next occurrence of the section
+function tknaSelectTriggerLoopSection(number)
+  local song = renoise.song()
+  local transport = song.transport
+  local occurrences = findAllOccurrences(number)
+
+  if #occurrences > 0 then
+    local current_index = song.selected_sequence_index
+    local next_section_start = findNextOccurrence(occurrences, current_index)
+
+    -- Find the end of the next section
+    local next_section_end = findSectionEnd(next_section_start)
+
+    -- Select, trigger, and loop the next section
+    song.selected_sequence_index = next_section_start
+    transport.loop_sequence_range = {next_section_start, next_section_end}
+    transport:trigger_sequence(next_section_start)
+    
+    renoise.app():show_status("Section '" .. string.format("%02d", number) .. "' triggered and looped.")
+  else
+    renoise.app():show_status("No section found starting with '" .. string.format("%02d", number) .. "'")
+  end
+end
+
+-- Function to select, schedule, and loop the next occurrence of the section
+function tknaSelectScheduleLoopSection(number)
+  local song = renoise.song()
+  local transport = song.transport
+  local occurrences = findAllOccurrences(number)
+
+  if #occurrences > 0 then
+    local current_index = song.selected_sequence_index
+    local next_section_start = findNextOccurrence(occurrences, current_index)
+
+    -- Find the end of the next section
+    local next_section_end = findSectionEnd(next_section_start)
+
+    -- Select, schedule, and loop the next section
+    song.selected_sequence_index = next_section_start
+    transport.loop_sequence_range = {next_section_start, next_section_end}
+    transport:set_scheduled_sequence(next_section_start)
+    
+    renoise.app():show_status("Section '" .. string.format("%02d", number) .. "' scheduled and looped.")
+  else
+    renoise.app():show_status("No section found starting with '" .. string.format("%02d", number) .. "'")
+  end
+end
+
+-- Function to select, add to schedule, and loop the next occurrence of the section
+function tknaSelectAddScheduleLoopSection(number)
+  local song = renoise.song()
+  local transport = song.transport
+  local occurrences = findAllOccurrences(number)
+
+  if #occurrences > 0 then
+    local current_index = song.selected_sequence_index
+    local next_section_start = findNextOccurrence(occurrences, current_index)
+
+    -- Find the end of the next section
+    local next_section_end = findSectionEnd(next_section_start)
+
+    -- Select, add to schedule, and loop the next section
+    song.selected_sequence_index = next_section_start
+    transport.loop_sequence_range = {next_section_start, next_section_end}
+    transport:add_scheduled_sequence(next_section_start)
+    
+    renoise.app():show_status("Section '" .. string.format("%02d", number) .. "' added to schedule and looped.")
+  else
+    renoise.app():show_status("No section found starting with '" .. string.format("%02d", number) .. "'")
+  end
+end
+
+-- Create keybindings and MIDI mappings for Select, Trigger, Schedule, and Add to Schedule for Sections 00 to 64
+for i = 0, 64 do
+  local section_id = string.format("%02d", i)
+
+  -- Keybinding: Select, Trigger and Loop the next occurrence of the Section
+  renoise.tool():add_keybinding {
+    name = "Global:Paketti:Select, Trigger and Loop Section " .. section_id,
+    invoke = function() tknaSelectTriggerLoopSection(i) end
+  }
+
+  -- MIDI Mapping: Select, Trigger and Loop the next occurrence of the Section
+  renoise.tool():add_midi_mapping {
+    name = "Paketti:Select, Trigger and Loop Section " .. section_id,
+    invoke = function(message) 
+      if message:is_trigger() then
+        tknaSelectTriggerLoopSection(i)
+      end
+    end
+  }
+
+  -- Keybinding: Select, Schedule and Loop the next occurrence of the Section
+  renoise.tool():add_keybinding {
+    name = "Global:Paketti:Select, Schedule and Loop Section " .. section_id,
+    invoke = function() tknaSelectScheduleLoopSection(i) end
+  }
+
+  -- MIDI Mapping: Select, Schedule and Loop the next occurrence of the Section
+  renoise.tool():add_midi_mapping {
+    name = "Paketti:Select, Schedule and Loop Section " .. section_id,
+    invoke = function(message) 
+      if message:is_trigger() then
+        tknaSelectScheduleLoopSection(i)
+      end
+    end
+  }
+
+  -- Keybinding: Select, Add to Schedule and Loop the next occurrence of the Section
+  renoise.tool():add_keybinding {
+    name = "Global:Paketti:Select, Add to Schedule and Loop Section " .. section_id,
+    invoke = function() tknaSelectAddScheduleLoopSection(i) end
+  }
+
+  -- MIDI Mapping: Select, Add to Schedule and Loop the next occurrence of the Section
+  renoise.tool():add_midi_mapping {
+    name = "Paketti:Select, Add to Schedule and Loop Section " .. section_id,
+    invoke = function(message) 
+      if message:is_trigger() then
+        tknaSelectAddScheduleLoopSection(i)
+      end
+    end
+  }
+end
 

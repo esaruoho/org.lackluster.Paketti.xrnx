@@ -95,3 +95,9 @@
 <MIDIMapping name="Paketti:Load Plugin (AU) Attack">
   <Path>Audio/Generators/AU/aumu:3EDr:3E00</Path>
 </MIDIMapping>
+<KeyBinding name="Global:Paketti:Load Plugin (AU) Vintage">
+  <Path>Audio/Generators/AU/aumu:V4vi:Manu</Path>
+</KeyBinding>
+<MIDIMapping name="Paketti:Load Plugin (AU) Vintage">
+  <Path>Audio/Generators/AU/aumu:V4vi:Manu</Path>
+</MIDIMapping>

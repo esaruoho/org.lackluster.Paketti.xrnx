@@ -874,6 +874,9 @@ local function MidiInitChannelTrackInstrument(track_index)
 
       -- Select the instrument to ensure devices are mapped correctly
       renoise.song().selected_instrument_index = track_index
+
+local currName = renoise.song().selected_track.name
+renoise.song().selected_track.name = currName .. " (" .. plugin:sub(5) .. ")"
       
       -- Add *Instr. Automation and *Instr. MIDI Control to the track immediately after the plugin is loaded
       local instr_automation_device = loadnative("Audio/Effects/Native/*Instr. Automation", checkline)
@@ -983,6 +986,11 @@ function my_keyhandler_func(dialog, key)
 end
 
 
+function horizontal_rule()
+    return vb:horizontal_aligner{mode="justify", width="100%", vb:space{width=10}, vb:row{height=2, style="panel", width="30%"}, vb:space{width=2}}
+end
+
+
 -- Function to show the custom dialog
 function generaMIDISetupShowCustomDialog()
   if custom_dialog and custom_dialog.visible then
@@ -1023,7 +1031,7 @@ function generaMIDISetupShowCustomDialog()
   external_editor_switch = vb:switch{items = {"Off","On"}, width = 300, value = 1}
 
   dialog_content = vb:column{
-    margin = 10, spacing = 10,
+    margin = 10, spacing = 0,
     vb:horizontal_aligner{mode = "right", vb:row{
       vb:text{text = "MIDI Input Device:"},
       vb:switch{items = midi_input_devices, value = 1, width = 700, notifier = on_midi_input_switch_changed}
@@ -1032,12 +1040,14 @@ function generaMIDISetupShowCustomDialog()
       vb:text{text = "MIDI Output Device:"},
       vb:switch{items = midi_output_devices, value = 1, width = 700, notifier = on_midi_output_switch_changed}
     }},
+        horizontal_rule(),
     vb:row{
       vb:button{text = "Randomize AU Plugin Selection", width = 200, notifier = randomize_au_plugins},
       vb:button{text = "Randomize VST Plugin Selection", width = 200, notifier = randomize_vst_plugins},
       vb:button{text = "Randomize VST3 Plugin Selection", width = 200, notifier = randomize_vst3_plugins},
       vb:button{text = "Clear Plugin Selection", width = 200, notifier = clear_plugin_selection}
     },
+        horizontal_rule(),
     vb:column(rows),
     vb:horizontal_aligner{mode = "right", vb:row{vb:text{text = "Note Columns:"}, note_columns_switch}},
     vb:horizontal_aligner{mode = "right", vb:row{vb:text{text = "Effect Columns:"}, effect_columns_switch}},
@@ -1049,10 +1059,11 @@ function generaMIDISetupShowCustomDialog()
     vb:horizontal_aligner{mode = "right", vb:row{vb:text{text = "Add #Line-Input Device for each Channel:"}, incoming_audio_switch}},
     vb:horizontal_aligner{mode = "right", vb:row{vb:text{text = "Populate Channels with Send Devices:"}, populate_sends_switch}},
     vb:horizontal_aligner{mode = "right", vb:row{vb:text{text = "Open External Editor for each Plugin:"}, external_editor_switch}},
-    vb:row{
+    horizontal_rule(),
+    vb:horizontal_aligner{mode="right", vb:row{
       vb:button{text = "OK", width = 100, notifier = function() on_ok_button_pressed(dialog_content) end},
       vb:button{text = "Close", width = 100, notifier = function() custom_dialog:close() end}
-    }
+    }}
   }
 
   custom_dialog = renoise.app():show_custom_dialog("Paketti MIDI Populator", dialog_content, my_keyhandler_func)
@@ -1392,3 +1403,26 @@ for i = 2, 64 do
     end
   }
 end
+
+renoise.tool():add_midi_mapping{name="Paketti:Selected Track Mute x[Toggle]",invoke=function(message) if message:is_trigger() then 
+if renoise.song().tracks[renoise.song().selected_track_index].mute_state == 1 then
+renoise.song().selected_track:mute()
+else
+renoise.song().selected_track:unmute() end end end}
+
+
+for i=1,64 do
+renoise.tool():add_midi_mapping{name="Paketti:Selected Track Mute " .. string.format("%02d", i) .. " x[Toggle]",invoke=function(message) if message:is_trigger() then 
+if renoise.song().tracks[i] ~= nil then
+if renoise.song().tracks[i].mute_state == 1 then
+renoise.song().tracks[i]:mute()
+else
+renoise.song().tracks[i]:unmute() end end end 
+renoise.app():show_status("The selected track " .. string.format("%02d", i) .. " does not exist, doing nothing.")
+
+end}
+
+
+end
+
+
