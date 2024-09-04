@@ -8,9 +8,15 @@ local themes_path = renoise.tool().bundle_path .. "Themes/"
 local themes = os.filenames(themes_path, "*.xrnc")
 
 local function pakettiThemeSelectorUpdateKeyHandler(dialog, key)
-  if key.name == "esc" then
+  if not (key.modifiers == "" and key.name == "exclamation") then
+    return key
+  else
     dialog:close()
+    dialog = nil
+    return nil
   end
+        renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
+
 end
 
 
@@ -136,7 +142,6 @@ local function pakettiThemeSelectorAddFavorite(theme_name)
   end
 end
 
-
 local function pakettiThemeSelectorRemoveFavorite(vb, index)
   local favorited_list = preferences.pakettiThemeSelector.FavoritedList
   if index == 1 then
@@ -239,7 +244,6 @@ function pakettiThemeSelectorUpdateFavoritesDropdown(vb)
   vb.views["favorites_popup"].items = items
   vb.views["favorites_count"].text = "Favorites (" .. tostring(#preferences.pakettiThemeSelector.FavoritedList - 1) .. ")"  -- Exclude "<No Theme Selected>"
 end
-
 
 local function pakettiThemeSelectorPickRandomThemeFromAll()
   local new_index = selected_theme_index
@@ -455,10 +459,13 @@ function pakettiThemeSelectorDialogShow()
     -- Step 2: If it's open, close it
     custom_dialog:close()
     custom_dialog = nil  -- Reset the dialog reference
+    return
   else
 
   custom_dialog = renoise.app():show_custom_dialog("Paketti Theme Selector", pakettiThemeSelectorDialogOpen(vb), pakettiThemeSelectorUpdateKeyHandler)
   pakettiThemeSelectorUpdateFavoritesDropdown(vb)
+          renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
+
 end
 end
 

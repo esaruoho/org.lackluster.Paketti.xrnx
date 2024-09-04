@@ -5,7 +5,7 @@ require "PakettieSpeak"
 require "base64float"
 local rx = require 'rx'
 require "PakettiAutomation"
-
+require "PakettiAudioProcessing"
 require "PakettiControls"
 require "PakettiDeviceChains"
 require "PakettiGater"
@@ -24,6 +24,7 @@ require "PakettiPatternEditorCheatSheet"
 require "PakettiPatternMatrix"
 require "PakettiPatternSequencer"
 require "PakettiPhraseEditor"
+require "PakettiOctaMEDSuite"
 require "PakettiPlayerProSuite"
 require "PakettiSamples"
 require "PakettiTkna"
@@ -59,12 +60,12 @@ function pakettiThemeSelectorRenoiseStartFavorites()
 
   local current_index = math.random(2, #preferences.pakettiThemeSelector.FavoritedList)
   local random_theme = preferences.pakettiThemeSelector.FavoritedList[current_index]
-  print("Randomized Favorite: " .. tostring(random_theme))
+--  print("Randomized Favorite: " .. tostring(random_theme))
 
   local cleaned_theme_name = tostring(random_theme):match(".*%. (.+)") or tostring(random_theme)
   selected_theme_index = table.find(themes, cleaned_theme_name)
 
-oprint (tostring(random_theme))
+--oprint (tostring(random_theme))
 
 renoise.app():load_theme(themes_path .. tostring(random_theme) .. ".xrnc")
 renoise.app():show_status("Randomized a theme out of your favorite list. " .. tostring(random_theme))
@@ -93,9 +94,7 @@ local themes = os.filenames(themes_path, "*.xrnc")
   renoise.app():show_status("Picked a random theme from all themes. " .. themes[selected_theme_index])
 end
 
-
-
-
+--local PakettiAutomationDoofer=false
 
 function startup()  
    local s=renoise.song()
@@ -107,21 +106,25 @@ function startup()
       pakettiThemeSelectorPickRandomThemeFromAll()
       else if preferences.pakettiThemeSelector.RenoiseLaunchFavoritesLoad.value then
     pakettiThemeSelectorRenoiseStartFavorites()
-  
-  --  print("Debug: RenoiseLaunchFavoritesLoad is false.")
   end
   end
   
        shuffle_oblique_strategies()
---      renoise.app():show_status("There was a save and the Startup Notifier ran.")
+ if PakettiAutomationDoofer==true then
+ 
+  local masterTrack=renoise.song().sequencer_track_count+1
+  monitor_doofer2_macros(renoise.song().tracks[masterTrack].devices[3])
+  monitor_doofer1_macros(renoise.song().tracks[masterTrack].devices[2])
+else end
+
 end
 
 if not renoise.tool().app_new_document_observable:has_notifier(startup)   
   then renoise.tool().app_new_document_observable:add_notifier(startup)
   else renoise.tool().app_new_document_observable:remove_notifier(startup) end  
 ---------
-_AUTO_RELOAD_DEBUG = function() startup()
-end
+--_AUTO_RELOAD_DEBUG = function() startup()
+--end
 
 -- Debug print  
 function dbug(msg)  

@@ -240,8 +240,7 @@ local grouped_mappings = {
   },
   ["Loading/Saving Samples/Instruments"] = {
     "Paketti:Midi Paketti PitchBend Multiple Sample Loader",
- "Paketti:Midi Paketti PitchBend Drumkit Sample Loader",
-     
+    "Paketti:Midi Paketti PitchBend Drumkit Sample Loader",
     "Paketti:Midi Paketti Save Selected Sample .WAV",
     "Paketti:Midi Paketti Save Selected Sample .FLAC",
     "Paketti:Save Sample Range .WAV",
@@ -260,16 +259,14 @@ local grouped_mappings = {
     "Paketti:Save All Samples to Smart/Backup Folder 3"
   },
   ["Sample Editor"] = {
-  "Paketti:Shift Sample Buffer Up x[Trigger]",
-  "Paketti:Shift Sample Buffer Down x[Trigger]",
-  "Paketti:Shift Sample Buffer Up x[Knob]",
-  "Paketti:Shift Sample Buffer Down x[Knob]",
-  "Paketti:Shift Sample Buffer Up/Down x[Knob]",
-   "Paketti:Strip Silence",
- 
-  "Paketti:Move Beginning Silence to End",
-   "Paketti:Set Beatsync Value x[Knob]",
-
+    "Paketti:Shift Sample Buffer Up x[Trigger]",
+    "Paketti:Shift Sample Buffer Down x[Trigger]",
+    "Paketti:Shift Sample Buffer Up x[Knob]",
+    "Paketti:Shift Sample Buffer Down x[Knob]",
+    "Paketti:Shift Sample Buffer Up/Down x[Knob]",
+    "Paketti:Strip Silence",
+    "Paketti:Move Beginning Silence to End",
+    "Paketti:Set Beatsync Value x[Knob]",
     "Paketti:Midi Change Sample Modulation Set Filter",
     "Paketti:Duplicate and Reverse Instrument [Trigger]",  
     "Paketti:Isolate Slices or Samples to New Instruments",  
@@ -301,8 +298,8 @@ local grouped_mappings = {
   },
   ["Playback Control"] = {
     "Paketti:Impulse Tracker F5 Start Playback x[Toggle]",
-  "Paketti:Impulse Tracker F8 Stop Playback (Panic) x[Toggle]",
-  "Paketti:Impulse Tracker F7 Start Playback from Cursor Row x[Toggle]",
+    "Paketti:Impulse Tracker F8 Stop Playback (Panic) x[Toggle]",
+    "Paketti:Impulse Tracker F7 Start Playback from Cursor Row x[Toggle]",
     "Paketti:Simple Play",
     "Paketti:Simple Play Record Follow",
     "Paketti:Stop Playback (Panic) x[Toggle]",
@@ -326,7 +323,7 @@ local grouped_mappings = {
     "Paketti:Note Interpolation",
     "Paketti:Interpolate Effect Column Parameters",
     "Paketti:Effect Column B00 Reverse Sample Effect On/Off",
-      "Paketti:Delay Column (DEPRECATED) x[Slider]",
+    "Paketti:Delay Column (DEPRECATED) x[Slider]",
     "Paketti:Set Delay (+1) x[Toggle]",
     "Paketti:Set Delay (-1) x[Toggle]",
     "Paketti:Toggle Mute Tracks",
@@ -340,16 +337,16 @@ local grouped_mappings = {
     "Paketti:Impulse Tracker Pattern (Next) x[Toggle]",
     "Paketti:Impulse Tracker Pattern (Previous) x[Toggle]",
     "Pattern Editor:Paketti:Disk Browser Focus",
-  "Paketti:Columnizer Delay Increase (+1) x[Toggle]",
-  "Paketti:Columnizer Delay Decrease (-1) x[Toggle]",
-  "Paketti:Columnizer Panning Increase (+1) x[Toggle]",
-  "Paketti:Columnizer Panning Decrease (-1) x[Toggle]",
-  "Paketti:Columnizer Volume Increase (+1) x[Toggle]",
-  "Paketti:Columnizer Volume Decrease (-1) x[Toggle]",
-  "Paketti:Columnizer Effect Number Increase (+1) x[Toggle]",
-  "Paketti:Columnizer Effect Number Decrease (-1) x[Toggle]",
-  "Paketti:Columnizer Effect Amount Increase (+1) x[Toggle]",
-  "Paketti:Columnizer Effect Amount Decrease (-1) x[Toggle]",    
+    "Paketti:Columnizer Delay Increase (+1) x[Toggle]",
+    "Paketti:Columnizer Delay Decrease (-1) x[Toggle]",
+    "Paketti:Columnizer Panning Increase (+1) x[Toggle]",
+    "Paketti:Columnizer Panning Decrease (-1) x[Toggle]",
+    "Paketti:Columnizer Volume Increase (+1) x[Toggle]",
+    "Paketti:Columnizer Volume Decrease (-1) x[Toggle]",
+    "Paketti:Columnizer Effect Number Increase (+1) x[Toggle]",
+    "Paketti:Columnizer Effect Number Decrease (-1) x[Toggle]",
+    "Paketti:Columnizer Effect Amount Increase (+1) x[Toggle]",
+    "Paketti:Columnizer Effect Amount Decrease (-1) x[Toggle]",    
     "Paketti:Set Pattern Length to 001",
     "Paketti:Set Pattern Length to 004",
     "Paketti:Set Pattern Length to 008",
@@ -390,8 +387,7 @@ local grouped_mappings = {
     "Paketti:Midi Change EditStep 1-64 x[Knob]",
     "Paketti:Midi Change EditStep 0-64 x[Knob]",
     "Paketti:EditStep Double x[Button]",
-"Paketti:EditStep Halve x[Button]",
-
+    "Paketti:EditStep Halve x[Button]",
     "Paketti:Midi Select Group (Next)",
     "Paketti:Midi Select Group (Previous)",
     "Paketti:Midi Select Track (Next)",
@@ -400,20 +396,19 @@ local grouped_mappings = {
     "Paketti:Move to Next Track (Wrap) [Knob]",
     "Paketti:Move to Previous Track (Wrap) [Knob]",
     "Paketti:Numpad SelectPlay 0 x[Toggle]",
-     "Paketti:Numpad SelectPlay 1 x[Toggle]",
-  "Paketti:Numpad SelectPlay 2 x[Toggle]",
-  "Paketti:Numpad SelectPlay 3 x[Toggle]",
-  "Paketti:Numpad SelectPlay 4 x[Toggle]",
-  "Paketti:Numpad SelectPlay 5 x[Toggle]",
-  "Paketti:Numpad SelectPlay 6 x[Toggle]",
-  "Paketti:Numpad SelectPlay 7 x[Toggle]",
-  "Paketti:Numpad SelectPlay 8 x[Toggle]",
- 
+    "Paketti:Numpad SelectPlay 1 x[Toggle]",
+    "Paketti:Numpad SelectPlay 2 x[Toggle]",
+    "Paketti:Numpad SelectPlay 3 x[Toggle]",
+    "Paketti:Numpad SelectPlay 4 x[Toggle]",
+    "Paketti:Numpad SelectPlay 5 x[Toggle]",
+    "Paketti:Numpad SelectPlay 6 x[Toggle]",
+    "Paketti:Numpad SelectPlay 7 x[Toggle]",
+    "Paketti:Numpad SelectPlay 8 x[Toggle]",
     "Paketti:Computer Keyboard Velocity Slider x[Knob]",
     "Paketti:Move to Next Track [Knob]",
     "Paketti:Move to Previous Track [Knob]",
     "Paketti:Metronome On/Off x[Toggle]",
-   "Paketti:Record and Follow x[Toggle]",
+    "Paketti:Record and Follow x[Toggle]",
     "Paketti:Record and Follow On/Off x[Knob]",
     "Paketti:Record Quantize On/Off x[Toggle]",    
     "Paketti:Toggle Edit Mode and Tint Track",
@@ -426,12 +421,12 @@ local grouped_mappings = {
     "Paketti:Midi Change Selected Instrument x[Knob]",
   },
   ["Wipe&Slice"] = {
-  "Paketti:Wipe&Slice (004) x[Toggle]",
-  "Paketti:Wipe&Slice (008) x[Toggle]",
-  "Paketti:Wipe&Slice (016) x[Toggle]",
-  "Paketti:Wipe&Slice (032) x[Toggle]",
-  "Paketti:Wipe&Slice (064) x[Toggle]",
-  "Paketti:Wipe&Slice (128) x[Toggle]",  
+    "Paketti:Wipe&Slice (004) x[Toggle]",
+    "Paketti:Wipe&Slice (008) x[Toggle]",
+    "Paketti:Wipe&Slice (016) x[Toggle]",
+    "Paketti:Wipe&Slice (032) x[Toggle]",
+    "Paketti:Wipe&Slice (064) x[Toggle]",
+    "Paketti:Wipe&Slice (128) x[Toggle]",  
   },
   ["Track DSP Control"] = {
     "Paketti:Bypass All Other Track DSP Devices (Toggle)",  
@@ -853,6 +848,7 @@ function showPakettiKeyBindingsDialog()
   -- Check if the dialog is already visible and close it
   if dialog and dialog.visible then
     dialog:close()
+     return
   end
 
   local keyBindingsPath = detectOSAndGetKeyBindingsPath()
@@ -956,10 +952,7 @@ function showPakettiKeyBindingsDialog()
 end
 
 -- Add main menu entry for Paketti keybindings dialog
-renoise.tool():add_menu_entry {
-  name = "Main Menu:Tools:Paketti..:!Preferences:Paketti KeyBindings..",
-  invoke = function() showPakettiKeyBindingsDialog() end
-}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:!Preferences:Paketti KeyBindings..",invoke = function() showPakettiKeyBindingsDialog() end}
 
 -- Add specific menu entries under corresponding identifiers
 local identifiers = {
@@ -974,17 +967,12 @@ local identifiers = {
 }
 
 for _, identifier in ipairs(identifiers) do
-  renoise.tool():add_menu_entry {
-    name = identifier .. ":Paketti..:Show Paketti KeyBindings",
-    invoke = function() showPakettiKeyBindingsDialog(identifier) end
-  }
+  renoise.tool():add_menu_entry {name = identifier .. ":Paketti..:Show Paketti KeyBindings",
+    invoke = function() showPakettiKeyBindingsDialog(identifier) end}
 end
 
 -- Add keybinding
-renoise.tool():add_keybinding {
-  name = "Global:Paketti:Show Paketti KeyBindings Dialog",
-  invoke = function() showPakettiKeyBindingsDialog() end
-}
+renoise.tool():add_keybinding {name="Global:Paketti:Show Paketti KeyBindings Dialog",invoke=function() showPakettiKeyBindingsDialog() end}
 
 -------------------------------------------
 
@@ -1233,6 +1221,7 @@ function showRenoiseKeyBindingsDialog()
   -- Check if the dialog is already visible and close it
   if renoise_dialog and renoise_dialog.visible then
     renoise_dialog:close()
+    return
   end
 
   local keyBindingsPath = detectOSAndGetKeyBindingsPath()

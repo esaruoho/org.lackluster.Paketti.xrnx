@@ -1294,12 +1294,20 @@ if selection then
   end
 else
   -- Handle single-line modification if no selection is available
-  local effect_col_idx = renoise.song().selected_effect_column_index
-  local effect_column = song.selected_line.effect_columns[effect_col_idx]
+  if renoise.song().selected_effect_column_index ~= 0 then 
+      local effect_col_idx = renoise.song().selected_effect_column_index
+      local effect_column = song.selected_line.effect_columns[effect_col_idx]
+      if effect_column then
+        effect_column[propertyName] = math.floor(math.max(minValue, math.min(scaledValue, maxValue)))
+      end
+  else 
+  local effect_column = song.selected_line.effect_columns[1]
   if effect_column then
     effect_column[propertyName] = math.floor(math.max(minValue, math.min(scaledValue, maxValue)))
+  end 
   end
-end
+  end
+
 end
 -- Scales an input value from a given input range to a specified output range
 function pakettiScaleValuesEffectColumn(input, inputMin, inputMax, outputMin, outputMax)
@@ -1315,7 +1323,6 @@ renoise.tool():add_midi_mapping{name="Paketti:Midi Change 05 Effect Column Value
     renoise.song().selected_track.visible_effect_columns = 1 end
     
         pakettiMidiValuesEffectColumn(0, 255, 1, 'amount_value', message.int_value)
-  
   end
 end}
 
@@ -1425,4 +1432,63 @@ end}
 
 end
 
+---------
+local previous_value = nil
 
+function transpose_notes_by_midi_knob(message)
+  local song = renoise.song()
+
+  -- Extract the MIDI value from the message
+  local value = message.int_value
+
+  -- Determine the change in MIDI value
+  local change = 0
+  if previous_value then
+    change = value - previous_value
+  end
+  previous_value = value
+
+  -- No change detected, return
+  if change == 0 then
+    return
+  end
+
+  -- Determine the direction of transpose
+  local transpose_amount = 0
+  if change > 0 then
+    transpose_amount = 1
+  elseif change < 0 then
+    transpose_amount = -1
+  end
+
+  -- Transpose the notes based on the selection or the selected note column
+  if song.selection_in_pattern then
+    local selection = song.selection_in_pattern
+    for track_idx = selection.start_track, selection.end_track do
+      for line_idx = selection.start_line, selection.end_line do
+        local line = song:pattern(song.selected_pattern_index):track(track_idx):line(line_idx)
+        for col_idx = selection.start_column, selection.end_column do
+          local note_col = line:note_column(col_idx)
+          if note_col and not note_col.is_empty then
+            note_col.note_value = math.max(0, math.min(note_col.note_value + transpose_amount, 119))
+          end
+        end
+      end
+    end
+  else
+    local line = song.selected_line
+    local note_col = line:note_column(song.selected_note_column_index)
+    if note_col and not note_col.is_empty and note_col.note_value < 120 then
+      note_col.note_value = math.max(0, math.min(note_col.note_value + transpose_amount, 119))
+    end
+  end
+
+  -- Ensure focus returns to the pattern editor
+  renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
+end
+
+-- Add MIDI mapping for the transpose function
+renoise.tool():add_midi_mapping{
+  name = "Global:Tools:Transpose Notes by MIDI Knob",
+  invoke = transpose_notes_by_midi_knob
+}

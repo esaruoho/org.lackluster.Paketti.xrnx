@@ -106,7 +106,73 @@ make_gui=vb:column{width=dialog_width,vb:space{height=5},vb:horizontal_aligner{m
     vb.views.exe_button.text=pakettiReSpeakRevertPath(ReSpeak.executable)
     vb.views.exe_button.width=math.min(#vb.views.exe_button.text*8,control_width)
   end
-end}},vb:space{height=5},vb:row{vb:button{id="load_textfile_button",text="Load Textfile",width=button_width,height=24,notifier=function()pakettiReSpeakLoadTextfile(false)end},vb:button{text="Refresh",width=button_width,height=24,notifier=function()
+end}},vb:space{height=5},
+vb:row{vb:button{id="randomize_everything",text="Randomized String",width=button_width+button_width,height=24,notifier=function()
+ local characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#€%&/()=?"
+  local result = ""
+  
+  -- Randomize the number of characters (between 10 and 100)
+  local count = math.random(10, 100)
+  
+  for i = 1, count do
+    -- Randomly select a character from the set
+    local random_index = math.random(1, #characters)
+    result = result .. characters:sub(random_index, random_index)
+  end
+
+  -- Update the UI elements with the generated content
+  vb.views.text_field.text = result
+  ReSpeak.text.value = result
+
+  -- Call the function to create a sample
+  pakettiReSpeakCreateSample()
+end}},
+
+vb:row{
+
+vb:button{id="randomize_consonants",text="Randomize Consonants",width=button_width,height=24,notifier=function()
+  local consonants = "bcdfghjklmnpqrstvwxyz"
+  local result = ""
+  
+  -- Randomize the number of consonants (between 10 and 100)
+  local count = math.random(10, 100)
+  
+  for i = 1, count do
+    -- Randomly select a consonant
+    local random_index = math.random(1, #consonants)
+    result = result .. consonants:sub(random_index, random_index)
+  end
+
+  -- Update the UI elements with the generated content
+  vb.views.text_field.text = result
+  ReSpeak.text.value = result
+
+  -- Call the function to create a sample
+  pakettiReSpeakCreateSample()
+  end},vb:button{id="randomize_vowels",text="Randomize Vowels",width=button_width,height=24,notifier=function()
+   local vowels = "aeiou"
+  local result = ""
+  
+  -- Randomize the number of vowels (between 10 and 100)
+  local count = math.random(10, 100)
+  
+  for i = 1, count do
+    -- Randomly select a vowel
+    local random_index = math.random(1, #vowels)
+    result = result .. vowels:sub(random_index, random_index)
+  end
+
+  -- Update the UI elements with the generated content
+  vb.views.text_field.text = result
+  ReSpeak.text.value = result
+
+  -- Call the function to create a sample
+  pakettiReSpeakCreateSample()
+  end}},
+vb:row{
+
+
+vb:button{id="load_textfile_button",text="Load Textfile",width=button_width,height=24,notifier=function()pakettiReSpeakLoadTextfile(false)end},vb:button{text="Refresh",width=button_width,height=24,notifier=function()
   pakettiReSpeakLoadTextfile(true)
   print("Refresh: loaded textfile and updated textfield")
   ReSpeak.text.value=vb.views.text_field.text
@@ -274,11 +340,51 @@ end},vb:button{id="save_button",width=button_width,height=24,text="Save Settings
       print("Saved Render on Change:",ReSpeak.render_on_change.value)
     end
   end
-end}},vb:space{height=20},vb:horizontal_aligner{mode="center",vb:button{text="Generate Sample",width=button_width,height=24,notifier=function()
+end}},vb:space{height=5},vb:horizontal_aligner{mode="center",vb:button{text="Generate Sample",width=button_width,height=24,notifier=function()
   ReSpeak.text.value=string.gsub(vb.views.text_field.text,"\n"," ")
   pakettiReSpeakCreateSample()
-  renoise.app().window.active_middle_frame=renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
-end}},vb:space{height=10}}
+  renoise.app().window.active_middle_frame=renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR end},
+vb:button{text="Randomize Settings",width=button_width, height=24,notifier=function()
+  vb.views.language.value = math.random(1, #LANGUAGE_NAMES)
+  ReSpeak.language.value = vb.views.language.value
+
+  -- Set random voice value
+  vb.views.voice.value = math.random(1, #VOICES)
+  ReSpeak.voice.value = vb.views.voice.value
+
+  -- Set random word gap
+  local random_gap = math.random(1, 200)
+  vb.views.gap_box.value = random_gap
+  ReSpeak.word_gap.value = random_gap
+
+  -- Set random pitch capitals
+  local random_capitals = math.random(1, 100)
+  vb.views.capitals_box.value = random_capitals
+  ReSpeak.capitals.value = random_capitals
+
+  -- Set random pitch
+  local random_pitch = math.random(0, 99)
+  vb.views.pitch_box.value = random_pitch
+  ReSpeak.pitch.value = random_pitch
+
+--[[  -- Set random amplitude
+  local random_amplitude = math.random(0, 30)
+  vb.views.amplitude_box.value = random_amplitude
+  ReSpeak.amplitude.value = random_amplitude
+]]--
+  -- Set random speed
+  local random_speed = math.random(1, 500)
+  vb.views.speed_box.value = random_speed
+  ReSpeak.speed.value = random_speed
+
+  -- Optionally trigger sample creation if needed
+  if ReSpeak.render_on_change.value then
+    pakettiReSpeakCreateSample(vb.views.text_field.text)
+  end
+
+end},
+
+},vb:space{height=10}}
 
 function pakettiReSpeakPrepare()
   print("Starting dialog with settings:")
@@ -402,6 +508,7 @@ function pakettiReSpeakCreateSample(custom_text)
     song.selected_instrument:insert_sample_at(1)
     local sample=song.selected_instrument.samples[1]
     sample.name="eSpeak ("..LANGUAGE_NAMES[ReSpeak.language.value]..", "..VOICES_NAMES[ReSpeak.voice.value]..")"
+    normalize_selected_sample()
   end
 
   instrument.name="eSpeak ("..LANGUAGE_NAMES[ReSpeak.language.value]..", "..VOICES_NAMES[ReSpeak.voice.value]..")"
@@ -417,6 +524,7 @@ function pakettiReSpeakCreateSample(custom_text)
   local bool,result=buffer:load_from(path)
   local currentActiveMiddleFrame=renoise.app().window.active_middle_frame
   renoise.app().window.active_middle_frame=renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
+normalize_selected_sample()
 end
 
 function pakettiReSpeakFileExists(path)

@@ -1,27 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ScriptingToolPreferences doc_version="0">
   <selectionNewInstrumentLoop>2</selectionNewInstrumentLoop>
-  <pakettiLoaderLoopMode>2</pakettiLoaderLoopMode>
+  <selectionNewInstrumentInterpolation>4</selectionNewInstrumentInterpolation>
+  <pakettiLoaderLoopMode>1.0</pakettiLoaderLoopMode>
   <RandomBPM>false</RandomBPM>
   <pakettiReSpeak>
-    <pitch>35</pitch>
-    <capitals>5</capitals>
-    <text>Good afternoon, this is eSpeak, a Text-to-Speech engine, speaking. Shall we play a game?</text>
-    <voice>2</voice>
+    <pitch>37</pitch>
+    <capitals>16</capitals>
+    <text>BYziLoCEgXZ!!!yoaT%5yiwAGj?r50F(dUa8U</text>
+    <voice>39</voice>
     <executable>/opt/homebrew/bin/espeak-ng</executable>
-    <render_on_change>false</render_on_change>
-    <amplitude>40</amplitude>
-    <word_gap>3</word_gap>
-    <clear_all_samples>true</clear_all_samples>
-    <language>40</language>
-    <speed>150</speed>
+    <render_on_change>true</render_on_change>
+    <amplitude>3</amplitude>
+    <word_gap>38</word_gap>
+    <clear_all_samples>false</clear_all_samples>
+    <language>93</language>
+    <speed>180</speed>
   </pakettiReSpeak>
   <pakettiLoaderInterpolation>4</pakettiLoaderInterpolation>
   <pakettiDefaultXRNI>Presets/12st_Pitchbend.xrni</pakettiDefaultXRNI>
   <loadPaleGreenTheme>false</loadPaleGreenTheme>
   <RandomizeSettings>
-    <pakettiRandomizeAllDevicesPercentageUserPreference1>10</pakettiRandomizeAllDevicesPercentageUserPreference1>
-    <pakettiRandomizeAllDevicesPercentage>50</pakettiRandomizeAllDevicesPercentage>
+    <pakettiRandomizeAllDevicesPercentageUserPreference1>2.5806451612903225</pakettiRandomizeAllDevicesPercentageUserPreference1>
+    <pakettiRandomizeAllDevicesPercentage>65.600000000000009</pakettiRandomizeAllDevicesPercentage>
     <pakettiRandomizeAllDevicesPercentageUserPreference3>50</pakettiRandomizeAllDevicesPercentageUserPreference3>
     <pakettiRandomizeAllPluginsPercentageUserPreference5>50</pakettiRandomizeAllPluginsPercentageUserPreference5>
     <pakettiRandomizeSelectedDevicePercentageUserPreference1>2.80000000000005</pakettiRandomizeSelectedDevicePercentageUserPreference1>
@@ -35,21 +36,21 @@
     <pakettiRandomizeAllPluginsPercentageUserPreference1>10</pakettiRandomizeAllPluginsPercentageUserPreference1>
     <pakettiRandomizeAllDevicesPercentageUserPreference5>100</pakettiRandomizeAllDevicesPercentageUserPreference5>
     <pakettiRandomizeAllPluginsPercentage>50</pakettiRandomizeAllPluginsPercentage>
-    <pakettiRandomizeSelectedDevicePercentageUserPreference4>100</pakettiRandomizeSelectedDevicePercentageUserPreference4>
+    <pakettiRandomizeSelectedDevicePercentageUserPreference4>68.400000000000091</pakettiRandomizeSelectedDevicePercentageUserPreference4>
     <pakettiRandomizeSelectedPluginPercentageUserPreference5>50</pakettiRandomizeSelectedPluginPercentageUserPreference5>
     <pakettiRandomizeSelectedPluginPercentageUserPreference4>40</pakettiRandomizeSelectedPluginPercentageUserPreference4>
     <pakettiRandomizeAllPluginsPercentageUserPreference2>20</pakettiRandomizeAllPluginsPercentageUserPreference2>
-    <pakettiRandomizeSelectedDevicePercentage>2.80000000000005</pakettiRandomizeSelectedDevicePercentage>
+    <pakettiRandomizeSelectedDevicePercentage>68.400000000000091</pakettiRandomizeSelectedDevicePercentage>
     <pakettiRandomizeSelectedPluginPercentage>50</pakettiRandomizeSelectedPluginPercentage>
     <pakettiRandomizeSelectedDevicePercentageUserPreference2>15.20000000000006</pakettiRandomizeSelectedDevicePercentageUserPreference2>
-    <pakettiRandomizeAllDevicesPercentageUserPreference4>100</pakettiRandomizeAllDevicesPercentageUserPreference4>
+    <pakettiRandomizeAllDevicesPercentageUserPreference4>65.600000000000009</pakettiRandomizeAllDevicesPercentageUserPreference4>
     <pakettiRandomizeAllDevicesPercentageUserPreference2>25</pakettiRandomizeAllDevicesPercentageUserPreference2>
   </RandomizeSettings>
-  <PakettiMoveSilenceThreshold>0.0121</PakettiMoveSilenceThreshold>
+  <PakettiMoveSilenceThreshold>0.012</PakettiMoveSilenceThreshold>
   <pakettiSlideContentAutomationToo>true</pakettiSlideContentAutomationToo>
   <pakettiEditMode>2</pakettiEditMode>
   <WipeSlices>
-    <sliceCounter>2</sliceCounter>
+    <sliceCounter>15</sliceCounter>
     <WipeSlicesBeatSyncMode>2</WipeSlicesBeatSyncMode>
     <WipeSlicesLoopRelease>false</WipeSlicesLoopRelease>
     <WipeSlicesMuteGroup>1.0</WipeSlicesMuteGroup>
@@ -61,8 +62,8 @@
     <WipeSlicesNNA>1.0</WipeSlicesNNA>
   </WipeSlices>
   <pakettiCheatSheet>
-    <pakettiCheatSheetRandomizeMax>8.0244755244755677</pakettiCheatSheetRandomizeMax>
-    <pakettiCheatSheetRandomizeMin>2</pakettiCheatSheetRandomizeMin>
+    <pakettiCheatSheetRandomizeMax>68.65384615384616</pakettiCheatSheetRandomizeMax>
+    <pakettiCheatSheetRandomizeMin>14.265734265734274</pakettiCheatSheetRandomizeMin>
     <pakettiCheatSheetRandomizeDontOverwrite>false</pakettiCheatSheetRandomizeDontOverwrite>
     <pakettiCheatSheetRandomizeWholeTrack>false</pakettiCheatSheetRandomizeWholeTrack>
     <pakettiCheatSheetRandomizeSwitch>false</pakettiCheatSheetRandomizeSwitch>
@@ -72,23 +73,25 @@
   <renderSampleRate>88200</renderSampleRate>
   <pakettiLoaderFilterType>LP Moog</pakettiLoaderFilterType>
   <pakettiLoaderOverSampling>true</pakettiLoaderOverSampling>
+  <selectionNewInstrumentAutoFade>true</selectionNewInstrumentAutoFade>
   <upperFramePreference>0.0</upperFramePreference>
   <pakettiLoaderOneshot>false</pakettiLoaderOneshot>
-  <selectionNewInstrumentSelect>false</selectionNewInstrumentSelect>
   <pakettiPhraseInitDialog>
-    <NoteColumns>1.0</NoteColumns>
+    <NoteColumns>2</NoteColumns>
     <LPB>4</LPB>
     <VolumeColumnVisible>true</VolumeColumnVisible>
-    <Autoseek>true</Autoseek>
     <Name>Phrase 01</Name>
-    <Length>31</Length>
+    <Autoseek>true</Autoseek>
+    <Shuffle>22</Shuffle>
+    <Length>32</Length>
     <SetName>false</SetName>
-    <Shuffle>0.0</Shuffle>
-    <EffectColumns>0.0</EffectColumns>
-    <InstrumentColumnVisible>false</InstrumentColumnVisible>
-    <DelayColumnVisible>false</DelayColumnVisible>
-    <PanningColumnVisible>false</PanningColumnVisible>
+    <SampleFXColumnVisible>false</SampleFXColumnVisible>
+    <EffectColumns>5</EffectColumns>
+    <InstrumentColumnVisible>true</InstrumentColumnVisible>
+    <DelayColumnVisible>true</DelayColumnVisible>
+    <PanningColumnVisible>true</PanningColumnVisible>
   </pakettiPhraseInitDialog>
+  <selectionNewInstrumentSelect>false</selectionNewInstrumentSelect>
   <pakettiGater>
     <GateSelection07>
       <GateSelection07Item/>
@@ -125,21 +128,33 @@
     </GateSelection03>
   </pakettiGater>
   <pakettiColuga>
-    <pakettiColugaAmountOfVideos>1.0</pakettiColugaAmountOfVideos>
+    <pakettiColugaAmountOfVideos>28</pakettiColugaAmountOfVideos>
     <pakettiColugaNewInstrumentOrSameInstrument>true</pakettiColugaNewInstrumentOrSameInstrument>
     <pakettiColugaPathToSave>/Users/esaruoho/Music/samples/colugatest/ColugaSampleSave/</pakettiColugaPathToSave>
     <pakettiColugaLoopMode>2</pakettiColugaLoopMode>
     <pakettiColugaOutputDirectory>/Users/esaruoho/Music/samples/colugatest/</pakettiColugaOutputDirectory>
     <pakettiColugaClipLength>10</pakettiColugaClipLength>
-    <pakettiColugaFormatToSave>1.0</pakettiColugaFormatToSave>
+    <pakettiColugaFormatToSave>3</pakettiColugaFormatToSave>
     <pakettiColugaLoadWholeVideo>true</pakettiColugaLoadWholeVideo>
   </pakettiColuga>
+  <OctaMEDPickPutSlots>
+    <Slot10>Slot 10: Empty</Slot10>
+    <UseEditStep>false</UseEditStep>
+    <SetSelectedInstrument>false</SetSelectedInstrument>
+    <Slot09>Slot 09: Empty</Slot09>
+    <Slot01>C-3 08 7F 20 30 ....||0B00|0D00</Slot01>
+    <Slot03>--- .. .. .. 55 ....||</Slot03>
+    <Slot05>OFF .. .. .. .. .... | --- .. .. .. .. .... | --- .. .. .. .. .... | --- .. .. .. .. ....||</Slot05>
+    <Slot04>--- .. .. .. AA .... | --- .. .. .. 55 .... | --- .. .. .. AA .... | --- .. .. .. AA ....||</Slot04>
+    <Slot08>--- .. .. .. .. 0B00||0D30</Slot08>
+    <Slot07>C-4 00 30 50 30 0AF0 | F-4 00 .. .. .. ....||0B00|0S00|0E00|0F00</Slot07>
+    <Slot06>OFF .. .. .. .. .... | --- .. .. .. .. .... | --- .. .. .. .. .... | --- .. .. .. .. ....||</Slot06>
+    <Slot02>C-4 00 .. .. .. .... | D-4 00 .. .. .. .... | F-4 00 .. .. .. .... | G-4 00 .. .. .. ....||0B05|0C04|0D03|0E01</Slot02>
+  </OctaMEDPickPutSlots>
   <pakettiThemeSelector>
     <FavoritedList>
       <Favorited>&lt;No Theme Selected&gt;</Favorited>
-      <Favorited>kytdkut - base16 atelier cave</Favorited>
       <Favorited>Pro Master 9000 (gj)</Favorited>
-      <Favorited>Architect Inverted</Favorited>
       <Favorited>Little Phatty Theme</Favorited>
       <Favorited>ulneiz_graycream</Favorited>
       <Favorited>phase_plant</Favorited>
@@ -148,21 +163,23 @@
       <Favorited>Pico-8 Dusty Chocolate</Favorited>
       <Favorited>Academic</Favorited>
       <Favorited>gruvbox</Favorited>
+      <Favorited>Shockbroker v9c</Favorited>
     </FavoritedList>
     <RenoiseLaunchFavoritesLoad>true</RenoiseLaunchFavoritesLoad>
     <RenoiseLaunchRandomLoad>false</RenoiseLaunchRandomLoad>
-    <PreviousSelectedTheme>Academic</PreviousSelectedTheme>
+    <PreviousSelectedTheme>Pro Master 9000 (gj)</PreviousSelectedTheme>
   </pakettiThemeSelector>
   <pakettiLoaderNNA>2</pakettiLoaderNNA>
   <pakettiDefaultDrumkitXRNI>12st_Pitchbend_Drumkit_C0.xrni</pakettiDefaultDrumkitXRNI>
   <pakettiLoaderLoopExit>false</pakettiLoaderLoopExit>
-  <renderBypass>false</renderBypass>
+  <selectionNewInstrumentAutoseek>false</selectionNewInstrumentAutoseek>
+  <renderBypass>true</renderBypass>
   <pakettiPitchbendLoaderEnvelope>false</pakettiPitchbendLoaderEnvelope>
   <pakettiLoaderAutoseek>false</pakettiLoaderAutoseek>
   <AppSelection>
     <SmartFoldersApp3>/Users/esaruoho/Music/rMBP_2024_01_27 samples/_drums/</SmartFoldersApp3>
     <AppSelection1>/Applications/Audacity.app</AppSelection1>
-    <AppSelection6>/Applications/Firefox.app</AppSelection6>
+    <AppSelection6>/Applications/Discord.app</AppSelection6>
     <SmartFoldersApp1>/Users/esaruoho/Music/samples/LiveSmartFolder/</SmartFoldersApp1>
     <SmartFoldersApp2>/Users/esaruoho/Music/samples/LogicSmartFolder/</SmartFoldersApp2>
     <AppSelection3>/Applications/Logic Pro X.app</AppSelection3>
@@ -173,5 +190,5 @@
   <pakettiLoaderAutoFade>true</pakettiLoaderAutoFade>
   <renderBitDepth>32</renderBitDepth>
   <_0G01_Loader>false</_0G01_Loader>
-  <PakettiStripSilenceThreshold>0.0121</PakettiStripSilenceThreshold>
+  <PakettiStripSilenceThreshold>0.012</PakettiStripSilenceThreshold>
 </ScriptingToolPreferences>

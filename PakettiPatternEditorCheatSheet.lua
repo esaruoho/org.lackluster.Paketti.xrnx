@@ -175,8 +175,6 @@ function randomizeSmatterEffectColumnCustom(effect_command, fill_percentage, min
   renoise.app():show_status("Random " .. effect_command .. " commands applied to effect columns of the selected track(s).")
 end
 
-
-
 function randomizeSmatterEffectColumnC0(fill_all)
   randomizeSmatterEffectColumnCustom("0C", fill_all, 0x00, 0x0F)
 end
@@ -447,9 +445,6 @@ local max_increment_button = vb:button {
   end
 }
 
-
-
-
   local randomize_section = vb:column {
     vb:text {style = "strong", text = "Randomize Effect Value content"},
     vb:horizontal_aligner {mode = "left", randomize_cb, vb:text {text = "Randomize"}},
@@ -643,7 +638,7 @@ local max_increment_button = vb:button {
                 renoise.app():show_status("This track type does not have a Sample FX Column available.")
               end
               if s.selected_note_column then
-                s.selected_note_column.panning_value = v
+                s.selected_note_column.effect_amount_value = v6
               end
             end
           end

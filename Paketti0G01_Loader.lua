@@ -131,7 +131,7 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
     word_gap=3,
     capitals=5,
     pitch=35,
-    amplitude=40,
+    amplitude=05,
     speed=150,
     language=40,
     voice=2,
@@ -209,18 +209,17 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
 }, 
 
 pakettiGater = {
-
-GateSelection01 = {""},
-GateSelection02 = {""},
-GateSelection03 = {""},
-GateSelection04 = {""},
-GateSelection05 = {""},
-GateSelection06 = {""},
-GateSelection07 = {""},
-GateSelection08 = {""},
-GateSelection09 = {""},
-GateSelection10 = {""},
-currentSelection = {""}
+  GateSelection01 = {""},
+  GateSelection02 = {""},
+  GateSelection03 = {""},
+  GateSelection04 = {""},
+  GateSelection05 = {""},
+  GateSelection06 = {""},
+  GateSelection07 = {""},
+  GateSelection08 = {""},
+  GateSelection09 = {""},
+  GateSelection10 = {""},
+  currentSelection = {""}
 },
 
 pakettiPhraseInitDialog = {
@@ -230,6 +229,7 @@ pakettiPhraseInitDialog = {
   PanningColumnVisible = false,
   InstrumentColumnVisible = false,
   DelayColumnVisible = false,
+  SampleFXColumnVisible = false,
   NoteColumns = 1,
   EffectColumns = 0,
   Shuffle = 0,
@@ -290,8 +290,9 @@ end
 
 
 -- Debugging: Print the initial state
-print("Initial filter type:", preferences.pakettiLoaderFilterType.value)  -- Should be "LP Clean"
-print("Initial popup index:", initial_value)  -- Should be the correct index for "LP Clean"
+--print("Initial filter type:", preferences.pakettiLoaderFilterType.value)  -- Should be "LP Clean"
+--print("Initial popup index:", initial_value)  -- Should be the correct index for "LP Clean"
+
 
 
 
@@ -366,8 +367,10 @@ local upperbuttonwidth=160
  -- Get the initial value (index) for the popup
 local initial_value = get_filter_type_index(preferences.pakettiLoaderFilterType.value)
 
-    local pakettiDefaultXRNIDisplayId = "pakettiDefaultXRNIDisplay_" .. tostring(os.time())
-    local pakettiDefaultDrumkitXRNIDisplayId = "pakettiDefaultDrumkitXRNIDisplay_" .. tostring(os.time())
+local pakettiDefaultXRNIDisplayId = "pakettiDefaultXRNIDisplay_" .. tostring(math.random(2,30000))
+
+--    local pakettiDefaultXRNIDisplayId = "pakettiDefaultXRNIDisplay_" .. tostring(os.time())
+    local pakettiDefaultDrumkitXRNIDisplayId = "pakettiDefaultDrumkitXRNIDisplay_" .. tostring(math.random(2,30000))
 
 local dialog_content = vb:column {
   margin=10,
@@ -376,8 +379,7 @@ local dialog_content = vb:column {
   vb:column {
     style="group",margin=10, width="100%",
     vb:row {
-      vb:button{text="About Paketti...", width=50, notifier=function() show_about_dialog() end},
-      vb:button{text="Donate", width=50, notifier=function() pakettiDonationsDialog() end},   
+      vb:button{text="About Paketti/Donations", width=50, notifier=function() show_about_dialog() end},
       vb:button{text="Theme Selector",width=upperbuttonwidth-100,notifier=function() pakettiThemeSelectorDialogShow() end},
       vb:button{text="Gater",width=upperbuttonwidth-150,notifier=function()
         local max_rows=nil
@@ -387,11 +389,12 @@ local dialog_content = vb:column {
           renoise.app().window.active_middle_frame=renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
         end
       end},
-      vb:button{text="Effect Column CheatSheet",width=upperbuttonwidth,notifier=function() CheatSheet() end},
+      vb:button{text="Audio Processing",width=upperbuttonwidth-100,notifier=function() PakettiAudioProcessingToolsDialogShow() end},
+      vb:button{text="Effect CheatSheet",width=40,notifier=function() CheatSheet() end},
       vb:button{text="Phrase Init Dialog",width=upperbuttonwidth-100,notifier=function() pakettiPhraseSettingsDialogShow() end},
       vb:button{text="Randomize Plugins/Devices", width=50, notifier=function()
       openCombinedRandomizerDialog() end},
-      vb:button{text="Configure Launch App selection / Paths", width=50, notifier=function()
+      vb:button{text="Configure Launch App Selection/Paths", width=50, notifier=function()
       show_app_selection_dialog() end},
       vb:button{text="MIDI Populator",width=upperbuttonwidth-100,notifier=function() generaMIDISetupShowCustomDialog() end},
       vb:button{text="KeyBindings",width=upperbuttonwidth-100,notifier=function() showPakettiKeyBindingsDialog() end},
@@ -465,10 +468,6 @@ horizontal_rule(),
           print (preferences.selectionNewInstrumentAutoFade.value)
           end}
         }},
-                
-         
-
-
       -- Render Settings wrapped in group
       horizontal_rule(),
       vb:column {
@@ -487,39 +486,42 @@ horizontal_rule(),
 
       -- Strip Silence / Move Beginning Silence to End wrapped in group
       horizontal_rule(),
-      vb:column {
-        style="group",margin=10, width="100%",
-      
-        vb:text{style="strong",font="bold",text="Silence Settings"}, -- Applied bold and strong
-    vb:row {
-      vb:text {text = "Strip Silence Threshold:", width=150},
-      vb:minislider {
-        min = 0,
-        max = 1,
-        value = preferences.PakettiStripSilenceThreshold.value,
-        width = 200,
-        notifier = function(value)
-          threshold_label.text = string.format("%.3f%%", value * 100)
-          preferences.PakettiStripSilenceThreshold.value = value
-        end
-      },
-      threshold_label
-    },
-    vb:row {
-      vb:text {text = "Move Silence Threshold:", width=150},
-      vb:minislider {
-        min = 0,
-        max = 1,
-        value = preferences.PakettiMoveSilenceThreshold.value,
-        width = 200,
-        notifier = function(value)
-          threshold_label.text = string.format("%.3f%%", value * 100)
-          preferences.PakettiMoveSilenceThreshold.value = value
-        end
-      },
-      begthreshold_label
-        },
-      },
+ vb:column {
+  style = "group", margin = 10, width = "100%",
+
+  -- Title text
+  vb:text{style = "strong", font = "bold", text = "Silence Settings"},
+
+  -- First row for Strip Silence Threshold
+  vb:row {
+    vb:text {text = "Strip Silence Threshold:", width = 150},
+    vb:minislider {
+      min = 0,
+      max = 1,
+      value = preferences.PakettiStripSilenceThreshold.value,
+      width = 200,
+      notifier = function(value)
+        threshold_label.text = string.format("%.3f%%", value * 100) -- Update the label
+        preferences.PakettiStripSilenceThreshold.value = value
+      end
+    }
+  },
+
+  -- Second row for Move Silence Threshold
+  vb:row {
+    vb:text {text = "Move Silence Threshold:", width = 150},
+    vb:minislider {
+      min = 0,
+      max = 1,
+      value = preferences.PakettiMoveSilenceThreshold.value,
+      width = 200,
+      notifier = function(value)
+        begthreshold_label.text = string.format("%.3f%%", value * 100) -- Update the label
+        preferences.PakettiMoveSilenceThreshold.value = value
+      end
+    }
+  }
+},
 
 
 
@@ -564,9 +566,45 @@ horizontal_rule(),
         vb:row { vb:text{text="Loop Release/Exit Mode",width=150},vb:checkbox{value=preferences.pakettiLoaderLoopExit.value,notifier=function(value) preferences.pakettiLoaderLoopExit.value=value end} },
         vb:row { vb:text{text="Enable AHDSR Envelope",width=150},vb:checkbox{value=preferences.pakettiPitchbendLoaderEnvelope.value,notifier=function(value) preferences.pakettiPitchbendLoaderEnvelope.value=value end} },
         vb:row { vb:text{text="FilterType",width=150},vb:popup{items=filter_types,value=initial_value,width=200,notifier=function(value) preferences.pakettiLoaderFilterType.value=filter_types[value] preferences:save_as("preferences.xml") end} },
-        vb:row { vb:text{text="Default XRNI to use:",width=150},vb:textfield{text=preferences.pakettiDefaultXRNI.value:match("[^/\\]+$"),width=300,id=pakettiDefaultXRNIDisplayId,notifier=function(value) preferences.pakettiDefaultXRNI.value=value end},vb:button{text="Browse",width=100,notifier=function()
+--[[        vb:row { vb:text{text="Default XRNI to use:",width=150},vb:textfield{text=preferences.pakettiDefaultXRNI.value:match("[^/\\]+$"),width=300,id=pakettiDefaultXRNIDisplayId,notifier=function(value) preferences.pakettiDefaultXRNI.value=value end},vb:button{text="Browse",width=100,notifier=function()
           local filePath=renoise.app():prompt_for_filename_to_read({"*.XRNI"},"Paketti Default XRNI Selector Dialog")
           if filePath and filePath~="" then preferences.pakettiDefaultXRNI.value=filePath vb.views[pakettiDefaultXRNIDisplayId].text=filePath:match("[^/\\]+$") else renoise.app():show_status("No XRNI Instrument was selected") end end} },
+          --]]
+-- Generate a unique id based on timestamp or counter
+
+vb:row { 
+  vb:text {
+    text = "Default XRNI to use:", 
+    width = 150
+  },
+  
+  vb:textfield {
+    text = preferences.pakettiDefaultXRNI.value:match("[^/\\]+$"), 
+    width = 300, 
+    id = pakettiDefaultXRNIDisplayId, -- Use dynamic ID
+    notifier = function(value)
+      preferences.pakettiDefaultXRNI.value = value
+    end
+  },
+  
+  vb:button {
+    text = "Browse", 
+    width = 100, 
+    notifier = function()
+      local filePath = renoise.app():prompt_for_filename_to_read({"*.XRNI"}, "Paketti Default XRNI Selector Dialog")
+      
+      if filePath and filePath ~= "" then 
+        preferences.pakettiDefaultXRNI.value = filePath 
+        vb.views[pakettiDefaultXRNIDisplayId].text = filePath:match("[^/\\]+$")
+      else 
+        renoise.app():show_status("No XRNI Instrument was selected")
+      end
+    end
+  }
+},
+          
+          
+          
         vb:row { vb:text{text="Preset Files:",width=150},vb:popup{items=presetFiles,width=300,notifier=function(value)
           local selectedFile=presetFiles[value] preferences.pakettiDefaultXRNI.value="Presets/"..selectedFile vb.views[pakettiDefaultXRNIDisplayId].text=selectedFile end} },
      

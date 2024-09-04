@@ -233,56 +233,56 @@ function ptnLength(number) local rs=renoise.song() rs.patterns[rs.selected_patte
 function phrLength(number) local s=renoise.song() 
 renoise.song().instruments[renoise.song().selected_instrument_index].phrases[renoise.song().selected_phrase_index].number_of_lines=number end
 
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 001",invoke=function() ptnLength(1) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 004",invoke=function() ptnLength(4) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 006",invoke=function() ptnLength(6) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 008",invoke=function() ptnLength(8) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 012",invoke=function() ptnLength(12) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 016",invoke=function() ptnLength(16) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 024",invoke=function() ptnLength(24) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 032",invoke=function() ptnLength(32) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 048",invoke=function() ptnLength(48) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 064",invoke=function() ptnLength(64) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 096",invoke=function() ptnLength(96) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 128",invoke=function() ptnLength(128) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 192",invoke=function() ptnLength(192) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 256",invoke=function() ptnLength(256) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 384",invoke=function() ptnLength(384) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 512",invoke=function() ptnLength(512) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 001 (001)",invoke=function() ptnLength(1) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 004 (004)",invoke=function() ptnLength(4) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 006 (006)",invoke=function() ptnLength(6) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 008 (008)",invoke=function() ptnLength(8) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 012 (00C)",invoke=function() ptnLength(12) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 016 (010)",invoke=function() ptnLength(16) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 024 (018)",invoke=function() ptnLength(24) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 032 (020)",invoke=function() ptnLength(32) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 048 (030)",invoke=function() ptnLength(48) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 064 (040)",invoke=function() ptnLength(64) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 096 (060)",invoke=function() ptnLength(96) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 128 (080)",invoke=function() ptnLength(128) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 192 (0C0)",invoke=function() ptnLength(192) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 256 (100)",invoke=function() ptnLength(256) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 384 (180)",invoke=function() ptnLength(384) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Pattern Length to 512 (200)",invoke=function() ptnLength(512) end}
 
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 001",invoke=function() phrLength(1) end}
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 004",invoke=function() phrLength(4) end}
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 006",invoke=function() phrLength(6) end}
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 008",invoke=function() phrLength(8) end}
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 012",invoke=function() phrLength(12) end}
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 016",invoke=function() phrLength(16) end}
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 024",invoke=function() phrLength(24) end}
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 032",invoke=function() phrLength(32) end}
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 048",invoke=function() phrLength(48) end}
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 064",invoke=function() phrLength(64) end}
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 096",invoke=function() phrLength(96) end}
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 128",invoke=function() phrLength(128) end}
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 192",invoke=function() phrLength(192) end}
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 256",invoke=function() phrLength(256) end}
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 384",invoke=function() phrLength(384) end}
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 512",invoke=function() phrLength(512) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 001 (001)",invoke=function() phrLength(1) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 004 (004)",invoke=function() phrLength(4) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 006 (006)",invoke=function() phrLength(6) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 008 (008)",invoke=function() phrLength(8) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 012 (00C)",invoke=function() phrLength(12) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 016 (010)",invoke=function() phrLength(16) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 024 (018)",invoke=function() phrLength(24) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 032 (020)",invoke=function() phrLength(32) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 048 (030)",invoke=function() phrLength(48) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 064 (040)",invoke=function() phrLength(64) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 096 (060)",invoke=function() phrLength(96) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 128 (080)",invoke=function() phrLength(128) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 192 (0C0)",invoke=function() phrLength(192) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 256 (100)",invoke=function() phrLength(256) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 384 (180)",invoke=function() phrLength(384) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase Length to 512 (200)",invoke=function() phrLength(512) end}
 
-renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 001",invoke=function() ptnLength(1) end}
-renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 004",invoke=function() ptnLength(4) end}
-renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 006",invoke=function() ptnLength(6) end}
-renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 008",invoke=function() ptnLength(8) end}
-renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 012",invoke=function() ptnLength(12) end}
-renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 016",invoke=function() ptnLength(16) end}
-renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 024",invoke=function() ptnLength(24) end}
-renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 032",invoke=function() ptnLength(32) end}
-renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 048",invoke=function() ptnLength(48) end}
-renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 064",invoke=function() ptnLength(64) end}
-renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 096",invoke=function() ptnLength(96) end}
-renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 128",invoke=function() ptnLength(128) end}
-renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 192",invoke=function() ptnLength(192) end}
-renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 256",invoke=function() ptnLength(256) end}
-renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 384",invoke=function() ptnLength(384) end}
-renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 512",invoke=function() ptnLength(512) end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 001 (001)",invoke=function() ptnLength(1) end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 004 (004)",invoke=function() ptnLength(4) end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 006 (006)",invoke=function() ptnLength(6) end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 008 (008)",invoke=function() ptnLength(8) end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 012 (00C)",invoke=function() ptnLength(12) end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 016 (010)",invoke=function() ptnLength(16) end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 024 (018)",invoke=function() ptnLength(24) end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 032 (020)",invoke=function() ptnLength(32) end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 048 (030)",invoke=function() ptnLength(48) end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 064 (040)",invoke=function() ptnLength(64) end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 096 (060)",invoke=function() ptnLength(96) end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 128 (080)",invoke=function() ptnLength(128) end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 192 (0C0)",invoke=function() ptnLength(192) end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 256 (100)",invoke=function() ptnLength(256) end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 384 (180)",invoke=function() ptnLength(384) end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Pattern Length to 512 (200)",invoke=function() ptnLength(512) end}
 --------------
 function efxwrite(effect, x, y)
   local s = renoise.song()
@@ -414,6 +414,8 @@ renoise.tool():add_keybinding{name="Global:Paketti:BPM Decrease (-1)",invoke=fun
 renoise.tool():add_keybinding{name="Global:Paketti:BPM Increase (+1)",invoke=function() adjust_bpm(1, 0) end}
 renoise.tool():add_keybinding{name="Global:Paketti:BPM Decrease (-0.1)",invoke=function() adjust_bpm(-0.1, 0) end}
 renoise.tool():add_keybinding{name="Global:Paketti:BPM Increase (+0.1)",invoke=function() adjust_bpm(0.1, 0) end}
+renoise.tool():add_keybinding{name="Global:Paketti:BPM Decrease (-0.5)",invoke=function() adjust_bpm(-0.5, 0) end}
+renoise.tool():add_keybinding{name="Global:Paketti:BPM Increase (+0.5)",invoke=function() adjust_bpm(0.5, 0) end}
 
 
 function pakettiPatternDoubler()
@@ -1965,28 +1967,15 @@ function pakettiRandomizeEffectColumnParameters()
     end
   end
   
-  -- Inform the user that the operation was successful
   renoise.app():show_status("Effect column parameters randomized.")
 end
 
--- Add a menu entry to trigger the function
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Randomize Effect Column Parameters",invoke=pakettiRandomizeEffectColumnParameters}
-
--- Add a keybinding to trigger the function
 renoise.tool():add_keybinding{name="Global:Paketti:Randomize Effect Column Parameters",invoke=pakettiRandomizeEffectColumnParameters}
-
--- Add a MIDI mapping to trigger the function
 renoise.tool():add_midi_mapping{name="Paketti:Randomize Effect Column Parameters",invoke=pakettiRandomizeEffectColumnParameters}
-
--- Add a menu entry to the Pattern Editor context menu
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Randomize Effect Column Parameters",invoke=pakettiRandomizeEffectColumnParameters}
 
 --------
-
-
--- Take a deep breath. Let's start.
-
--- Function to interpolate effect column parameters
 function pakettiInterpolateEffectColumnParameters()
   -- Obtain the currently selected song and pattern
   local song = renoise.song()
@@ -2022,6 +2011,7 @@ function pakettiInterpolateEffectColumnParameters()
         local line = song:pattern(pattern_index):track(track_index):line(line_index)
         local t = (line_index - start_line) / (end_line - start_line)
         local interpolated_value = math.floor(first_value + t * (last_value - first_value))
+        line.effect_columns[i].number_value = first_effect_line[i].number_value
         line.effect_columns[i].amount_value = interpolated_value
       end
     end
@@ -2239,29 +2229,21 @@ renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Flood Fill Note and
 
 
 --------------------
--- Function to Flood Fill the track with the current note and instrument with an edit step
+-- Function to Flood Fill the track with the current note, instrument, volume, delay, panning, and sample FX with an edit step
 function pakettiFloodFillWithNotReallyEditStep(notstep)
-  -- Obtain the currently selected song and pattern
   local song = renoise.song()
   local pattern_index = song.selected_pattern_index
   local pattern = song.patterns[pattern_index]
 
-  -- Obtain the current track and line index
   local track_index = song.selected_track_index
   local line_index = song.selected_line_index
-
-  -- Obtain the current edit step
   local edit_step = notstep
-
-  -- Obtain the current note column index
   local note_column_index = song.selected_note_column_index
 
-  -- Get the selection in the pattern
   local selection = song.selection_in_pattern
   local start_line, end_line, start_track, end_track, start_column, end_column
 
   if selection then
-    -- There is a selection, use the selection range
     start_line = selection.start_line
     end_line = selection.end_line
     start_track = selection.start_track
@@ -2269,7 +2251,6 @@ function pakettiFloodFillWithNotReallyEditStep(notstep)
     start_column = selection.start_column
     end_column = selection.end_column
   else
-    -- No selection, use from the current row onwards in the current track and note column
     start_line = line_index
     end_line = pattern.number_of_lines
     start_track = track_index
@@ -2278,23 +2259,29 @@ function pakettiFloodFillWithNotReallyEditStep(notstep)
     end_column = note_column_index
   end
 
-  -- Check if the edit step is larger than the number of lines in the pattern
   if notstep > (end_line - start_line + 1) then
-    renoise.app():show_status("Did not apply Flood Fill with EditStep because EditStep is larger than Amount of Lines in Pattern")
+    renoise.app():show_status("EditStep is larger than the number of lines in the pattern.")
     return
   end
 
   local found_note = false
   local note_values = {}
   local instrument_values = {}
+  local volume_values = {}
+  local delay_values = {}
+  local panning_values = {}
+  local samplefx_values = {}
   local clear_columns = {}
 
-  -- Read the current row's note and instrument values for each track and column in the selection
   for track_idx = start_track, end_track do
     local track = song:track(track_idx)
     if track.type ~= renoise.Track.TRACK_TYPE_GROUP and track.type ~= renoise.Track.TRACK_TYPE_SEND and track.type ~= renoise.Track.TRACK_TYPE_MASTER then
       note_values[track_idx] = {}
       instrument_values[track_idx] = {}
+      volume_values[track_idx] = {}
+      delay_values[track_idx] = {}
+      panning_values[track_idx] = {}
+      samplefx_values[track_idx] = {}
       clear_columns[track_idx] = {}
       local first_column = (track_idx == start_track) and start_column or 1
       local last_column = (track_idx == end_track) and end_column or track.visible_note_columns
@@ -2303,10 +2290,16 @@ function pakettiFloodFillWithNotReallyEditStep(notstep)
         if current_note_column and not current_note_column.is_empty then
           note_values[track_idx][column_index] = current_note_column.note_value
           instrument_values[track_idx][column_index] = current_note_column.instrument_value
+          volume_values[track_idx][column_index] = current_note_column.volume_value
+          delay_values[track_idx][column_index] = current_note_column.delay_value
+          panning_values[track_idx][column_index] = current_note_column.panning_value
+          samplefx_values[track_idx][column_index] = current_note_column.effect_number_value
           clear_columns[track_idx][column_index] = true
           found_note = true
-          -- Debug message to track the note and instrument values
-          print(string.format("Read note %d and instrument %d from Track %d, Column %d", current_note_column.note_value, current_note_column.instrument_value, track_idx, column_index))
+          print(string.format("Read note %d, instrument %d, volume %d, delay %d, panning %d, sample FX %d from Track %d, Column %d", 
+            current_note_column.note_value, current_note_column.instrument_value, current_note_column.volume_value,
+            current_note_column.delay_value, current_note_column.panning_value, current_note_column.effect_number_value, 
+            track_idx, column_index))
         elseif current_note_column then
           clear_columns[track_idx][column_index] = false
         end
@@ -2319,7 +2312,6 @@ function pakettiFloodFillWithNotReallyEditStep(notstep)
     return
   end
 
-  -- Clear all selected note columns except the current row (or start line if selection exists)
   for track_idx = start_track, end_track do
     local track = song:track(track_idx)
     if track.type ~= renoise.Track.TRACK_TYPE_GROUP and track.type ~= renoise.Track.TRACK_TYPE_SEND and track.type ~= renoise.Track.TRACK_TYPE_MASTER then
@@ -2342,14 +2334,12 @@ function pakettiFloodFillWithNotReallyEditStep(notstep)
               end
             end
           end
-          -- Debug message to track the clearing of rows
           print(string.format("Cleared Track %d, Column %d from Row %d to Row %d", track_idx, column_index, start_line, end_line))
         end
       end
     end
   end
 
-  -- Apply Flood Fill with edit step
   for track_idx = start_track, end_track do
     local track = song:track(track_idx)
     if track.type ~= renoise.Track.TRACK_TYPE_GROUP and track.type ~= renoise.Track.TRACK_TYPE_SEND and track.type ~= renoise.Track.TRACK_TYPE_MASTER then
@@ -2359,9 +2349,13 @@ function pakettiFloodFillWithNotReallyEditStep(notstep)
         if note_values[track_idx][column_index] then
           local note_value = note_values[track_idx][column_index]
           local instrument_value = instrument_values[track_idx][column_index]
+          local volume_value = volume_values[track_idx][column_index]
+          local delay_value = delay_values[track_idx][column_index]
+          local panning_value = panning_values[track_idx][column_index]
+          local samplefx_value = samplefx_values[track_idx][column_index]
 
-          -- Debug message to track the note and instrument values being applied
-          print(string.format("Applying Flood Fill to Selection In Pattern, with EditStep %d to Track %d, Column %d using note %d and instrument %d", edit_step, track_idx, column_index, note_value, instrument_value))
+          print(string.format("Applying Flood Fill with EditStep %d to Track %d, Column %d using note %d, instrument %d, volume %d, delay %d, panning %d, sample FX %d", 
+            edit_step, track_idx, column_index, note_value, instrument_value, volume_value, delay_value, panning_value, samplefx_value))
 
           for i = start_line, end_line do
             if edit_step == 0 or (i - start_line) % edit_step == 0 then
@@ -2369,6 +2363,10 @@ function pakettiFloodFillWithNotReallyEditStep(notstep)
               local note_column = line.note_columns[column_index]
               note_column.note_value = note_value
               note_column.instrument_value = instrument_value
+              note_column.volume_value = volume_value
+              note_column.delay_value = delay_value
+              note_column.panning_value = panning_value
+              note_column.effect_number_value = samplefx_value
             end
           end
         end
@@ -2376,8 +2374,7 @@ function pakettiFloodFillWithNotReallyEditStep(notstep)
     end
   end
 
-  -- Inform the user that the operation was successful
-  renoise.app():show_status("Track / Selection filled with the Current Note and Instrument every " .. notstep .. " step(s).")
+  renoise.app():show_status("Track/Selection filled with the current Note, Instrument, Volume, Delay, Panning, and Sample FX every " .. notstep .. " step(s).")
 end
 
 
@@ -2575,4 +2572,63 @@ function wipeSelectedTrackTrackDSPs()
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Wipe Selected Track TrackDSPs",invoke=function() wipeSelectedTrackTrackDSPs() end}
+------
+
+
+
+renoise.tool():add_keybinding{
+  name="Pattern Editor:Paketti:Toggle Note Off in All Visible Note Columns",
+  invoke=function() 
+    local song=renoise.song()
+    local track=song.selected_track
+    local line=song.selected_line
+    local count=track.visible_note_columns
+    
+    -- Check if all visible note columns are set to "OFF"
+    local all_off=true
+    for i=1,count do
+      if line.note_columns[i].note_string~="OFF" then
+        all_off=false
+        break
+      end
+    end
+    
+    -- Set or clear "OFF" depending on the result
+    for i=1,count do
+      line.note_columns[i].note_string=all_off and "" or "OFF"
+    end
+  end
+}
+
+-------
+
+
+
+
+renoise.tool():add_keybinding{
+  name="Pattern Editor:Paketti:Randomize Phrasing for Notes in Current Row",
+  invoke=function() 
+    local song=renoise.song()
+    local track=song.selected_track
+    local line=song.selected_line
+    local count=track.visible_note_columns
+    local adjustments={-36, -24, -12, 12, 24, 36}
+    
+    for i=1,count do
+      local note=line.note_columns[i]
+      if not note.is_empty then
+        -- Pick a random adjustment and apply it to the note_value
+        local adjustment=adjustments[math.random(#adjustments)]
+        local new_value=note.note_value+adjustment
+        
+        -- Ensure new_value is within the 13 to 106 range
+        new_value=math.max(13, math.min(106, new_value))
+        
+        -- Update the note value
+        note.note_value=new_value
+      end
+    end
+  end
+}
+
 

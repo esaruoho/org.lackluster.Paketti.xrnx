@@ -167,3 +167,39 @@
 <MIDIMapping name="Track Devices:Paketti:Load Device (VST) Uhbik-S">
   <Path>Audio/Effects/VST/Uhbik-S</Path>
 </MIDIMapping>
+<KeyBinding name="Global:Track Devices:Load Device (Native) *Meta Mixer">
+  <Path>Audio/Effects/Native/*Meta Mixer</Path>
+</KeyBinding>
+<MIDIMapping name="Track Devices:Paketti:Load Device (Native) *Meta Mixer">
+  <Path>Audio/Effects/Native/*Meta Mixer</Path>
+</MIDIMapping>
+<KeyBinding name="Global:Track Devices:Load Device (Native) Cabinet Simulator">
+  <Path>Audio/Effects/Native/Cabinet Simulator</Path>
+</KeyBinding>
+<MIDIMapping name="Track Devices:Paketti:Load Device (Native) Cabinet Simulator">
+  <Path>Audio/Effects/Native/Cabinet Simulator</Path>
+</MIDIMapping>
+<KeyBinding name="Global:Track Devices:Load Device (Native) Comb Filter 2">
+  <Path>Audio/Effects/Native/Comb Filter 2</Path>
+</KeyBinding>
+<MIDIMapping name="Track Devices:Paketti:Load Device (Native) Comb Filter 2">
+  <Path>Audio/Effects/Native/Comb Filter 2</Path>
+</MIDIMapping>
+<KeyBinding name="Global:Track Devices:Load Device (Native) DC Offset">
+  <Path>Audio/Effects/Native/DC Offset</Path>
+</KeyBinding>
+<MIDIMapping name="Track Devices:Paketti:Load Device (Native) DC Offset">
+  <Path>Audio/Effects/Native/DC Offset</Path>
+</MIDIMapping>
+<KeyBinding name="Global:Track Devices:Load Device (Native) *Velocity Tracker">
+  <Path>Audio/Effects/Native/*Velocity Tracker</Path>
+</KeyBinding>
+<MIDIMapping name="Track Devices:Paketti:Load Device (Native) *Velocity Tracker">
+  <Path>Audio/Effects/Native/*Velocity Tracker</Path>
+</MIDIMapping>
+<KeyBinding name="Global:Track Devices:Load Device (Native) Bus Compressor">
+  <Path>Audio/Effects/Native/Bus Compressor</Path>
+</KeyBinding>
+<MIDIMapping name="Track Devices:Paketti:Load Device (Native) Bus Compressor">
+  <Path>Audio/Effects/Native/Bus Compressor</Path>
+</MIDIMapping>

@@ -1,4 +1,630 @@
 
+groove_master_track = nil
+--groove_master_device = nil
+paketti_automation1_device = nil
+paketti_automation2_device = nil
+
+PakettiAutomationDoofer = false
+
+
+-- Utility Functions
+local function set_edit_mode(value)
+  local song = renoise.song()
+  local edit_mode = value > 0
+  song.transport.edit_mode = edit_mode
+  if edit_mode then
+    renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
+  else
+    renoise.song().selected_track_index = renoise.song().sequencer_track_count + 1
+    renoise.app().window.active_lower_frame = renoise.ApplicationWindow.LOWER_FRAME_TRACK_AUTOMATION
+  end
+end
+
+-- Local variable to track recording state
+local is_recording_active = false
+
+local function set_sample_record(value)
+  if value > 80 then
+    if not is_recording_active then
+      -- Start recording
+      renoise.app().window.sample_record_dialog_is_visible = true
+      renoise.song().transport:start_stop_sample_recording()
+      is_recording_active = true -- Update the state to indicate recording is active
+    end
+  else
+    if is_recording_active then
+      -- Stop recording
+      renoise.song().transport:start_stop_sample_recording()
+      is_recording_active = false -- Update the state to indicate recording has stopped
+    end
+  end
+  
+  -- Always set the middle frame to 1
+  renoise.app().window.active_middle_frame = 1
+end
+
+
+local function set_pattern_length(value)
+  local song = renoise.song()
+  local pattern_length = math.floor((value / 100) * (512 - 1) + 1)
+  song.selected_pattern.number_of_lines = pattern_length
+end
+
+local function set_instrument_pitch(value)
+  local song = renoise.song()
+  local transpose_value = math.floor((value / 100) * (12 + 12) - 12)
+  for i = 1, #song.selected_instrument.samples do
+    song.selected_instrument.samples[i].transpose = transpose_value
+  end
+end
+
+local function placeholder_notifier(index, value)
+  renoise.app():show_status("Placeholder" .. index .. " Value: " .. tostring(value))
+end
+
+local function set_groove_amount(index, value)
+  local song = renoise.song()
+  local groove_amounts = song.transport.groove_amounts
+  value = math.max(0, math.min(value, 1))
+  groove_amounts[index] = value
+  song.transport.groove_amounts = groove_amounts
+end
+
+local function set_bpm(value)
+  local song = renoise.song()
+  value = math.max(32, math.min(value, 187))
+  song.transport.bpm = value
+end
+
+local function set_lpb(value)
+  local song = renoise.song()
+  value = math.max(1, math.min(value, 32))
+  song.transport.lpb = value
+end
+
+local function set_edit_step(value)
+  local song = renoise.song()
+  value = math.floor(value * 64)
+  song.transport.edit_step = value
+end
+
+local function set_octave(value)
+  local song = renoise.song()
+  value = math.floor(value * 8)
+  song.transport.octave = value
+end
+
+-- XML Injection Function for "Paketti Automation"
+local function inject_xml_to_doofer1(device)
+  local xml_content = [[
+<?xml version="1.0" encoding="UTF-8"?>
+<FilterDevicePreset doc_version="13">
+  <DeviceSlot type="DooferDevice">
+    <IsMaximized>true</IsMaximized>
+    <Macro0>
+      <Value>74.0513306</Value>
+      <Name>Groove#1</Name>
+      <Mappings>
+        <Mapping>
+          <DestDeviceIndex>0</DestDeviceIndex>
+          <DestParameterIndex>1</DestParameterIndex>
+          <Min>0.0</Min>
+          <Max>1.0</Max>
+          <Scaling>Linear</Scaling>
+        </Mapping>
+      </Mappings>
+    </Macro0>
+    <Macro1>
+      <Value>0.0</Value>
+      <Name>Groove#2</Name>
+      <Mappings>
+        <Mapping>
+          <DestDeviceIndex>0</DestDeviceIndex>
+          <DestParameterIndex>2</DestParameterIndex>
+          <Min>0.0</Min>
+          <Max>1.0</Max>
+          <Scaling>Linear</Scaling>
+        </Mapping>
+      </Mappings>
+    </Macro1>
+    <Macro2>
+      <Value>0.0</Value>
+      <Name>Groove#3</Name>
+      <Mappings>
+        <Mapping>
+          <DestDeviceIndex>0</DestDeviceIndex>
+          <DestParameterIndex>3</DestParameterIndex>
+          <Min>0.0</Min>
+          <Max>1.0</Max>
+          <Scaling>Linear</Scaling>
+        </Mapping>
+      </Mappings>
+    </Macro2>
+    <Macro3>
+      <Value>0.0</Value>
+      <Name>Groove#4</Name>
+      <Mappings>
+        <Mapping>
+          <DestDeviceIndex>0</DestDeviceIndex>
+          <DestParameterIndex>4</DestParameterIndex>
+          <Min>0.0</Min>
+          <Max>1.0</Max>
+          <Scaling>Linear</Scaling>
+        </Mapping>
+      </Mappings>
+    </Macro3>
+    <Macro4>
+      <Value>125</Value>
+      <Name>BPM</Name>
+      <Mappings>
+        <Mapping>
+          <DestDeviceIndex>0</DestDeviceIndex>
+          <DestParameterIndex>5</DestParameterIndex>
+          <Min>0.0</Min>
+          <Max>1.0</Max>
+          <Scaling>Linear</Scaling>
+        </Mapping>
+      </Mappings>
+    </Macro4>
+    <Macro5>
+      <Value>1</Value>
+      <Name>EditStep</Name>
+      <Mappings>
+        <Mapping>
+          <DestDeviceIndex>0</DestDeviceIndex>
+          <DestParameterIndex>6</DestParameterIndex>
+          <Min>0.0</Min>
+          <Max>1.0</Max>
+          <Scaling>Linear</Scaling>
+        </Mapping>
+      </Mappings>
+    </Macro5>
+    <Macro6>
+      <Value>4</Value>
+      <Name>Octave 0-8</Name>
+      <Mappings>
+        <Mapping>
+          <DestDeviceIndex>0</DestDeviceIndex>
+          <DestParameterIndex>7</DestParameterIndex>
+          <Min>0.0</Min>
+          <Max>1.0</Max>
+          <Scaling>Linear</Scaling>
+        </Mapping>
+      </Mappings>
+    </Macro6>
+    <Macro7>
+      <Value>4</Value>
+      <Name>LPB 1-32</Name>
+      <Mappings>
+        <Mapping>
+          <DestDeviceIndex>0</DestDeviceIndex>
+          <DestParameterIndex>8</DestParameterIndex>
+          <Min>0.0</Min>
+          <Max>1.0</Max>
+          <Scaling>Linear</Scaling>
+        </Mapping>
+      </Mappings>
+    </Macro7>
+    <NumActiveMacros>8</NumActiveMacros>
+    <ShowDevices>false</ShowDevices>
+    <DeviceChain>
+      <SelectedPresetName>Init</SelectedPresetName>
+      <SelectedPresetLibrary>Bundled Content</SelectedPresetLibrary>
+      <SelectedPresetIsModified>true</SelectedPresetIsModified>
+      <Devices>
+        <InstrumentAutomationDevice type="InstrumentAutomationDevice">
+          <IsMaximized>true</IsMaximized>
+          <IsSelected>false</IsSelected>
+          <SelectedPresetName>Init</SelectedPresetName>
+          <SelectedPresetLibrary>Bundled Content</SelectedPresetLibrary>
+          <SelectedPresetIsModified>true</SelectedPresetIsModified>
+          <IsActive>
+            <Value>1.0</Value>
+            <Visualization>Device only</Visualization>
+          </IsActive>
+          <ParameterNumber0>0</ParameterNumber0>
+          <ParameterValue0>
+            <Value>0.740513325</Value>
+            <Visualization>Device only</Visualization>
+          </ParameterValue0>
+          <LinkedInstrument>0</LinkedInstrument>
+          <VisiblePages>2</VisiblePages>
+        </InstrumentAutomationDevice>
+      </Devices>
+    </DeviceChain>
+  </DeviceSlot>
+</FilterDevicePreset>
+  ]]
+
+  -- Inject the XML content into the active preset data of the device
+  device.active_preset_data = xml_content
+  renoise.app():show_status("XML content injected into Paketti Automation.")
+end
+
+-- XML Injection Function for "Paketti Automation 2"
+local function inject_xml_to_doofer2(device)
+  -- Get current pattern length and set instrument pitch to 50%
+  local song = renoise.song()
+  local pattern_length = ((song.selected_pattern.number_of_lines - 1) / (512 - 1)) * 100
+  local instrument_pitch = 50 -- Start at 50%
+
+  local xml_content = string.format([[
+<?xml version="1.0" encoding="UTF-8"?>
+<FilterDevicePreset doc_version="13">
+  <DeviceSlot type="DooferDevice">
+    <IsMaximized>true</IsMaximized>
+    <Macro0>
+      <Value>74.0513306</Value>
+      <Name>EditMode</Name>
+      <Mappings>
+        <Mapping>
+          <DestDeviceIndex>0</DestDeviceIndex>
+          <DestParameterIndex>1</DestParameterIndex>
+          <Min>0.0</Min>
+          <Max>1.0</Max>
+          <Scaling>Linear</Scaling>
+        </Mapping>
+      </Mappings>
+    </Macro0>
+    <Macro1>
+      <Value>0.0</Value>
+      <Name>Recorder</Name>
+      <Mappings>
+        <Mapping>
+          <DestDeviceIndex>0</DestDeviceIndex>
+          <DestParameterIndex>2</DestParameterIndex>
+          <Min>0.0</Min>
+          <Max>1.0</Max>
+          <Scaling>Linear</Scaling>
+        </Mapping>
+      </Mappings>
+    </Macro1>
+    <Macro2>
+      <Value>%.2f</Value>
+      <Name>PtnLength</Name>
+      <Mappings>
+        <Mapping>
+          <DestDeviceIndex>0</DestDeviceIndex>
+          <DestParameterIndex>3</DestParameterIndex>
+          <Min>0.0</Min>
+          <Max>1.0</Max>
+          <Scaling>Linear</Scaling>
+        </Mapping>
+      </Mappings>
+    </Macro2>
+    <Macro3>
+      <Value>%.2f</Value>
+      <Name>InstPitch</Name>
+      <Mappings>
+        <Mapping>
+          <DestDeviceIndex>0</DestDeviceIndex>
+          <DestParameterIndex>4</DestParameterIndex>
+          <Min>0.0</Min>
+          <Max>1.0</Max>
+          <Scaling>Linear</Scaling>
+        </Mapping>
+      </Mappings>
+    </Macro3>
+    <Macro4>
+      <Value>0.0</Value>
+      <Name>LoopEnd</Name>
+      <Mappings>
+        <Mapping>
+          <DestDeviceIndex>0</DestDeviceIndex>
+          <DestParameterIndex>5</DestParameterIndex>
+          <Min>0.0</Min>
+          <Max>1.0</Max>
+          <Scaling>Linear</Scaling>
+        </Mapping>
+      </Mappings>
+    </Macro4>
+    <Macro5>
+      <Value>0.0</Value>
+      <Name>Placeholder2</Name>
+      <Mappings>
+        <Mapping>
+          <DestDeviceIndex>0</DestDeviceIndex>
+          <DestParameterIndex>6</DestParameterIndex>
+          <Min>0.0</Min>
+          <Max>1.0</Max>
+          <Scaling>Linear</Scaling>
+        </Mapping>
+      </Mappings>
+    </Macro5>
+    <Macro6>
+      <Value>0.0</Value>
+      <Name>Placeholder3</Name>
+      <Mappings>
+        <Mapping>
+          <DestDeviceIndex>0</DestDeviceIndex>
+          <DestParameterIndex>7</DestParameterIndex>
+          <Min>0.0</Min>
+          <Max>1.0</Max>
+          <Scaling>Linear</Scaling>
+        </Mapping>
+      </Mappings>
+    </Macro6>
+    <Macro7>
+      <Value>0.0</Value>
+      <Name>Placeholder4</Name>
+      <Mappings>
+        <Mapping>
+          <DestDeviceIndex>0</DestDeviceIndex>
+          <DestParameterIndex>8</DestParameterIndex>
+          <Min>0.0</Min>
+          <Max>1.0</Max>
+          <Scaling>Linear</Scaling>
+        </Mapping>
+      </Mappings>
+    </Macro7>
+    <NumActiveMacros>8</NumActiveMacros>
+    <ShowDevices>false</ShowDevices>
+    <DeviceChain>
+      <SelectedPresetName>Init</SelectedPresetName>
+      <SelectedPresetLibrary>Bundled Content</SelectedPresetLibrary>
+      <SelectedPresetIsModified>true</SelectedPresetIsModified>
+      <Devices>
+        <InstrumentAutomationDevice type="InstrumentAutomationDevice">
+          <IsMaximized>true</IsMaximized>
+          <IsSelected>false</IsSelected>
+          <SelectedPresetName>Init</SelectedPresetName>
+          <SelectedPresetLibrary>Bundled Content</SelectedPresetLibrary>
+          <SelectedPresetIsModified>true</SelectedPresetIsModified>
+          <IsActive>
+            <Value>1.0</Value>
+            <Visualization>Device only</Visualization>
+          </IsActive>
+          <ParameterNumber0>0</ParameterNumber0>
+          <ParameterValue0>
+            <Value>0.740513325</Value>
+            <Visualization>Device only</Visualization>
+          </ParameterValue0>
+          <LinkedInstrument>0</LinkedInstrument>
+          <VisiblePages>2</VisiblePages>
+        </InstrumentAutomationDevice>
+      </Devices>
+    </DeviceChain>
+  </DeviceSlot>
+</FilterDevicePreset>
+  ]], pattern_length, instrument_pitch)
+
+  -- Inject the XML content into the active preset data of the device
+  device.active_preset_data = xml_content
+  renoise.app():show_status("XML content injected into Paketti Automation 2.")
+end
+
+-- Monitoring Function for "Paketti Automation" (Doofer 1)
+function monitor_doofer1_macros(device)
+  -- Macro 1 -> Groove 1
+  local function macro1_notifier()
+    local value=device.parameters[1].value
+    set_groove_amount(1, value/100)
+  end
+
+  -- Macro 2 -> Groove 2
+  local function macro2_notifier()
+    local value=device.parameters[2].value
+    set_groove_amount(2, value/100)
+  end
+
+  -- Macro 3 -> Groove 3
+  local function macro3_notifier()
+    local value=device.parameters[3].value
+    set_groove_amount(3, value/100)
+  end
+
+  -- Macro 4 -> Groove 4
+  local function macro4_notifier()
+    local value=device.parameters[4].value
+    set_groove_amount(4, value/100)
+  end
+
+  -- Macro 5 -> BPM
+  local function macro5_notifier()
+    local value=device.parameters[5].value
+    local bpm_value=(value/100)*(187-32)+32
+    renoise.song().transport.bpm=bpm_value
+  end
+
+  -- Macro 6 -> Edit Step
+  local function macro6_notifier()
+    local value=device.parameters[6].value
+    local edit_step_value=math.floor((value/100)*64)
+    renoise.song().transport.edit_step=edit_step_value
+  end
+
+  -- Macro 7 -> Octave
+  local function macro7_notifier()
+    local value=device.parameters[7].value
+    local octave_value=math.floor((value/100)*8)
+    renoise.song().transport.octave=octave_value
+  end
+
+  -- Macro 8 -> LPB
+  local function macro8_notifier()
+    local value=device.parameters[8].value
+    local lpb_value=math.floor((value/100)*(32-1)+1)
+    renoise.song().transport.lpb=lpb_value
+  end
+
+  -- Set up notifiers for Doofer 1
+  local macros={
+    {index=1, notifier=macro1_notifier},
+    {index=2, notifier=macro2_notifier},
+    {index=3, notifier=macro3_notifier},
+    {index=4, notifier=macro4_notifier},
+    {index=5, notifier=macro5_notifier},
+    {index=6, notifier=macro6_notifier},
+    {index=7, notifier=macro7_notifier},
+    {index=8, notifier=macro8_notifier},
+  }
+
+  for _,macro in ipairs(macros) do
+    local param=device.parameters[macro.index]
+    if param.value_observable:has_notifier(macro.notifier) then
+      param.value_observable:remove_notifier(macro.notifier)
+    end
+    param.value_observable:add_notifier(macro.notifier)
+  end
+
+  renoise.app():show_status("Notifiers added for groove, BPM, LPB, Edit Step, and Octave control in Paketti Automation.")
+end
+
+-- Monitoring Function for "Paketti Automation 2" (Doofer 2)
+function monitor_doofer2_macros(device)
+  -- Macro 1 -> EditMode
+  local function macro1_notifier()
+    local value=device.parameters[1].value
+    set_edit_mode(value)
+  end
+
+  -- Macro 2 -> Sample Record
+  local function macro2_notifier()
+    local value=device.parameters[2].value
+    set_sample_record(value)
+  end
+
+  -- Macro 3 -> Pattern Length
+  local function macro3_notifier()
+    local value=device.parameters[3].value
+    set_pattern_length(value)
+  end
+
+  -- Macro 4 -> Instrument Pitch
+  local function macro4_notifier()
+    local value=device.parameters[4].value
+    set_instrument_pitch(value)
+  end
+
+  -- Macro 5 -> LoopEnd
+local function macro5_notifier()
+  local song = renoise.song()
+  
+  local sample = song.selected_sample
+  local buffer = sample.sample_buffer
+  -- Ensure there's a sample and a valid buffer
+  if not sample or not buffer or not buffer.has_sample_data then
+    renoise.app():show_status("No valid sample or sample buffer.")
+    return
+  end
+
+  local value = device.parameters[5].value
+  local num_frames = buffer.number_of_frames
+
+  -- Map the macro value (0-100) to loop end position
+  local loop_end_position = math.floor((value / 100) * num_frames)
+
+  -- Ensure loop end does not go below 10 or above the sample length
+  loop_end_position = math.max(10, math.min(loop_end_position, num_frames))
+
+  -- Set the loop end point
+  sample.loop_end = loop_end_position
+
+  -- Optional: Provide feedback on the loop end position
+--  renoise.app():show_status("Loop End set to: " .. loop_end_position .. " / " .. num_frames)
+end
+
+
+  -- Macro 6 -> Placeholder2
+  local function macro6_notifier()
+    local value=device.parameters[6].value
+    placeholder_notifier(2, value)
+  end
+
+  -- Macro 7 -> Placeholder3
+  local function macro7_notifier()
+    local value=device.parameters[7].value
+    placeholder_notifier(3, value)
+  end
+
+  -- Macro 8 -> Placeholder4
+  local function macro8_notifier()
+    local value=device.parameters[8].value
+    placeholder_notifier(4, value)
+  end
+
+  -- Set up notifiers for Doofer 2
+  local macros={
+    {index=1, notifier=macro1_notifier},
+    {index=2, notifier=macro2_notifier},
+    {index=3, notifier=macro3_notifier},
+    {index=4, notifier=macro4_notifier},
+    {index=5, notifier=macro5_notifier},
+    {index=6, notifier=macro6_notifier},
+    {index=7, notifier=macro7_notifier},
+    {index=8, notifier=macro8_notifier},
+  }
+
+  for _,macro in ipairs(macros) do
+    local param=device.parameters[macro.index]
+    if param.value_observable:has_notifier(macro.notifier) then
+      param.value_observable:remove_notifier(macro.notifier)
+    end
+    param.value_observable:add_notifier(macro.notifier)
+  end
+
+  renoise.app():show_status("Notifiers added for EditMode, Sample Record, Pattern Length, Instrument Pitch, and Placeholders in Paketti Automation 2.")
+end
+
+-- Initialization Function
+function initialize_doofer(device_name, device_reference, monitor_function, inject_function)
+  local song = renoise.song()
+  local track = renoise.song().sequencer_track_count + 1
+  renoise.song().selected_track_index = track
+
+  -- Check if the device is already present
+  if song.selected_track.devices[device_reference] and song.selected_track.devices[device_reference].display_name == device_name then
+    monitor_function(song.selected_track.devices[device_reference])
+    return
+  end
+
+  -- If not present, add the device
+  loadnative("Audio/Effects/Native/Doofer")
+  local device = song.selected_track.devices[device_reference]
+  device.display_name = device_name
+  inject_function(device)
+  monitor_function(device)
+end
+
+-- Main Initialization Function
+function initialize_doofer_monitoring()
+PakettiAutomationDoofer = true
+
+  if renoise.song().instruments[1].name ~= "Used for Paketti Automation" then
+    renoise.song():insert_instrument_at(1)
+    renoise.song().instruments[1].name = "Used for Paketti Automation"
+  end
+  if renoise.song().tracks[renoise.song().sequencer_track_count+1].devices[2] ~= nil and  renoise.song().tracks[renoise.song().sequencer_track_count+1].devices[3] ~= nil then 
+  if renoise.song().tracks[renoise.song().sequencer_track_count+1].devices[2].display_name == "Paketti Automation" and renoise.song().tracks[renoise.song().sequencer_track_count+1].devices[3].display_name == "Paketti Automation 2" then
+  
+  local masterTrack=renoise.song().sequencer_track_count+1
+  monitor_doofer2_macros(renoise.song().tracks[masterTrack].devices[3])
+  monitor_doofer1_macros(renoise.song().tracks[masterTrack].devices[2])
+  return end
+else end
+  groove_master_track = renoise.song().sequencer_track_count + 1
+  initialize_doofer("Paketti Automation 2", 2, monitor_doofer2_macros, inject_xml_to_doofer2)
+  initialize_doofer("Paketti Automation", 2, monitor_doofer1_macros, inject_xml_to_doofer1)
+
+
+PakettiAutomationDoofer = true
+end
+
+
+-- Keybinding for Initialization
+renoise.tool():add_keybinding{name="Global:Paketti:Paketti Automation",
+  invoke=function() initialize_doofer_monitoring() end}
+
+
+
+
+
+
+
+
+
+
+--------
 local renoise = renoise
 local tool = renoise.tool()
 

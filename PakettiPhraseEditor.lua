@@ -43,6 +43,7 @@ function pakettiPhraseSettingsApplyPhraseSettings()
   phrase.panning_column_visible = preferences.pakettiPhraseInitDialog.PanningColumnVisible.value
   phrase.instrument_column_visible = preferences.pakettiPhraseInitDialog.InstrumentColumnVisible.value
   phrase.delay_column_visible = preferences.pakettiPhraseInitDialog.DelayColumnVisible.value
+  phrase.sample_effects_column_visible = preferences.pakettiPhraseInitDialog.SampleFXColumnVisible.value
   phrase.visible_note_columns = preferences.pakettiPhraseInitDialog.NoteColumns.value
   phrase.visible_effect_columns = preferences.pakettiPhraseInitDialog.EffectColumns.value
   phrase.shuffle = preferences.pakettiPhraseInitDialog.Shuffle.value / 100
@@ -184,6 +185,17 @@ function pakettiPhraseSettingsDialogShow()
         }
       },
       vb:row {
+        vb:text {text = "Sample FX Column Visible:", width = 150},
+        vb:switch {
+          id = "samplefx_column_visible_switch",
+          width = 300,
+          items = {"Off", "On"},
+          value = preferences.pakettiPhraseInitDialog.SampleFXColumnVisible.value and 2 or 1,
+          notifier = function(value) preferences.pakettiPhraseInitDialog.SampleFXColumnVisible.value = (value == 2) end
+        }
+      },     
+      
+      vb:row {
         vb:text {text = "Visible Note Columns:", width = 150},
         vb:switch {
           id = "note_columns_switch",
@@ -288,15 +300,6 @@ renoise.tool():add_midi_mapping {name = "Paketti:Modify Current Phrase Using Pak
 
 
 
-
-
-
-
-
-
-
-
-
 ------------------------------------------------
 
 
@@ -314,16 +317,26 @@ renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Record+Follow Off",inv
 
 function createPhrase()
 local s=renoise.song() 
-  s.instruments[s.selected_instrument_index]:insert_phrase_at(1) 
+
+
   renoise.app().window.active_middle_frame=3
+  s.instruments[s.selected_instrument_index]:insert_phrase_at(1) 
   s.instruments[s.selected_instrument_index].phrase_editor_visible=true
   s.selected_phrase_index=1
+
+local selphra=renoise.song().instruments[renoise.song().selected_instrument_index].phrases[renoise.song().selected_phrase_index]
   
---  renoise.song().instruments[renoise.song().selected_instrument_index].phrases[renoise.song().selected_phrase_index].instrument_column_visible=true
-s.instruments[s.selected_instrument_index].phrases[s.selected_phrase_index].volume_column_visible=true
-s.instruments[s.selected_instrument_index].phrases[s.selected_phrase_index].panning_column_visible=true
-s.instruments[s.selected_instrument_index].phrases[s.selected_phrase_index].delay_column_visible=true
-s.instruments[s.selected_instrument_index].phrases[s.selected_phrase_index].sample_effects_column_visible=true
+selphra.shuffle=preferences.pakettiPhraseInitDialog.Shuffle.value / 100
+selphra.visible_note_columns=preferences.pakettiPhraseInitDialog.NoteColumns.value
+selphra.visible_effect_columns=preferences.pakettiPhraseInitDialog.EffectColumns.value
+selphra.volume_column_visible=preferences.pakettiPhraseInitDialog.VolumeColumnVisible.value
+selphra.panning_column_visible=preferences.pakettiPhraseInitDialog.PanningColumnVisible.value
+selphra.delay_column_visible=preferences.pakettiPhraseInitDialog.DelayColumnVisible.value
+selphra.sample_effects_column_visible=preferences.pakettiPhraseInitDialog.SampleFXColumnVisible.value
+selphra.instrument_column_visible=preferences.pakettiPhraseInitDialog.InstrumentColumnVisible.value
+selphra.autoseek=preferences.pakettiPhraseInitDialog.Autoseek.value
+selphra.lpb=preferences.pakettiPhraseInitDialog.LPB.value
+selphra.number_of_lines=preferences.pakettiPhraseInitDialog.Length.value
 end
 
 renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Create Phrase",invoke=function() createPhrase() end}
@@ -363,12 +376,17 @@ renoise.tool():add_keybinding{name="Global:Paketti:Add New Phrase",invoke=functi
 ----
 renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Init Phrase Settings",invoke=function()
 local selphra=renoise.song().selected_phrase
-selphra.visible_note_columns=1
-selphra.visible_effect_columns=0
-selphra.volume_column_visible=false
-selphra.panning_column_visible=false
-selphra.delay_column_visible=false
-selphra.sample_effects_column_visible=false
+selphra.shuffle=preferences.pakettiPhraseInitDialog.Shuffle.value / 100
+selphra.visible_note_columns=preferences.pakettiPhraseInitDialog.NoteColumns.value
+selphra.visible_effect_columns=preferences.pakettiPhraseInitDialog.EffectColumns.value
+selphra.volume_column_visible=preferences.pakettiPhraseInitDialog.VolumeColumnVisible.value
+selphra.panning_column_visible=preferences.pakettiPhraseInitDialog.PanningColumnVisible.value
+selphra.delay_column_visible=preferences.pakettiPhraseInitDialog.DelayColumnVisible.value
+selphra.sample_effects_column_visible=preferences.pakettiPhraseInitDialog.SampleFXColumnVisible.value
+selphra.instrument_column_visible=preferences.pakettiPhraseInitDialog.InstrumentColumnVisible.value
+selphra.autoseek=preferences.pakettiPhraseInitDialog.Autoseek.value
+selphra.lpb=preferences.pakettiPhraseInitDialog.LPB.value
+selphra.number_of_lines=preferences.pakettiPhraseInitDialog.Length.value
 
 local renamephrase_to_index=tostring(renoise.song().selected_phrase_index)
 selphra.name=renamephrase_to_index

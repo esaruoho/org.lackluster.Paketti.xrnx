@@ -294,7 +294,7 @@ local function receive_panning_checkboxes()
           panning_left_checkboxes[i].value = false
           panning_center_checkboxes[i].value = false
           panning_right_checkboxes[i].value = true
-        elseif line.effect_columns[4].amount_string == "80" then
+        elseif line.effect_columns[4].amount_string == "7F" then
           panning_left_checkboxes[i].value = false
           panning_center_checkboxes[i].value = true
           panning_right_checkboxes[i].value = false
@@ -624,6 +624,21 @@ local function insert_commands()
   local track_index = renoise.song().selected_track_index
   local visible_note_columns = track.visible_note_columns
 
+ 
+if retrig_column_choice == "FX Column"
+then
+clear_retrig()
+elseif retrig_column_choice == "Volume Column"
+then
+clear_volume_column()
+ 
+
+elseif retrig_column_choice == "Panning Column"
+then       clear_panning_column()
+
+else end
+
+
   -- Ensure effect columns are visible
   if track.visible_effect_columns < 2 then
     track.visible_effect_columns = 4
@@ -678,7 +693,7 @@ end
           line.effect_columns[4].amount_string = "FF" -- Hard Right
         else
           line.effect_columns[4].number_string = "0P"
-          line.effect_columns[4].amount_string = "80" -- Center
+          line.effect_columns[4].amount_string = "7F" -- Center
         end
       end
     end
@@ -686,6 +701,8 @@ end
     -- Do nothing if all panning checkboxes are set to center
     -- This applies to both Panning Column and Effect Column 4
     print("Panning Gater: All steps are center; no output generated.")
+renoise.song().selected_pattern.tracks[renoise.song().selected_track_index].lines[1].effect_columns[4].number_string="0P"
+renoise.song().selected_pattern.tracks[renoise.song().selected_track_index].lines[1].effect_columns[4].amount_string="7F"
   end
 
 -- Volume handling logic update
@@ -1024,8 +1041,15 @@ vb:row {
   vb:button { text = "Random", pressed = rand_panning_checkboxes },
   vb:button { text = "<", pressed = function() shift_panning_checkboxes("left") end },
   vb:button { text = ">", pressed = function() shift_panning_checkboxes("right") end },
- vb:button { text = "Clear Panning Column", pressed = clear_panning_column },
-vb:button { text = "Clear FX Column", pressed = clear_effect_column_4 },
+vb:button { text = "Clear FX Column", pressed = function() clear_effect_column_4()
+renoise.song().selected_pattern.tracks[renoise.song().selected_track_index].lines[1].effect_columns[4].number_string="0P"
+renoise.song().selected_pattern.tracks[renoise.song().selected_track_index].lines[1].effect_columns[4].amount_string="80"
+end
+
+ },
+  vb:button { text = "Clear Panning Column", pressed = function() clear_panning_column()
+renoise.song().selected_pattern.tracks[renoise.song().selected_track_index].lines[1].note_columns[1].delay_string="40"
+end},
  vb:button { text = "Receive", pressed = receive_panning_checkboxes },
 },
     
