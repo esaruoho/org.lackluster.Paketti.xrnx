@@ -5,4 +5,5 @@
 
 on macOS they go to `Contents/Resources/Skin/Logos/` inside your `Renoise.app`
 
+[[macOSFolderStructure.png]]
 
