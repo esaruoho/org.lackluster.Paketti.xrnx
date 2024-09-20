@@ -9,7 +9,9 @@ local donations = {
   {"2024-07-19", "Casiino", 43.87, {"Instagram", "https://www.instagram.com/elcasiino/"}},
   {"2024-08-02", "Casiino", 12.40, {"Instagram", "https://www.instagram.com/elcasiino/"}},
   {"2024-08-03", "Diigitae", 10.00, {"Bandcamp", "https://diigitae.bandcamp.com/music"}},
-  {"2024-08-08", "dmt", 20.00}
+  {"2024-08-08", "dmt", 20.00},
+  {"2024-09-06", "Casiino", 8.63, {"Instagram", "https://www.instagram.com/elcasiino/"}},
+  {"2024-09-19", "Casiino", 12.87, {"Instagram", "https://www.instagram.com/elcasiino/"}},
 }
 
 local total_amount = 0
@@ -26,13 +28,13 @@ local dialog_content = vb:column{
   vb:multiline_textfield{width = textfield_width, height = 40, text = "There's probably tons more, but: dBlue, danoise, cortex, pandabot, ffx, Joule, Avaruus, astu/flo, syflom, Protman, vV, Bantai, taktik, Snowrobot, MXB, Jenoki, Kmaki, aleksip, Unless, martblek and the whole Renoise community."},
 
   vb:text{text = "Ideas provided by:", style = "strong", font = "bold"},
-  vb:multiline_textfield{width = textfield_width, height = 80, text = "tkna, Nate Schmold, Casiino, Royal Sexton, Bovaflux, Xerxes, ViZiON, Satoi, Kaneel, Ilkae, Subi, MigloJE, Ghostwerk, Michael Langer, Christopher Jooste, Zoey Samples, Avaruus, Pieter Koenekoop, Widgetphreak, Bálint Magyar, Mick Rippon, MMD (Mr. Mark Dollin), ne7, renoize-user, Dionysis, untilde, Greystar, Kaidiak, sousândrade, senseiprod, Brandon Hale, dmt, Dávid Halmi (Nagz), tEiS, Floppi J, Aleksi Eeben, fuzzy, Jalex and many others."},
+  vb:multiline_textfield{width = textfield_width, height = 80, text = "tkna, Nate Schmold, Casiino, Royal Sexton, Bovaflux, Xerxes, ViZiON, Satoi, Kaneel, Ilkae, Subi, MigloJE, Ghostwerk, Michael Langer, Christopher Jooste, Zoey Samples, Avaruus, Pieter Koenekoop, Widgetphreak, Bálint Magyar, Mick Rippon, MMD (Mr. Mark Dollin), ne7, renoize-user, Dionysis, untilde, Greystar, Kaidiak, sousândrade, senseiprod, Brandon Hale, dmt, Diigitae, Dávid Halmi (Nagz), tEiS, Floppi J, Aleksi Eeben, fuzzy, Jalex, Mike Pehel and many others."},
 
   vb:text{text = "Who made it possible:", style = "strong", font = "bold"},
   vb:multiline_textfield{width = textfield_width, height = 40, text = "Thanks to @lpn (Brothomstates) for suggesting that I could pick up and learn LUA, that it would not be beyond me. Really appreciate your (sometimes misplaced and ahead-of-time) faith in me. And thanks for the inspiration."},
 
   vb:text{text = "Kudos:", style = "strong", font = "bold"},
-  vb:multiline_textfield{width = textfield_width, height = 60, text = "Massive kudos to martblek for allowing me to take his abandoned ReSpeak tool and make it into a Paketti eSpeak Text-to-Speech, and also for smdkun for letting me tweak their KeyBind Visualizer code and incorporate it into Paketti further down the line."},
+  vb:multiline_textfield{width = textfield_width, height = 60, text = "Massive kudos to martblek for allowing me to take his abandoned ReSpeak tool and make it into a Paketti eSpeak Text-to-Speech, Kaidiak for donating ClippyClip device, and also for smdkun for letting me tweak their KeyBind Visualizer code and incorporate it into Paketti further down the line."},
 
   vb:horizontal_aligner{mode = "distribute", vb:text{text = "Talk about Paketti", style = "strong", font = "bold"}},
   vb:horizontal_aligner{
@@ -61,70 +63,71 @@ vb:horizontal_aligner{mode="distribute",
       vb:text{text = donations[0+1][1], width = 70},
       vb:text{text = donations[0+1][2], width = 100},
       vb:text{text = string.format("%.2f", donations[0+1][3]).."€", width = 50, font = "bold"},
-      vb:horizontal_aligner{
-        mode = "left",
-        vb:button{text = donations[0+1][4][1], notifier = function() open_url(donations[0+1][4][2]) end},
-        vb:button{text = donations[0+1][5][1], notifier = function() open_url(donations[0+1][5][2]) end},
-        vb:button{text = donations[0+1][6][1], notifier = function() open_url(donations[0+1][6][2]) end}
+      vb:horizontal_aligner{mode = "left",
+      vb:button{text = donations[0+1][4][1], notifier = function() open_url(donations[0+1][4][2]) end},
+      vb:button{text = donations[0+1][5][1], notifier = function() open_url(donations[0+1][5][2]) end},
+      vb:button{text = donations[0+1][6][1], notifier = function() open_url(donations[0+1][6][2]) end}
       }
     },
-
     vb:row{
       vb:text{text = donations[1+1][1], width = 70},
       vb:text{text = donations[1+1][2], width = 100},
       vb:text{text = string.format("%.2f", donations[1+1][3]).."€", width = 50, font = "bold"},
-      vb:horizontal_aligner{
-        mode = "left",
-        vb:button{text = donations[1+1][4][1], notifier = function() open_url(donations[1+1][4][2]) end}
+      vb:horizontal_aligner{mode = "left",
+      vb:button{text = donations[1+1][4][1], notifier = function() open_url(donations[1+1][4][2]) end}
       }
     },
-
     vb:row{
       vb:text{text = donations[2+1][1], width = 70},
       vb:text{text = donations[2+1][2], width = 100},
       vb:text{text = string.format("%.2f", donations[2+1][3]).."€", width = 50, font = "bold"},
-      vb:horizontal_aligner{
-        mode = "left",
-        vb:button{text = donations[2+1][4][1], notifier = function() open_url(donations[2+1][4][2]) end}
+      vb:horizontal_aligner{mode = "left",
+      vb:button{text = donations[2+1][4][1], notifier = function() open_url(donations[2+1][4][2]) end}
       }
     },
-
     vb:row{
       vb:text{text = donations[3+1][1], width = 70},
       vb:text{text = donations[3+1][2], width = 100},
       vb:text{text = string.format("%.2f", donations[3+1][3]).."€", width = 50, font = "bold"},
-      vb:horizontal_aligner{
-        mode = "left",
-        vb:button{text = donations[3+1][4][1], notifier = function() open_url(donations[3+1][4][2]) end}
+      vb:horizontal_aligner{mode = "left",
+      vb:button{text = donations[3+1][4][1], notifier = function() open_url(donations[3+1][4][2]) end}
       }
     },
-
     vb:row{
       vb:text{text = donations[4+1][1], width = 70},
       vb:text{text = donations[4+1][2], width = 100},
       vb:text{text = string.format("%.2f", donations[4+1][3]).."€", width = 50, font = "bold"},
-      vb:horizontal_aligner{
-        mode = "left",
-        vb:button{text = donations[4+1][4][1], notifier = function() open_url(donations[4+1][4][2]) end}
+      vb:horizontal_aligner{mode = "left",
+      vb:button{text = donations[4+1][4][1], notifier = function() open_url(donations[4+1][4][2]) end}
       }
     },
-
     vb:row{
       vb:text{text = donations[5+1][1], width = 70},
       vb:text{text = donations[5+1][2], width = 100},
       vb:text{text = string.format("%.2f", donations[5+1][3]).."€", width = 50, font = "bold"},
-      vb:horizontal_aligner{
-        mode = "left",
-        vb:button{text = donations[5+1][4][1], notifier = function() open_url(donations[5+1][4][2]) end}
+      vb:horizontal_aligner{mode = "left",
+      vb:button{text = donations[5+1][4][1], notifier = function() open_url(donations[5+1][4][2]) end}
       }
     },
-
     vb:row{
       vb:text{text = donations[6+1][1], width = 70},
       vb:text{text = donations[6+1][2], width = 100},
       vb:text{text = string.format("%.2f", donations[6+1][3]).."€", width = 50, font = "bold"}
     },
-
+    vb:row{
+      vb:text{text = donations[7+1][1], width = 70},
+      vb:text{text = donations[7+1][2], width = 100},
+      vb:text{text = string.format("%.2f", donations[7+1][3]).."€", width = 50, font = "bold"},
+      vb:horizontal_aligner{mode = "left",
+      vb:button{text = donations[7+1][4][1], notifier = function() open_url(donations[7+1][4][2]) end}}
+    },
+    vb:row{
+      vb:text{text = donations[8+1][1], width = 70},
+      vb:text{text = donations[8+1][2], width = 100},
+      vb:text{text = string.format("%.2f", donations[8+1][3]).."€", width = 50, font = "bold"},
+      vb:horizontal_aligner{mode = "left",
+      vb:button{text = donations[8+1][4][1], notifier = function() open_url(donations[8+1][4][2]) end}}
+    },    
     vb:space{height = 5},
     vb:horizontal_aligner{mode="distribute",
     vb:text{text = "Total: " .. string.format("%.2f", total_amount) .. "€", font = "bold"}}
@@ -216,11 +219,15 @@ renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor:E
 
 -------- Plugins/Devices
 -- Adding menu entries for listing available plugins by type
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Load Native Devices Dialog",
-    invoke=function() PakettiShowDeviceListDialog() end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Load VST Devices Dialog",invoke=vstShowPluginListDialog}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Load VST3/AU Devices Dialog",invoke=vst3ShowPluginListDialog}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Load LADSPA/DSSI Devices Dialog",invoke=LADSPADSSIShowPluginListDialog}    
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Load Devices Dialog", invoke=function()
+showDeviceListDialog()
+end}
+
+--renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Load Native Devices Dialog",
+--    invoke=function() PakettiShowDeviceListDialog() end}
+--renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Load VST Devices Dialog",invoke=vstShowPluginListDialog}
+--renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Load VST3/AU Devices Dialog",invoke=vst3ShowPluginListDialog}
+--renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Load LADSPA/DSSI Devices Dialog",invoke=LADSPADSSIShowPluginListDialog}    
     
 renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Debug:List Available VST Plugins",
     invoke=function() listByPluginType("VST") end}
@@ -300,13 +307,7 @@ local function create_paketti_dialog()
       vb:button{text="Oblique Strategies", width=50, notifier=function() 
       create_oblique_strategies_dialog()
       end},
-      vb:button{text="Native Devices", width=50, notifier=function() PakettiShowDeviceListDialog()
-      end},
-      vb:button{text="VST Devices", width=50, notifier=function() vstShowPluginListDialog()
-      end},
-      vb:button{text="VST3/AU Devices", width=50, notifier=function() vst3ShowPluginListDialog()
-      end},
-      vb:button{text="LADSPA/DSSI Devices", width=50, notifier=function() LADSPADSSIShowPluginListDialog()
+      vb:button{text="Native/VST/VST3/AU/LADSPA/DSSI/ Devices", width=50, notifier=function() showDeviceListDialog()
       end},
       vb:button{text="VST/VST3/AU Plugins", width=50, notifier=function()
        showPluginListDialog() end},
@@ -334,11 +335,11 @@ local function toggle_paketti_dialog()
     dialog_instance = nil
   else
 
-    dialog_instance = renoise.app():show_custom_dialog("Paketti Dialogs Dialog", create_paketti_dialog())
+    dialog_instance = renoise.app():show_custom_dialog("Paketti Dialog of Dialogs", create_paketti_dialog())
   end
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Toggle Paketti Dialogs Dialog",invoke=function() toggle_paketti_dialog() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Toggle Paketti Dialog of Dialogs",invoke=function() toggle_paketti_dialog() end}
 
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Paketti Dialogs Dialog...",invoke=function() toggle_paketti_dialog() end}
 renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Paketti New Song Dialog...", invoke=function() show_new_song_dialog() end }

@@ -63,7 +63,7 @@ function saveSelectedSampleToTempAndOpen(app_path)
     elseif os_name == "MACINTOSH" then
         command = 'open -a "' .. app_path .. '" "' .. temp_file_path .. '"'
     else
-        command = 'exec "' .. app_path .. '" "' .. temp_file_path .. '"'
+        command = 'exec "' .. app_path .. '" "' .. temp_file_path .. '" &'
     end
 
     os.execute(command)
@@ -754,7 +754,7 @@ function pitchedInstrument(st)
 end
 
 -------------
-function pitchBendMultipleSampleLoader()
+function pitchBendMultipleSampleLoader(normalize)
   local selected_sample_filenames = renoise.app():prompt_for_multiple_filenames_to_read({"*.wav", "*.aif", "*.flac", "*.mp3", "*.aiff"}, "Paketti PitchBend Multiple Sample Loader")
 
   if #selected_sample_filenames > 0 then
@@ -797,6 +797,7 @@ function pitchBendMultipleSampleLoader()
         renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
 
         G01()
+if normalize then normalize_selected_sample() end
 
         loadnative("Audio/Effects/Native/*Instr. Macros")
         local macro_device = renoise.song().selected_track:device(2)
@@ -815,6 +816,7 @@ renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments:Pakett
 renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Paketti PitchBend Multiple Sample Loader", invoke=function() pitchBendMultipleSampleLoader() end}
 renoise.tool():add_menu_entry{name="Disk Browser Files:Paketti..:Paketti PitchBend Multiple Sample Loader", invoke=function() pitchBendMultipleSampleLoader() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Paketti PitchBend Multiple Sample Loader", invoke=function() pitchBendMultipleSampleLoader() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Paketti PitchBend Multiple Sample Loader (Normalize)", invoke=function() pitchBendMultipleSampleLoader(true) end}
 renoise.tool():add_midi_mapping{name="Paketti:Midi Paketti PitchBend Multiple Sample Loader", invoke=function(message) if message:is_trigger() then pitchBendMultipleSampleLoader() end end}
 
 
@@ -983,6 +985,7 @@ if s.instruments[currInst].samples[1].beat_sync_enabled then
 beatsynclines = s.instruments[currInst].samples[1].beat_sync_lines
 else
   dontsync=true
+  beatsynclines = 0
     -- Determine the appropriate beatsync lines from the table or use a default value
  --   renoise.app():show_status("Please set Beatsync Lines Value before Wipe&Slice, for accurate slicing.")
 --   beatsynclines = beatsync_lines[changer] or 64
@@ -1003,22 +1006,28 @@ end
     end
 
 -- Apply settings to all samples created by the slicing
+-- Apply settings to all samples created by the slicing
 for i, sample in ipairs(s.instruments[currInst].samples) do
     sample.new_note_action = preferences.WipeSlices.WipeSlicesNNA.value
     sample.oneshot = preferences.WipeSlices.WipeSlicesOneShot.value
     sample.autoseek = preferences.WipeSlices.WipeSlicesAutoseek.value
     sample.mute_group = preferences.WipeSlices.WipeSlicesMuteGroup.value
-if dontsync then 
-    sample.beat_sync_enabled = false
-else
-    sample.beat_sync_mode = preferences.WipeSlices.WipeSlicesBeatSyncMode.value
 
-    if beatsynclines/changer < 1 then sample.beat_sync_lines = beatsynclines
-    else 
-    sample.beat_sync_lines = beatsynclines/changer
+    if dontsync then 
+        sample.beat_sync_enabled = false
+    else
+        sample.beat_sync_mode = preferences.WipeSlices.WipeSlicesBeatSyncMode.value
+
+        -- Only set beat_sync_lines if beatsynclines is valid
+        if beatsynclines / changer < 1 then 
+            sample.beat_sync_lines = beatsynclines
+        else 
+            sample.beat_sync_lines = beatsynclines / changer
+        end
+
+        -- Enable beat sync for this sample since dontsync is false
+        sample.beat_sync_enabled = true
     end
-end
-
 
     sample.loop_mode = preferences.WipeSlices.WipeSlicesLoopMode.value
     sample.loop_release = preferences.WipeSlices.WipeSlicesLoopRelease.value
@@ -1026,14 +1035,15 @@ end
     sample.autofade = true
     sample.interpolation_mode = 4
     sample.oversample_enabled = true
-    sample.beat_sync_enabled = true
 end
 
     -- Ensure beat sync is enabled for the original sample
 --    s.instruments[currInst].samples[1].beat_sync_lines = 128
+
+if dontsync ~= true then 
     s.instruments[currInst].samples[1].beat_sync_lines = beatsynclines
     s.instruments[currInst].samples[1].beat_sync_enabled = true
-    
+else end
     -- Show status with sample name and number of slices
     local sample_name = renoise.song().selected_instrument.samples[1].name
     local num_slices = #s.instruments[currInst].samples[currSamp].slice_markers
@@ -2824,6 +2834,8 @@ end
 renoise.tool():add_keybinding{name="Global:Paketti:Pakettify Current Instrument", invoke=function() PakettiInjectDefaultXRNI() end}
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Pakettify Current Instrument", invoke=function() PakettiInjectDefaultXRNI() end}
 
+local isPitchStepSomewhere
+
 function PakettiShowPitchStepper()
 if renoise.song().selected_instrument.samples[1] ~= nil then
   if renoise.song().selected_instrument.sample_modulation_sets[1].devices[1] ~= nil and renoise.song().selected_instrument.sample_modulation_sets[1].devices[1].name == "Pitch Stepper"
@@ -2831,6 +2843,7 @@ if renoise.song().selected_instrument.samples[1] ~= nil then
     if renoise.song().selected_instrument.sample_modulation_sets[1].devices[1].external_editor_visible==true
     then renoise.song().selected_instrument.sample_modulation_sets[1].devices[1].external_editor_visible=false
     else renoise.song().selected_instrument.sample_modulation_sets[1].devices[1].external_editor_visible=true
+    isPitchStepSomewhere = renoise.song().selected_track_index
     end
   else
   renoise.app():show_status("This Instrument is not a Paketti PitchBend Loaded Instrument, doing nothing.")
@@ -2838,9 +2851,35 @@ if renoise.song().selected_instrument.samples[1] ~= nil then
   end
 else
 renoise.app():show_status("No valid Instrument/Sample selected, doing nothing.")
+--renoise.song().instruments[isPitchStepSomewhere].sample_modulation_sets[1].devices[1].external_editor_visible=false
  return
 end  
 
 end
 renoise.tool():add_keybinding{name="Global:Paketti:Show/Hide PitchStep on Selected Instrument",invoke=function() PakettiShowPitchStepper() end}
 
+-------------------
+function BeatSyncFromSelection()
+  local song=renoise.song()
+
+  if song.selection_in_pattern then
+    local startLine=song.selection_in_pattern.start_line
+    local endLine=song.selection_in_pattern.end_line
+
+    -- Calculate how long the selection is
+    local selectionLength=math.abs(endLine-startLine)+1
+
+    -- Set beat sync lines based on the selection length
+    song.selected_sample.beat_sync_lines=selectionLength
+    song.selected_sample.beat_sync_enabled=true
+
+    -- Provide feedback in the status bar
+    renoise.app():show_status("Beat sync lines set to: "..selectionLength)
+  else
+    renoise.app():show_status("No pattern selection available.")
+  end
+end
+
+
+renoise.tool():add_keybinding{name="Global:Paketti:Smart BeatSync from Selection",invoke=function()
+BeatSyncFromSelection() end}

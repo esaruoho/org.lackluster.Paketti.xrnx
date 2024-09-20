@@ -1488,7 +1488,20 @@ function transpose_notes_by_midi_knob(message)
 end
 
 -- Add MIDI mapping for the transpose function
-renoise.tool():add_midi_mapping{
-  name = "Global:Tools:Transpose Notes by MIDI Knob",
-  invoke = transpose_notes_by_midi_knob
-}
+renoise.tool():add_midi_mapping{name="Paketti:Transpose Notes in Selection/Row x[Knob]",invoke=transpose_notes_by_midi_knob}
+-----------------
+renoise.tool():add_midi_mapping{name="Paketti:Change Selected Instrument (Next) x[Knob]",
+invoke= function(message) if message:is_trigger() then
+local currInst= renoise.song().selected_instrument_index
+local newInst = currInst + 1
+if newInst > #renoise.song().instruments then newInst = #renoise.song().instruments end
+renoise.song().selected_instrument_index = newInst
+end end}
+
+renoise.tool():add_midi_mapping{name="Paketti:Change Selected Instrument (Previous) x[Knob]",
+invoke= function(message) if message:is_trigger() then
+local currInst= renoise.song().selected_instrument_index
+local newInst = currInst - 1
+if newInst < 1 then newInst = 1 end
+renoise.song().selected_instrument_index = newInst
+end end}

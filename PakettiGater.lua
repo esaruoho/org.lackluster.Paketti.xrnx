@@ -1084,3 +1084,7 @@ renoise.tool():add_keybinding{name="Global:Paketti:Paketti Gater Dialog...",invo
   end
 }
 
+renoise.tool():add_keybinding{name="Global:Paketti:Paketti Gater Insert Commands",invoke=function() insert_commands() end}
+
+renoise.tool():add_midi_mapping{name="Paketti:Paketti Gater Insert Commands",invoke=function(message) if message:is_trigger() then
+insert_commands() end end}

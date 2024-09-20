@@ -178,22 +178,34 @@ end
 table.insert(notes, "000") -- Adding "---" as "000"
 table.insert(notes, "OFF")
 
-local function PakettiPlayerProNoteGridInsertNoteInPattern(note, instrument)
+local function PakettiPlayerProNoteGridInsertNoteInPattern(note, instrument, editstep)
   local song = renoise.song()
   local sel = song.selection_in_pattern
   local pattern_index = song.selected_pattern_index
   local note_to_insert = note == "000" and "---" or note
   local note_column_selected = false
-
+  local step = song.transport.edit_step -- Get the current edit step value from the transport
+print (editstep)
   local function insert_note_line(line, col)
     line:note_column(col).note_string = note_to_insert
-    if instrument ~= nil and note ~= "---" and note ~= "OFF" then
+    if note == "OFF" or note == "---" or note == "000" then
+      line:note_column(col).instrument_string = ".." 
+      print("Note OFF or blank inserted")
+    end
+
+    if instrument ~= nil and note ~= "000" and note ~= "OFF" then
       local instrument_actual = instrument - 1
       local instrument_string = string.format("%02X", instrument_actual)
       print("Inserting instrument string: " .. instrument_string)
       line:note_column(col).instrument_string = instrument_string
     end
     print("Note column info - Instrument String: " .. line:note_column(col).instrument_string .. ", Instrument Value: " .. tostring(line:note_column(col).instrument_value))
+  end
+
+  local function clear_note_line(line, col)
+    line:note_column(col).note_string = "---"
+    line:note_column(col).instrument_string = ".."
+    print("Clearing note column on non-editstep row")
   end
 
   if sel == nil then
@@ -208,13 +220,24 @@ local function PakettiPlayerProNoteGridInsertNoteInPattern(note, instrument)
     for track_index = sel.start_track, sel.end_track do
       local pattern_track = song.patterns[pattern_index]:track(track_index)
       local visible_note_columns = song:track(track_index).visible_note_columns
+local step = song.transport.edit_step
+if step == 0 then
+  step = 1
+end
+      -- Iterate through the lines, insert or clear based on editstep
       for line_index = sel.start_line, sel.end_line do
         local line = pattern_track:line(line_index)
         for col_index = 1, visible_note_columns do
           if (track_index > sel.start_track) or (col_index >= sel.start_column) then
             if col_index <= visible_note_columns then
-              insert_note_line(line, col_index)
-              note_column_selected = true
+              if editstep and (line_index - sel.start_line) % step ~= 0 then
+                -- If editstep is true and this line doesn't match the editstep, clear it
+                clear_note_line(line, col_index)
+              else
+                -- Otherwise, insert the note
+                insert_note_line(line, col_index)
+                note_column_selected = true
+              end
             end
           end
         end
@@ -228,45 +251,71 @@ local function PakettiPlayerProNoteGridInsertNoteInPattern(note, instrument)
   end
 end
 
-local function PakettiPlayerProNoteGridUpdateInstrumentInPattern(instrument)
+local function PakettiPlayerProNoteGridUpdateInstrumentInPattern(instrument, editstep_enabled)
   local song = renoise.song()
   local sel = song.selection_in_pattern
   local pattern_index = song.selected_pattern_index
+  local step = song.transport.edit_step -- Get the current edit step value from the transport
 
-  local function update_instrument_line(line, col)
+  -- Safeguard to prevent issues if edit step is set to 0
+  if step == 0 then
+    step = 1
+  end
+
+  local function update_instrument_line(line, col, line_index, total_lines)
     if instrument ~= nil then
       local instrument_actual = instrument - 1
       local instrument_string = string.format("%02X", instrument_actual)
-      print("Updating instrument string: " .. instrument_string)
+      print("Updating instrument string: " .. instrument_string .. " at row " .. line_index .. " of " .. total_lines)
       line:note_column(col).instrument_string = instrument_string
     end
-    print("Updated Note column info - Instrument String: " .. line:note_column(col).instrument_string .. ", Instrument Value: " .. tostring(line:note_column(col).instrument_value))
   end
 
   if sel == nil then
+    -- If there's no selection, update only the currently selected note column
     local line = song.selected_line
     local col = song.selected_note_column_index
     local visible_note_columns = song.selected_track.visible_note_columns
     if col > 0 and col <= visible_note_columns then
-      update_instrument_line(line, col)
+      update_instrument_line(line, col, song.selected_line_index, 1)
     end
   else
+    -- Calculate total lines in the selection for logging
+    local total_lines = sel.end_line - sel.start_line + 1
+
     for track_index = sel.start_track, sel.end_track do
       local pattern_track = song.patterns[pattern_index]:track(track_index)
       local visible_note_columns = song:track(track_index).visible_note_columns
+
+      -- Iterate through the lines and apply the editstep logic if enabled
       for line_index = sel.start_line, sel.end_line do
         local line = pattern_track:line(line_index)
-        for col_index = 1, visible_note_columns do
-          if (track_index > sel.start_track) or (col_index >= sel.start_column) then
-            if col_index <= visible_note_columns then
-              update_instrument_line(line, col_index)
+
+        -- Apply editstep logic only if the checkbox is enabled
+        local should_update = not editstep_enabled or (editstep_enabled and (line_index - sel.start_line) % step == 0)
+
+        if should_update then
+          print("Updating row " .. line_index .. " out of " .. total_lines .. " (editstep " .. (editstep_enabled and "enabled" or "disabled") .. ")")
+          
+          for col_index = 1, visible_note_columns do
+            if (track_index > sel.start_track) or (col_index >= sel.start_column) then
+              if col_index <= visible_note_columns then
+                -- Update the instrument on lines that match the editstep or all lines if editstep is disabled
+                update_instrument_line(line, col_index, line_index, total_lines)
+              end
             end
           end
+        else
+          print("Skipping row " .. line_index .. " (editstep enabled, does not match step)")
         end
       end
     end
   end
 end
+
+
+
+
 
 local function PakettiPlayerProNoteGridUpdateInstrumentPopup()
   local instrument_items = {"<None>"}
@@ -278,20 +327,50 @@ local function PakettiPlayerProNoteGridUpdateInstrumentPopup()
     vb.views["instrument_popup"].items = instrument_items
   end
 end
+local EditStepCheckboxValue = false -- Shared variable to hold the checkbox state
+
 
 local function PakettiPlayerProNoteGridChangeInstrument(instrument)
-  PakettiPlayerProNoteGridUpdateInstrumentInPattern(instrument)
+  -- Declare editstep_enabled outside the if block
+  local editstep_enabled
+
+  -- Check the checkbox value and set editstep_enabled accordingly
+  if EditStepCheckboxValue == true then
+    editstep_enabled = true
+  else 
+    editstep_enabled = false
+  end
+
+  -- Call the update function with the proper editstep value
+  PakettiPlayerProNoteGridUpdateInstrumentInPattern(instrument, editstep_enabled)
 end
 
-local function PakettiPlayerProNoteGridCreateGrid()
+
+function PakettiPlayerProNoteGridCreateGrid()
   local grid_rows = 11
   local grid_columns = 12
   local grid = vb:column{}
+
+  -- Add the checkbox at the top of the grid
+  grid:add_child(vb:row{
+    vb:checkbox{
+      value = EditStepCheckboxValue, -- Initialize checkbox
+      notifier = function(value)
+        EditStepCheckboxValue = value -- Update the shared value
+      end
+    },
+    vb:text{
+      text = "Fill Selection with EditStep", style="strong",font="bold"
+    }
+  })
+
+  -- Create the grid of note buttons
   for row = 1, grid_rows do
     local row_items = vb:row{}
     for col = 1, grid_columns do
       local index = (row - 1) * grid_columns + col
       if notes[index] then
+        -- Add a button for each note in the grid
         row_items:add_child(vb:button{
           text = notes[index],
           width = 30,
@@ -299,7 +378,10 @@ local function PakettiPlayerProNoteGridCreateGrid()
           notifier = function()
             local instrument_value = renoise.song().selected_instrument_index
             print("Note button clicked. Instrument Value: " .. tostring(instrument_value))
-            PakettiPlayerProNoteGridInsertNoteInPattern(notes[index], instrument_value)
+
+            -- Pass the note, instrument, and EditStepCheckboxValue to the insert function
+            PakettiPlayerProNoteGridInsertNoteInPattern(notes[index], instrument_value, EditStepCheckboxValue)
+
             -- Return focus to the Pattern Editor
             renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
           end
@@ -308,8 +390,10 @@ local function PakettiPlayerProNoteGridCreateGrid()
     end
     grid:add_child(row_items)
   end
+
   return grid
 end
+
 
 local function PakettiPlayerProNoteGridCloseDialog()
   if dialog and dialog.visible then
@@ -320,9 +404,11 @@ local function PakettiPlayerProNoteGridCloseDialog()
   renoise.app():show_status("Closing Paketti PlayerPro Note Dialog")
 end
 
+
 local function PakettiPlayerProNoteGridCreateDialogContent()
   vb = renoise.ViewBuilder()
-  
+local EditStepCheckboxValue = false -- Initial value for EditStepCheckbox
+
   local instrument_items = {"<None>"}
   for i = 0, #renoise.song().instruments - 1 do
     local instrument = renoise.song().instruments[i + 1]
@@ -335,13 +421,14 @@ local function PakettiPlayerProNoteGridCreateDialogContent()
 
   return vb:column{
     margin = 10,
+    width="100%",
     vb:row{
       vb:text{
-        text = "Instrument:"
+        text = "Instrument:",style="strong",font="bold"
       },
       vb:popup{
         items = instrument_items,
-        width = 200,
+        width = 220,
         id = "instrument_popup",
         value = selected_instrument_value,
         notifier = function(value)
@@ -359,17 +446,17 @@ local function PakettiPlayerProNoteGridCreateDialogContent()
       },
       vb:button{
         text = "Refresh",
-        width = 100,
+        width = 90,
         notifier = function()
           PakettiPlayerProNoteGridUpdateInstrumentPopup()
         end
       }
     },
-    PakettiPlayerProNoteGridCreateGrid(),
+     PakettiPlayerProNoteGridCreateGrid(),
     vb:row{
       vb:button{
         text = "Close",
-        width = 100,
+        width = 381,
         notifier = function()
           PakettiPlayerProNoteGridCloseDialog()
         end
@@ -377,6 +464,7 @@ local function PakettiPlayerProNoteGridCreateDialogContent()
     }
   }
 end
+
 
 local function PakettiPlayerProNoteGridKeyHandlerFunc(dialog, key)
   if key.modifiers == "" and key.name == "exclamation" then
@@ -393,7 +481,7 @@ local function PakettiPlayerProNoteGridShowDropdownGrid()
     PakettiPlayerProNoteGridCloseDialog()
   else
     print("Dialog is not visible, creating new dialog.")
-    dialog = renoise.app():show_custom_dialog("Player Pro Note Selector", PakettiPlayerProNoteGridCreateDialogContent(), PakettiPlayerProNoteGridKeyHandlerFunc)
+    dialog = renoise.app():show_custom_dialog("Player Pro Note Selector with EditStep", PakettiPlayerProNoteGridCreateDialogContent(), PakettiPlayerProNoteGridKeyHandlerFunc)
     print("Dialog opened.")
     renoise.app():show_status("Opening Paketti PlayerPro Note Dialog")
     -- Return focus to the Pattern Editor
@@ -444,42 +532,50 @@ PakettiPlayerProNoteGridAddNoteMenuEntries()
 
 -- Function to transpose notes
 function pakettiPlayerProTranspose(steps)
-  local song=renoise.song()
-  local selection=song.selection_in_pattern
-  local pattern=song.selected_pattern
+  local song = renoise.song()
+  local selection = song.selection_in_pattern
+  local pattern = song.selected_pattern
 
   -- Determine the range to transpose
   local start_track, end_track, start_line, end_line, start_column, end_column
 
-  if selection~=nil then
-    start_track=selection.start_track
-    end_track=selection.end_track
-    start_line=selection.start_line
-    end_line=selection.end_line
-    start_column=selection.start_column
-    end_column=selection.end_column
+  if selection ~= nil then
+    start_track = selection.start_track
+    end_track = selection.end_track
+    start_line = selection.start_line
+    end_line = selection.end_line
+    start_column = selection.start_column
+    end_column = selection.end_column
   else
-    start_track=song.selected_track_index
-    end_track=song.selected_track_index
-    start_line=song.selected_line_index
-    end_line=song.selected_line_index
-    start_column=1
-    end_column=song.tracks[start_track].visible_note_columns
+    start_track = song.selected_track_index
+    end_track = song.selected_track_index
+    start_line = song.selected_line_index
+    end_line = song.selected_line_index
+    start_column = 1
+    end_column = song.tracks[start_track].visible_note_columns
   end
 
   -- Iterate through each track in the determined range
-  for track_index=start_track,end_track do
-    local track=pattern:track(track_index)
+  for track_index = start_track, end_track do
+    local track = pattern:track(track_index)
+    local tracks = renoise.song().tracks[track_index]
+
+    -- Set the column range for each track based on the selection
+    local first_column = (track_index == start_track) and start_column or 1
+    local last_column = (track_index == end_track) and end_column or tracks.visible_note_columns
 
     -- Iterate through each line in the determined range
-    for line_index=start_line,end_line do
-      local line=track:line(line_index)
+    for line_index = start_line, end_line do
+      local line = track:line(line_index)
 
-      -- Iterate through each note column in the line within the determined range
-      for column_index=start_column,end_column do
-        local note_column=line:note_column(column_index)
+      -- Iterate through each note column in the line within the selected range
+      for column_index = first_column, last_column do
+        local note_column = line:note_column(column_index)
         if not note_column.is_empty then
-          note_column.note_value=(note_column.note_value+steps)%120
+          -- Skip transposing if note_value is 120 or 121
+          if note_column.note_value < 120 then
+            note_column.note_value = (note_column.note_value + steps) % 120
+          end
         end
       end
     end
@@ -491,6 +587,7 @@ renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Player Pro Transpose 
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Player Pro Transpose Selection or Row -1",invoke=function() pakettiPlayerProTranspose(-1) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Player Pro Transpose Selection or Row +12",invoke=function() pakettiPlayerProTranspose(12) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Player Pro Transpose Selection or Row -12",invoke=function() pakettiPlayerProTranspose(-12) end}
+
 
 
 
@@ -579,6 +676,8 @@ local function pakettiPlayerProInsertIntoLine(line, col, note, instrument, effec
   if volume and volume ~= "Off" and note ~= "---" and note ~= "OFF" then
     line:note_column(col).volume_string = volume
   end
+
+  
 end
 
 local function pakettiPlayerProInsertNoteInPattern(note, instrument, effect, effect_argument, volume)

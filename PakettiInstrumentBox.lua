@@ -3,7 +3,17 @@
 
 function DuplicateInstrumentAndSelectNewInstrument()
 local rs=renoise.song()
+if renoise.app().window.active_middle_frame==3 then 
 local i=rs.selected_instrument_index;rs:insert_instrument_at(i+1):copy_from(rs.selected_instrument);rs.selected_instrument_index=i+1
+renoise.app().window.active_middle_frame=3
+else
+if renoise.app().window.active_middle_frame == 9 then
+local i=rs.selected_instrument_index;rs:insert_instrument_at(i+1):copy_from(rs.selected_instrument);rs.selected_instrument_index=i+1
+renoise.app().window.active_middle_frame=9
+else
+local i=rs.selected_instrument_index;rs:insert_instrument_at(i+1):copy_from(rs.selected_instrument);rs.selected_instrument_index=i+1
+end
+end
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Duplicate Instrument and Select New Instrument",invoke=function() DuplicateInstrumentAndSelectNewInstrument() end}

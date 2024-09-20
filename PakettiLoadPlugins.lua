@@ -1,10 +1,27 @@
-local vb = renoise.ViewBuilder()
+-- Plugin Loader Dialog with Randomize Slider and Separate Dropdowns
+
+local vb -- ViewBuilder will be initialized within the function scope
 local checkboxes = {}
-local deviceReadableNames = { VST = {}, VST3 = {}, AU = {} }
+local deviceReadableNames = {}
 local addedKeyBindings = {}
 local preferencesFile = renoise.tool().bundle_path .. "preferences_pluginLoaders.xml"
+local current_plugin_type = "VST"
+local plugin_types = { "VST", "VST3", "AU", "LADSPA", "DSSI" }
+local plugin_type_display_names = {
+  VST = "VST",
+  VST3 = "VST3",
+  AU = "AudioUnit",
+  LADSPA = "LADSPA",
+  DSSI = "DSSI"
+}
+local custom_dialog = nil  -- Reference to the custom dialog
+local plugin_list_view = nil
+local current_plugin_list_content = nil  -- Variable to keep track of current content
 
--- Initialize LoaderPreferences.xml file if it does not exist
+-- Variable for random selection percentage
+local random_select_percentage = 0  -- Initialized to 0%
+
+-- Initialize Preferences File
 local function initializePreferencesFile()
   local file, err = io.open(preferencesFile, "r")
   if not file then
@@ -20,7 +37,7 @@ local function initializePreferencesFile()
   end
 end
 
--- Function to save keybinding and MIDI mapping to LoaderPreferences.xml
+-- Save to Preferences File
 local function saveToPreferencesFile(keyBindingName, midiMappingName, path)
   local file, err = io.open(preferencesFile, "a")
   if not file then
@@ -43,7 +60,7 @@ local function saveToPreferencesFile(keyBindingName, midiMappingName, path)
   file:close()
 end
 
--- Function to load keybindings and MIDI mappings from LoaderPreferences.xml
+-- Load from Preferences File
 local function loadFromPreferencesFile()
   local file, err = io.open(preferencesFile, "r")
   if not file then
@@ -56,17 +73,27 @@ local function loadFromPreferencesFile()
 
   -- Parse the XML content to add keybindings and MIDI mappings
   for keyBindingName, path in content:gmatch('<KeyBinding name="(.-)">.-<Path>(.-)</Path>.-</KeyBinding>') do
-    renoise.tool():add_keybinding{name=keyBindingName, invoke=function() loadPlugin(path) end}
+    renoise.tool():add_keybinding{
+      name = keyBindingName,
+      invoke = function() loadPlugin(path) end
+    }
     addedKeyBindings[keyBindingName] = true
   end
 
   for midiMappingName, path in content:gmatch('<MIDIMapping name="(.-)">.-<Path>(.-)</Path>.-</MIDIMapping>') do
-    renoise.tool():add_midi_mapping{name=midiMappingName, invoke=function(message) if message:is_trigger() then  loadPlugin(path) end end}
+    renoise.tool():add_midi_mapping{
+      name = midiMappingName,
+      invoke = function(message)
+        if message:is_trigger() then
+          loadPlugin(path)
+        end
+      end
+    }
     addedKeyBindings[midiMappingName] = true
   end
 end
 
--- Function to load the selected plugin into a new instrument and make the external editor visible
+-- Load Plugin Function
 function loadPlugin(pluginPath)
   local selected_index = renoise.song().selected_instrument_index
   renoise.song():insert_instrument_at(selected_index + 1)
@@ -76,11 +103,43 @@ function loadPlugin(pluginPath)
   if new_instrument.plugin_properties.plugin_device and new_instrument.plugin_properties.plugin_device.external_editor_available then
     new_instrument.plugin_properties.plugin_device.external_editor_visible = true
   end
-  openVisiblePagesToFitParameters()  
+  -- openVisiblePagesToFitParameters()  -- Uncomment if you have this function defined elsewhere
 end
 
--- Function to add a plugin as a shortcut
+-- Check if any plugins are selected
+local function isAnyPluginSelected()
+  for _, cb_info in ipairs(checkboxes) do
+    if cb_info.checkbox.value then
+      return true
+    end
+  end
+  return false
+end
+
+-- Load Selected Plugins
+local function loadSelectedPlugins()
+  if not isAnyPluginSelected() then
+    renoise.app():show_status("Nothing was selected, doing nothing.")
+    return false  -- Indicate that no plugins were loaded
+  end
+
+  for _, cb_info in ipairs(checkboxes) do
+    if cb_info.checkbox.value then
+      local pluginPath = cb_info.path
+      print("Loading Plugin:", pluginPath)
+      loadPlugin(pluginPath)
+    end
+  end
+  return true  -- Indicate that plugins were loaded
+end
+
+-- Add as Shortcut
 local function addAsShortcut()
+  if not isAnyPluginSelected() then
+    renoise.app():show_status("Nothing was selected, doing nothing.")
+    return
+  end
+
   for _, cb_info in ipairs(checkboxes) do
     if cb_info.checkbox.value then
       local plugin_type = ""
@@ -90,22 +149,31 @@ local function addAsShortcut()
         plugin_type = " (VST3)"
       elseif cb_info.path:find("/AU/") then
         plugin_type = " (AU)"
+      elseif cb_info.path:find("/LADSPA/") then
+        plugin_type = " (LADSPA)"
+      elseif cb_info.path:find("/DSSI/") then
+        plugin_type = " (DSSI)"
       end
 
-      local keyBindingName="Global:Paketti:Load Plugin" .. plugin_type .. " " .. cb_info.name
-      local midiMappingName="Paketti:Load Plugin" .. plugin_type .. " " .. cb_info.name
-
-      -- Debug: Print the keybinding name
-      print("Attempting to add keybinding:", keyBindingName)
+      local keyBindingName = "Global:Paketti:Load Plugin" .. plugin_type .. " " .. cb_info.name
+      local midiMappingName = "Paketti:Load Plugin" .. plugin_type .. " " .. cb_info.name
 
       -- Check if we've already attempted to add this keybinding
       if not addedKeyBindings[keyBindingName] then
-        print("Adding shortcut for:", cb_info.name .. plugin_type)
-
         -- Attempt to add the keybinding, using pcall to catch any errors gracefully
         local success, err = pcall(function()
-          renoise.tool():add_keybinding{name=keyBindingName, invoke=function() loadPlugin(cb_info.path) end}
-          renoise.tool():add_midi_mapping{name=midiMappingName, invoke=function(message) if message:is_trigger() then  loadPlugin(cb_info.path) end end}
+          renoise.tool():add_keybinding{
+            name = keyBindingName,
+            invoke = function() loadPlugin(cb_info.path) end
+          }
+          renoise.tool():add_midi_mapping{
+            name = midiMappingName,
+            invoke = function(message)
+              if message:is_trigger() then
+                loadPlugin(cb_info.path)
+              end
+            end
+          }
         end)
 
         -- Check if the keybinding was added successfully
@@ -120,178 +188,310 @@ local function addAsShortcut()
       end
     end
   end
-  
+
   renoise.app():show_status("Plugins added. Open Settings -> Keys, search for 'Load Plugin' or Midi Mappings and search for 'Load Plugin'")
 end
 
--- Function to create a scrollable list of plugins
-local function createScrollableList(plugins, title)
-  -- Sort the plugins alphabetically, case-insensitive
-  table.sort(plugins, function(a, b)
-    return a.name:lower() < b.name:lower()
-  end)
-
-  local columns = { vb:column {}, vb:column {} }
-  local num_plugins = #plugins
-  local num_columns = 2
-
-  if num_plugins > 2 * 15 then  -- Assuming each column can hold 15 plugins
-    num_columns = math.ceil(num_plugins / 15)
-    for i = 3, num_columns do
-      table.insert(columns, vb:column {})
-    end
-  end
-
-  local plugins_per_column = math.ceil(num_plugins / num_columns)
-
-  for i, plugin in ipairs(plugins) do
-    local column_index = math.floor((i - 1) / plugins_per_column) + 1
-    local checkbox_id = "checkbox_" .. title .. "_" .. tostring(i) .. "_" .. tostring(math.random(1000000))
-    local checkbox = vb:checkbox { value = false, id = checkbox_id }
-    checkboxes[#checkboxes + 1] = { checkbox = checkbox, path = plugin.path, name = plugin.name }
-    local plugin_row = vb:row {checkbox, vb:text {text=plugin.name}}
-
-    columns[column_index]:add_child(plugin_row)
-  end
-
-  local column_container = vb:row { spacing = 20 }
-  for _, column in ipairs(columns) do
-    column_container:add_child(column)
-  end
-
-  return vb:column {
-    vb:text { text = title, font = "bold", height = 20 },
-    column_container
-  }
-end
-
--- Function to load the selected plugins
-local function loadSelectedPlugins()
-  for _, cb_info in ipairs(checkboxes) do
-    if cb_info.checkbox.value then
-      local pluginPath = cb_info.path
-      print("Loading Plugin:", pluginPath)
-      loadPlugin(pluginPath)
-    end
-  end
-end
-
--- Function to reset the selection
+-- Reset Selection
 local function resetSelection()
   for _, cb_info in ipairs(checkboxes) do
     cb_info.checkbox.value = false
   end
 end
 
--- Function to randomize the selection
-local function randomizeSelection()
+-- Update Random Selection based on Slider
+local function updateRandomSelection()
+  if #checkboxes == 0 then
+    renoise.app():show_status("Nothing to randomize from.")
+    return
+  end
+
   resetSelection()  -- Clear previous selections
 
   local numDevices = #checkboxes
-  local numSelections = math.random(1, numDevices)
+  local percentage = random_select_percentage
+  local numSelections = math.floor((percentage / 100) * numDevices + 0.5)
 
-  local selectedIndices = {}
-  while #selectedIndices < numSelections do
-    local randIndex = math.random(1, numDevices)
-    if not selectedIndices[randIndex] then
-      selectedIndices[randIndex] = true
-      checkboxes[randIndex].checkbox.value = true
+  local percentage_text_view = vb.views["random_percentage_text"]
+
+  if numSelections == 0 then
+    percentage_text_view.text = "None"
+    return
+  elseif numSelections >= numDevices then
+    percentage_text_view.text = "All"
+    for _, cb_info in ipairs(checkboxes) do
+      cb_info.checkbox.value = true
     end
+    return
+  else
+    percentage_text_view.text = tostring(math.floor(percentage + 0.5)) .. "%"
+  end
+
+  local indices = {}
+  for i = 1, numDevices do
+    indices[i] = i
+  end
+
+  -- Shuffle indices
+  for i = numDevices, 2, -1 do
+    local j = math.random(1, i)
+    indices[i], indices[j] = indices[j], indices[i]
+  end
+
+  -- Select the first numSelections devices
+  for i = 1, numSelections do
+    local idx = indices[i]
+    checkboxes[idx].checkbox.value = true
   end
 end
 
--- Function to show the plugin list dialog
-function showPluginListDialog()
-  checkboxes = {}  -- Reinitialize the checkboxes table to avoid carrying over previous states
+-- Create Plugin List
+local function createPluginList(plugins, title)
+  if #plugins == 0 then
+    return vb:column{
+      vb:text{text=title, font="bold", height=20},
+      vb:text{text="No Plugins found for this type.", font="italic", height=20}
+    }
+  end
+
+  -- Sort the plugins alphabetically, case-insensitive
+  table.sort(plugins, function(a, b)
+    return a.name:lower() < b.name:lower()
+  end)
+
+  -- Determine number of columns based on plugins per column
+  local num_plugins = #plugins
+  local plugins_per_column = 28
+  local num_columns = math.ceil(num_plugins / plugins_per_column)
+
+  local columns = {}
+  for i = 1, num_columns do
+    columns[i] = vb:column{spacing=2}
+  end
+
+  -- Split plugins into columns sequentially
+  local plugin_index = 1
+
+  for col = 1, num_columns do
+    for row = 1, plugins_per_column do
+      if plugin_index > num_plugins then break end
+      local plugin = plugins[plugin_index]
+      local checkbox_id = "checkbox_" .. title .. "_" .. tostring(plugin_index) .. "_" .. tostring(math.random(1000000))
+      local checkbox = vb:checkbox{value=false, id=checkbox_id}
+      checkboxes[#checkboxes + 1] = {checkbox=checkbox, path=plugin.path, name=plugin.name}
+      local plugin_row = vb:row{
+        spacing=4,
+        checkbox,
+        vb:text{text=plugin.name}
+      }
+      columns[col]:add_child(plugin_row)
+      plugin_index = plugin_index + 1
+    end
+  end
+
+  local column_container = vb:row{spacing=20}
+  for _, column in ipairs(columns) do
+    column_container:add_child(column)
+  end
+
+  return vb:column{
+    vb:text{text=title, font="bold", height=20},
+    vb:horizontal_aligner{
+      mode = "center",
+      column_container
+    }
+  }
+end
+
+-- Update Plugin List
+local function updatePluginList()
+  checkboxes = {}  -- Clear previous checkboxes
+
   local available_plugins = renoise.song().selected_instrument.plugin_properties.available_plugins
   local available_plugin_infos = renoise.song().selected_instrument.plugin_properties.available_plugin_infos
-  deviceReadableNames = { VST = {}, VST3 = {}, AU = {} }
 
-  -- Debug: Print the available plugins
-  print("Available plugins:")
-  rprint(available_plugins)
+  local plugins = {}
 
   for i, plugin_path in ipairs(available_plugins) do
     local plugin_info = available_plugin_infos[i]
     if plugin_info then
       local short_name = plugin_info.short_name or "Unknown"
-      print(string.format("Processing plugin: %s, path: %s", short_name, plugin_path))
-      if plugin_path:find("/VST/") then
-        table.insert(deviceReadableNames.VST, { name = short_name, path = plugin_path })
-      elseif plugin_path:find("/VST3/") then
-        table.insert(deviceReadableNames.VST3, { name = short_name, path = plugin_path })
-      elseif plugin_path:find("/AU/") then
-        table.insert(deviceReadableNames.AU, { name = short_name, path = plugin_path })
+      if plugin_path:find("/" .. current_plugin_type .. "/") then
+        table.insert(plugins, {name = short_name, path = plugin_path})
       end
-    else
-      print(string.format("Skipping plugin at index %d due to missing info", i))
     end
   end
 
-  local custom_dialog
+  local display_title = plugin_type_display_names[current_plugin_type] .. " Plugins"
+  local plugin_list_content = createPluginList(plugins, display_title)
 
-  -- Define the action buttons and their behaviors
+  -- Remove existing content from plugin_list_view
+  if current_plugin_list_content then
+    plugin_list_view:remove_child(current_plugin_list_content)
+  end
+
+  -- Add new content
+  plugin_list_view:add_child(plugin_list_content)
+  current_plugin_list_content = plugin_list_content
+end
+
+-- Show Plugin List Dialog
+function showPluginListDialog()
+  -- Close the dialog if it's already open
+  if custom_dialog and custom_dialog.visible then
+    custom_dialog:close()
+    custom_dialog = nil
+    current_plugin_list_content = nil  -- Reset current content
+    return
+  end
+
+  vb = renoise.ViewBuilder()
+  checkboxes = {}
+  deviceReadableNames = {}
+  random_select_percentage = 0  -- Reset the random selection percentage
+  current_plugin_list_content = nil  -- Reset current content
+
+  -- Dropdown Menu
+  local dropdown_items = {}
+  for _, plugin_type in ipairs(plugin_types) do
+    table.insert(dropdown_items, plugin_type_display_names[plugin_type])
+  end
+
+  local dropdown = vb:popup{
+    items = dropdown_items,
+    value = 1,
+    notifier = function(index)
+      current_plugin_type = plugin_types[index]
+      updatePluginList()
+    end
+  }
+
+  -- Random Selection Slider
+  local random_selection_controls = vb:row{
+    spacing = 10,
+    vb:text{text = "Random Select:", width = 100},
+    vb:slider{
+      id = "random_select_slider",
+      min = 0,
+      max = 100,
+      value = 0,
+      width = 200,
+      notifier = function(value)
+        random_select_percentage = value
+        updateRandomSelection()
+      end
+    },
+    vb:text{
+      id = "random_percentage_text",
+      text = "None",
+      width = 40,
+      align = "center"
+    }
+  }
+
+  -- Action Buttons
   local button_height = renoise.ViewBuilder.DEFAULT_DIALOG_BUTTON_HEIGHT
-  local button_spacing = renoise.ViewBuilder.DEFAULT_DIALOG_SPACING
-  local action_buttons = vb:column {
+  local action_buttons = vb:column{
     uniform = true,
     width = "100%",
-    vb:horizontal_aligner {
-      vb:button {
-        text = "Load Plugin(s)",
-        width = "50%",
+    vb:button{
+      text = "Add Plugin(s) as Shortcut(s) & MidiMappings",
+      height = button_height,
+      width = "100%",
+      notifier = addAsShortcut
+    },
+    vb:horizontal_aligner{
+      width = "100%",
+      vb:button{
+        text = "Select All",
         height = button_height,
+        width = "50%",
         notifier = function()
-          loadSelectedPlugins()
+          for _, cb_info in ipairs(checkboxes) do
+            cb_info.checkbox.value = true
+          end
+          vb.views["random_select_slider"].value = 100
+          vb.views["random_percentage_text"].text = "All"
         end
       },
-      vb:button {
-        text="Load Plugin(s) & Close",
-        width="50%",
-        height=button_height,
-        notifier=function()
-          loadSelectedPlugins()
-          custom_dialog:close()
+      vb:button{
+        text = "Reset Selection",
+        height = button_height,
+        width = "50%",
+        notifier = function()
+          resetSelection()
+          vb.views["random_select_slider"].value = 0
+          vb.views["random_percentage_text"].text = "None"
         end
       }
     },
-    vb:button{text="Add Plugin(s) as Shortcut(s) & MidiMappings",height=button_height,notifier=addAsShortcut},
-    vb:button{text="Randomize Selection", height=button_height, notifier=function() randomizeSelection() end},
-            vb:button { text="Select All",
-        height=button_height,
-        notifier=function()
-        
-    for _, cb_info in ipairs(checkboxes) do
-        cb_info.checkbox.value = true
-    end
-end},
-    vb:button{text="Reset Selection", height=button_height, notifier=function() resetSelection() end},
-    vb:button{text="Cancel", height=button_height, notifier=function() custom_dialog:close() end}
+    vb:horizontal_aligner{
+      width = "100%",
+      vb:button{
+        text = "Load Plugin(s)",
+        width = "33%",
+        height = button_height,
+        notifier = function()
+          if loadSelectedPlugins() then
+            renoise.app():show_status("Plugins loaded.")
+          else
+            renoise.app():show_status("Nothing was selected, doing nothing.")
+          end
+        end
+      },
+      vb:button{
+        text = "Load Plugin(s) & Close",
+        width = "33%",
+        height = button_height,
+        notifier = function()
+          if loadSelectedPlugins() then
+            custom_dialog:close()
+            custom_dialog = nil
+            current_plugin_list_content = nil
+          else
+            renoise.app():show_status("Nothing was selected, doing nothing.")
+          end
+        end
+      },
+      vb:button{
+        text = "Cancel",
+        height = button_height,
+        width = "34%",
+        notifier = function()
+          custom_dialog:close()
+          custom_dialog = nil
+          current_plugin_list_content = nil
+        end
+      }
+    }
   }
 
-  -- Check if there are any plugins available, if not, show a message
-  local dialog_content
-  if #deviceReadableNames.AU == 0 and #deviceReadableNames.VST == 0 and #deviceReadableNames.VST3 == 0 then
-    dialog_content = vb:column {
-      margin = 10,
-      spacing = 5,
-      vb:text { text = "No AudioUnit Plugins found on this computer.", font = "bold", height = 20 },
-      vb:text { text = "No VST Plugins found on this computer.", font = "bold", height = 20 },
-      vb:text { text = "No VST3 Plugins found on this computer.", font = "bold", height = 20 },
-      action_buttons
-    }
-  else
-    dialog_content = vb:column {
-      margin = 10,
-      spacing = 5,
-      createScrollableList(deviceReadableNames.AU, "AudioUnit"),
-      createScrollableList(deviceReadableNames.VST, "VST"),
-      createScrollableList(deviceReadableNames.VST3, "VST3"),
-      action_buttons
-    }
-  end
+  -- Placeholder for Plugin List
+  plugin_list_view = vb:column{}
+
+  -- Main Dialog Content
+  local dialog_content_view = vb:column{
+    margin = 10,
+    spacing = 5,
+    plugin_list_view,
+    random_selection_controls,
+    action_buttons
+  }
+
+  -- Wrap in a column to include the dropdown
+  local dialog_content = vb:column{
+    vb:horizontal_aligner{
+      mode = "center",
+      vb:text{text = "Select Plugin Type: "},
+      dropdown
+    },
+    dialog_content_view
+  }
 
   custom_dialog = renoise.app():show_custom_dialog("Load Plugin(s)", dialog_content)
+
+  -- Initial Update
+  updatePluginList()
 end
 
 -- Initialize preferences file and load keybindings and MIDI mappings
@@ -299,5 +499,8 @@ initializePreferencesFile()
 loadFromPreferencesFile()
 
 -- Register the menu entry to show the plugin list dialog
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Load AU/VST/VST3 Plugins Dialog",invoke=function() showPluginListDialog() end}
+renoise.tool():add_menu_entry{
+  name = "--Main Menu:Tools:Paketti..:Plugins/Devices:Load Plugins Dialog",
+  invoke = function() showPluginListDialog() end
+}
 

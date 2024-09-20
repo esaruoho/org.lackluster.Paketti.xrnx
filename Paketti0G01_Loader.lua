@@ -2,7 +2,6 @@ local dialog
 local vb = renoise.ViewBuilder()
 local initial_value = nil
 
-
 local function my_keyhandler_func(dialog, key)
   if not (key.modifiers == "" and key.name == "exclamation") then
     return key
@@ -13,12 +12,7 @@ local function my_keyhandler_func(dialog, key)
   end
 end
 
-
-
 local sample_rates = {22050, 44100, 48000, 88200, 96000, 192000}
-
-
-
 
 -- Function to find the index of the sample rate
 local function find_sample_rate_index(rate)
@@ -91,7 +85,19 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
   pakettiDefaultXRNI="Presets/12st_Pitchbend.xrni",
   pakettiDefaultDrumkitXRNI="Presets/12st_Pitchbend_Drumkit_C0.xrni",
 
--- changes made
+    UserPreferences = {
+      userPreferredDevice01 = "<None>",
+      userPreferredDevice02 = "<None>",
+      userPreferredDevice03 = "<None>",
+      userPreferredDevice04 = "<None>",
+      userPreferredDevice05 = "<None>",
+      userPreferredDevice06 = "<None>",
+      userPreferredDevice07 = "<None>",
+      userPreferredDevice08 = "<None>",
+      userPreferredDevice09 = "<None>",
+      userPreferredDevice10 = "<None>",
+      userPreferredDeviceLoad = true
+    },
   -- WipeSlices Segment
   WipeSlices = {
     WipeSlicesLoopMode=2,
@@ -195,7 +201,9 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
     pakettiColugaOutputDirectory="Set this yourself, please.",
     pakettiColugaFormatToSave=1,
     pakettiColugaPathToSave="<No path set>",
-    pakettiColugaNewInstrumentOrSameInstrument=true
+    pakettiColugaNewInstrumentOrSameInstrument=true,
+    pakettiColugaYT_DLPLocation="<No path set>"
+  
   },
   
   pakettiCheatSheet = {
@@ -207,20 +215,6 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
   pakettiCheatSheetRandomizeSwitch=false,
   pakettiCheatSheetRandomizeDontOverwrite=false
 }, 
-
-pakettiGater = {
-  GateSelection01 = {""},
-  GateSelection02 = {""},
-  GateSelection03 = {""},
-  GateSelection04 = {""},
-  GateSelection05 = {""},
-  GateSelection06 = {""},
-  GateSelection07 = {""},
-  GateSelection08 = {""},
-  GateSelection09 = {""},
-  GateSelection10 = {""},
-  currentSelection = {""}
-},
 
 pakettiPhraseInitDialog = {
 
@@ -238,8 +232,6 @@ pakettiPhraseInitDialog = {
   SetName = false,
   Name = ""
   }
-
-  
 }
 
 -- Assigning Preferences to renoise.tool
@@ -255,11 +247,11 @@ pakettiColuga = renoise.tool().preferences.pakettiColuga
 
 
   local threshold_label = vb:text {
-    text = string.format("%.3f%%", preferences.PakettiStripSilenceThreshold.value * 100)
+    text = string.format("%.3f%%", preferences.PakettiStripSilenceThreshold.value * 100), width=100
   }
 
   local begthreshold_label = vb:text {
-    text = string.format("%.3f%%", preferences.PakettiMoveSilenceThreshold.value * 100)
+    text = string.format("%.3f%%", preferences.PakettiMoveSilenceThreshold.value * 100), width=100
   }
 
 
@@ -292,11 +284,6 @@ end
 -- Debugging: Print the initial state
 --print("Initial filter type:", preferences.pakettiLoaderFilterType.value)  -- Should be "LP Clean"
 --print("Initial popup index:", initial_value)  -- Should be the correct index for "LP Clean"
-
-
-
-
-
 
 function load_preferences()
   if io.exists("preferences.xml") then
@@ -365,8 +352,9 @@ local upperbuttonwidth=160
     if dialog and dialog.visible then dialog:close() dialog=nil return
      end
  -- Get the initial value (index) for the popup
+ if preferences.pakettiLoaderFilterType.value ~= nil then
 local initial_value = get_filter_type_index(preferences.pakettiLoaderFilterType.value)
-
+else preferences.pakettiLoaderFilterType.value ="LP Moog" end
 local pakettiDefaultXRNIDisplayId = "pakettiDefaultXRNIDisplay_" .. tostring(math.random(2,30000))
 
 --    local pakettiDefaultXRNIDisplayId = "pakettiDefaultXRNIDisplay_" .. tostring(os.time())
@@ -504,8 +492,9 @@ horizontal_rule(),
         threshold_label.text = string.format("%.3f%%", value * 100) -- Update the label
         preferences.PakettiStripSilenceThreshold.value = value
       end
-    }
+    },threshold_label,
   },
+  
 
   -- Second row for Move Silence Threshold
   vb:row {
@@ -519,8 +508,9 @@ horizontal_rule(),
         begthreshold_label.text = string.format("%.3f%%", value * 100) -- Update the label
         preferences.PakettiMoveSilenceThreshold.value = value
       end
-    }
-  }
+    },begthreshold_label,
+  },
+  
 },
 
 

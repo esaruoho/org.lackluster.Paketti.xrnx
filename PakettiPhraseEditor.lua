@@ -251,6 +251,8 @@ function pakettiPhraseSettingsDialogShow()
           width = 100,
           notifier = function(value) preferences.pakettiPhraseInitDialog.Length.value = value end
         },
+        vb:button {text = "2", notifier = function() vb.views.length_valuebox.value = 2 preferences.pakettiPhraseInitDialog.Length.value = 2 end},
+        vb:button {text = "4", notifier = function() vb.views.length_valuebox.value = 4 preferences.pakettiPhraseInitDialog.Length.value = 4 end},
         vb:button {text = "6", notifier = function() vb.views.length_valuebox.value = 6 preferences.pakettiPhraseInitDialog.Length.value = 6 end},
         vb:button {text = "8", notifier = function() vb.views.length_valuebox.value = 8 preferences.pakettiPhraseInitDialog.Length.value = 8 end},
         vb:button {text = "12", notifier = function() vb.views.length_valuebox.value = 12 preferences.pakettiPhraseInitDialog.Length.value = 12 end},
@@ -375,6 +377,11 @@ renoise.tool():add_keybinding{name="Global:Paketti:Add New Phrase",invoke=functi
 
 ----
 renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Init Phrase Settings",invoke=function()
+if renoise.song().selected_phrase == nil then
+renoise.song().instruments[renoise.song().selected_instrument_index]:insert_phrase_at(1)
+renoise.song().selected_phrase_index = 1
+end
+
 local selphra=renoise.song().selected_phrase
 selphra.shuffle=preferences.pakettiPhraseInitDialog.Shuffle.value / 100
 selphra.visible_note_columns=preferences.pakettiPhraseInitDialog.NoteColumns.value
@@ -419,8 +426,8 @@ end
 end
 end
 
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Phrase Doubler (Joule)",invoke=function() joulephrasedoubler() end}  
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Phrase Doubler (Joule) (2nd)",invoke=function() joulepatterndoubler() end}    
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Paketti Phrase Doubler",invoke=function() joulephrasedoubler() end}  
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Paketti Phrase Doubler (2nd)",invoke=function() joulepatterndoubler() end}    
 -------
 function joulephrasehalver()
   local old_phraselength = renoise.song().selected_phrase.number_of_lines

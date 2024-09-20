@@ -1178,6 +1178,7 @@ else end
 
   renoise.song().instruments[i].sample_modulation_sets[renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].modulation_set_index]:insert_device_at(
     "Modulation/" .. devicename, device_target, insert_index)
+renoise.song().selected_sample_modulation_set.devices[1].operator=1
 end
 
 for _, device in ipairs(moddevices) do
@@ -1206,6 +1207,7 @@ for _, target in ipairs(targets) do
         name = menu_entry_name,
         invoke = function()
           loadModulationDevice(device, target.target)
+          
         end
       }
     else
@@ -1702,7 +1704,7 @@ function appSelectionLaunchApp(app_path)
   elseif os_name == "MACINTOSH" then
     command = 'open -a "' .. app_path .. '"'
   else
-    command = 'exec "' .. app_path .. '"'
+    command = 'exec "' .. app_path .. ' &"'
   end
 
   os.execute(command)
@@ -1736,7 +1738,8 @@ function appSelectionCreateMenuEntries()
   for i, app_path in ipairs(app_selections) do
     if app_path ~= "" then
       apps_present = true
-      local app_name = app_path:match("([^/\\]+)%.app$")
+--      local app_name = app_path:match("([^/\\]+)%.app$")
+local app_name = app_path:match("([^/\\]+)%.app$") or app_path:match("([^/\\]+)$")
       local menu_entry_name = "Instrument Box:Paketti..:Launch App..:Launch App "..i.." "..app_name
       if not renoise.tool():has_menu_entry(menu_entry_name) then
         renoise.tool():add_menu_entry{
@@ -2393,28 +2396,27 @@ vb:horizontal_aligner{
 
   local dialog = renoise.app():show_custom_dialog("Randomize Devices and Plugins", dialog_content, my_keyhandler_func)
 
-  -- Update the device and track names if the selected device or track changes
-  song.selected_device_observable:add_notifier(function()
-    local new_device = song.selected_device
-    if dialog and dialog.visible then
-      vb.views["device_short_name"].text = new_device and new_device.display_name or "Select a Device"
+song.selected_instrument_observable:add_notifier(function()
+  local new_instrument = song.selected_instrument
+  if dialog and dialog.visible then
+    if new_instrument and renoise.song().instruments[renoise.song().selected_instrument_index].name ~= "" then
+      -- Ensure plugin_properties exist and the plugin is loaded
+      if new_instrument.plugin_properties and new_instrument.plugin_properties.plugin_loaded then
+        if new_instrument.plugin_properties.plugin_device then
+          vb.views["plugin_name_text"].text = new_instrument.plugin_properties.plugin_device.name
+        else
+          vb.views["plugin_name_text"].text = "Instrument plugin device missing"
+        end
+      else
+        vb.views["plugin_name_text"].text = "Instrument has no Plugin"
+      end
+    else
+      vb.views["plugin_name_text"].text = "No Instrument Selected"
     end
-  end)
-
-  song.selected_track_observable:add_notifier(function()
-    local new_track = song.selected_track
-    if dialog and dialog.visible then
-      vb.views["track_name_text"].text = new_track and new_track.name or "Select a Track"
-    end
-  end)
-
-  song.selected_instrument_observable:add_notifier(function()
-    local new_instrument = song.selected_instrument
-    if dialog and dialog.visible then
-      vb.views["plugin_name_text"].text = new_instrument.plugin_properties.plugin_device.name or "Instrument has no Plugin"
-    end
-  end)
+  end
+end)
 end
+
 
 
 
@@ -2493,4 +2495,90 @@ function randomize_selected_device()
   
   renoise.app():show_status("Randomized "..parameter_count.." parameters for device: "..device_name)
 end
+
+
+
+
+
+-------
+local function show_available_plugins_dialog()
+
+  -- Declare my_dialog before use
+  local my_dialog
+
+  -- Avoid multiple dialogs
+  if my_dialog and my_dialog.visible then my_dialog:close() end
+
+  -- Access available devices and device infos directly
+  local devices = renoise.song().selected_track.available_devices
+  local device_infos = renoise.song().selected_track.available_device_infos
+
+  -- Convert these to strings for the textfield
+  local devices_text = ""
+  for i, device in ipairs(devices) do
+    -- Format the index to 3 digits with leading zeros (e.g., 001, 002)
+    local index = string.format("%03d", i)
+    devices_text = devices_text .. index .. ": " .. tostring(device) .. "\n"
+  end
+
+  -- Separator for readability
+  local separator = "-----------////////////------------------------------------////////////------------------------------------////////////------------------------------------////////////------------------------------------////////////------------------------------------////////////------------------------------------////////////-------------------------"
+
+  local device_infos_text = ""
+  for i, info in ipairs(device_infos) do
+    -- Format the index to 3 digits with leading zeros
+    local index = string.format("%03d", i)
+    device_infos_text = device_infos_text .. "Device Info " .. index .. ":\n"
+    device_infos_text = device_infos_text .. "Name: " .. info.name .. "\n"
+    device_infos_text = device_infos_text .. 'Path: "' .. info.path .. '"\n'
+    device_infos_text = device_infos_text .. "Short Name: " .. info.short_name .. "\n"
+    device_infos_text = device_infos_text .. "Is Favorite: " .. tostring(info.is_favorite) .. "\n"
+    device_infos_text = device_infos_text .. "Favorite Name: " .. info.favorite_name .. "\n"
+    device_infos_text = device_infos_text .. "Is Bridged: " .. tostring(info.is_bridged) .. "\n"
+    device_infos_text = device_infos_text .. "\n"
+  end
+
+  -- Combine everything for the multiline textfield
+  local combined_text = devices_text .. separator .. "\n" .. device_infos_text
+
+  -- Keyhandler to close the dialog with exclamation mark
+  local function my_keyhandler_func(dialog, key)
+    if key.name == "!" then dialog:close() end
+  end
+
+  -- Function to save the textfield content to a file
+  local vb = renoise.ViewBuilder()
+  local multiline_field = vb:multiline_textfield { text = combined_text, width = 900, height = 700 }
+
+  local function save_to_file()
+    local filename = renoise.app():prompt_for_filename_to_write(".txt", "Available Plugins Saver")
+    if filename then
+      local file, err = io.open(filename, "w")
+      if file then
+        file:write(multiline_field.text)  -- Correct reference to multiline_field's text
+        file:close()
+        renoise.app():show_status("File saved successfully")
+      else
+        renoise.app():show_status("Error saving file: " .. err)
+      end
+    end
+  end
+
+  -- Create the save button
+  local save_button = vb:button { text = "Save as textfile", notifier = save_to_file }
+
+  -- Create the dialog
+  my_dialog = renoise.app():show_custom_dialog("Debug: Available Plugin Information", vb:column {
+    multiline_field,
+    save_button
+  }, my_keyhandler_func)
+
+end
+
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Debug:Dump VST/VST3/AU/LADSPA/DSSI/Native Effects to Dialog", invoke=function() show_available_plugins_dialog() end}
+
+
+
+
+
 

@@ -3474,23 +3474,35 @@ function PakettiPopulateSendTracksAllTracks()
   -- Create the appropriate number of #Send devices in each track
   for _, track in ipairs(song.tracks) do
     if track.type == renoise.Track.TRACK_TYPE_SEQUENCER or track.type == renoise.Track.TRACK_TYPE_GROUP then
-      local num_existing_devices = #track.devices
-
-      for i = 1, count do
-        local device_index = num_existing_devices + i
-        track:insert_device_at("Audio/Effects/Native/#Send", device_index)
-        track.devices[device_index].active_preset_data = PakettiSend_xml_data
+      -- Collect existing send devices' target indices (parameter 3)
+      local existing_sends = {}
+      for _, device in ipairs(track.devices) do
+        if device.name == "#Send" then
+          table.insert(existing_sends, device.parameters[3].value)
+        end
       end
 
-      local sendcount = num_existing_devices + 1 -- Start after existing devices
+      local sendcount = #track.devices + 1 -- Start after existing devices
 
-      -- Assign parameters and names in correct order
+      -- Add send devices only if they don't already target the same send track
       for i = 1, count do
-        local send_device = track.devices[sendcount]
         local send_track = send_tracks[i]
-        send_device.parameters[3].value = send_track.index
-        send_device.display_name = send_track.name
-        sendcount = sendcount + 1
+        local send_index = send_track.index
+        if not table.contains(existing_sends, send_index) then
+          track:insert_device_at("Audio/Effects/Native/#Send", sendcount)
+          local send_device = track.devices[sendcount]
+          send_device.active_preset_data = PakettiSend_xml_data
+          send_device.parameters[3].value = send_index
+          send_device.display_name = send_track.name
+          sendcount = sendcount + 1
+        else
+          -- Update the display name if the send already exists but was renamed
+          for _, device in ipairs(track.devices) do
+            if device.name == "#Send" and device.parameters[3].value == send_index then
+              device.display_name = send_track.name
+            end
+          end
+        end
       end
     end
   end
@@ -3502,7 +3514,7 @@ function PakettiPopulateSendTracksSelectedTrack()
   local current_track = song.selected_track
 
   if current_track.type ~= renoise.Track.TRACK_TYPE_SEQUENCER and current_track.type ~= renoise.Track.TRACK_TYPE_GROUP then
-    error("Selected track does not support adding send devices.")
+    renoise.app():show_status("Selected track does not support adding send devices.")
     return
   end
 
@@ -3521,26 +3533,48 @@ function PakettiPopulateSendTracksSelectedTrack()
   local PakettiSend_xml_file_path = "Presets/PakettiSend.XML"
   local PakettiSend_xml_data = PakettiSendPopulatorReadFile(PakettiSend_xml_file_path)
 
-  -- Create the appropriate number of #Send devices
-  local num_existing_devices = #current_track.devices
-
-  for i = 1, count do
-    local device_index = num_existing_devices + i
-    current_track:insert_device_at("Audio/Effects/Native/#Send", device_index)
-    current_track.devices[device_index].active_preset_data = PakettiSend_xml_data
+  -- Collect existing send devices' target indices (parameter 3)
+  local existing_sends = {}
+  for _, device in ipairs(current_track.devices) do
+    if device.name == "#Send" then
+      table.insert(existing_sends, device.parameters[3].value)
+    end
   end
 
-  local sendcount = num_existing_devices + 1 -- Start after existing devices
+  local sendcount = #current_track.devices + 1 -- Start after existing devices
 
-  -- Assign parameters and names in correct order
+  -- Add send devices only if they don't already target the same send track
   for i = 1, count do
-    local send_device = current_track.devices[sendcount]
     local send_track = send_tracks[i]
-    send_device.parameters[3].value = send_track.index
-    send_device.display_name = send_track.name
-    sendcount = sendcount + 1
+    local send_index = send_track.index
+    if not table.contains(existing_sends, send_index) then
+      current_track:insert_device_at("Audio/Effects/Native/#Send", sendcount)
+      local send_device = current_track.devices[sendcount]
+      send_device.active_preset_data = PakettiSend_xml_data
+      send_device.parameters[3].value = send_index
+      send_device.display_name = send_track.name
+      sendcount = sendcount + 1
+    else
+      -- Update the display name if the send already exists but was renamed
+      for _, device in ipairs(current_track.devices) do
+        if device.name == "#Send" and device.parameters[3].value == send_index then
+          device.display_name = send_track.name
+        end
+      end
+    end
   end
 end
+
+-- Helper function to check if a table contains a value
+function table.contains(table, element)
+  for _, value in pairs(table) do
+    if value == element then
+      return true
+    end
+  end
+  return false
+end
+
 
 -- Add keybindings for the new functions
 renoise.tool():add_keybinding{name="Global:Paketti:Populate Send Tracks for All Tracks",invoke=PakettiPopulateSendTracksAllTracks}
@@ -4687,6 +4721,8 @@ local dialog
 local vb = renoise.ViewBuilder()
 local default_file_path = "External/wordlist.txt" -- Default file path
 local selected_file_path = default_file_path -- Initial file path
+local default_notes_file_path = "External/notes.txt" -- Default notes file path
+local notes_file_path = default_notes_file_path -- Initial notes file path
 local use_dash_format = false
 local no_date = false
 local text_format = 1 -- 1=Off, 2=lowercase, 3=Capital, 4=UPPERCASE, 5=eLiTe
@@ -4708,7 +4744,7 @@ local function apply_text_format(text)
       end
     end)
   elseif text_format == 2 then
-    return text:lower() -- Include all modified vowels
+    return text:lower()
   else
     return text -- "Off" leaves the text unchanged
   end
@@ -4798,14 +4834,21 @@ end
 
 -- Function to load preferences from XML
 local function load_preferences()
-  local prefs = renoise.Document.create("preferences") { textfile_path = default_file_path }
+  local prefs = renoise.Document.create("preferences") {
+    textfile_path = default_file_path,
+    notes_file_path = default_notes_file_path
+  }
   prefs:load_from(prefs_path)
-  return prefs.textfile_path.value
+  selected_file_path = prefs.textfile_path.value
+  notes_file_path = prefs.notes_file_path.value
 end
 
 -- Function to save preferences to XML
-local function save_preferences(textfile_path)
-  local prefs = renoise.Document.create("preferences") { textfile_path = textfile_path }
+local function save_preferences()
+  local prefs = renoise.Document.create("preferences") {
+    textfile_path = selected_file_path,
+    notes_file_path = notes_file_path
+  }
   prefs:save_as(prefs_path)
 end
 
@@ -4835,12 +4878,45 @@ function PakettiTrackDaterTitlerDialog()
   local function browse_textfile()
     selected_file_path = renoise.app():prompt_for_filename_to_read({"*.txt"}, "Browse Textfile")
     if selected_file_path and selected_file_path ~= "" then
-      save_preferences(selected_file_path) -- Save the selected file path
+      save_preferences() -- Save the selected file path
       vb.views.textfile_display.text = "Path: " .. selected_file_path -- Display the file path
     else
       selected_file_path = default_file_path
       vb.views.textfile_display.text = "Path: " .. default_file_path -- Revert to default
     end
+  end
+
+  local function browse_notes_file()
+    local new_path = renoise.app():prompt_for_filename_to_read({"*.txt"}, "Select Notes File")
+    if new_path and new_path ~= "" then
+      notes_file_path = new_path
+      vb.views.notes_file_field.text = notes_file_path
+      save_preferences()
+    end
+  end
+
+  local function save_title_to_notes()
+    local title = vb.views.title_field.text
+    if title and title ~= "" then
+      local file, err = io.open(notes_file_path, "a")
+      if not file then
+        renoise.app():show_error("Failed to open file: " .. tostring(err))
+        return
+      end
+      file:write(title .. "\n")
+      file:close()
+      renoise.app():show_status("Title saved to notes file.")
+    else
+      renoise.app():show_warning("Title is empty. Nothing to save.")
+    end
+  end
+
+  local function open_notes_path()
+    local path = notes_file_path:match("(.*)[/\\]")
+    if not path then
+      path = '.'
+    end
+    renoise.app():open_path(path)
   end
 
   local function random_words()
@@ -4900,7 +4976,7 @@ function PakettiTrackDaterTitlerDialog()
   end
 
   -- Load preferences
-  selected_file_path = load_preferences()
+  load_preferences()
 
   local dialog_content = vb:column{
     margin = 10,
@@ -4990,6 +5066,31 @@ function PakettiTrackDaterTitlerDialog()
         width = 350,
         value = text_format,
         notifier = handle_text_format -- Handle text format change
+      }
+    },
+    -- New row for Save Notes functionality
+    vb:row{
+      vb:text{text = "Save notes:"},
+      vb:textfield{
+        id = "notes_file_field",
+        text = notes_file_path,
+        width = 200,
+        notifier = function(text)
+          notes_file_path = text
+          save_preferences()
+        end
+      },
+      vb:button{
+        text = "Browse",
+        notifier = browse_notes_file
+      },
+      vb:button{
+        text = "Save",
+        notifier = save_title_to_notes
+      },
+      vb:button{
+        text = "Open Path",
+        notifier = open_notes_path
       }
     }
   }
@@ -5174,6 +5275,53 @@ renoise.tool():add_midi_mapping{name="Paketti:Midi Set Selected Sample Velocity 
 renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample (+1) Velocity Range 7F others 00", invoke=function() sample_one_down() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample (-1) Velocity Range 7F others 00", invoke=function() sample_one_up() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample (Random) Velocity Range 7F others 00", invoke=function() sample_random() end}
+
+function SelectedSampleVelocityRange(number1,number2)
+  local ing = renoise.song().selected_instrument
+
+  -- Edge case: no instrument or no samples
+  if not ing or #ing.samples == 0 then
+    renoise.app():show_status("No instrument or samples available.")
+    return
+  end
+
+  -- Set all samples' velocity ranges to {0, 0}, except the selected one
+      local mapping = ing.sample_mappings[1][renoise.song().selected_sample_index]
+      if mapping then
+        mapping.velocity_range = {number1,number2} -- Disable all other samples
+end
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Velocity Range 7F",
+invoke=function() SelectedSampleVelocityRange(0,127)
+end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Velocity Range 00",
+invoke=function() SelectedSampleVelocityRange(0,0)
+end}
+
+function SelectedAllSamplesVelocityRange(number1,number2)
+  local song = renoise.song()
+  local ing = song.selected_instrument
+
+  -- Edge case: no instrument or no samples
+  if not ing or #ing.samples == 0 then
+    renoise.app():show_status("No instrument or samples available.")
+    return
+  end
+
+  for i = 1, #ing.samples do
+      local mapping = ing.sample_mappings[1][i]
+      if mapping then
+        mapping.velocity_range = {0, 127}
+      end
+  end
+end  
+
+
+renoise.tool():add_keybinding{name="Global:Paketti:Set All Samples Velocity Range 7F",
+invoke=function() SelectedAllSamplesVelocityRange(0,127)
+end}
+
 
 -----
 -- Resize all non-empty patterns to 96 lines
@@ -5875,14 +6023,17 @@ local chord_list = {
   {name="Chordsplus 3-4-3 (Min7)", fn=function() chordsplus(3,4,3) end},
   {name="Chordsplus 4-4-3 (Maj7+5)", fn=function() chordsplus(4,4,3) end},
   {name="Chordsplus 3-5-2 (Min7+5)", fn=function() chordsplus(3,5,2) end},
+  {name="Chordsplus 4-3-3 (Maj Dominant 7th)", fn=function() chordsplus(4,3,3) end}, -- MajMajor7
   {name="Chordsplus 3-4-4 (MinMaj7)", fn=function() chordsplus(3,4,4) end}, -- MinorMajor7
   {name="Chordsplus 4-3-4-3 (Maj9)", fn=function() chordsplus(4,3,4,3) end},
   {name="Chordsplus 3-4-3-3 (Min9)", fn=function() chordsplus(3,4,3,3) end},
   {name="Chordsplus 4-3-7 (Maj Added 9th)", fn=function() chordsplus(4,3,7) end},
   {name="Chordsplus 3-4-7 (Min Added 9th)", fn=function() chordsplus(3,4,7) end},
   {name="Chordsplus 4-7-3 (Maj9 Simplified)", fn=function() chordsplus(4,7,3) end}, -- Maj9 without 5th
+  
   {name="Chordsplus 3-7-4 (Min9 Simplified)", fn=function() chordsplus(3,7,4) end}, -- Min9 without 5th
   {name="Chordsplus 3-8-3 (mM9 Simplified)", fn=function() chordsplus(3,8,3) end}, -- MinorMajor9 without 5th
+{name="Chordsplus 4-3-4-4 (MM9)", fn=function() chordsplus(4,3,4,4) end}, -- MajorMajor9 with Augmented 9th
   {name="Chordsplus 3-4-4-3 (mM9)", fn=function() chordsplus(3,4,4,3) end}, -- MinorMajor9
   {name="Chordsplus 4-3-2-5 (Maj6 Add9)", fn=function() chordsplus(4,3,2,5) end}, -- Maj6 Add9
   {name="Chordsplus 3-4-2-5 (Min6 Add9)", fn=function() chordsplus(3,4,2,5) end}, -- Min6 Add9
@@ -5913,9 +6064,19 @@ end
 
 -- MIDI mapping handler, maps values 0-127 to the list of chords
 function midi_chord_mapping(value)
+if renoise.song().selected_track.visible_note_columns ~=  0 then
   local chord_index = math.floor((value / 127) * (#chord_list - 1)) + 1
+  if renoise.song().selected_pattern.tracks[renoise.song().selected_track_index].lines[renoise.song().selected_line_index].note_columns[renoise.song().selected_note_column_index].is_empty
+  then renoise.app():show_status("There was no note, doing nothing.")
+  return
+  end
+
   chord_list[chord_index].fn()
-  renoise.app():show_status("Played via MIDI: " .. chord_list[chord_index].name)
+  renoise.app():show_status("Set Basenote and Intervals to: " .. chord_list[chord_index].name)
+else
+renoise.app():show_status("This track does not have a Note Column. Doing nothing.")
+end
+
 end
 
 -- Add keybindings dynamically based on the chord list
@@ -5937,4 +6098,563 @@ renoise.tool():add_midi_mapping{
   name="Global:Paketti:Chord Selector [0-127]",
   invoke=function(midi_message) midi_chord_mapping(midi_message.int_value) end
 }
+
+
+
+
+
+function FinderShower2(plugin)
+for i=2,#renoise.song().tracks[renoise.song().sequencer_track_count+1].devices do
+if renoise.song().tracks[renoise.song().sequencer_track_count+1].devices[i].short_name == plugin
+then 
+if renoise.song().tracks[renoise.song().sequencer_track_count+1].devices[i].external_editor_visible then
+renoise.song().tracks[renoise.song().sequencer_track_count+1].devices[i].external_editor_visible = false
+else
+
+renoise.song().tracks[renoise.song().sequencer_track_count+1].devices[i].external_editor_visible = true
+end
+else end
+end
+end
+renoise.tool():add_keybinding{name="Global:Paketti:Master TDR Kotelnikov Show/Hide",invoke=function() FinderShower2("TDR Kotelnikov") end}
+
+-------
+function FinderShowerByPath(device_path, location)
+  local track = nil
+  local track_name = ""
+
+  -- Determine the track based on the location
+  if location == "master" then
+    track = renoise.song().tracks[renoise.song().sequencer_track_count + 1]  -- Master track
+    track_name = "Master"
+    print("Debug: Master track selected.")
+  elseif location == "selected_track" then
+    track = renoise.song().selected_track  -- Selected track
+    track_name = "Selected Track"
+    print("Debug: Selected track selected.")
+  end
+
+  if not track then
+    print("Debug: Error - Track not found!")
+    renoise.app():show_status("Error: Track not found!")
+    return
+  else
+    print("Debug: Track found - " .. track_name)
+  end
+
+  -- Try to find the device on the track using the device_path
+  local device_found = false
+  for i = 2, #track.devices do
+    print("Debug: Checking device: " .. track.devices[i].device_path)
+    if track.devices[i].device_path == device_path then
+      print("Debug: Device found on the track.")
+
+      -- Check if the device has an external editor
+      if track.devices[i].external_editor_available then
+        -- Toggle the external editor visibility
+        track.devices[i].external_editor_visible = not track.devices[i].external_editor_visible
+        print("Debug: Toggling external editor visibility for " .. track.devices[i].name)
+      else
+        -- No external editor available, toggle is_maximized
+        track.devices[i].is_maximized = not track.devices[i].is_maximized
+        renoise.app():show_status("No external editor for Device: " .. track.devices[i].name .. " - Toggled Maximized View.")
+        print("Debug: No external editor for " .. track.devices[i].name .. " - Toggled is_maximized.")
+      end
+
+      device_found = true
+      break
+    end
+  end
+
+  -- If the device is not found, and the preference to auto-load is set to true, add the device
+  if not device_found then
+    print("Debug: Device not found on track.")
+
+    if preferences.UserPreferences.userPreferredDeviceLoad then
+      print("Debug: Auto-load preference is enabled.")
+
+      -- Find the full name of the device to add it correctly
+      for _, device_info in ipairs(renoise.song().selected_track.available_device_infos) do
+        print("Debug: Checking available device: " .. device_info.path)
+        if device_info.path == device_path then
+          print("Debug: Inserting device at the end of the device chain.")
+          -- Insert the device at the end of the track's device chain
+          local new_device = track:insert_device_at(device_info.path, #track.devices + 1)
+
+          -- Check if the newly inserted device has an external editor
+          if new_device.external_editor_available then
+            -- Open the external editor for the newly added device
+            new_device.external_editor_visible = true
+            new_device.is_maximized = false
+            renoise.app():show_status("Device " .. new_device.name .. " was added to " .. track_name .. " and its editor is now visible.")
+          else
+            -- Toggle is_maximized if no external editor is available
+         --   new_device.is_maximized = not new_device.is_maximized
+            renoise.app():show_status("Device " .. new_device.name .. " was added to " .. track_name .. ", but it has no external editor. Maximized view toggled.")
+            print("Debug: No external editor for " .. new_device.name .. " - Toggled is_maximized.")
+          end
+
+          return
+        end
+      end
+
+      -- If no matching device is found in the available_device_infos, show error
+      print("Debug: Error - Device not found in available_device_infos.")
+      renoise.app():show_status("Error: Device " .. device_path .. " could not be found to load.")
+    else
+      print("Debug: Auto-load is disabled, showing 'not found' message.")
+      -- Display the normal error message if not found and auto-load is off
+      local formatted_short_name = "<Unknown Device>"
+      for _, device_info in ipairs(renoise.song().selected_track.available_device_infos) do
+        if device_info.path == device_path then
+          -- Format the device short_name with its type prefix
+          if device_info.path:find("/AU/") then
+            formatted_short_name = "AU: " .. device_info.short_name
+          elseif device_info.path:find("/VST3/") then
+            formatted_short_name = "VST3: " .. device_info.short_name
+          elseif device_info.path:find("/VST/") then
+            formatted_short_name = "VST: " .. device_info.short_name
+          elseif device_info.path:find("/Native/") then
+            formatted_short_name = "Native: " .. device_info.short_name
+          elseif device_info.path:find("/LADSPA/") then
+            formatted_short_name = "LADSPA: " .. device_info.short_name
+          elseif device_info.path:find("/DSSI/") then
+            formatted_short_name = "DSSI: " .. device_info.short_name
+          else
+            formatted_short_name = device_info.short_name  -- Default to just the short_name
+          end
+          break
+        end
+      end
+
+      -- Display the error message with the formatted device name
+      renoise.app():show_status("The Device " .. formatted_short_name .. " was not found on " .. track_name)
+    end
+  else
+    print("Debug: Device found and handled.")
+  end
+end
+
+
+
+-- Load preferences on startup and print debug information
+function PakettiUserPreferencesLoadPreferences()
+  if io.exists("preferences.xml") then
+    preferences:load_from("preferences.xml")
+    renoise.app():show_status("User Preferences loaded.")
+
+    -- Print loaded preferences for debugging
+    for i = 1, 10 do
+      local device_pref = preferences.UserPreferences["userPreferredDevice" .. string.format("%02d", i)].value
+      
+      -- Find the corresponding device from available devices
+      local device_name = "<None>"
+      for _, device_info in ipairs(renoise.song().selected_track.available_device_infos) do
+        if device_info.path == device_pref then
+          device_name = device_info.short_name
+          -- Add formatting if necessary (like AU, VST, etc.)
+          if device_info.path:find("/AU/") then
+            device_name = "AU: " .. device_info.short_name
+          elseif device_info.path:find("/VST3/") then
+            device_name = "VST3: " .. device_info.short_name
+          elseif device_info.path:find("/VST/") then
+            device_name = "VST: " .. device_info.short_name
+          elseif device_info.path:find("/Native/") then
+            device_name = "Native: " .. device_info.short_name
+          elseif device_info.path:find("/LADSPA/") then
+            device_name = "LADSPA: " .. device_info.short_name
+          elseif device_info.path:find("/DSSI/") then
+            device_name = "DSSI: " .. device_info.short_name
+          end
+          break
+        end
+      end
+
+      -- Debug print the loaded device for this slot
+      print("Loaded Slot " .. string.format("%02d", i) .. ": " .. device_name .. " (" .. device_pref .. ")")
+    end
+  else
+    renoise.app():show_status("No preferences file found, loading defaults.")
+  end
+end
+
+
+-- Function to save user preferences and show debug output
+function PakettiUserPreferenceSavePreferences(device_dropdowns, available_devices)
+  for i = 1, #device_dropdowns do
+    -- Get the selected device's path based on the dropdown value (index)
+    local selected_device = available_devices[device_dropdowns[i].value]
+    
+    -- Save the device path in user preferences
+    preferences.UserPreferences["userPreferredDevice" .. string.format("%02d", i)].value = selected_device.path
+    
+    -- Print debug information for saved devices
+    print("Saving Slot " .. string.format("%02d", i) .. ": " .. selected_device.short_name .. " (" .. selected_device.path .. ")")
+  end
+
+  -- Persist the updated preferences to the preferences.xml file
+  PakettiUserPreferencesSaveToFile()  -- Correct function name
+  renoise.app():show_status("User preferences saved successfully.")
+end
+
+-- Separate function to handle saving to the preferences.xml file
+function PakettiUserPreferencesSaveToFile()
+  preferences:save_as("preferences.xml")
+end
+
+-- Variable to track the dialog state
+local dialog
+
+-- Variables to store the dropdowns and available devices globally
+local device_dropdowns = {}
+local available_devices = {}
+
+-- Key handler function
+local function my_keyhandler_func(dialog_ref, key)
+  -- Check if the '!' key (exclamation) was pressed without modifiers
+  if key.modifiers == "" and key.name == "exclamation" then
+    PakettiUserPreferenceSavePreferences(device_dropdowns, available_devices)  -- Save preferences before closing
+    dialog_ref:close()  -- Close the dialog if the exclamation key is pressed
+    dialog = nil  -- Clear the dialog reference
+    -- Return focus to the active middle frame after closing
+    renoise.app().window.active_middle_frame = renoise.app().window.active_middle_frame
+  else
+    return key  -- Allow other key events to be handled as usual
+  end
+end
+
+function PakettiUserPreferencesShowerDialog()
+  local vb = renoise.ViewBuilder()
+
+  -- If the dialog is already visible, close it and return focus to the pattern editor
+  if dialog and dialog.visible then
+    PakettiUserPreferenceSavePreferences(device_dropdowns, available_devices)  -- Save preferences before closing
+    dialog:close()
+    dialog = nil
+    renoise.app():show_status("Preferences dialog closed.")
+    
+    -- Return focus to the active middle frame after closing
+    renoise.app().window.active_middle_frame = renoise.app().window.active_middle_frame
+    return
+  end
+
+  -- Load preferences when opening the dialog
+  PakettiUserPreferencesLoadPreferences()
+
+  -- Create the 10 device slots
+  device_dropdowns = {}  -- Reset the dropdowns list
+  available_devices = {}  -- Reset the available devices list
+  local rows = {}
+
+  -- Group devices by type and sort them alphabetically (case-insensitive)
+  local grouped_devices = {
+    AU = {},
+    VST = {},
+    VST3 = {},
+    LADSPA = {},
+    DSSI = {},
+    Native = {},
+    Other = {}
+  }
+
+  for _, device_info in ipairs(renoise.song().selected_track.available_device_infos) do
+    local formatted_device = { short_name = device_info.short_name, path = device_info.path }
+
+    -- Categorize the device based on its type and add the formatted device to the respective table
+    if device_info.path:find("/AU/") then
+      table.insert(grouped_devices.AU, formatted_device)
+    elseif device_info.path:find("/VST3/") then
+      table.insert(grouped_devices.VST3, formatted_device)
+    elseif device_info.path:find("/VST/") then
+      table.insert(grouped_devices.VST, formatted_device)
+    elseif device_info.path:find("/Native/") then
+      table.insert(grouped_devices.Native, formatted_device)
+    elseif device_info.path:find("/LADSPA/") then
+      table.insert(grouped_devices.LADSPA, formatted_device)
+    elseif device_info.path:find("/DSSI/") then
+      table.insert(grouped_devices.DSSI, formatted_device)
+    else
+      table.insert(grouped_devices.Other, formatted_device)
+    end
+  end
+
+  -- Sort devices alphabetically within each category (case-insensitive)
+  for _, device_list in pairs(grouped_devices) do
+    table.sort(device_list, function(a, b)
+      return string.lower(a.short_name) < string.lower(b.short_name)
+    end)
+  end
+
+  -- Concatenate sorted device lists into the final available devices
+  local function insert_devices(device_list, prefix)
+    for _, device in ipairs(device_list) do
+      table.insert(available_devices, { short_name = prefix .. device.short_name, path = device.path })
+    end
+  end
+
+  insert_devices(grouped_devices.AU, "AU: ")
+  insert_devices(grouped_devices.VST, "VST: ")
+  insert_devices(grouped_devices.VST3, "VST3: ")
+  insert_devices(grouped_devices.LADSPA, "LADSPA: ")
+  insert_devices(grouped_devices.DSSI, "DSSI: ")
+  insert_devices(grouped_devices.Native, "Native: ")
+  insert_devices(grouped_devices.Other, "")  -- No prefix for others
+
+  -- Add <None> to the list at the beginning
+  table.insert(available_devices, 1, { short_name = "<None>", path = "<None>" })
+
+  -- Create a list of device names (short_name) for the dropdown
+  local device_names = {}
+  for _, device in ipairs(available_devices) do
+    table.insert(device_names, device.short_name)
+  end
+
+  -- Create device dropdowns using loaded preferences
+  for i = 1, 10 do
+    local device_pref = preferences.UserPreferences["userPreferredDevice" .. string.format("%02d", i)].value
+
+    -- Find the correct index for the saved device_pref (path)
+    local popup_value = 1  -- Default to "<None>"
+    for index, device in ipairs(available_devices) do
+      if device.path == device_pref then
+        popup_value = index
+        break
+      end
+    end
+
+    -- Create the dropdown with the correct value (index of the device)
+    device_dropdowns[i] = vb:popup {
+      items = device_names,  -- Use the extracted device names list
+      value = popup_value,   -- Set the popup to the correct index
+      width = 200
+    }
+
+    -- Add to rows
+    table.insert(rows, vb:row {
+      vb:text { text = string.format("%02d:", i), font = "bold", style = "strong" },
+      device_dropdowns[i],
+      vb:text { text="Show/Hide:", font="bold", style="strong" },
+      vb:button {
+        text="Selected Track",
+        notifier = function() 
+          FinderShowerByPath(available_devices[device_dropdowns[i].value].path, "selected_track")
+          -- Return focus to the active middle frame
+          renoise.app().window.active_middle_frame = renoise.app().window.active_middle_frame
+        end
+      },
+      vb:button {
+        text="Master",
+        notifier = function() 
+          FinderShowerByPath(available_devices[device_dropdowns[i].value].path, "master")
+          -- Return focus to the active middle frame
+          renoise.app().window.active_middle_frame = renoise.app().window.active_middle_frame
+        end
+      },
+      vb:button {
+        text="Clear",
+        notifier = function() 
+          device_dropdowns[i].value = 1
+          -- Return focus to the active middle frame
+          renoise.app().window.active_middle_frame = renoise.app().window.active_middle_frame
+        end
+      }
+    })
+  end
+
+  -- Add Save and Close buttons
+  table.insert(rows, vb:row {
+    vb:button {
+      text = "Save",
+      notifier = function()
+        PakettiUserPreferenceSavePreferences(device_dropdowns, available_devices)
+        -- Return focus to the active middle frame
+        renoise.app().window.active_middle_frame = renoise.app().window.active_middle_frame
+      end
+    },
+    vb:button {
+      text = "Close",
+      notifier = function()
+        PakettiUserPreferenceSavePreferences(device_dropdowns, available_devices)
+        dialog:close()
+        dialog = nil  -- Clear the dialog reference when it's closed
+        
+        -- Return focus to the active middle frame
+        renoise.app().window.active_middle_frame = renoise.app().window.active_middle_frame
+      end
+    }
+  })
+
+  -- Show the dialog with the key handler and return focus to the active middle frame
+  dialog = renoise.app():show_custom_dialog(
+    "Paketti User Preferences for Show/Hide Slots",
+    vb:column(rows),
+    my_keyhandler_func  -- Attach the key handler
+  )
+
+  -- After opening the dialog, set the focus back to the active middle frame
+  renoise.app().window.active_middle_frame = renoise.app().window.active_middle_frame
+end
+
+
+
+-- Add Menu Entries for showing the dialog at various locations
+renoise.tool():add_menu_entry {
+  name = "Mixer:Paketti..:Show/Hide User Preference Devices Master Dialog",
+  invoke = function() PakettiUserPreferencesShowerDialog() end
+}
+
+renoise.tool():add_menu_entry {
+  name = "DSP Device:Paketti..:Show/Hide User Preference Devices Master Dialog",
+  invoke = function() PakettiUserPreferencesShowerDialog() end
+}
+
+renoise.tool():add_keybinding {
+  name = "Global:Paketti:Show/Hide User Preference Devices Master Dialog",
+  invoke = function() PakettiUserPreferencesShowerDialog() end
+}
+
+renoise.tool():add_menu_entry {
+  name = "Main Menu:Tools:Paketti..:Plugins/Devices:SlotShow:Show/Hide User Preference Devices Master Dialog",
+  invoke = function() PakettiUserPreferencesShowerDialog() end
+}
+
+-- Add Keybinding for opening the preferences dialog
+renoise.tool():add_keybinding {
+  name = "Global:Paketti:Open User Preferences Dialog",
+  invoke = function() PakettiUserPreferencesShowerDialog() end
+}
+
+-- Add Menu Entries and Keybindings for toggling devices on Master and Selected Tracks
+for i = 1, 10 do
+  local slot = string.format("%02d", i)
+
+  renoise.tool():add_menu_entry {
+    name = "Main Menu:Tools:Paketti..:Plugins/Devices:SlotShow:Show/Hide Slot " .. slot .. " on Master",
+    invoke = function() FinderShowerByPath(preferences.UserPreferences["userPreferredDevice" .. slot].value, "master") end
+  }
+
+  renoise.tool():add_menu_entry {
+    name = "Main Menu:Tools:Paketti..:Plugins/Devices:SlotShow:Show/Hide Slot " .. slot .. " on Selected Track",
+    invoke = function() FinderShowerByPath(preferences.UserPreferences["userPreferredDevice" .. slot].value, "selected_track") end
+  }
+
+  renoise.tool():add_keybinding {
+    name = "Global:Paketti:Show/Hide Slot " .. slot .. " on Master",
+    invoke = function() FinderShowerByPath(preferences.UserPreferences["userPreferredDevice" .. slot].value, "master") end
+  }
+
+  renoise.tool():add_keybinding {
+    name = "Global:Paketti:Show/Hide Slot " .. slot .. " on Selected Track",
+    invoke = function() FinderShowerByPath(preferences.UserPreferences["userPreferredDevice" .. slot].value, "selected_track") end
+  }
+renoise.tool():add_midi_mapping {
+  name = "Global:Paketti:Show/Hide Slot " .. slot .. " on Master",
+  invoke = function(message)
+    if message:is_trigger() then
+      FinderShowerByPath(preferences.UserPreferences["userPreferredDevice" .. slot].value, "master")
+    end
+  end
+}
+
+renoise.tool():add_midi_mapping {
+  name = "Global:Paketti:Show/Hide Slot " .. slot .. " on Selected Track",
+  invoke = function(message)
+    if message:is_trigger() then
+      FinderShowerByPath(preferences.UserPreferences["userPreferredDevice" .. slot].value, "selected_track")
+    end
+  end
+}
+  
+  
+  
+  
+  
+  
+  
+  
+end
+
+-- Add debug print for loading and saving the preferences
+function PakettiUserPreferencesSaveSelectedDevice(slot, device_name)
+  print("*** Debug: Saving Slot " .. slot .. " with Device: " .. device_name .. " ***")
+  preferences.UserPreferences["userPreferredDevice" .. string.format("%02d", slot)].value = device_name
+  PakettiUserPreferencesSavePreferences()
+
+  -- Debug print of all saved slots
+  print("*** Debug: Saved Preferences ***")
+  for i = 1, 10 do
+    print("Slot " .. string.format("%02d", i) .. ": " .. preferences.UserPreferences["userPreferredDevice" .. string.format("%02d", i)].value)
+  end
+  print("*** End Debug ***")
+end
+------
+function setSelectedSampleToNoSampleFXChain()
+
+renoise.song().instruments[renoise.song().selected_instrument_index].samples[renoise.song().selected_sample_index].device_chain_index = 0
+
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample FX Group to None",invoke=function() setSelectedSampleToNoSampleFXChain()
+end}
+------------
+
+
+function PakettiSetSelectedTrackVolumePostFX(number)
+
+local currVol=renoise.song().selected_track.postfx_volume.value
+local newVol = currVol+number
+
+if newVol < 0 then newVol = 0
+renoise.app():show_status("Selected Track PostFX Volume cannot go lower than 0, setting to 0")
+ renoise.song().selected_track.postfx_volume.value=0
+return
+end
+if newVol > 1.41254 then 
+renoise.app():show_status("Selected Track PostFX Volume cannot go higher than 1.41254, setting to 1.41254")
+ renoise.song().selected_track.postfx_volume.value_string="3.000 dB"
+return
+end
+ renoise.song().selected_track.postfx_volume.value=newVol
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Change Selected Track Volume by +0.01",invoke=function() PakettiSetSelectedTrackVolumePostFX(0.01) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Change Selected Track Volume by +0.05",invoke=function() PakettiSetSelectedTrackVolumePostFX(0.05) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Change Selected Track Volume by +0.1",invoke=function() PakettiSetSelectedTrackVolumePostFX(0.1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Change Selected Track Volume by -0.01",invoke=function() PakettiSetSelectedTrackVolumePostFX(-0.01) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Change Selected Track Volume by -0.05",invoke=function() PakettiSetSelectedTrackVolumePostFX(-0.05) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Change Selected Track Volume by -0.1",invoke=function() PakettiSetSelectedTrackVolumePostFX(-0.1) end}
+
+
+
+
+
+
+
+function PakettiLoopSet(Mode)
+
+if renoise.song().selected_sample == nil then
+renoise.app():show_status("There is no selected sample.")
+return
+end
+
+if Mode == "Percussion" then
+renoise.song().selected_sample.beat_sync_mode=2
+else if Mode == "Texture" then
+renoise.song().selected_sample.beat_sync_mode=3
+end
+end
+print("HEEY")
+renoise.song().selected_sample.autoseek=true
+renoise.song().selected_sample.beat_sync_enabled=true
+renoise.song().selected_sample.loop_mode=2
+renoise.song().selected_sample.mute_group=1
+
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Loop Set Percussion",invoke=function() PakettiLoopSet("Percussion")end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Loop Set Texture",invoke=function() PakettiLoopSet("Texture")end}
+
+
+
 

@@ -1,3 +1,5 @@
+local vb = renoise.ViewBuilder()
+
 local pitch_shift_amount = 0
 local dialog = nil
 local content = nil
@@ -1266,13 +1268,20 @@ end
 -- Add the keybinding
 renoise.tool():add_keybinding{name="Global:Paketti:Diagonal Line to 16800 length Sample",invoke=function() Paketti_Diagonal_Line_to_Sample() end}
 
+
+
 function normalize_selected_sample()
   -- Access the selected sample in the current song
   local selected_sample = renoise.song().selected_sample
-
-  -- Check if a sample is selected and has valid sample data
+  
+  -- If on a slice, use the original sample (first sample of the instrument)
+  if selected_sample.is_slice_alias then
+    selected_sample = renoise.song().selected_instrument:sample(1)
+  end
+  
+  -- Check if the selected (or original) sample has valid sample data
   if not selected_sample or not selected_sample.sample_buffer or not selected_sample.sample_buffer.has_sample_data then
-    renoise.app():show_status("Normalization failed: No valid selected sample to normalize.")
+    renoise.app():show_status("Normalization failed: No valid sample to normalize.")
     return
   end
 
@@ -1317,9 +1326,12 @@ function normalize_selected_sample()
   
   -- Step 6: Confirm successful normalization
   if sbuf.has_sample_data then
-    renoise.app():show_status("Selected sample successfully normalized (maximized volume).")
+    renoise.app():show_status("Sample successfully normalized (maximized volume).")
   else
     renoise.app():show_status("Normalization failed.")
   end
 end
 
+
+
+renoise.tool():add_keybinding{name="Global:Paketti:Paketti Normalize Sample",invoke=function() normalize_selected_sample() end}

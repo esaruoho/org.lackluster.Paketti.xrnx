@@ -344,3 +344,24 @@ end
 renoise.tool():add_keybinding{name="Global:Paketti:Simple Play Record Follow",invoke=function() simpleplayrecordfollow() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Simple Play Record Follow (2nd)",invoke=function() simpleplayrecordfollow() end}
 
+
+-- PD use
+renoise.tool():add_keybinding{name="Global:Paketti:TouchOSC Sample Recorder and Record",
+invoke=function() 
+if renoise.app().window.sample_record_dialog_is_visible 
+then renoise.song().transport:start_stop_sample_recording()
+else renoise.app().window.sample_record_dialog_is_visible = true
+renoise.song().transport:start_stop_sample_recording()
+end
+end}
+
+
+renoise.tool():add_keybinding{name="Global:Paketti:TouchOSC Pattern Editor",
+invoke=function() 
+renoise.app().window.active_middle_frame=1
+end}
+renoise.tool():add_keybinding{name="Global:Paketti:TouchOSC Sample Editor",
+invoke=function() 
+renoise.app().window.active_middle_frame=5
+end}
+
