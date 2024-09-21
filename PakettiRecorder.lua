@@ -347,12 +347,15 @@ renoise.tool():add_keybinding{name="Global:Paketti:Simple Play Record Follow (2n
 
 -- PD use
 renoise.tool():add_keybinding{name="Global:Paketti:TouchOSC Sample Recorder and Record",
-invoke=function() 
+invoke=function()
+local amf = renoise.app().window.active_middle_frame 
 if renoise.app().window.sample_record_dialog_is_visible 
 then renoise.song().transport:start_stop_sample_recording()
 else renoise.app().window.sample_record_dialog_is_visible = true
 renoise.song().transport:start_stop_sample_recording()
 end
+renoise.app().window.active_middle_frame = amf
+
 end}
 
 

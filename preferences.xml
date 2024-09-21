@@ -62,13 +62,13 @@
     <WipeSlicesNNA>1.0</WipeSlicesNNA>
   </WipeSlices>
   <pakettiCheatSheet>
-    <pakettiCheatSheetRandomizeMax>68.65384615384616</pakettiCheatSheetRandomizeMax>
+    <pakettiCheatSheetRandomizeMax>8.9160839160839238</pakettiCheatSheetRandomizeMax>
     <pakettiCheatSheetRandomizeMin>0.0</pakettiCheatSheetRandomizeMin>
     <pakettiCheatSheetRandomizeDontOverwrite>false</pakettiCheatSheetRandomizeDontOverwrite>
     <pakettiCheatSheetRandomizeWholeTrack>false</pakettiCheatSheetRandomizeWholeTrack>
     <pakettiCheatSheetRandomizeSwitch>false</pakettiCheatSheetRandomizeSwitch>
     <pakettiCheatSheetRandomize>true</pakettiCheatSheetRandomize>
-    <pakettiCheatSheetFillAll>63</pakettiCheatSheetFillAll>
+    <pakettiCheatSheetFillAll>83</pakettiCheatSheetFillAll>
   </pakettiCheatSheet>
   <renderSampleRate>88200</renderSampleRate>
   <pakettiLoaderFilterType>LP Moog</pakettiLoaderFilterType>
@@ -149,8 +149,12 @@
       <Favorited>Osi-Cyberpunk1</Favorited>
       <Favorited>purple poison arrow frog</Favorited>
       <Favorited>Graphite RC1</Favorited>
+      <Favorited>sQeetz_Emerald</Favorited>
+      <Favorited>Osi-BladeRunner</Favorited>
+      <Favorited>Osi-TheBlueBrandy</Favorited>
+      <Favorited>Osi-TrackerHacker</Favorited>
     </FavoritedList>
-    <RenoiseLaunchFavoritesLoad>true</RenoiseLaunchFavoritesLoad>
+    <RenoiseLaunchFavoritesLoad>false</RenoiseLaunchFavoritesLoad>
     <RenoiseLaunchRandomLoad>false</RenoiseLaunchRandomLoad>
     <PreviousSelectedTheme>Darkness A</PreviousSelectedTheme>
   </pakettiThemeSelector>

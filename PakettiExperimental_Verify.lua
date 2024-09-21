@@ -1,118 +1,53 @@
+local function flood_fill_column()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
--- Clamp the value between 0.0 and 1.0
-local function clamp_value(value)
-  return math.max(0.0, math.min(1.0, value))
-end
-
--- Function to modify the selected device parameter directly or record to automation
-function MidiSelectedAutomationParameter(number, message)
   local song = renoise.song()
-  local selected_device = song.selected_device
-  local playback_active = song.transport.playing
-  local edit_mode = song.transport.edit_mode
-  local follow_pattern = song.transport.follow_player
+  local track = song.selected_track
+  local pattern_index = song.selected_pattern_index
+  local pattern = song.patterns[pattern_index]
+  local line_index = song.selected_line_index
+  local lines = pattern.tracks[song.selected_track_index].lines
 
-  -- Check if a device is selected
-  if selected_device == nil then
-    print("No device selected.")
+  local cursor_pos = song.transport.edit_pos
+  local sel_effect_col = song.selected_effect_column_index
+  local sel_note_col = song.selected_note_column_index
+
+  -- Check if we are in an effect column
+  if sel_effect_col ~= 0 then
+    -- Get the effect value in the current row
+    local current_effect = lines[line_index].effect_columns[sel_effect_col]
+    if current_effect.is_empty then
+      renoise.app():show_status("No effect to flood fill from the current row.")
+      return
+    end
+    -- Loop through rows from current position to the end of the pattern
+    for i = line_index + 1, #lines do
+      lines[i].effect_columns[sel_effect_col]:copy_from(current_effect)
+    end
+
+  elseif sel_note_col ~= 0 then
+    -- Get note column properties (note, instrument, etc.)
+    local current_note_col = lines[line_index].note_columns[sel_note_col]
+    if current_note_col.is_empty then
+      renoise.app():show_status("No note to flood fill from the current row.")
+      return
+    end
+    -- Loop through rows from current position to the end of the pattern
+    for i = line_index + 1, #lines do
+      lines[i].note_columns[sel_note_col]:copy_from(current_note_col)
+    end
+
+  else
+    renoise.app():show_status("Neither an effect nor note column selected.")
     return
   end
 
-  -- Validate that the parameter exists at the given index (1-128)
-  local device_parameter = selected_device.parameters[number]
-  if device_parameter == nil then
-    print("No parameter found for index " .. number)
-    return
-  end
+  -- Return focus to the pattern editor
+  renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
+  renoise.app():show_status("Flood fill completed.")
 
-  -- Clamp the message value
-  local clamped_message = clamp_value(message)
-
-  -- Always allow editing the device parameter directly with MIDI knobs
-  device_parameter.value = clamped_message
-  print("Changed device parameter '" .. device_parameter.name ..
-        "' directly on device '" .. selected_device.name .. "' to value: " .. tostring(clamped_message))
-
-  -- Scenario: If Edit Mode = True, write automation
-  if edit_mode then
-    -- Get the selected pattern and track
-    local pattern_index = song.selected_pattern_index
-    local track_index = song.selected_track_index
-
-    -- Get the track automation for the parameter
-    local track_automation = song:pattern(pattern_index):track(track_index)
-    local envelope = track_automation:find_automation(device_parameter)
-
-    -- Create the automation if it doesn't exist
-    if not envelope then
-      envelope = track_automation:create_automation(device_parameter)
-      print("Created new automation for parameter '" .. device_parameter.name ..
-            "' on device '" .. selected_device.name .. "'")
-    end
-
-    -- Determine where to write automation:
-    -- 1. If Playback is OFF, always write to the cursor position (selected line).
-    -- 2. If Playback is ON:
-    --    - If Follow Pattern is ON, write to the playhead position.
-    --    - If Follow Pattern is OFF, write to the cursor position (selected line).
-    local line_to_write
-    if not playback_active then
-      line_to_write = song.selected_line_index  -- Write to cursor if Playback is off
-    elseif follow_pattern then
-      line_to_write = song.transport.playback_pos.line  -- Write to playhead if Follow Pattern is on
-    else
-      line_to_write = song.selected_line_index  -- Write to cursor if Follow Pattern is off
-    end
-
-    -- Record the value to the automation envelope at the determined line
-    envelope:add_point_at(line_to_write, clamped_message)
-
-    -- Debug output
-    print("Recorded automation parameter '" .. device_parameter.name ..
-          "' on device '" .. selected_device.name ..
-          "' at line " .. line_to_write ..
-          " to value: " .. tostring(clamped_message))
-  end
 end
 
--- Generate MIDI mappings for automation parameters 001-128
-for i = 1, 128 do
-  renoise.tool():add_midi_mapping{
-    name = string.format("Paketti:Selected Device Automation Parameter %03d", i),
-    invoke = function(message)
-      -- Normalize the MIDI message (0-127) to a range of 0.0 - 1.0
-      local normalized_message = message.int_value / 127
-      -- Change device parameter or record to automation based on the logic
-      MidiSelectedAutomationParameter(i, normalized_message)
-    end
-  }
-end
+renoise.tool():add_keybinding{name="Global:Paketti:Flood Fill Column with Row",invoke=function() flood_fill_column() end}
 
 
 
@@ -121,121 +56,7 @@ end
 
 
 
-
-
-
-
-
-
-
-
-
-
-local function clamp_value(value)
-  -- Ensure the value is clamped between 0.0 and 1.0
-  return math.max(0.0, math.min(1.0, value))
-end
-
-local function record_midi_value(value)
-  local song = renoise.song()
-  local automation_parameter = song.selected_automation_parameter
-
-  -- Check if the automation parameter is valid and automatable
-  if not automation_parameter or not automation_parameter.is_automatable then
-    renoise.app():show_status("Please select an automatable parameter.")
-    print("No automatable parameter selected.")
-    return
-  end
-
-  -- Find or create the automation envelope for the selected parameter
-  local track_automation = song:pattern(song.selected_pattern_index):track(song.selected_track_index)
-  local envelope = track_automation:find_automation(automation_parameter)
-  
-  if not envelope then
-    envelope = track_automation:create_automation(automation_parameter)
-    print("Created new automation envelope for parameter: " .. automation_parameter.name)
-  end
-
-  -- Ensure the value is clamped between 0.0 and 1.0
-  local clamped_value = clamp_value(value)
-
-  -- Check for a valid selection range
-  local selection = envelope.selection_range
-
-  -- Case 1: If not playing and a selection exists, clear the selection range and write new points
-  if not song.transport.playing and selection then
-    local start_line = selection[1]
-    local end_line = selection[2]
-    
-    -- Clear the range before writing
-    envelope:clear_range(start_line, end_line)
-    print("Cleared automation range from line " .. start_line .. " to line " .. end_line)
-
-    -- Write the automation points in the cleared range
-    for line = start_line, end_line do
-      local time = line -- Time in pattern lines
-      -- Create or modify an automation point at the specified time
-      envelope:add_point_at(time, clamped_value)
-      print("Added automation point at time: " .. time .. " with value: " .. tostring(clamped_value))
-    end
-    
-    renoise.app():show_status("Automation points written to cleared selection from line " .. start_line .. " to line " .. end_line)
-    return -- We return after writing to the selection range
-  end
-
-  -- Case 2: If playing, Follow Pattern is off, and a selection exists, clear the selection and write
-  if song.transport.playing and not song.transport.follow_player and selection then
-    local start_line = selection[1]
-    local end_line = selection[2]
-    
-    -- Clear the range before writing
-    envelope:clear_range(start_line, end_line)
-    print("Cleared automation range from line " .. start_line .. " to line " .. end_line)
-
-    -- Write the automation points in the cleared range
-    for line = start_line, end_line do
-      local time = line -- Time in pattern lines
-      -- Create or modify an automation point at the specified time
-      envelope:add_point_at(time, clamped_value)
-      print("Added automation point at time: " .. time .. " with value: " .. tostring(clamped_value))
-    end
-    
-    renoise.app():show_status("Automation points written to cleared selection from line " .. start_line .. " to line " .. end_line)
-    return -- We return after writing to the selection range
-  end
-
-  -- If no selection exists or other conditions aren't met, write to playhead
-  local playhead_line = song.transport.playback_pos.line
-  envelope:add_point_at(playhead_line, clamped_value)
-  renoise.app():show_status("Automation recorded at playhead: " .. playhead_line .. " with value: " .. tostring(clamped_value))
-  print("Automation recorded at playhead: " .. playhead_line .. " with value: " .. tostring(clamped_value))
-end
-
--- MIDI mapping function
-renoise.tool():add_midi_mapping{
-  name = "Paketti:Record Automation to Selected Parameter",
-  invoke = function(midi_msg)
-    -- Normalize the MIDI value (0-127) to a range of 0.0 - 1.0
-    renoise.song().transport.record_parameter_mode=renoise.Transport.RECORD_PARAMETER_MODE_AUTOMATION
-    local normalized_value = midi_msg.int_value / 127
-    print("Received MIDI value: " .. tostring(midi_msg.int_value) .. " (normalized: " .. tostring(normalized_value) .. ")")
-    
-    -- Call the function to record the value
-    record_midi_value(normalized_value)
-  end
-}
-
-
-
-
-
-
-
-
-
-
-
-
+--------
 -- Define the path to the mixpaste.xml file within the tool's directory
 local tool_dir = renoise.tool().bundle_path
 local xml_file_path = tool_dir .. "mixpaste.xml"
@@ -548,259 +369,6 @@ for step = 1, #base_time_divisions do
     invoke=function() PakettiRepeaterParameters(step, 4) end} -- Mode 4 is Dotted
 end
 ---------------
---------------------
---------------------------
-
-
-
-
-
-
-
-
--- Helper function to introduce a short delay (via the idle observer)
-local idle_observable = renoise.tool().app_idle_observable
-local function short_delay(callback,int_value)
-  local idle_func -- Declare it beforehand
-  local idle_count = 0
-  idle_func = function()
-  
-  if int_value == 0 then
-  for i, device in ipairs(track.devices) do
-    if device.display_name == "Repeater" then
-      device_found = true
-      device_index = i
-      device.is_active = false
-      break
-    end
-  end
-
-      
-  end
-  
-    idle_count = idle_count + 1
-    if idle_count >= 2 then -- Roughly a millisecond delay
-      idle_observable:remove_notifier(idle_func)
-      callback()
-    end
-  end
-  idle_observable:add_notifier(idle_func)
-end
-
--- Define the table for base time divisions, starting with OFF at [1], followed by divisions from 1/1 to 1/128
-local base_time_divisions = {
-  [1] = "OFF",  -- OFF state
-  [2] = "1 / 1", [3] = "1 / 2", [4] = "1 / 4", [5] = "1 / 8", 
-  [6] = "1 / 16", [7] = "1 / 32", [8] = "1 / 64", [9] = "1 / 128"
-}
-
--- Define the modes as a list for easy cycling (Even, Triplet, Dotted)
-local modes = {
-  [1] = "Even",
-  [2] = "Triplet",
-  [3] = "Dotted"
-}
-
--- MIDI mapping logic for the first knob (doesn't change the track name, only shows status)
-renoise.tool():add_midi_mapping{
-  name = "Paketti:Set Repeater Value x[Knob]",
-  invoke = function(message)
-    if message:is_abs_value() then
-      local int_value = message.int_value
-
-      -- Handle 0-5 as OFF
-      if int_value <= 5 then
-        deactivate_repeater(false) -- Pass false to not change the track name
-        return -- Exit early as it's in the OFF range
-      end
-
-      -- For 6-127, proceed with normal updates (no track name change)
-      update_repeater_with_midi_value(int_value, false)
-    end
-  end
-}
-
--- MIDI mapping logic for the second knob (changes both the status and track name)
-renoise.tool():add_midi_mapping{
-  name = "Paketti:Set Repeater Value (Name Tracks) x[Knob]",
-  invoke = function(message)
-    if message:is_abs_value() then
-      local int_value = message.int_value
-
-      -- Handle 0-5 as OFF
-      if int_value <= 5 then
-        deactivate_repeater(true) -- Pass true to change the track name
-        return -- Exit early as it's in the OFF range
-      end
-
-      -- For 6-127, proceed with normal updates (with track name change)
-      update_repeater_with_midi_value(int_value, true)
-    end
-  end
-}
-
--- Function to deactivate the Repeater without making any other parameter changes
--- track_name_change: if true, changes the track name
-function deactivate_repeater(track_name_change)
-  local track = renoise.song().selected_track
-  local device_found = false
-  local device_index = nil
-
-  -- Check if the Repeater device already exists on the track
-  for i, device in ipairs(track.devices) do
-    if device.display_name == "Repeater" then
-      device_found = true
-      device_index = i
-      break
-    end
-  end
-
-  if device_found then
-    local device = track.devices[device_index]
-    
-    -- Deactivate the device without updating parameters
-    if device.is_active then
-      device.is_active = false
-      -- Show status when the repeater is turned off
-      renoise.app():show_status("Repeater is now Off")
-      print("Repeater deactivated")
-
-      -- Optionally change track name to "OFF"
-      if track_name_change then
-        track.name = "OFF"
-      end
-    end
-  else
-    print("No Repeater device found on the selected track")
-  end
-end
-
-
--- Function to handle MIDI knob input and update the Repeater accordingly
--- track_name_change: if true, changes the track name
-function update_repeater_with_midi_value(int_value, track_name_change)
-  local track = renoise.song().selected_track
-  local device_found = false
-  local device_index = nil
-
-  -- Check if the Repeater device already exists on the track
-  for i, device in ipairs(track.devices) do
-    if device.display_name == "Repeater" then
-      device_found = true
-      device_index = i
-      break
-    end
-  end
-
-  -- If no device is found, insert a new Repeater
-  if not device_found then
-    renoise.song().selected_track:insert_device_at("Audio/Effects/Native/Repeater", #track.devices + 1)
-    device_index = #track.devices -- Index of the newly added device
-    device_found = true
-    print("Repeater device added")
-  end
-
-  if device_found then
-    -- Get time division and mode based on MIDI value (6 to 127)
-    local time_division, mode = get_time_division_from_midi(int_value)
-
-    -- Show status of the new division
-    renoise.app():show_status("Repeater is now " .. time_division .. " " .. mode)
-
-    -- Optionally change the track name to the new division
-    if track_name_change then
-      track.name = time_division .. " " .. mode
-    end
-
-    -- Map mode to the Repeater's mode parameter
-    local mode_value = 2 -- Default to Even
-    if mode == "Triplet" then
-      mode_value = 3 -- Triplet
-    elseif mode == "Dotted" then
-      mode_value = 4 -- Dotted
-    end
-
-    -- Update the Repeater parameters and briefly toggle it off and on
-    update_and_toggle_repeater(time_division, mode_value, int_value)
-  end
-end
-
--- Function to update the Repeater with the appropriate parameters, deactivate for a millisecond, and reactivate
-function update_and_toggle_repeater(time_division, mode_value, midi_int_value)
-  local track = renoise.song().selected_track
-  local device_found = false
-  local device_index = nil
-
-  -- Check if the Repeater device already exists on the track
-  for i, device in ipairs(track.devices) do
-    if device.display_name == "Repeater" then
-      device_found = true
-      device_index = i
-      break
-    end
-  end
-
-  if device_found then
-    local device = track.devices[device_index]
-
-    -- Apply time division and mode
-    device.parameters[1].value = mode_value -- Set the mode (Even, Triplet, Dotted)
-    device.parameters[2].value_string = time_division -- Set the time division (1 / 1 to 1 / 128)
-
-    -- Deactivate the device before updating
-    device.is_active = false
-    print("Repeater deactivated for parameter update")
-
-    -- Short delay before reactivating the device
-    short_delay(function()
-      if midi_int_value ~= 0 then
-        -- Reactivate the device after a brief delay
-        device.is_active = true
-      else
-        device.is_active = false
-        print("Repeater remains off")
-      end
-    end)
-  end
-end
-
--- Function to get time division and mode based on MIDI int_value (6 to 127 range)
-function get_time_division_from_midi(int_value)
-  -- Ensure int_value is within 6-127 range
-  int_value = math.max(6, math.min(int_value, 127))
-
-  -- Special handling for the last three values: 125, 126, and 127 map to 1/128 Dotted
-  if int_value >= 125 then
-    return base_time_divisions[9], modes[3] -- 1/128 Dotted
-  end
-
-  -- Map the int_value to a spread of 21 steps for divisions up to 1/128 Triplet
-  local total_steps = 21 -- 7 divisions * 3 modes (Even, Triplet, Dotted), up to 1/128 Triplet
-  local midi_range = 124 - 6 + 1 -- Total MIDI values to distribute (6 to 124)
-  local step_size = math.floor(midi_range / total_steps) -- Calculate size per step
-
-  -- Calculate the index in the range (spread evenly)
-  local index = math.floor((int_value - 6) / step_size) + 1
-
-  -- Calculate the time division (step) and mode
-  local step = math.floor((index - 1) / 3) + 2 -- Adjust to map from 1/1 to 1/128 Triplet
-  local mode = (index - 1) % 3 + 1 -- Mode: Even, Triplet, Dotted
-
-  -- Return the time division and mode
-  return base_time_divisions[step] or "Unknown Division", modes[mode] or "Unknown Mode"
-end
-
-
-
-
-
-
-
-
-
-
-------------
-
 
 
 

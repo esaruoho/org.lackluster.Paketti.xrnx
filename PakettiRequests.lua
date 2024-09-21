@@ -6655,6 +6655,37 @@ renoise.tool():add_keybinding{name="Global:Paketti:Loop Set Percussion",invoke=f
 
 renoise.tool():add_keybinding{name="Global:Paketti:Loop Set Texture",invoke=function() PakettiLoopSet("Texture")end}
 
+-------
+-- SampleSelector logic
+function SampleSelector(step)
+  local song=renoise.song()
+  local instrument=song.selected_instrument
+  local num_samples=#instrument.samples
+  local current_index=song.selected_sample_index
+
+  if num_samples == 0 then
+    renoise.app():show_status("There's no sample in this Instrument, doing nothing.")
+    return
+  end
+
+  local new_index=current_index+step
+
+  if new_index < 1 then
+    renoise.app():show_status("You are on the first sample, doing nothing.")
+  elseif new_index > num_samples then
+    renoise.app():show_status("You are on the last sample, doing nothing.")
+  else
+    song.selected_sample_index=new_index
+    local sample_name = instrument.samples[new_index].name
+    local formatted_index = string.format("%03d", new_index)
+    renoise.app():show_status("Selected Sample " .. formatted_index .. ": " .. sample_name)
+  end
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Select Sample Next",invoke=function()SampleSelector(1)end}
+renoise.tool():add_keybinding{name="Global:Paketti:Select Sample Previous",invoke=function()SampleSelector(-1)end}
+renoise.tool():add_midi_mapping{name="Paketti:Select Sample Next",invoke=function(message)if message:is_trigger()then SampleSelector(1)end end}
+renoise.tool():add_midi_mapping{name="Paketti:Select Sample Previous",invoke=function(message)if message:is_trigger()then SampleSelector(-1)end end}
 
 
 

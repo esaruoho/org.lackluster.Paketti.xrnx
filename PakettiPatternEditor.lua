@@ -2606,6 +2606,40 @@ renoise.tool():add_keybinding{
   end
 }
 
+renoise.tool():add_keybinding{
+  name="Pattern Editor:Paketti:Toggle Note Off on All Tracks on Current Row",
+  invoke=function()
+    local song=renoise.song()
+    local cursor_pos=song.selected_line_index
+    
+    -- Iterate over all tracks
+    for t=1,#song.tracks do
+      local track=song:track(t)
+      
+      -- Skip group, master, and send tracks
+      if not (track.type==renoise.Track.TRACK_TYPE_GROUP or track.type==renoise.Track.TRACK_TYPE_MASTER or track.type==renoise.Track.TRACK_TYPE_SEND) then
+        local line=song.patterns[song.selected_pattern_index]:track(t):line(cursor_pos)
+        local count=track.visible_note_columns
+        
+        -- Check if all visible note columns are set to "OFF"
+        local all_off=true
+        for i=1,count do
+          if line.note_columns[i].note_string~="OFF" then
+            all_off=false
+            break
+          end
+        end
+        
+        -- Set or clear "OFF" depending on the result
+        for i=1,count do
+          line.note_columns[i].note_string=all_off and "" or "OFF"
+        end
+      end
+    end
+  end
+}
+
+
 -------
 function PhrasingRandom()
 
@@ -3029,4 +3063,91 @@ renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Delay Column Decrease
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Delay Column Increase Selection/Row (+10)",invoke=function() PakettiDelayColumnModifier(10) end}
 renoise.tool():add_keybinding{name= "Pattern Editor:Paketti:Delay Column Decrease Selection/Row (-10)", invoke = function() PakettiDelayColumnModifier(-10) end}
 
+------
+function ExposeAndSelectColumn(number)
+  local song = renoise.song()
+  local track = song.selected_track
 
+  -- Get the track type
+  local track_type = track.type
+
+  if track_type == renoise.Track.TRACK_TYPE_SEQUENCER then
+    -- It's a normal track that can have note and effect columns
+
+    -- Detect if we're on a note column or an effect column
+    if song.selected_note_column ~= nil then
+      -- We're on a Note Column
+      local visNoteCol = track.visible_note_columns
+      local newVisNoteCol = visNoteCol + number
+
+      if newVisNoteCol > 12 then
+        renoise.app():show_status("All 12 Note Columns are already visible for the selected track, cannot add more.")
+        return
+      elseif newVisNoteCol < 1 then
+        renoise.app():show_status("Cannot have less than 1 Note Column visible.")
+        return
+      end
+
+      -- Update the track's visible note columns
+      track.visible_note_columns = newVisNoteCol
+      -- Select the new note column
+      song.selected_note_column_index = newVisNoteCol
+
+    elseif song.selected_effect_column ~= nil then
+      -- We're on an Effect Column
+      local visEffectCol = track.visible_effect_columns
+      local newVisEffectCol = visEffectCol + number
+
+      if newVisEffectCol > 8 then
+        renoise.app():show_status("All 8 Effect Columns are already visible for the selected track, cannot add more.")
+        return
+      elseif newVisEffectCol < 0 then
+        renoise.app():show_status("Cannot have less than 0 Effect Columns visible.")
+        return
+      end
+
+      -- Update the track's visible effect columns
+      track.visible_effect_columns = newVisEffectCol
+
+      if newVisEffectCol > 0 then
+        -- Select the new effect column
+        song.selected_effect_column_index = newVisEffectCol
+      else
+        -- No effect columns visible, deselect any effect column
+     --   song.selected_effect_column_index = nil
+      end
+
+    else
+      renoise.app():show_status("You are not on a Note or Effect Column, doing nothing.")
+    end
+
+  else
+    -- The track cannot have note columns, handle effect columns only
+    local visEffectCol = track.visible_effect_columns
+    local newVisEffectCol = visEffectCol + number
+
+    if newVisEffectCol > 8 then
+      renoise.app():show_status("All 8 Effect Columns are already visible for the selected track, cannot add more.")
+      return
+    elseif newVisEffectCol < 0 then
+      renoise.app():show_status("Cannot have less than 0 Effect Columns visible.")
+      return
+    end
+
+    -- Update the track's visible effect columns
+    track.visible_effect_columns = newVisEffectCol
+
+    if newVisEffectCol > 0 then
+      -- Select the new effect column
+      song.selected_effect_column_index = newVisEffectCol
+    else
+      -- No effect columns visible, deselect any effect column
+      song.selected_effect_column_index = nil
+    end
+  end
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Expose and Select Next Column",invoke=function() ExposeAndSelectColumn(1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Hide Current and Select Previous Column",invoke=function() ExposeAndSelectColumn(-1) end}
+renoise.tool():add_midi_mapping{name="Paketti:Expose and Select Next Column",invoke=function(message) if message:is_trigger() then ExposeAndSelectColumn(1) end end}
+renoise.tool():add_midi_mapping{name="Paketti:Hide Current and Select Previous Column",invoke=function(message) if message:is_trigger() then xposeAndSelectColumn(-1) end end}

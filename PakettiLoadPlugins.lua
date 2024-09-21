@@ -96,14 +96,24 @@ end
 -- Load Plugin Function
 function loadPlugin(pluginPath)
   local selected_index = renoise.song().selected_instrument_index
-  renoise.song():insert_instrument_at(selected_index + 1)
+local currentView = renoise.app().window.active_middle_frame
+  renoise.song():insert_instrument_at(renoise.song().selected_instrument_index + 1)
   renoise.song().selected_instrument_index = selected_index + 1
+
+if currentView == renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_PHRASE_EDITOR
+then 
+renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_PLUGIN_EDITOR
+renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_PHRASE_EDITOR
+else
+renoise.app().window.active_middle_frame = currentView
+end
   local new_instrument = renoise.song().selected_instrument
   new_instrument.plugin_properties:load_plugin(pluginPath)
   if new_instrument.plugin_properties.plugin_device and new_instrument.plugin_properties.plugin_device.external_editor_available then
     new_instrument.plugin_properties.plugin_device.external_editor_visible = true
   end
   -- openVisiblePagesToFitParameters()  -- Uncomment if you have this function defined elsewhere
+
 end
 
 -- Check if any plugins are selected

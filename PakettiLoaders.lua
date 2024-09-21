@@ -173,6 +173,9 @@ end
 -- Example usage
 function LoadPPG()
   local s = renoise.song()
+
+local currentView = renoise.app().window.active_middle_frame
+
   
   -- Ensure an empty instrument slot is selected
   s.selected_instrument_index = search_empty_instrument()
@@ -202,8 +205,10 @@ function LoadPPG()
   
   -- Set the active frame and tab for the UI
   -- renoise.app().window.active_lower_frame = 3
-  renoise.app().window.active_middle_frame = 3
-  s.selected_instrument.active_tab = 2 
+--  renoise.app().window.active_middle_frame = 3
+renoise.app().window.active_middle_frame = currentView
+
+--  s.selected_instrument.active_tab = storedTab
   
   -- Example commented code
   -- renoise.song().selected_track.devices[checkline].parameters[1].value = 0.474 -- Mix 
