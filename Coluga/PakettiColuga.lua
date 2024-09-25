@@ -20,22 +20,6 @@ local loop_modes = {"Off", "Forward", "Backward", "PingPong"}
 local vb = nil        -- ViewBuilder instance
 local logview = nil   -- Log view
 
--- Ensure preferences are defined elsewhere in your code
--- Example:
--- preferences = {
---   pakettiColuga = {
---     pakettiColugaOutputDirectory = { value = "" },
---     pakettiColugaClipLength = { value = 10 },
---     pakettiColugaLoopMode = { value = 2 },
---     pakettiColugaAmountOfVideos = { value = 1 },
---     pakettiColugaLoadWholeVideo = { value = false },
---     pakettiColugaNewInstrumentOrSameInstrument = { value = false },
---     pakettiColugaFormatToSave = { value = 1 },
---     pakettiColugaPathToSave = { value = "" },
---     pakettiColugaYT_DLPLocation = { value = "" },
---   }
--- }
-
 -- =====================
 -- Helper Functions
 -- =====================
@@ -330,16 +314,6 @@ function PakettiColugaSignalCompletion(completion_signal_file)
   end
   file:close()
   PakettiColugaLogMessage("Created completion signal file: " .. completion_signal_file)
-end
-
--- Function to normalize the selected sample (placeholder, define as needed)
-function normalize_selected_sample()
-  -- Implement normalization logic if needed
-end
-
--- Function to load default instrument (placeholder, define as needed)
-function pakettiPreferencesDefaultInstrumentLoader()
-  -- Implement default instrument loading logic if needed
 end
 
 -- =====================
