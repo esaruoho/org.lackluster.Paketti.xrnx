@@ -916,6 +916,10 @@ renoise.tool():add_keybinding{name="Global:Paketti:Halve Beatsync Lines (Selecte
 renoise.tool():add_keybinding{name="Global:Paketti:Double Beatsync Lines (All)", invoke=function() doubleBeatsyncLinesAll() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Double Beatsync Lines (Selected Sample)", invoke=function() doubleBeatsyncLinesSelected() end}
 
+renoise.tool():add_keybinding{name="Global:Paketti:Halve Halve Beatsync Lines (All)", invoke=function() halveBeatsyncLinesAll() halveBeatsyncLinesAll()end}
+renoise.tool():add_keybinding{name="Global:Paketti:Halve Halve Beatsync Lines (Selected Sample)", invoke=function() halveBeatsyncLinesSelected() halveBeatsyncLinesSelected() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Double Double Beatsync Lines (All)", invoke=function() doubleBeatsyncLinesAll() doubleBeatsyncLinesAll() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Double Double Beatsync Lines (Selected Sample)", invoke=function() doubleBeatsyncLinesSelected() doubleBeatsyncLinesSelected()  end}
 
 
 
@@ -2051,14 +2055,14 @@ end
 -- Define the menu entries, keybindings, and MIDI mappings for the different adjustments
 local function add_tool_entries(column_type, adjustment)
   local adj_str = (adjustment > 0) and "+" .. adjustment or tostring(adjustment)
-  renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Column:Adjust Selection " .. column_type:gsub("^%l", string.upper) .. " Column " .. adj_str, invoke=function() adjust_column(column_type, adjustment) end}
+  renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Note Columns..:Adjust Selection " .. column_type:gsub("^%l", string.upper) .. " Column " .. adj_str, invoke=function() adjust_column(column_type, adjustment) end}
   renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Adjust Selection " .. column_type:gsub("^%l", string.upper) .. " Column (" .. adj_str .. ")", invoke=function() adjust_column(column_type, adjustment) end}
   renoise.tool():add_midi_mapping{name="Pattern Editor:Paketti:Adjust Selection " .. column_type:gsub("^%l", string.upper) .. " Column (" .. adj_str .. ")", invoke=function() adjust_column(column_type, adjustment) end}
 end
 
 -- Define the menu entries, keybindings, and MIDI mappings for wiping the columns
 local function add_wipe_entries(column_type)
-  renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Column:Wipe Selection " .. column_type:gsub("^%l", string.upper) .. " Column", invoke=function() adjust_column(column_type, 0) end}
+  renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Note Columns..:Wipe Selection " .. column_type:gsub("^%l", string.upper) .. " Column", invoke=function() adjust_column(column_type, 0) end}
   renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Wipe Selection " .. column_type:gsub("^%l", string.upper) .. " Column", invoke=function() adjust_column(column_type, 0) end}
   renoise.tool():add_midi_mapping{name="Pattern Editor:Paketti:Wipe Selection " .. column_type:gsub("^%l", string.upper) .. " Column", invoke=function() adjust_column(column_type, 0) end}
 end
@@ -2568,7 +2572,7 @@ renoise.tool():add_keybinding{name="Global:Paketti:Duplicate Track Duplicate Ins
 ------------
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Note Interpolation",invoke=function() note_interpolation() end}
 renoise.tool():add_midi_mapping{name="Paketti:Note Interpolation",invoke=function() note_interpolation() end}
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Note Interpolation",invoke=function() note_interpolation() end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Note Columns..:Note Interpolation",invoke=function() note_interpolation() end}
 
 -- Main function for note interpolation
 function note_interpolation()
@@ -2935,12 +2939,11 @@ end
 
 -- Adding the function to the menu
 renoise.tool():add_keybinding{name="Global:Paketti:Create Identical Track",invoke=create_identical_track}
+renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Create Phrase",invoke=function() createPhrase() end}
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Create Identical Track",invoke=create_identical_track}
 renoise.tool():add_menu_entry{name="Mixer:Paketti..:Create Identical Track",invoke=create_identical_track}
 renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor:Create Identical Track",invoke=create_identical_track}
-
 -------
-
 
 -- Function to toggle solo state for note columns in the selected track
 function noteColumnSoloToggle()
@@ -4290,17 +4293,17 @@ local function pakettiResizeAndFill(patternSize)
   end
 end
 
-renoise.tool():add_menu_entry {name="Main Menu:Tools:Paketti..:Pattern Editor:Resize&Fill:Paketti Pattern Resize and Fill 032",invoke=function() pakettiResizeAndFill(32) end}
-renoise.tool():add_menu_entry {name="Main Menu:Tools:Paketti..:Pattern Editor:Resize&Fill:Paketti Pattern Resize and Fill 064",invoke=function() pakettiResizeAndFill(64) end}
-renoise.tool():add_menu_entry {name="Main Menu:Tools:Paketti..:Pattern Editor:Resize&Fill:Paketti Pattern Resize and Fill 128",invoke=function() pakettiResizeAndFill(128) end}
-renoise.tool():add_menu_entry {name="Main Menu:Tools:Paketti..:Pattern Editor:Resize&Fill:Paketti Pattern Resize and Fill 256",invoke=function() pakettiResizeAndFill(256) end}
-renoise.tool():add_menu_entry {name="Main Menu:Tools:Paketti..:Pattern Editor:Resize&Fill:Paketti Pattern Resize and Fill 512",invoke=function() pakettiResizeAndFill(512) end}
+renoise.tool():add_menu_entry {name="Main Menu:Tools:Paketti..:Pattern Editor:Resize&Fill..:Paketti Pattern Resize and Fill 032",invoke=function() pakettiResizeAndFill(32) end}
+renoise.tool():add_menu_entry {name="Main Menu:Tools:Paketti..:Pattern Editor:Resize&Fill..:Paketti Pattern Resize and Fill 064",invoke=function() pakettiResizeAndFill(64) end}
+renoise.tool():add_menu_entry {name="Main Menu:Tools:Paketti..:Pattern Editor:Resize&Fill..:Paketti Pattern Resize and Fill 128",invoke=function() pakettiResizeAndFill(128) end}
+renoise.tool():add_menu_entry {name="Main Menu:Tools:Paketti..:Pattern Editor:Resize&Fill..:Paketti Pattern Resize and Fill 256",invoke=function() pakettiResizeAndFill(256) end}
+renoise.tool():add_menu_entry {name="Main Menu:Tools:Paketti..:Pattern Editor:Resize&Fill..:Paketti Pattern Resize and Fill 512",invoke=function() pakettiResizeAndFill(512) end}
 
-renoise.tool():add_menu_entry {name="Pattern Editor:Paketti..:Resize&Fill:Paketti Pattern Resize and Fill 032",invoke=function() pakettiResizeAndFill(32) end}
-renoise.tool():add_menu_entry {name="Pattern Editor:Paketti..:Resize&Fill:Paketti Pattern Resize and Fill 064",invoke=function() pakettiResizeAndFill(64) end}
-renoise.tool():add_menu_entry {name="Pattern Editor:Paketti..:Resize&Fill:Paketti Pattern Resize and Fill 128",invoke=function() pakettiResizeAndFill(128) end}
-renoise.tool():add_menu_entry {name="Pattern Editor:Paketti..:Resize&Fill:Paketti Pattern Resize and Fill 256",invoke=function() pakettiResizeAndFill(256) end}
-renoise.tool():add_menu_entry {name="Pattern Editor:Paketti..:Resize&Fill:Paketti Pattern Resize and Fill 512",invoke=function() pakettiResizeAndFill(512) end}
+renoise.tool():add_menu_entry {name="Pattern Editor:Paketti..:Resize&Fill..:Paketti Pattern Resize and Fill 032",invoke=function() pakettiResizeAndFill(32) end}
+renoise.tool():add_menu_entry {name="Pattern Editor:Paketti..:Resize&Fill..:Paketti Pattern Resize and Fill 064",invoke=function() pakettiResizeAndFill(64) end}
+renoise.tool():add_menu_entry {name="Pattern Editor:Paketti..:Resize&Fill..:Paketti Pattern Resize and Fill 128",invoke=function() pakettiResizeAndFill(128) end}
+renoise.tool():add_menu_entry {name="Pattern Editor:Paketti..:Resize&Fill..:Paketti Pattern Resize and Fill 256",invoke=function() pakettiResizeAndFill(256) end}
+renoise.tool():add_menu_entry {name="Pattern Editor:Paketti..:Resize&Fill..:Paketti Pattern Resize and Fill 512",invoke=function() pakettiResizeAndFill(512) end}
 
 renoise.tool():add_keybinding {name="Global:Paketti:Pattern Resize and Fill 032",invoke=function() pakettiResizeAndFill(32) end}
 renoise.tool():add_keybinding {name="Global:Paketti:Pattern Resize and Fill 064",invoke=function() pakettiResizeAndFill(64) end}
@@ -5668,9 +5671,34 @@ function PakettiLPBHalve()
 --  renoise.app().window.active_middle_frame=renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
 end
 
--- Assign the functions to keybindings
 renoise.tool():add_keybinding{name="Global:Paketti:Double LPB", invoke=function() PakettiLPBDouble() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Halve LPB", invoke=function() PakettiLPBHalve() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Double Double LPB", invoke=function() PakettiLPBDouble() PakettiLPBDouble() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Halve Halve LPB", invoke=function() PakettiLPBHalve() PakettiLPBHalve() end}
+
+
+function halve_bpm()
+  local song=renoise.song()
+  local current_bpm=song.transport.bpm
+  local new_bpm=math.max(current_bpm/2,20)
+  song.transport.bpm=new_bpm
+  renoise.app():show_status("BPM halved from "..current_bpm.." to "..new_bpm)
+end
+
+function double_bpm()
+  local song=renoise.song()
+  local current_bpm=song.transport.bpm
+  local new_bpm=math.min(current_bpm*2,999)
+  song.transport.bpm=new_bpm
+  renoise.app():show_status("BPM doubled from "..current_bpm.." to "..new_bpm)
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Halve BPM",invoke=function() halve_bpm() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Double BPM",invoke=function() double_bpm() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Halve Halve BPM",invoke=function() halve_bpm() halve_bpm() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Double Double BPM",invoke=function() double_bpm() double_bpm() end}
+
+
 -------
 -- Function to detect note spacing
 local function analyze_note_spacing()

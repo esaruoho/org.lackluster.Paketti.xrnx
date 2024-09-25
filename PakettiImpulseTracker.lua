@@ -410,6 +410,8 @@ end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker Pattern (Next)", invoke=function() ImpulseTrackerNextPattern() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker Pattern (Previous)", invoke=function() ImpulseTrackerPrevPattern() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker Pattern (Next) 2nd", invoke=function() ImpulseTrackerNextPattern() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker Pattern (Previous) 2nd", invoke=function() ImpulseTrackerPrevPattern() end}
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 --IT: ALT-D (whole track) Double-select
 function DoubleSelect()
@@ -452,7 +454,7 @@ function DoubleSelect()
  end
 end
 
-renoise.tool():add_keybinding{name="Pattern Editor:Selection:Impulse Tracker ALT-D Double Select", invoke=function() DoubleSelect() end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Impulse Tracker ALT-D Double Select", invoke=function() DoubleSelect() end}
 --------------------------------------------------------------------------------------------------------------------------------
 -- Protman's set octave
 -- Protman: Thanks to suva for the function per octave declaration loop :)
@@ -505,7 +507,7 @@ end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker PageUp Jump Lines", invoke=function() Jump(-1) end  }
 renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker PageDown Jump Lines", invoke=function() Jump(1) end  }
------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------
 ---------Protman's Expand Selection
 function cpclex_line(track, from_line, to_line)
   local s=renoise.song()
@@ -539,7 +541,7 @@ end
 end
 
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Impulse Tracker ALT-F Expand Selection", invoke=function() ExpandSelection() end}
-------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------
 -------Protman's Shrink Selection
 function cpclsh_line(track, from_line, to_line)
   local cur_track = renoise.song():pattern(renoise.song().selected_pattern_index):track(track)
@@ -592,8 +594,8 @@ end
 end
 
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Impulse Tracker ALT-S Set Selection to Instrument", invoke=function() SetInstrument() end} 
-----------------------------------------------------------------------------------------------------------------
-----------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------
 function MarkTrackMarkPattern()
 --Known bug: Has no idea as to what to do with Groups.
 local st=nil
@@ -639,7 +641,8 @@ else
 end
 
 renoise.tool():add_keybinding{name="Pattern Editor:Selection:Impulse Tracker ALT-L Mark Track/Mark Pattern", invoke=function() MarkTrackMarkPattern() end}  
--------------------------------------------------------------------------------------------------------------------------------------------Protman's Alt-D except patternwide
+------------------------------------------------------
+----------Protman's Alt-D except patternwide
 function DoubleSelectPattern()
  local s = renoise.song()
  local lpb = s.transport.lpb
@@ -675,7 +678,8 @@ print ("new_endline " .. new_endline)
     end_column = last_column }
  end
 end
--------------------------------------------------------------------------------------------------------------------------------------------IT: Alt-D except Current Column only
+--------------------------------------------------------------------------------------------------------------------------------------IT: Alt-D except Current Column only
+--[[
 function DoubleSelectColumnOnly()
  local s = renoise.song()
  local lpb = s.transport.lpb
@@ -716,8 +720,63 @@ end
  end
 end
 
-renoise.tool():add_keybinding{name="Pattern Editor:Selection:Impulse Tracker DoubleSelectColumnOnly (Protman)", invoke=function() DoubleSelectColumnOnly() end}
-renoise.tool():add_keybinding{name="Pattern Editor:Selection:Impulse Tracker DoubleSelectPattern (Protman)", invoke=function() DoubleSelectPattern() end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Impulse Tracker ALT-D Double Select Column", invoke=function() DoubleSelectColumnOnly() end}
+--]]
+
+function PakettiImpulseTrackerDoubleSelectColumn()
+  local s = renoise.song()
+  local lpb = s.transport.lpb
+  local sip = s.selection_in_pattern
+  local curr_track = s.selected_track_index
+  local selection = nil
+
+  -- Determine the selected column (note or effect column)
+  if s.selected_note_column_index == 0 then
+    -- If no note column is selected, use the effect column
+    selection = s.selected_track.visible_note_columns + s.selected_effect_column_index
+  else
+    -- Use the selected note column
+    selection = s.selected_note_column_index
+  end
+
+  -- Set the first selection relative to LPB (expand the selection for the first run)
+  if sip == nil or sip.start_track ~= curr_track or s.selected_line_index ~= s.selection_in_pattern.start_line then
+    s.selection_in_pattern = {
+      start_line = s.selected_line_index,
+      end_line = s.selected_line_index + lpb - 1,
+      start_track = curr_track,
+      end_track = curr_track,
+      start_column = selection,
+      end_column = selection
+    }
+  else
+    -- Expand the selection based on LPB
+    local start_line = sip.start_line
+    local end_line = sip.end_line
+    local new_end_line = end_line + lpb
+
+    if new_end_line > s.selected_pattern.number_of_lines then
+      new_end_line = s.selected_pattern.number_of_lines
+    end
+
+    s.selection_in_pattern = {
+      start_line = start_line,
+      end_line = new_end_line,
+      start_track = curr_track,
+      end_track = curr_track,
+      start_column = selection,
+      end_column = selection
+    }
+  end
+end
+
+renoise.tool():add_keybinding{
+  name="Pattern Editor:Paketti:Impulse Tracker ALT-D Double Select Column",
+  invoke=function() PakettiImpulseTrackerDoubleSelectColumn() end
+}
+
+
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Impulse Tracker ALT-D Double Select Pattern", invoke=function() DoubleSelectPattern() end}
 --------------------------------------------------------------------------------------------------------------------------------------
 --IT "Home Home Home" behaviour. First Home takes to current column first_line. Second Home takes to current track first_line. 
 --Third home takes to first track first_line.
@@ -1236,7 +1295,16 @@ renoise.tool():add_keybinding{name="Pattern Editor:Selection:Impulse Tracker ALT
 
 renoise.tool():add_keybinding{name="Phrase Editor:Selection:Impulse Tracker ALT-U Unmark Selection",invoke=function() Deselect_Phr() end}
 renoise.tool():add_keybinding{name="Phrase Editor:Selection:Impulse Tracker ALT-U Unmark Selection (2nd)",invoke=function() Deselect_Phr() end}
-------------
+
+----------
+--[[
+  Renoise Tool: Paketti Impulse Tracker Swap Block
+  Description: Swaps selected note columns between tracks, including volume, panning, delay, sample effects, and effect columns.
+  Author: [Your Name]
+  Date: [Date]
+]]
+
+-- Function to swap blocks between note columns and effect columns
 function PakettiImpulseTrackerSwapBlock()
   local song = renoise.song()
   local selection = song.selection_in_pattern
@@ -1246,124 +1314,230 @@ function PakettiImpulseTrackerSwapBlock()
     return
   end
 
+  -- Extract selection boundaries
   local start_line = selection.start_line
   local end_line = selection.end_line
-  local num_lines = end_line - start_line + 1
   local start_column = selection.start_column
   local end_column = selection.end_column
   local start_track = selection.start_track
   local end_track = selection.end_track
-  local num_columns = end_column - start_column + 1
 
+  -- Cursor (edit position) details
   local cursor_pos = song.transport.edit_pos
   local cursor_track = song.selected_track_index
   local cursor_line = cursor_pos.line
   local cursor_column = song.selected_note_column_index
 
+  -- Check if the cursor is at the start of the selection
+  if cursor_line == start_line and cursor_column == start_column and cursor_track == start_track then
+    renoise.app():show_status("Cursor is at the start of the selection. No action taken.")
+    return
+  end
+
+  -- Calculate the number of lines in the selection
+  local num_lines = end_line - start_line + 1
+
   -- Ensure there are enough lines from the cursor position to swap
-  if cursor_line + num_lines - 1 > #song:pattern(cursor_pos.sequence).tracks[cursor_track].lines then
+  local target_pattern = song:pattern(cursor_pos.sequence)
+  if cursor_line + num_lines - 1 > #target_pattern.tracks[cursor_track].lines then
     renoise.app():show_status("Not enough lines from cursor position to swap.")
     return
   end
 
-  -- Adjust the number of visible note columns if necessary
-  if song:track(cursor_track).visible_note_columns < cursor_column + num_columns then
-    song:track(cursor_track).visible_note_columns = cursor_column + num_columns
-  end
+  -- Determine visibility settings for source and target tracks
+  local source_track_obj = song.tracks[start_track]
+  local target_track_obj = song.tracks[cursor_track]
 
-  -- Collect data from the selection in its original note columns and track
-  local selection_data = {}
-  for line = start_line, end_line do
-    local line_data = {}
-    for column = start_column, start_column + num_columns - 1 do
-      local pattern_line = song:pattern(song.selected_pattern_index).tracks[start_track].lines[line]
-      local note_column = pattern_line.note_columns[column]
-      table.insert(line_data, {
-        note_value = note_column.note_value,
-        instrument_value = note_column.instrument_value,
-        volume_value = note_column.volume_value,
-        panning_value = note_column.panning_value,
-        delay_value = note_column.delay_value,
-        effect_number_value = note_column.effect_number_value,
-        effect_amount_value = note_column.effect_amount_value
-      })
-    end
-    table.insert(selection_data, line_data)
-  end
+  local source_visible_note_columns = source_track_obj.visible_note_columns
+  local source_volume_visible = source_track_obj.volume_column_visible
+  local source_panning_visible = source_track_obj.panning_column_visible
+  local source_delay_visible = source_track_obj.delay_column_visible
+  local source_samplefx_visible = source_track_obj.sample_effects_column_visible
+  local source_visible_effect_columns = source_track_obj.visible_effect_columns -- Get the visible effect columns
 
-  -- Collect data from the cursor block in its current note columns and track
-  local cursor_data = {}
-  for line = 0, num_lines - 1 do
-    local line_data = {}
-    for column = 0, num_columns - 1 do
-      local pattern_line = song:pattern(song.selected_pattern_index).tracks[cursor_track].lines[cursor_line + line]
-      local note_column = pattern_line.note_columns[cursor_column + column]
-      table.insert(line_data, {
-        note_value = note_column.note_value,
-        instrument_value = note_column.instrument_value,
-        volume_value = note_column.volume_value,
-        panning_value = note_column.panning_value,
-        delay_value = note_column.delay_value,
-        effect_number_value = note_column.effect_number_value,
-        effect_amount_value = note_column.effect_amount_value
-      })
-    end
-    table.insert(cursor_data, line_data)
-  end
+  local target_visible_note_columns = target_track_obj.visible_note_columns
+  local target_volume_visible = target_track_obj.volume_column_visible
+  local target_panning_visible = target_track_obj.panning_column_visible
+  local target_delay_visible = target_track_obj.delay_column_visible
+  local target_samplefx_visible = target_track_obj.sample_effects_column_visible
+  local target_visible_effect_columns = target_track_obj.visible_effect_columns -- Get the visible effect columns
 
-  -- Print debug details
-  print("Selection Data:")
-  for i, line_data in ipairs(selection_data) do
-    print("Line", i + start_line - 1)
-    for j, column_data in ipairs(line_data) do
-      print("  Column", j + start_column - 1, column_data)
+  -- Determine which properties are included in the selection
+  local selection_includes_volume = false
+  local selection_includes_panning = false
+  local selection_includes_delay = false
+  local selection_includes_samplefx = false
+
+  for col = start_column, end_column do
+    if col <= source_visible_note_columns then
+      -- Note columns
+      if source_volume_visible then
+        selection_includes_volume = true
+      end
+      if source_panning_visible then
+        selection_includes_panning = true
+      end
+      if source_delay_visible then
+        selection_includes_delay = true
+      end
+    else
+      -- Sample effect columns
+      if source_samplefx_visible then
+        selection_includes_samplefx = true
+      end
     end
   end
 
-  print("Cursor Data:")
-  for i, line_data in ipairs(cursor_data) do
-    print("Line", i + cursor_line - 1)
-    for j, column_data in ipairs(line_data) do
-      print("  Column", j + cursor_column, column_data)
+  -- Adjust visibility settings in the target track based on the selection
+  local visibility_changed = false
+
+  if selection_includes_volume and not target_volume_visible then
+    target_track_obj.volume_column_visible = true
+    visibility_changed = true
+  end
+
+  if selection_includes_panning and not target_panning_visible then
+    target_track_obj.panning_column_visible = true
+    visibility_changed = true
+  end
+
+  if selection_includes_delay and not target_delay_visible then
+    target_track_obj.delay_column_visible = true
+    visibility_changed = true
+  end
+
+  if selection_includes_samplefx and not target_samplefx_visible then
+    target_track_obj.sample_effects_column_visible = true
+    visibility_changed = true
+  end
+
+  -- Adjust the target track's visible effect columns based on the selection
+  if source_visible_effect_columns > target_visible_effect_columns then
+    target_track_obj.visible_effect_columns = source_visible_effect_columns
+    visibility_changed = true
+  end
+
+  if visibility_changed then
+    renoise.app():show_status("Adjusted visibility settings for the target track.")
+  else
+    renoise.app():show_status("No visibility adjustments needed.")
+  end
+
+  -- Function to collect data from a track's pattern (including effect columns)
+  local function collect_track_data(pattern, track_index, start_line, end_line)
+    local data = {}
+    for line = start_line, end_line do
+      local line_data = {note_columns = {}, effect_columns = {}}
+      
+      -- Collect note column data
+      local pattern_line = pattern.tracks[track_index].lines[line]
+      for column = 1, renoise.song().tracks[track_index].visible_note_columns do
+        local note_column = pattern_line.note_columns[column]
+        table.insert(line_data.note_columns, {
+          note_value = note_column.note_value,
+          instrument_value = note_column.instrument_value,
+          volume_value = note_column.volume_value,
+          panning_value = note_column.panning_value,
+          delay_value = note_column.delay_value,
+          effect_number_value = note_column.effect_number_value,
+          effect_amount_value = note_column.effect_amount_value
+        })
+      end
+
+      -- Collect effect column data
+      local effect_columns = pattern_line.effect_columns
+      for i = 1, #effect_columns do
+        local effect_column = effect_columns[i]
+        table.insert(line_data.effect_columns, {
+          number_value = effect_column.number_value,
+          amount_value = effect_column.amount_value
+        })
+      end
+
+      table.insert(data, line_data)
+    end
+    return data
+  end
+
+  -- Collect data from the selection (source track)
+  local source_pattern = song:pattern(song.selected_pattern_index)
+  local selection_data = collect_track_data(
+    source_pattern, 
+    start_track, 
+    start_line, 
+    end_line
+  )
+
+  -- Collect data from the cursor block (target track)
+  local target_pattern = song:pattern(cursor_pos.sequence)
+  local cursor_data = collect_track_data(
+    target_pattern,
+    cursor_track,
+    cursor_line,
+    cursor_line + num_lines - 1
+  )
+
+  -- Function to swap data between source and target (including effect columns)
+  local function swap_data(selection_data, cursor_data, pattern, source_track, target_track, 
+                            start_line, cursor_line, num_lines)
+    for line_offset = 0, num_lines - 1 do
+      local source_line = start_line + line_offset
+      local target_line = cursor_line + line_offset
+
+      -- Swap note columns
+      local source_note_data = selection_data[line_offset + 1].note_columns
+      local target_note_data = cursor_data[line_offset + 1].note_columns
+      for column = 1, #source_note_data do
+        local source_note = pattern.tracks[source_track].lines[source_line].note_columns[column]
+        local target_note = pattern.tracks[target_track].lines[target_line].note_columns[column]
+
+        -- Swap note column properties
+        source_note.note_value, target_note.note_value = target_note.note_value, source_note.note_value
+        source_note.instrument_value, target_note.instrument_value = target_note.instrument_value, source_note.instrument_value
+        source_note.volume_value, target_note.volume_value = target_note.volume_value, source_note.volume_value
+        source_note.panning_value, target_note.panning_value = target_note.panning_value, source_note.panning_value
+        source_note.delay_value, target_note.delay_value = target_note.delay_value, source_note.delay_value
+        source_note.effect_number_value, target_note.effect_number_value = target_note.effect_number_value, source_note.effect_number_value
+        source_note.effect_amount_value, target_note.effect_amount_value = target_note.effect_amount_value, source_note.effect_amount_value
+      end
+
+      -- Swap effect columns
+      local source_effect_data = selection_data[line_offset + 1].effect_columns
+      local target_effect_data = cursor_data[line_offset + 1].effect_columns
+      for i = 1, math.min(#source_effect_data, #target_effect_data) do
+        local source_effect = pattern.tracks[source_track].lines[source_line].effect_columns[i]
+        local target_effect = pattern.tracks[target_track].lines[target_line].effect_columns[i]
+
+        -- Swap effect column properties
+        source_effect.number_value, target_effect.number_value = target_effect.number_value, source_effect.number_value
+        source_effect.amount_value, target_effect.amount_value = target_effect.amount_value, source_effect.amount_value
+      end
     end
   end
 
-  -- Swap the blocks between the selected note columns and the cursor note columns across tracks
-  for line = 0, num_lines - 1 do
-    for column = 0, num_columns - 1 do
-      local pattern_line_at_cursor = song:pattern(song.selected_pattern_index).tracks[cursor_track].lines[cursor_line + line]
-      local pattern_line_at_selection = song:pattern(song.selected_pattern_index).tracks[start_track].lines[start_line + line]
-
-      local note_column_at_cursor = pattern_line_at_cursor.note_columns[cursor_column + column]
-      local note_column_at_selection = pattern_line_at_selection.note_columns[start_column + column]
-
-      local selection_column_data = selection_data[line + 1][column + 1]
-      local cursor_column_data = cursor_data[line + 1][column + 1]
-
-      -- Swap data between the selected note columns and the cursor note columns
-      note_column_at_cursor.note_value = selection_column_data.note_value
-      note_column_at_cursor.instrument_value = selection_column_data.instrument_value
-      note_column_at_cursor.volume_value = selection_column_data.volume_value
-      note_column_at_cursor.panning_value = selection_column_data.panning_value
-      note_column_at_cursor.delay_value = selection_column_data.delay_value
-      note_column_at_cursor.effect_number_value = selection_column_data.effect_number_value
-      note_column_at_cursor.effect_amount_value = selection_column_data.effect_amount_value
-
-      note_column_at_selection.note_value = cursor_column_data.note_value
-      note_column_at_selection.instrument_value = cursor_column_data.instrument_value
-      note_column_at_selection.volume_value = cursor_column_data.volume_value
-      note_column_at_selection.panning_value = cursor_column_data.panning_value
-      note_column_at_selection.delay_value = cursor_column_data.delay_value
-      note_column_at_selection.effect_number_value = cursor_column_data.effect_number_value
-      note_column_at_selection.effect_amount_value = cursor_column_data.effect_amount_value
-    end
-  end
+  -- Perform the swap
+  swap_data(
+    selection_data,
+    cursor_data,
+    target_pattern,
+    start_track,
+    cursor_track,
+    start_line,
+    cursor_line,
+    num_lines
+  )
 
   renoise.app():show_status("Blocks swapped successfully.")
 end
 
 -- Add the keybinding for the ALT-Y action
-renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker ALT-Y Swap Block",invoke=PakettiImpulseTrackerSwapBlock}
+renoise.tool():add_keybinding{name = "Global:Paketti:Impulse Tracker ALT-Y Swap Block", invoke = PakettiImpulseTrackerSwapBlock}
+
+
+
+
+
+
 -----------
 
 -- Move to the next track, maintaining column type, with wrapping.
@@ -1478,3 +1652,153 @@ renoise.tool():add_midi_mapping{name="Paketti:Move to Previous Track [Knob]", in
     PakettiImpulseTrackerMoveBackwardsTrack()
   end
 end}
+
+
+---------
+local already_interpolated = false
+
+-- Main function triggered by the keybinding
+local function alt_x_functionality()
+  local s = renoise.song()
+
+  -- Retrieve selection bounds
+  local selection = s.selection_in_pattern
+  if not selection then
+    renoise.app():show_status("No selection in pattern.")
+    return
+  end
+
+  local start_track = selection.start_track
+  local end_track = selection.end_track
+  local start_line = selection.start_line
+  local end_line = selection.end_line
+  local start_column = selection.start_column
+  local end_column = selection.end_column
+
+  -- Get current track and pattern
+  local track_index = s.selected_track_index
+  local track = s:track(track_index)
+  local pattern_track = s:pattern(s.selected_pattern_index):track(track_index)
+
+  -- Retrieve visible columns
+  local visible_note_columns = track.visible_note_columns
+  local visible_effect_columns = track.visible_effect_columns
+
+  -- Calculate effect column bounds for the selected area
+  local effect_column_start = math.max(1, start_column - visible_note_columns)
+  local effect_column_end = math.min(visible_effect_columns, end_column - visible_note_columns)
+
+  -- Function to calculate interpolation values
+  local function calculate_interpolation_values()
+    local first_effect_line = pattern_track:line(start_line).effect_columns
+    local last_effect_line = pattern_track:line(end_line).effect_columns
+    local interpolated_values = {}
+
+    for i = effect_column_start, effect_column_end do
+      local first_value = tonumber(first_effect_line[i].amount_value)
+      local last_value = tonumber(last_effect_line[i].amount_value)
+      if first_value and last_value then
+        interpolated_values[i] = {}
+        for line_index = start_line, end_line do
+          local t = (line_index - start_line) / (end_line - start_line)
+          local interpolated_value = math.floor(first_value + t * (last_value - first_value))
+          interpolated_values[i][line_index] = interpolated_value
+        end
+      end
+    end
+
+    return interpolated_values
+  end
+
+  -- Function to read current pattern content in selection
+  local function read_current_content()
+    local current_values = {}
+
+    for i = effect_column_start, effect_column_end do
+      current_values[i] = {}
+      for line_index = start_line, end_line do
+        local line = pattern_track:line(line_index)
+        local effect_column = line:effect_column(i)
+        current_values[i][line_index] = tonumber(effect_column.amount_value) or -1
+      end
+    end
+
+    return current_values
+  end
+
+  -- Function to compare current content with calculated interpolation
+  local function content_matches_interpolation(current_values, interpolated_values)
+    for i = effect_column_start, effect_column_end do
+      if interpolated_values[i] then
+        for line_index = start_line, end_line do
+          if current_values[i][line_index] ~= interpolated_values[i][line_index] then
+            return false -- If any value differs, it's not a match
+          end
+        end
+      end
+    end
+    return true -- All values match
+  end
+
+  -- Function to interpolate effect columns
+  local function apply_interpolation(interpolated_values)
+    local first_effect_line = pattern_track:line(start_line).effect_columns
+
+    for i = effect_column_start, effect_column_end do
+      if interpolated_values[i] then
+        for line_index = start_line, end_line do
+          local line = pattern_track:line(line_index)
+          line.effect_columns[i].number_value = first_effect_line[i].number_value
+          line.effect_columns[i].amount_value = interpolated_values[i][line_index]
+        end
+      end
+    end
+
+    renoise.app():show_status("Effect column parameters interpolated.")
+    already_interpolated = true -- Mark as interpolated
+  end
+
+  -- Function to wipe effect columns
+  local function clear_effect_columns()
+    for line_index = start_line, end_line do
+      local line = pattern_track:line(line_index)
+      if not line.is_empty then
+        for effect_column_index = effect_column_start, effect_column_end do
+          line:effect_column(effect_column_index):clear()
+        end
+      end
+    end
+    renoise.app():show_status("Effect columns cleared.")
+    already_interpolated = false -- Reset flag after clearing
+  end
+
+  -- Main logic:
+  -- 1. Read the current content in the selection
+  -- 2. Calculate the interpolation
+  -- 3. If the content matches the interpolation, wipe it; otherwise, interpolate
+
+  local current_values = read_current_content()
+  local interpolated_values = calculate_interpolation_values()
+
+  if content_matches_interpolation(current_values, interpolated_values) then
+    -- If the content matches the interpolation, wipe it
+    clear_effect_columns()
+  else
+    -- Otherwise, apply the interpolation
+    apply_interpolation(interpolated_values)
+  end
+
+  -- After the script is run, set focus back to the middle frame
+  renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
+end
+
+-- Add keybinding to trigger the functionality
+renoise.tool():add_keybinding {
+  name = "Global:Tools:ALT-X *2 (Interpolate and Clear Effect Columns)",
+  invoke = function()
+    alt_x_functionality()
+  end
+}
+
+
+

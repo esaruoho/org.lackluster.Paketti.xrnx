@@ -1227,10 +1227,89 @@ end
 
 -- Add menu entry, keybinding, and MIDI mapping for the toggle solo tracks function
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Toggle Solo Tracks",invoke=PakettiToggleSoloTracks}
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Toggle Solo Tracks",invoke=PakettiToggleSoloTracks}
+renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Toggle Solo Tracks",invoke=PakettiToggleSoloTracks}
 renoise.tool():add_keybinding{name="Global:Paketti:Toggle Solo Tracks",invoke=PakettiToggleSoloTracks}
 renoise.tool():add_midi_mapping{name="Paketti:Toggle Solo Tracks",invoke=PakettiToggleSoloTracks}
 
+-- Define the function to toggle mute state
+function toggle_mute_tracks()
+  -- Get the current song
+  local song = renoise.song()
+
+  -- Determine the range of selected tracks
+  local selection = song.selection_in_pattern
+
+  -- Check if there is a valid selection
+  local start_track, end_track
+  if selection then
+    start_track = selection.start_track
+    end_track = selection.end_track
+  end
+
+  -- If no specific selection is made, operate on the currently selected track
+  if not start_track or not end_track then
+    start_track = song.selected_track_index
+    end_track = song.selected_track_index
+  end
+
+  -- Check if any track in the selection is muted, ignoring the master track
+  local any_track_muted = false
+  for track_index = start_track, end_track do
+    local track = song:track(track_index)
+    if track.type ~= renoise.Track.TRACK_TYPE_MASTER and track.mute_state == renoise.Track.MUTE_STATE_ACTIVE then
+      any_track_muted = true
+      break
+    end
+  end
+
+  -- Determine the desired mute state for all tracks
+  local new_mute_state
+  if any_track_muted then
+    new_mute_state = renoise.Track.MUTE_STATE_OFF
+  else
+    new_mute_state = renoise.Track.MUTE_STATE_ACTIVE
+  end
+
+  -- Iterate over the range of tracks and set the new mute state, ignoring the master track
+  for track_index = start_track, end_track do
+    local track = song:track(track_index)
+    if track.type ~= renoise.Track.TRACK_TYPE_MASTER then
+      track.mute_state = new_mute_state
+    end
+  end
+
+  -- Additionally, handle groups if they are within the selected range
+  for track_index = start_track, end_track do
+    local track = song:track(track_index)
+    if track.type == renoise.Track.TRACK_TYPE_GROUP then
+      local group = track.group_parent
+      if group then
+        -- Set the mute state for the group and its member tracks, ignoring the master track
+        set_group_mute_state(group, new_mute_state)
+      end
+    end
+  end
+end
+
+-- Helper function to set mute state for a group and its member tracks
+function set_group_mute_state(group, mute_state)
+  -- Ensure we don't attempt to mute the master track
+  if group.type ~= renoise.Track.TRACK_TYPE_MASTER then
+    group.mute_state = mute_state
+  end
+
+  -- Set mute state for all member tracks of the group, ignoring the master track
+  for _, track in ipairs(group.members) do
+    if track.type ~= renoise.Track.TRACK_TYPE_MASTER then
+      track.mute_state = mute_state
+    end
+  end
+end
+
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Toggle Mute Tracks",invoke=toggle_mute_tracks}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Toggle Mute Tracks",invoke=toggle_mute_tracks}
+renoise.tool():add_keybinding{name="Global:Paketti:Toggle Mute Tracks",invoke=toggle_mute_tracks}
+renoise.tool():add_midi_mapping{name="Paketti:Toggle Mute Tracks",invoke=toggle_mute_tracks}
 
 
 
@@ -1928,8 +2007,8 @@ renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Slide Selected Column
 renoise.tool():add_midi_mapping{name="Paketti:Slide Selected Column Content Down",invoke=PakettiImpulseTrackerSlideDown}
 renoise.tool():add_midi_mapping{name="Paketti:Slide Selected Column Content Up",invoke=PakettiImpulseTrackerSlideUp}
 
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Slide Selected Column Content Down",invoke=PakettiImpulseTrackerSlideDown}
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Slide Selected Column Content Up",invoke=PakettiImpulseTrackerSlideUp}
+renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Other Trackers..:Slide Selected Column Content Down",invoke=PakettiImpulseTrackerSlideDown}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Other Trackers..:Slide Selected Column Content Up",invoke=PakettiImpulseTrackerSlideUp}
 
 
 
@@ -2043,8 +2122,8 @@ function PakettiImpulseTrackerSlideTrackUp()
   PakettiImpulseTrackerSlideTrackCopyEffectColumns(first_row_effect_columns, last_line.effect_columns)
 end
 
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Slide Selected Track Content Down",invoke=PakettiImpulseTrackerSlideTrackDown}
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Slide Selected Track Content Up",invoke=PakettiImpulseTrackerSlideTrackUp}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Other Trackers..:Slide Selected Track Content Down",invoke=PakettiImpulseTrackerSlideTrackDown}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Other Trackers..:Slide Selected Track Content Up",invoke=PakettiImpulseTrackerSlideTrackUp}
 
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Slide Selected Track Content Up",invoke=PakettiImpulseTrackerSlideTrackUp}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Slide Selected Track Content Down",invoke=PakettiImpulseTrackerSlideTrackDown}
@@ -2528,8 +2607,8 @@ end
 --
 --end
 --renoise.tool():add_keybinding{name="Global:Paketti:Stair", invoke=function() stairs() end}
-renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Bypass All Devices on Channel", invoke=function() effectbypass() end}
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Enable All Devices on Channel", invoke=function() effectenable() end}
+renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Devices..:Bypass All Devices on Channel", invoke=function() effectbypass() end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Devices..:Enable All Devices on Channel", invoke=function() effectenable() end}
 ----------------------------
 
 -- has-line-input + add-line-input
@@ -3050,9 +3129,8 @@ function PakettiCreateUnisonSamples()
     song:insert_instrument_at(new_instrument_index)
     song.selected_instrument_index = new_instrument_index
     local new_instrument = renoise.song().selected_instrument
-     
     pakettiPreferencesDefaultInstrumentLoader()
-    
+   
     if preferences.pakettiPitchbendLoaderEnvelope.value then
 renoise.song().selected_instrument.sample_modulation_sets[1].devices[2].is_active = true else end
 

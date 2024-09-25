@@ -1747,10 +1747,7 @@ function appSelectionCreateMenuEntries()
 local app_name = app_path:match("([^/\\]+)%.app$") or app_path:match("([^/\\]+)$")
       local menu_entry_name = "Instrument Box:Paketti..:Launch App..:Launch App "..i.." "..app_name
       if not renoise.tool():has_menu_entry(menu_entry_name) then
-        renoise.tool():add_menu_entry{
-          name=menu_entry_name,
-          invoke=function() appSelectionLaunchApp(app_path) end
-        }
+        renoise.tool():add_menu_entry{name=menu_entry_name, invoke=function() appSelectionLaunchApp(app_path) end}
         table.insert(added_menu_entries, menu_entry_name)
       end
 
@@ -1762,6 +1759,23 @@ local app_name = app_path:match("([^/\\]+)%.app$") or app_path:match("([^/\\]+)$
         }
         table.insert(added_menu_entries, menu_entry_name)
       end
+      menu_entry_name = "Sample Navigator:Paketti..:Launch App:Launch App "..i.." "..app_name
+      if not renoise.tool():has_menu_entry(menu_entry_name) then
+        renoise.tool():add_menu_entry{
+          name=menu_entry_name,
+          invoke=function() appSelectionLaunchApp(app_path) end
+        }
+        table.insert(added_menu_entries, menu_entry_name)
+      end
+      menu_entry_name = "Sample Editor:Paketti..:Launch App:Launch App "..i.." "..app_name
+      if not renoise.tool():has_menu_entry(menu_entry_name) then
+        renoise.tool():add_menu_entry{
+          name=menu_entry_name,
+          invoke=function() appSelectionLaunchApp(app_path) end
+        }
+        table.insert(added_menu_entries, menu_entry_name)
+      end
+
     end
   end
 

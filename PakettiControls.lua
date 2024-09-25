@@ -176,7 +176,7 @@ function PakettiTranspose(steps)
   -- Iterate through each track in the determined range
   for track_index = start_track, end_track do
     local track = song:track(track_index)
-    
+
     if track.type == renoise.Track.TRACK_TYPE_SEQUENCER then
       local track_pattern = pattern:track(track_index)
 
@@ -188,7 +188,10 @@ function PakettiTranspose(steps)
         for column_index = start_column, end_column do
           local note_column = line:note_column(column_index)
           if not note_column.is_empty then
-            note_column.note_value = (note_column.note_value + steps) % 120
+            -- Skip transposing if note_value is 120 or 121
+            if note_column.note_value < 120 then
+              note_column.note_value = (note_column.note_value + steps) % 120
+            end
           end
         end
       end
@@ -204,20 +207,12 @@ renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Transpose +1 (Selecti
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Transpose -1 (Selection/Track)",invoke=function() PakettiTranspose(-1) end}
 
 --------------
--- Function to transpose notes in selected note columns or current note column
--- Function to transpose notes in selected note columns or current note column
 function PakettiTransposeNoteColumn(steps)
   local song = renoise.song()
   local selection = song.selection_in_pattern
   local pattern = song.selected_pattern
 
-  -- Check if the cursor is in an effect column
-  if song.selected_note_column == nil then
-    renoise.app():show_status("You are in the Effect Column, nothing to transpose, exiting.")
-    return
-  end
-
-  -- Determine the range to transpose
+  -- Determine the range to transpose based on selection
   local start_track, end_track, start_line, end_line, start_column, end_column
 
   if selection ~= nil then
@@ -238,17 +233,25 @@ function PakettiTransposeNoteColumn(steps)
 
   -- Iterate through each track in the determined range
   for track_index = start_track, end_track do
-    local track = pattern:track(track_index)
+    local track = song:track(track_index)
+    local track_pattern = pattern:track(track_index)
+
+    -- Set the column range for each track based on the selection
+    local first_column = (track_index == start_track) and start_column or 1
+    local last_column = (track_index == end_track) and end_column or track.visible_note_columns
 
     -- Iterate through each line in the determined range
     for line_index = start_line, end_line do
-      local line = track:line(line_index)
+      local line = track_pattern:line(line_index)
 
-      -- Iterate through each note column in the line within the determined range
-      for column_index = start_column, end_column do
+      -- Iterate through each note column within the selected column range
+      for column_index = first_column, last_column do
         local note_column = line:note_column(column_index)
         if not note_column.is_empty then
-          note_column.note_value = (note_column.note_value + steps) % 120
+          -- Skip transposing if note_value is 120 or 121
+          if note_column.note_value < 120 then
+            note_column.note_value = (note_column.note_value + steps) % 120
+          end
         end
       end
     end
@@ -260,6 +263,7 @@ renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Transpose Octave Up N
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Transpose Octave Down Note Column (Selection/Note Column)",invoke=function() PakettiTransposeNoteColumn(-12) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Transpose +1 Note Column (Selection/Note Column)",invoke=function() PakettiTransposeNoteColumn(1) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Transpose -1 Note Column (Selection/Note Column)",invoke=function() PakettiTransposeNoteColumn(-1) end}
+
 
 
 ---------
@@ -430,86 +434,19 @@ end
 renoise.tool():add_keybinding{name="Global:Paketti:Select LoopBlock Backwards (Previous)", invoke=function() loopblockback() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Select LoopBlock Forwards (Next)", invoke=function() loopblockforward() end}
 --------
--- Define the function to toggle mute state
-function toggle_mute_tracks()
-  -- Get the current song
-  local song = renoise.song()
-
-  -- Determine the range of selected tracks
-  local selection = song.selection_in_pattern
-
-  -- Check if there is a valid selection
-  local start_track, end_track
-  if selection then
-    start_track = selection.start_track
-    end_track = selection.end_track
-  end
-
-  -- If no specific selection is made, operate on the currently selected track
-  if not start_track or not end_track then
-    start_track = song.selected_track_index
-    end_track = song.selected_track_index
-  end
-
-  -- Check if any track in the selection is muted, ignoring the master track
-  local any_track_muted = false
-  for track_index = start_track, end_track do
-    local track = song:track(track_index)
-    if track.type ~= renoise.Track.TRACK_TYPE_MASTER and track.mute_state == renoise.Track.MUTE_STATE_ACTIVE then
-      any_track_muted = true
-      break
-    end
-  end
-
-  -- Determine the desired mute state for all tracks
-  local new_mute_state
-  if any_track_muted then
-    new_mute_state = renoise.Track.MUTE_STATE_OFF
-  else
-    new_mute_state = renoise.Track.MUTE_STATE_ACTIVE
-  end
-
-  -- Iterate over the range of tracks and set the new mute state, ignoring the master track
-  for track_index = start_track, end_track do
-    local track = song:track(track_index)
-    if track.type ~= renoise.Track.TRACK_TYPE_MASTER then
-      track.mute_state = new_mute_state
-    end
-  end
-
-  -- Additionally, handle groups if they are within the selected range
-  for track_index = start_track, end_track do
-    local track = song:track(track_index)
-    if track.type == renoise.Track.TRACK_TYPE_GROUP then
-      local group = track.group_parent
-      if group then
-        -- Set the mute state for the group and its member tracks, ignoring the master track
-        set_group_mute_state(group, new_mute_state)
-      end
-    end
-  end
-end
-
--- Helper function to set mute state for a group and its member tracks
-function set_group_mute_state(group, mute_state)
-  -- Ensure we don't attempt to mute the master track
-  if group.type ~= renoise.Track.TRACK_TYPE_MASTER then
-    group.mute_state = mute_state
-  end
-
-  -- Set mute state for all member tracks of the group, ignoring the master track
-  for _, track in ipairs(group.members) do
-    if track.type ~= renoise.Track.TRACK_TYPE_MASTER then
-      track.mute_state = mute_state
-    end
-  end
-end
-
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Toggle Mute Tracks",invoke=toggle_mute_tracks}
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Toggle Mute Tracks",invoke=toggle_mute_tracks}
-renoise.tool():add_keybinding{name="Global:Paketti:Toggle Mute Tracks",invoke=toggle_mute_tracks}
-renoise.tool():add_midi_mapping{name="Paketti:Toggle Mute Tracks",invoke=toggle_mute_tracks}
 ---------
 
+local function set_edit_step(value)
+  renoise.song().transport.edit_step=value
+--  renoise.app():show_status("Edit Step set to " .. tostring(value))
+end
+
+-- Keybinding definitions from 00 to 64
+for i=0,64 do
+  renoise.tool():add_keybinding {
+    name=string.format("Global:Paketti:Set EditStep to %02d", i),
+    invoke=function() set_edit_step(i) end
+  }
+end
 
 

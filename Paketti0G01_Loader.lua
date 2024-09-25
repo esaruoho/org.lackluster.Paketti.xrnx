@@ -1,7 +1,7 @@
 local dialog
 local vb = renoise.ViewBuilder()
 local initial_value = nil
-
+local dialog = nil
 local function my_keyhandler_func(dialog, key)
   if not (key.modifiers == "" and key.name == "exclamation") then
     return key
@@ -53,9 +53,6 @@ end
 
 -- Main Preferences Document with Segments
 preferences = renoise.Document.create("ScriptingToolPreferences") {
-  -- General Settings
-  
-  -- no changes required
   upperFramePreference=0,
   _0G01_Loader=false,
   RandomBPM=false,
@@ -85,19 +82,19 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
   pakettiDefaultXRNI="Presets/12st_Pitchbend.xrni",
   pakettiDefaultDrumkitXRNI="Presets/12st_Pitchbend_Drumkit_C0.xrni",
 
-    UserPreferences = {
-      userPreferredDevice01 = "<None>",
-      userPreferredDevice02 = "<None>",
-      userPreferredDevice03 = "<None>",
-      userPreferredDevice04 = "<None>",
-      userPreferredDevice05 = "<None>",
-      userPreferredDevice06 = "<None>",
-      userPreferredDevice07 = "<None>",
-      userPreferredDevice08 = "<None>",
-      userPreferredDevice09 = "<None>",
-      userPreferredDevice10 = "<None>",
-      userPreferredDeviceLoad = true
-    },
+  UserPreferences = {
+    userPreferredDevice01 = "<None>",
+    userPreferredDevice02 = "<None>",
+    userPreferredDevice03 = "<None>",
+    userPreferredDevice04 = "<None>",
+    userPreferredDevice05 = "<None>",
+    userPreferredDevice06 = "<None>",
+    userPreferredDevice07 = "<None>",
+    userPreferredDevice08 = "<None>",
+    userPreferredDevice09 = "<None>",
+    userPreferredDevice10 = "<None>",
+    userPreferredDeviceLoad = true
+  },
   -- WipeSlices Segment
   WipeSlices = {
     WipeSlicesLoopMode=2,
@@ -148,23 +145,20 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
   },
 
   OctaMEDPickPutSlots = {
-  SetSelectedInstrument=false,
-  UseEditStep=false,
-  
-   Slot01="",
-   Slot02="",
-   Slot03="",
-   Slot04="",
-   Slot05="",
-   Slot06="",
-   Slot07="",
-   Slot08="",
-   Slot09="",
-   Slot10=""
-   },
+    SetSelectedInstrument=false,
+    UseEditStep=false,
+    Slot01="",
+    Slot02="",
+    Slot03="",
+    Slot04="",
+    Slot05="",
+    Slot06="",
+    Slot07="",
+    Slot08="",
+    Slot09="",
+    Slot10=""
+  },
 
--- done
-  -- Randomize Settings Segment
   RandomizeSettings = {
     pakettiRandomizeSelectedDevicePercentage=50,
     pakettiRandomizeSelectedDevicePercentageUserPreference1=10,
@@ -191,8 +185,6 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
     pakettiRandomizeAllPluginsPercentageUserPreference4=40,
     pakettiRandomizeAllPluginsPercentageUserPreference5=50
   },
--- done
-  -- Paketti Coluga Segment
   pakettiColuga = {
     pakettiColugaLoopMode=2,
     pakettiColugaClipLength=10,
@@ -202,36 +194,34 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
     pakettiColugaFormatToSave=1,
     pakettiColugaPathToSave="<No path set>",
     pakettiColugaNewInstrumentOrSameInstrument=true,
-    pakettiColugaYT_DLPLocation="<No path set>"
-  
+    pakettiColugaYT_DLPLocation="<No path set>"  
   },
   
   pakettiCheatSheet = {
-  pakettiCheatSheetRandomize=false,
-  pakettiCheatSheetRandomizeMin=0,
-  pakettiCheatSheetRandomizeMax=255,
-  pakettiCheatSheetFillAll=100,
-  pakettiCheatSheetRandomizeWholeTrack=false,
-  pakettiCheatSheetRandomizeSwitch=false,
-  pakettiCheatSheetRandomizeDontOverwrite=false
+    pakettiCheatSheetRandomize=false,
+    pakettiCheatSheetRandomizeMin=0,
+    pakettiCheatSheetRandomizeMax=255,
+    pakettiCheatSheetFillAll=100,
+    pakettiCheatSheetRandomizeWholeTrack=false,
+    pakettiCheatSheetRandomizeSwitch=false,
+    pakettiCheatSheetRandomizeDontOverwrite=false
 }, 
 
-pakettiPhraseInitDialog = {
-
-  Autoseek = false,
-  VolumeColumnVisible = false,
-  PanningColumnVisible = false,
-  InstrumentColumnVisible = false,
-  DelayColumnVisible = false,
-  SampleFXColumnVisible = false,
-  NoteColumns = 1,
-  EffectColumns = 0,
-  Shuffle = 0,
-  LPB = 4,
-  Length = 64,
-  SetName = false,
-  Name = ""
-  }
+  pakettiPhraseInitDialog = {
+    Autoseek = false,
+    VolumeColumnVisible = false,
+    PanningColumnVisible = false,
+    InstrumentColumnVisible = false,
+    DelayColumnVisible = false,
+    SampleFXColumnVisible = false,
+    NoteColumns = 1,
+    EffectColumns = 0,
+    Shuffle = 0,
+    LPB = 4,
+    Length = 64,
+    SetName = false,
+    Name = ""
+    }
 }
 
 -- Assigning Preferences to renoise.tool
@@ -245,7 +235,7 @@ AppSelection = renoise.tool().preferences.AppSelection
 RandomizeSettings = renoise.tool().preferences.RandomizeSettings
 pakettiColuga = renoise.tool().preferences.pakettiColuga
 
-
+--[[
   local threshold_label = vb:text {
     text = string.format("%.3f%%", preferences.PakettiStripSilenceThreshold.value * 100), width=100
   }
@@ -253,7 +243,7 @@ pakettiColuga = renoise.tool().preferences.pakettiColuga
   local begthreshold_label = vb:text {
     text = string.format("%.3f%%", preferences.PakettiMoveSilenceThreshold.value * 100), width=100
   }
-
+]]--
 
 
 local filter_types = {
@@ -267,7 +257,7 @@ local filter_types = {
 local function get_filter_type_index(filter_type)
   for i, v in ipairs(filter_types) do
     if v == filter_type then
-      print("Found filter type:", filter_type, "at index:", i)
+      print("Found filter type: " .. filter_type .. " at index: " .. i)
       return i -- Return the index if found
     end
   end
@@ -285,7 +275,7 @@ end
 --print("Initial filter type:", preferences.pakettiLoaderFilterType.value)  -- Should be "LP Clean"
 --print("Initial popup index:", initial_value)  -- Should be the correct index for "LP Clean"
 
-function load_preferences()
+function load_Pakettipreferences()
   if io.exists("preferences.xml") then
     preferences:load_from("preferences.xml")
   end
@@ -347,9 +337,21 @@ function create_loop_mode_switch(preference)
   }
 end
 
+local dialog_content = nil
 function show_paketti_preferences()
+local threshold_label = vb:text {
+    text = string.format("%.3f%%", preferences.PakettiStripSilenceThreshold.value * 100), width=100
+  }
+
+  local begthreshold_label = vb:text {
+    text = string.format("%.3f%%", preferences.PakettiMoveSilenceThreshold.value * 100), width=100
+  }
+
+
+
+
 local upperbuttonwidth=160
-    if dialog and dialog.visible then dialog:close() dialog=nil return
+    if dialog and dialog.visible then dialog_content=nil dialog:close() return
      end
  -- Get the initial value (index) for the popup
  if preferences.pakettiLoaderFilterType.value ~= nil then
@@ -481,13 +483,12 @@ horizontal_rule(),
   vb:text{style = "strong", font = "bold", text = "Silence Settings"},
 
   -- First row for Strip Silence Threshold
-  vb:row {
-    vb:text {text = "Strip Silence Threshold:", width = 150},
-    vb:minislider {
-      min = 0,
-      max = 1,
-      value = preferences.PakettiStripSilenceThreshold.value,
-      width = 200,
+  vb:row {vb:text{text="Strip Silence Threshold:", width=150},
+    vb:minislider{
+      min=0,
+      max=1,
+      value=preferences.PakettiStripSilenceThreshold.value,
+      width=200,
       notifier = function(value)
         threshold_label.text = string.format("%.3f%%", value * 100) -- Update the label
         preferences.PakettiStripSilenceThreshold.value = value
@@ -555,7 +556,13 @@ horizontal_rule(),
         vb:row { vb:text{text="Loop Mode",width=150},create_loop_mode_switch(preferences.pakettiLoaderLoopMode) },
         vb:row { vb:text{text="Loop Release/Exit Mode",width=150},vb:checkbox{value=preferences.pakettiLoaderLoopExit.value,notifier=function(value) preferences.pakettiLoaderLoopExit.value=value end} },
         vb:row { vb:text{text="Enable AHDSR Envelope",width=150},vb:checkbox{value=preferences.pakettiPitchbendLoaderEnvelope.value,notifier=function(value) preferences.pakettiPitchbendLoaderEnvelope.value=value end} },
-        vb:row { vb:text{text="FilterType",width=150},vb:popup{items=filter_types,value=initial_value,width=200,notifier=function(value) preferences.pakettiLoaderFilterType.value=filter_types[value] preferences:save_as("preferences.xml") end} },
+        vb:row { vb:text{text="FilterType",width=150},vb:popup{items=filter_types,value=initial_value,width=200,notifier=function(value) preferences.pakettiLoaderFilterType.value=filter_types[value] 
+        print (value)
+        print (preferences.pakettiLoaderFilterType.value)
+        
+        
+        
+        preferences:save_as("preferences.xml") end} },
 --[[        vb:row { vb:text{text="Default XRNI to use:",width=150},vb:textfield{text=preferences.pakettiDefaultXRNI.value:match("[^/\\]+$"),width=300,id=pakettiDefaultXRNIDisplayId,notifier=function(value) preferences.pakettiDefaultXRNI.value=value end},vb:button{text="Browse",width=100,notifier=function()
           local filePath=renoise.app():prompt_for_filename_to_read({"*.XRNI"},"Paketti Default XRNI Selector Dialog")
           if filePath and filePath~="" then preferences.pakettiDefaultXRNI.value=filePath vb.views[pakettiDefaultXRNIDisplayId].text=filePath:match("[^/\\]+$") else renoise.app():show_status("No XRNI Instrument was selected") end end} },
@@ -634,7 +641,11 @@ vb:row {
 
   -- Bottom Buttons
   vb:horizontal_aligner { mode="distribute",
-    vb:button{text="OK",width="50%",notifier=function() preferences:save_as("preferences.xml"); dialog:close() end},
+    vb:button{text="OK",width="50%",notifier=function() preferences:save_as("preferences.xml"); 
+    print (preferences.pakettiDefaultXRNI.value)
+    print (preferences.pakettiLoaderFilterType.value)
+    
+    dialog:close() end},
     vb:button{text="Cancel",width="50%",notifier=function() dialog:close() end}
   }
 }
@@ -727,7 +738,7 @@ function safe_initialize()
     if not renoise.tool().app_idle_observable:has_notifier(initialize_tool) then
         renoise.tool().app_idle_observable:add_notifier(initialize_tool)
     end
-    load_preferences()
+    load_Pakettipreferences()
 end
 
 safe_initialize()

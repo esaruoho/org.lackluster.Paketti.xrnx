@@ -343,7 +343,6 @@ end
 
 renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Create Phrase",invoke=function() createPhrase() end}
 renoise.tool():add_menu_entry{name="--Sample Editor:Paketti..:Create Phrase",invoke=function() createPhrase() end}
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Create Phrase",invoke=function() createPhrase() end}
 
 --------
 function phraseEditorVisible()

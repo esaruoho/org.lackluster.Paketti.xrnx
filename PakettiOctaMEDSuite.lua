@@ -504,5 +504,5 @@ end
 
 -- Register the main keyboard shortcut and menu entry for the dialog
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti..:OctaMED Pick/Put Dialog",invoke=function() toggle_paketti_pick_dialog() end}
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:OctaMED Pick/Put Dialog",invoke=function() toggle_paketti_pick_dialog() end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Other Trackers..:OctaMED Pick/Put Dialog",invoke=function() toggle_paketti_pick_dialog() end}
 

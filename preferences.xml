@@ -18,7 +18,7 @@
     <speed>201</speed>
   </pakettiReSpeak>
   <pakettiLoaderInterpolation>4</pakettiLoaderInterpolation>
-  <pakettiDefaultXRNI>Presets/12st_Pitchbend.xrni</pakettiDefaultXRNI>
+  <pakettiDefaultXRNI>12st_Pitchbend.xrni</pakettiDefaultXRNI>
   <loadPaleGreenTheme>false</loadPaleGreenTheme>
   <RandomizeSettings>
     <pakettiRandomizeAllDevicesPercentageUserPreference1>2.5806451612903225</pakettiRandomizeAllDevicesPercentageUserPreference1>
@@ -62,16 +62,16 @@
     <WipeSlicesNNA>1.0</WipeSlicesNNA>
   </WipeSlices>
   <pakettiCheatSheet>
-    <pakettiCheatSheetRandomizeMax>8.9160839160839238</pakettiCheatSheetRandomizeMax>
-    <pakettiCheatSheetRandomizeMin>0.0</pakettiCheatSheetRandomizeMin>
+    <pakettiCheatSheetRandomizeMax>147.11538461538461</pakettiCheatSheetRandomizeMax>
+    <pakettiCheatSheetRandomizeMin>91.835664335664333</pakettiCheatSheetRandomizeMin>
     <pakettiCheatSheetRandomizeDontOverwrite>false</pakettiCheatSheetRandomizeDontOverwrite>
-    <pakettiCheatSheetRandomizeWholeTrack>false</pakettiCheatSheetRandomizeWholeTrack>
-    <pakettiCheatSheetRandomizeSwitch>false</pakettiCheatSheetRandomizeSwitch>
+    <pakettiCheatSheetRandomizeWholeTrack>true</pakettiCheatSheetRandomizeWholeTrack>
+    <pakettiCheatSheetRandomizeSwitch>true</pakettiCheatSheetRandomizeSwitch>
     <pakettiCheatSheetRandomize>true</pakettiCheatSheetRandomize>
-    <pakettiCheatSheetFillAll>83</pakettiCheatSheetFillAll>
+    <pakettiCheatSheetFillAll>58</pakettiCheatSheetFillAll>
   </pakettiCheatSheet>
   <renderSampleRate>88200</renderSampleRate>
-  <pakettiLoaderFilterType>LP Moog</pakettiLoaderFilterType>
+  <pakettiLoaderFilterType>LP Clean</pakettiLoaderFilterType>
   <pakettiLoaderOverSampling>true</pakettiLoaderOverSampling>
   <UserPreferences>
     <userPreferredDevice05>Audio/Effects/AU/aufx:dLay:oDin</userPreferredDevice05>
@@ -89,7 +89,7 @@
   <selectionNewInstrumentAutoFade>true</selectionNewInstrumentAutoFade>
   <upperFramePreference>0.0</upperFramePreference>
   <pakettiLoaderOneshot>false</pakettiLoaderOneshot>
-  <selectionNewInstrumentSelect>false</selectionNewInstrumentSelect>
+  <selectionNewInstrumentSelect>true</selectionNewInstrumentSelect>
   <pakettiPhraseInitDialog>
     <NoteColumns>1.0</NoteColumns>
     <LPB>4</LPB>
@@ -153,8 +153,21 @@
       <Favorited>Osi-BladeRunner</Favorited>
       <Favorited>Osi-TheBlueBrandy</Favorited>
       <Favorited>Osi-TrackerHacker</Favorited>
+      <Favorited>mango-theme</Favorited>
+      <Favorited>Textured</Favorited>
+      <Favorited>BW</Favorited>
+      <Favorited>Zero-G-Inverted</Favorited>
+      <Favorited>Basic Light Theme</Favorited>
+      <Favorited>Breed</Favorited>
+      <Favorited>Xan-Neon</Favorited>
+      <Favorited>sea dragon</Favorited>
+      <Favorited>Brown #12</Favorited>
+      <Favorited>Willingly (Jr‚tion)</Favorited>
+      <Favorited>Black and Pink</Favorited>
+      <Favorited>Sononoise-Dark</Favorited>
+      <Favorited>Orange biology</Favorited>
     </FavoritedList>
-    <RenoiseLaunchFavoritesLoad>false</RenoiseLaunchFavoritesLoad>
+    <RenoiseLaunchFavoritesLoad>true</RenoiseLaunchFavoritesLoad>
     <RenoiseLaunchRandomLoad>false</RenoiseLaunchRandomLoad>
     <PreviousSelectedTheme>Darkness A</PreviousSelectedTheme>
   </pakettiThemeSelector>

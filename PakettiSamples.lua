@@ -439,6 +439,7 @@ end
 -------------
 
 function pakettiPreferencesDefaultInstrumentLoader()
+print (preferences.pakettiDefaultXRNI.value)
   local defaultInstrument = preferences.pakettiDefaultXRNI.value
   local fallbackInstrument = "Presets/12st_Pitchbend.xrni"
 
@@ -581,11 +582,13 @@ function pitchBendDrumkitLoader()
   end
 
   -- Load the *Instr. Macros device and rename it
+if renoise.song().selected_track.type == 2 then renoise.app():show_status("*Instr. Macro Device will not be added to the Master track.") return else
   loadnative("Audio/Effects/Native/*Instr. Macros")
+  
   local macro_device = song.selected_track:device(2)
   macro_device.display_name = instrument_name_prefix
   song.selected_track.devices[2].is_maximized = false
-
+end
   -- Additional actions after loading samples
   on_sample_count_change()
   -- showAutomation()
@@ -799,10 +802,12 @@ function pitchBendMultipleSampleLoader(normalize)
         G01()
 if normalize then normalize_selected_sample() end
 
-        loadnative("Audio/Effects/Native/*Instr. Macros")
+if renoise.song().selected_track.type == 2 then renoise.app():show_status("*Instr. Macro Device will not be added to the Master track.") return else
+        loadnative("Audio/Effects/Native/*Instr. Macros") 
         local macro_device = renoise.song().selected_track:device(2)
         macro_device.display_name = string.format("%s_%s", instrument_slot_hex, filename_only)
         renoise.song().selected_track.devices[2].is_maximized = false
+        end
       else
         renoise.app():show_status("Failed to load the sample " .. filename_only)
       end
@@ -1427,7 +1432,7 @@ function pakettiCleanRenderSelection()
 end
 
 renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Clean Render Selected Track/Group", invoke = function() pakettiCleanRenderSelection() end}
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Clean Render Selected Track/Group", invoke = function() pakettiCleanRenderSelection() end}
+renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Clean Render Selected Track/Group", invoke = function() pakettiCleanRenderSelection() end}
 renoise.tool():add_menu_entry{name="Mixer:Paketti..:Clean Render Selected Track/Group", invoke = function() pakettiCleanRenderSelection() end}
 renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Clean Render Selected Track/Group", invoke = function() pakettiCleanRenderSelection() end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Clean Render Selected Track/Group", invoke = function() pakettiCleanRenderSelection() end}
@@ -2150,7 +2155,6 @@ renoise.tool():add_keybinding{name="Global:Paketti:Duplicate and Reverse Instrum
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments:Duplicate and Reverse Instrument", invoke=PakettiDuplicateAndReverseInstrument}
 renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Duplicate and Reverse Instrument", invoke=PakettiDuplicateAndReverseInstrument}
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Duplicate and Reverse Instrument", invoke=PakettiDuplicateAndReverseInstrument}
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Duplicate and Reverse Instrument", invoke=PakettiDuplicateAndReverseInstrument}
 renoise.tool():add_midi_mapping{name="Paketti:Duplicate and Reverse Instrument [Trigger]", invoke=function(message) if message:is_trigger() then PakettiDuplicateAndReverseInstrument() end end}
 
 -----
@@ -2726,8 +2730,11 @@ end
 -- Menu entries and keybindings
 renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Clean Render and Save Selected Track/Group as .WAV", invoke=function() CleanRenderAndSaveSelection("WAV") end}
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Clean Render and Save Selected Track/Group as .FLAC", invoke=function() CleanRenderAndSaveSelection("FLAC") end}
-renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Clean Render and Save Selected Track/Group as .WAV", invoke=function() CleanRenderAndSaveSelection("WAV") end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Clean Render and Save Selected Track/Group as .WAV", invoke=function() CleanRenderAndSaveSelection("WAV") end}
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Clean Render and Save Selected Track/Group as .FLAC", invoke=function() CleanRenderAndSaveSelection("FLAC") end}
+renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Duplicate and Reverse Instrument", invoke=PakettiDuplicateAndReverseInstrument}
+
+
 renoise.tool():add_keybinding{name="Global:Paketti:Clean Render&Save Selected Track/Group (.WAV)", invoke=function() CleanRenderAndSaveSelection("WAV") end}
 renoise.tool():add_keybinding{name="Global:Paketti:Clean Render&Save Selected Track/Group (.FLAC)", invoke=function() CleanRenderAndSaveSelection("FLAC") end}
 ---------

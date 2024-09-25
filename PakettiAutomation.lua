@@ -94,15 +94,36 @@ local function set_octave(value)
   song.transport.octave = value
 end
 
--- XML Injection Function for "Paketti Automation"
 local function inject_xml_to_doofer1(device)
-  local xml_content = [[
+  local song = renoise.song()
+  local transport = song.transport
+
+  -- Get current values for Groove, BPM, LPB, EditStep, and Octave
+  local groove1 = transport.groove_amounts[1] * 100 -- Groove amounts are between 0 and 1, so multiply by 100
+  local groove2 = transport.groove_amounts[2] * 100
+  local groove3 = transport.groove_amounts[3] * 100
+  local groove4 = transport.groove_amounts[4] * 100
+
+  -- Map BPM to a 0-100 scale. BPM is between 32 and 187
+  local bpm_value = ((transport.bpm - 32) / (187 - 32)) * 100
+
+  -- Map LPB (Lines Per Beat) to a 0-100 scale. LPB is between 1 and 32
+  local lpb_value = ((transport.lpb - 1) / (32 - 1)) * 100
+
+  -- Map EditStep to a 0-100 scale. EditStep is between 0 and 64
+  local edit_step_value = (transport.edit_step / 64) * 100
+
+  -- Map Octave to a 0-100 scale. Octave is between 0 and 8
+  local octave_value = (transport.octave / 8) * 100
+
+  -- Construct the XML with the dynamic values injected
+  local xml_content = string.format([[
 <?xml version="1.0" encoding="UTF-8"?>
 <FilterDevicePreset doc_version="13">
   <DeviceSlot type="DooferDevice">
     <IsMaximized>true</IsMaximized>
     <Macro0>
-      <Value>74.0513306</Value>
+      <Value>%.12f</Value>
       <Name>Groove#1</Name>
       <Mappings>
         <Mapping>
@@ -115,7 +136,7 @@ local function inject_xml_to_doofer1(device)
       </Mappings>
     </Macro0>
     <Macro1>
-      <Value>0.0</Value>
+      <Value>%.12f</Value>
       <Name>Groove#2</Name>
       <Mappings>
         <Mapping>
@@ -128,7 +149,7 @@ local function inject_xml_to_doofer1(device)
       </Mappings>
     </Macro1>
     <Macro2>
-      <Value>0.0</Value>
+      <Value>%.12f</Value>
       <Name>Groove#3</Name>
       <Mappings>
         <Mapping>
@@ -141,7 +162,7 @@ local function inject_xml_to_doofer1(device)
       </Mappings>
     </Macro2>
     <Macro3>
-      <Value>0.0</Value>
+      <Value>%.12f</Value>
       <Name>Groove#4</Name>
       <Mappings>
         <Mapping>
@@ -154,7 +175,7 @@ local function inject_xml_to_doofer1(device)
       </Mappings>
     </Macro3>
     <Macro4>
-      <Value>125</Value>
+      <Value>%.12f</Value>
       <Name>BPM</Name>
       <Mappings>
         <Mapping>
@@ -167,7 +188,7 @@ local function inject_xml_to_doofer1(device)
       </Mappings>
     </Macro4>
     <Macro5>
-      <Value>1</Value>
+      <Value>%.12f</Value>
       <Name>EditStep</Name>
       <Mappings>
         <Mapping>
@@ -180,7 +201,7 @@ local function inject_xml_to_doofer1(device)
       </Mappings>
     </Macro5>
     <Macro6>
-      <Value>4</Value>
+      <Value>%.12f</Value>
       <Name>Octave 0-8</Name>
       <Mappings>
         <Mapping>
@@ -193,7 +214,7 @@ local function inject_xml_to_doofer1(device)
       </Mappings>
     </Macro6>
     <Macro7>
-      <Value>4</Value>
+      <Value>%.12f</Value>
       <Name>LPB 1-32</Name>
       <Mappings>
         <Mapping>
@@ -234,11 +255,11 @@ local function inject_xml_to_doofer1(device)
     </DeviceChain>
   </DeviceSlot>
 </FilterDevicePreset>
-  ]]
+  ]], groove1, groove2, groove3, groove4, bpm_value, edit_step_value, octave_value, lpb_value)
 
   -- Inject the XML content into the active preset data of the device
   device.active_preset_data = xml_content
-  renoise.app():show_status("XML content injected into Paketti Automation.")
+  renoise.app():show_status("Dynamic XML content with precise values injected into Paketti Automation.")
 end
 
 -- XML Injection Function for "Paketti Automation 2"
@@ -840,8 +861,6 @@ end
 
 
 
-
-
 local renoise = renoise
 local tool = renoise.tool()
 
@@ -866,9 +885,17 @@ function apply_exponential_automation_curve_center_to_bottom(type)
   envelope:clear_range(start_line, end_line)
 
   local k = 3
+  local exp_k = math.exp(k)
+  local denominator = exp_k - 1
+
   for i = start_line, end_line - 1 do  -- Loop until the second last point
     local normalizedPosition = (i - start_line) / (end_line - start_line)
-    local value = 0.5 * (1 - math.exp(k * normalizedPosition - k))
+    local exp_value = (math.exp(k * normalizedPosition) - 1) / denominator
+    local value = 0.5 - 0.5 * exp_value
+
+    -- Debug print statement
+    print(string.format("Line: %d, NormalizedPosition: %.4f, Value: %.4f", i, normalizedPosition, value))
+
     envelope:add_point_at(i, value)
   end
   envelope:add_point_at(end_line, 0.0)  -- Explicitly set the last point to 0.0
@@ -876,10 +903,12 @@ end
 
 
 
-
 local renoise = renoise
 local tool = renoise.tool()
 
+
+local renoise = renoise
+local tool = renoise.tool()
 
 function apply_exponential_automation_curve_center_to_top(type)
   local song = renoise.song()
@@ -902,14 +931,21 @@ function apply_exponential_automation_curve_center_to_top(type)
   envelope:clear_range(start_line, end_line)
 
   local k = 3
+  local exp_k = math.exp(k)
+  local denominator = exp_k - 1
+
   for i = start_line, end_line - 1 do  -- Loop until the second last point
     local normalizedPosition = (i - start_line) / (end_line - start_line)
-    local value = 0.5 + 0.5 * math.exp(k * normalizedPosition - k)
+    local exp_value = (math.exp(k * normalizedPosition) - 1) / denominator
+    local value = 0.5 + 0.5 * exp_value
+
+    -- Debug print statement
+    print(string.format("Line: %d, NormalizedPosition: %.4f, Value: %.4f", i, normalizedPosition, value))
+
     envelope:add_point_at(i, value)
   end
   envelope:add_point_at(end_line, 1.0)  -- Explicitly set the last point to 1.0
 end
-
 
 
 
@@ -1285,17 +1321,17 @@ function gainerExpReverseCurveVol()
   renoise.app().window.active_lower_frame = renoise.ApplicationWindow.LOWER_FRAME_TRACK_AUTOMATION
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Gainer Exponential Curve Up", invoke=function() gainerExpCurveVol() end}
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Gainer Exponential Curve Up", invoke=function() gainerExpCurveVol() end}
-renoise.tool():add_menu_entry{name="Pattern Matrix:Paketti..:Gainer Exponential Curve Up", invoke=function() gainerExpCurveVol() end}
-renoise.tool():add_menu_entry{name="--Track Automation:Paketti..:Gainer Exponential Curve Up", invoke=function() gainerExpCurveVol() end}
-renoise.tool():add_menu_entry{name="Track Automation List:Paketti..:Gainer Exponential Curve Up", invoke=function() gainerExpCurveVol() end}
+--renoise.tool():add_keybinding{name="Global:Paketti:Gainer Exponential Curve Up", invoke=function() gainerExpCurveVol() end}
+--renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Gainer Exponential Curve Up", invoke=function() gainerExpCurveVol() end}
+--renoise.tool():add_menu_entry{name="Pattern Matrix:Paketti..:Gainer Exponential Curve Up", invoke=function() gainerExpCurveVol() end}
+--renoise.tool():add_menu_entry{name="--Track Automation:Paketti..:Gainer Exponential Curve Up", invoke=function() gainerExpCurveVol() end}
+--renoise.tool():add_menu_entry{name="Track Automation List:Paketti..:Gainer Exponential Curve Up", invoke=function() gainerExpCurveVol() end}
 
-renoise.tool():add_keybinding{name="Global:Paketti:Gainer Exponential Curve Down", invoke=function() gainerExpReverseCurveVol() end}
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Gainer Exponential Curve Down", invoke=function() gainerExpReverseCurveVol() end}
-renoise.tool():add_menu_entry{name="Pattern Matrix:Paketti..:Gainer Exponential Curve Down", invoke=function() gainerExpReverseCurveVol() end}
-renoise.tool():add_menu_entry{name="Track Automation:Paketti..:Gainer Exponential Curve Down", invoke=function() gainerExpReverseCurveVol() end}
-renoise.tool():add_menu_entry{name="Track Automation List:Paketti..:Gainer Exponential Curve Down", invoke=function() gainerExpReverseCurveVol() end}
+--renoise.tool():add_keybinding{name="Global:Paketti:Gainer Exponential Curve Down", invoke=function() gainerExpReverseCurveVol() end}
+--renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Gainer Exponential Curve Down", invoke=function() gainerExpReverseCurveVol() end}
+--renoise.tool():add_menu_entry{name="Pattern Matrix:Paketti..:Gainer Exponential Curve Down", invoke=function() gainerExpReverseCurveVol() end}
+--renoise.tool():add_menu_entry{name="Track Automation:Paketti..:Gainer Exponential Curve Down", invoke=function() gainerExpReverseCurveVol() end}
+--renoise.tool():add_menu_entry{name="Track Automation List:Paketti..:Gainer Exponential Curve Down", invoke=function() gainerExpReverseCurveVol() end}
 
 
 --------------

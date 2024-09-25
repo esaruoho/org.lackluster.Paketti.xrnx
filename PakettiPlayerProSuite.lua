@@ -132,7 +132,7 @@ end
 
 
 --renoise.app():show_custom_dialog("FX", dialog_content)
-renoise.tool():add_menu_entry{name = "Pattern Editor:Paketti..:Open Player Pro Tools Effect Dialog", invoke = function() renoise.app():show_custom_dialog("FX", dialog_content, my_keyhandler_func) 
+renoise.tool():add_menu_entry{name = "Pattern Editor:Paketti..:Other Trackers..:Open Player Pro Tools Effect Dialog", invoke = function() renoise.app():show_custom_dialog("FX", dialog_content, my_keyhandler_func) 
 renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
 end}
 
@@ -500,12 +500,12 @@ local function PakettiPlayerProNoteGridAddNoteMenuEntries()
     for i = range.range_start, range.range_end do
       if notes[i] then
         renoise.tool():add_menu_entry{
-          name = "Pattern Editor:Paketti..:Note Dropdown.."..range.name..":"..notes[i],
+          name = "Pattern Editor:Paketti..:Other Trackers..:Note Dropdown.."..range.name..":"..notes[i],
           invoke = function() PakettiPlayerProNoteGridInsertNoteInPattern(notes[i], renoise.song().selected_instrument_index) end}
       end
     end
-    renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Note Dropdown.."..range.name..":000", invoke=function() PakettiPlayerProNoteGridInsertNoteInPattern("000", renoise.song().selected_instrument_index) end}
-    renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Note Dropdown.."..range.name..":OFF", invoke=function() PakettiPlayerProNoteGridInsertNoteInPattern("OFF", renoise.song().selected_instrument_index) end}
+    renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Other Trackers..:Note Dropdown.."..range.name..":000", invoke=function() PakettiPlayerProNoteGridInsertNoteInPattern("000", renoise.song().selected_instrument_index) end}
+    renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Other Trackers..:Note Dropdown.."..range.name..":OFF", invoke=function() PakettiPlayerProNoteGridInsertNoteInPattern("OFF", renoise.song().selected_instrument_index) end}
   end
 end
 
@@ -518,7 +518,7 @@ renoise.app().window.active_middle_frame_observable:add_notifier(function()
   end
 end)
 
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Open Player Pro Note Column Dialog", invoke=PakettiPlayerProNoteGridShowDropdownGrid}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Other Trackers..:Open Player Pro Note Column Dialog", invoke=PakettiPlayerProNoteGridShowDropdownGrid}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Open Player Pro Note Column Dialog", invoke=PakettiPlayerProNoteGridShowDropdownGrid}
 
 PakettiPlayerProNoteGridAddNoteMenuEntries()
@@ -587,27 +587,6 @@ renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Player Pro Transpose 
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Player Pro Transpose Selection or Row -1",invoke=function() pakettiPlayerProTranspose(-1) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Player Pro Transpose Selection or Row +12",invoke=function() pakettiPlayerProTranspose(12) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Player Pro Transpose Selection or Row -12",invoke=function() pakettiPlayerProTranspose(-12) end}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 --------------------
 
@@ -886,7 +865,5 @@ local function pakettiPlayerProShowMainDialog()
   dialog = renoise.app():show_custom_dialog("Player Pro Main Dialog", dialog_content, my_keyhandler_func)
 end
 
-renoise.tool():add_menu_entry{name = "Pattern Editor:Paketti..:Open Player Pro Tools Dialog", invoke = pakettiPlayerProShowMainDialog}
+renoise.tool():add_menu_entry{name = "Pattern Editor:Paketti..:Other Trackers..:Open Player Pro Tools Dialog", invoke = pakettiPlayerProShowMainDialog}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Open Player Pro Tools Dialog", invoke = pakettiPlayerProShowMainDialog}
-
-
