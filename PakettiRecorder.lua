@@ -348,14 +348,7 @@ renoise.tool():add_keybinding{name="Global:Paketti:Simple Play Record Follow (2n
 -- PD use
 renoise.tool():add_keybinding{name="Global:Paketti:TouchOSC Sample Recorder and Record",
 invoke=function()
-local amf = renoise.app().window.active_middle_frame 
-if renoise.app().window.sample_record_dialog_is_visible 
-then renoise.song().transport:start_stop_sample_recording()
-else renoise.app().window.sample_record_dialog_is_visible = true
-renoise.song().transport:start_stop_sample_recording()
-end
-renoise.app().window.active_middle_frame = amf
-
+handle_sample_recording()
 end}
 
 
@@ -367,4 +360,45 @@ renoise.tool():add_keybinding{name="Global:Paketti:TouchOSC Sample Editor",
 invoke=function() 
 renoise.app().window.active_middle_frame=5
 end}
+-------------
+-- Function to handle starting and stopping sample recording
+function handle_sample_recording()
+  local dialog_visible = renoise.app().window.sample_record_dialog_is_visible
+  local song = renoise.song()
+renoise.app().window.active_middle_frame=5
+  if not dialog_visible then
+    renoise.app().window.sample_record_dialog_is_visible = true
+renoise.song():insert_instrument_at(renoise.song().selected_instrument_index+1)
+renoise.song().selected_instrument_index=renoise.song().selected_instrument_index+1
+    pakettiPreferencesDefaultInstrumentLoader()
+    renoise.song().selected_sample.loop_mode = 2
+    song.transport:start_stop_sample_recording()
+    return
+  else
+    song.transport:start_stop_sample_recording()
+    local sample=renoise.song().selected_sample
+  end
+    renoise.song().selected_sample_index=1
+    local sample=renoise.song().selected_sample
+    sample.mute_group = 1
+  sample.interpolation_mode=preferences.pakettiLoaderInterpolation.value
+    sample.beat_sync_enabled = false
+    sample.beat_sync_mode = 2
+    renoise.song().selected_instrument.sample_modulation_sets[1].filter_type=preferences.pakettiLoaderFilterType.value
+      if preferences.pakettiPitchbendLoaderEnvelope.value then
+renoise.song().selected_instrument.sample_modulation_sets[1].devices[2].is_active = true else end
+  sample.oversample_enabled = preferences.pakettiLoaderOverSampling.value
+  sample.autofade = preferences.pakettiLoaderAutoFade.value
+  sample.autoseek = preferences.pakettiLoaderAutoseek.value
+  sample.oneshot = preferences.pakettiLoaderOneshot.value
+  sample.loop_mode = preferences.pakettiLoaderLoopMode.value
+  sample.new_note_action = preferences.pakettiLoaderNNA.value
+    sample.loop_mode = 2
+  sample.loop_release = preferences.pakettiLoaderLoopExit.value
+
+
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Start/Stop Sample Recording and Pakettify",invoke=function() handle_sample_recording() end}
+
 

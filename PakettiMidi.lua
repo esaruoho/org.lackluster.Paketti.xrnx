@@ -920,13 +920,14 @@ local function clear_plugin_selection()
   end
 end
 
-function my_keyhandler_func(dialog, key)
-  if not (key.modifiers == "" and key.name == "exclamation") then
-    return key
-  else
+function my_MidiPopulatorkeyhandler_func(dialog, key)
+local closer = preferences.pakettiDialogClose.value
+  if key.modifiers == "" and key.name == closer then
     custom_dialog:close()
     custom_dialog = nil
     return nil
+else
+    return key
   end
 end
 
@@ -1011,7 +1012,7 @@ function generaMIDISetupShowCustomDialog()
     }}
   }
 
-  custom_dialog = renoise.app():show_custom_dialog("Paketti MIDI Populator", dialog_content, my_keyhandler_func)
+  custom_dialog = renoise.app():show_custom_dialog("Paketti MIDI Populator", dialog_content, my_MidiPopulatorkeyhandler_func)
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Paketti MIDI Populator Dialog...",invoke=function() generaMIDISetupShowCustomDialog() end}
@@ -1331,30 +1332,51 @@ renoise.tool():add_midi_mapping{name="Paketti:Set Beatsync Value x[Knob]",invoke
   
 ---
 function PakettiMidiSendBang(number)
-if #renoise.song().selected_track.devices < number
-then renoise.app():show_status("The Send at " .. number .. " does not exist, doing nothing.") return
-else end
-if renoise.song().selected_track.devices[number].name == "#Send"  then
-if renoise.song().selected_track.devices[number].parameters[1].value ~= 1 then
-renoise.song().selected_track.devices[number].parameters[1].value=1
-else
-renoise.song().selected_track.devices[number].parameters[1].value=0
-end
-else renoise.app():show_status("The Send at " .. number .. " does not exist, doing nothing.")
-end
+  local selected_track = renoise.song().selected_track
+  local send_devices = {}
+  
+  -- Collect indices of all send devices on the track
+  for i = 1, #selected_track.devices do
+    local device = selected_track.devices[i]
+    if device.device_path == "Audio/Effects/Native/#Send" or 
+       device.device_path == "Audio/Effects/Native/#Multiband Send" then
+      table.insert(send_devices, i)
+    end
+  end
+  
+  -- Check if there are any send devices
+  if #send_devices == 0 then
+    renoise.app():show_status("No send tracks available.")
+    return
+  end
+  
+  -- Check if the requested send number exists
+  if #send_devices < number then
+    renoise.app():show_status("The Send at " .. number .. " does not exist, doing nothing.")
+    return
+  end
+  
+  -- Toggle the is_active state of the appropriate send device
+  local send_device_index = send_devices[number]
+  local send_device = selected_track.devices[send_device_index]
+  
+  send_device.is_active = not send_device.is_active
+  renoise.app():show_status("Toggled Send " .. number .. " to " .. tostring(send_device.is_active))
 end
 
+-- Setup the MIDI mappings for the first 63 sends
 for i = 2, 64 do
   local actual_number = i - 1
   renoise.tool():add_midi_mapping{
-    name = "Paketti:Selected Track Send " .. string.format("%02d", actual_number) .. " Amount Toggle",
+    name = "Paketti:Selected Track Send " .. string.format("%02d", actual_number) .. " On/Off Toggle",
     invoke = function(message)
       if message:is_trigger() then
-        PakettiMidiSendBang(i)
+        PakettiMidiSendBang(actual_number)
       end
     end
   }
 end
+
 
 renoise.tool():add_midi_mapping{name="Paketti:Selected Track Mute x[Toggle]",invoke=function(message) if message:is_trigger() then 
 if renoise.song().tracks[renoise.song().selected_track_index].mute_state == 1 then
@@ -1874,3 +1896,116 @@ function get_time_division_from_midi(int_value)
   -- Return the time division and mode
   return base_time_divisions[step] or "Unknown Division", modes[mode] or "Unknown Mode"
 end
+
+
+
+
+
+
+-------
+
+
+-- Define target devices and their respective parameters
+local target_devices = {
+  {path="Audio/Effects/Native/Compressor", params={"Threshold", "Ratio", "Release", "Makeup"}},
+  {path="Audio/Effects/Native/Comb Filter 2", params={"Note", "Transpose", "Feedback", "Dry/Wet"}},
+  {path="Audio/Effects/Native/RingMod 2", params={"Note", "Transpose", "Dry/Wet"}},
+  {path="Audio/Effects/Native/EQ 10", params={}} -- EQ 10 now explicitly handled
+}
+
+-- Function to map MIDI value to parameter range
+local function scale_midi_to_param(midi_value, param)
+  return param.value_min + ((param.value_max - param.value_min) * (midi_value / 127))
+end
+
+-- Function to find and modify parameters of the target devices
+local function modify_device_param(device_path, param_index, midi_value)
+  local track = renoise.song().selected_track
+  local found_device = false
+  
+  -- Loop through the devices in the selected track
+  for device_index, device in ipairs(track.devices) do
+    if device.device_path == device_path then
+      found_device = true
+
+      -- Directly modify the parameter at the given index for EQ 10
+      local param = device.parameters[param_index]
+      param.value = scale_midi_to_param(midi_value, param)
+      renoise.app():show_status("Parameter " .. string.format("%02d", param_index) .. " of " .. device.name .. " modified.")
+      
+      -- Set focus back to the pattern editor after modification
+      renoise.app().window.active_middle_frame=renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
+      return
+    end
+  end
+
+  -- If device not found, show a status message
+  if not found_device then
+    renoise.app():show_status("The device " .. device_path .. " is not present on selected track, doing nothing.")
+  end
+end
+
+-- Helper function to remove " 2" from the device names for clean mapping names
+local function clean_device_name(device_name)
+  return device_name:gsub(" 2$", "")  -- Remove the " 2" at the end of the device name
+end
+
+-- Auto-generate MIDI mappings for all the device parameters
+for _, device_info in ipairs(target_devices) do
+  local device_path = device_info.path
+  local device_name_clean = clean_device_name(device_path:match("[^/]+$"))
+
+  -- Generate mappings for EQ 10 parameters directly
+  if device_path == "Audio/Effects/Native/EQ 10" then
+    -- Generate 10 Gain mappings
+    for i = 1, 10 do
+      local mapping_name = "Paketti:Selected Track Dev EQ 10 Gain " .. string.format("%02d", i)
+      renoise.tool():add_midi_mapping{
+        name = mapping_name,
+        invoke = function(message)
+          local midi_value = message.int_value
+          modify_device_param(device_path, i, midi_value) -- Map to parameter index 1-10 (Gain)
+        end
+      }
+    end
+    
+    -- Generate 10 Frequency mappings
+    for i = 11, 20 do
+      local mapping_name = "Paketti:Selected Track Dev EQ 10 Frequency " .. string.format("%02d", i - 10)
+      renoise.tool():add_midi_mapping{
+        name = mapping_name,
+        invoke = function(message)
+          local midi_value = message.int_value
+          modify_device_param(device_path, i, midi_value) -- Map to parameter index 11-20 (Frequency)
+        end
+      }
+    end
+
+    -- Generate 10 Bandwidth mappings
+    for i = 21, 30 do
+      local mapping_name = "Paketti:Selected Track Dev EQ 10 Bandwidth " .. string.format("%02d", i - 20)
+      renoise.tool():add_midi_mapping{
+        name = mapping_name,
+        invoke = function(message)
+          local midi_value = message.int_value
+          modify_device_param(device_path, i, midi_value) -- Map to parameter index 21-30 (Bandwidth)
+        end
+      }
+    end
+  else
+    -- For other devices (Compressor, Comb Filter, RingMod)
+    for _, param_name in ipairs(device_info.params) do
+      local mapping_name = "Paketti:Selected Track Dev " .. device_name_clean .. " " .. param_name
+
+      -- Add MIDI mapping for each parameter
+      renoise.tool():add_midi_mapping{
+        name = mapping_name,
+        invoke = function(message)
+          local midi_value = message.int_value
+          modify_device_param(device_path, param_name, midi_value)
+        end
+      }
+    end
+  end
+end
+

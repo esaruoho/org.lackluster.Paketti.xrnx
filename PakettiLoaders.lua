@@ -53,6 +53,8 @@ raw.active_lower_frame=1
 raw.lower_frame_is_visible=true
     loadnative("Audio/Effects/Native/Filter")
     loadnative("Audio/Effects/Native/*LFO")
+-- TODO: but you see, if you have anything before it, it's just not gonna work. you need to make sure those are the ones that
+-- were added.
   ss.devices[2].parameters[2].value=2
   ss.devices[2].parameters[3].value=1
 end
@@ -301,6 +303,7 @@ w.active_middle_frame = 7 end
           device.parameters[2].show_in_mixer=false
           device.active_preset_data=read_file("Presets/PakettiSend.XML")
         end
+      renoise.song().selected_sample_device_index=checkline
       end
     else
       renoise.app():show_status("No sample selected.")
@@ -572,6 +575,7 @@ if raw.active_middle_frame==7 then
       inserted_device.parameters[1].show_in_mixer=true
       inserted_device.parameters[2].show_in_mixer=true
     end
+    renoise.song().selected_sample_device_index=checkline
   end
 else
   -- Original functionality for selected track
@@ -998,7 +1002,20 @@ function show_plugin_details_gui()
   vb.views.plugins_list.items = popup_items
 
   -- Dialog management
-  customdialog = renoise.app():show_custom_dialog("Plugin Details", dialog_content)
+  customdialog = renoise.app():show_custom_dialog("Plugin Details", dialog_content, myPluginDetailskeyhandlerfunc)
+end
+
+function myPluginDetailskeyhandlerfunc(dialog,key)
+
+local closer = preferences.pakettiDialogClose.value
+  if key.modifiers == "" and key.name == closer then
+dialog:close()
+dialog=nil
+return nil
+else
+
+    return key
+end
 end
 
 -----
@@ -2101,6 +2118,20 @@ function toggleAllExternalPluginEditorsInSong()
   renoise.app():show_status("Toggled all external editors for all plugins in the song")
 end
 
+  -- Keyhandler to close the dialog with exclamation mark
+  function my_RandomizeDeviceskeyhandler_func(dialog, key)
+ local closer = preferences.pakettiDialogClose.value
+  if key.modifiers == "" and key.name == closer then
+dialog:close()
+dialog=nil
+return nil
+else
+
+    return key
+  end
+end 
+
+
 -- Function to show the combined randomizer dialog
 function openCombinedRandomizerDialog()
   local vb = renoise.ViewBuilder()
@@ -2112,6 +2143,8 @@ function openCombinedRandomizerDialog()
   local track_name = track and track.name or "Select a Track"
 --  local instrument_plugin_name = instrument.plugin_properties.plugin_device.name or "Instrument has no Plugin"
 local instrument_plugin_name = instrument.plugin_properties.plugin_device and instrument.plugin_properties.plugin_device.name or "Instrument has no Plugin"
+
+
 
 
   local function save_current_intensity()
@@ -2413,7 +2446,7 @@ vb:horizontal_aligner{
     return key
   end
 
-  local dialog = renoise.app():show_custom_dialog("Randomize Devices and Plugins", dialog_content, my_keyhandler_func)
+  local dialog = renoise.app():show_custom_dialog("Randomize Devices and Plugins", dialog_content, my_RandomizeDeviceskeyhandler_func)
 
 song.selected_instrument_observable:add_notifier(function()
   local new_instrument = song.selected_instrument
@@ -2435,14 +2468,6 @@ song.selected_instrument_observable:add_notifier(function()
   end
 end)
 end
-
-
-
-
-
-
-
-
 
 
 ---------
@@ -2560,11 +2585,8 @@ local function show_available_plugins_dialog()
   -- Combine everything for the multiline textfield
   local combined_text = devices_text .. separator .. "\n" .. device_infos_text
 
-  -- Keyhandler to close the dialog with exclamation mark
-  local function my_keyhandler_func(dialog, key)
-    if key.name == "!" then dialog:close() end
-  end
-
+ 
+ 
   -- Function to save the textfield content to a file
   local vb = renoise.ViewBuilder()
   local multiline_field = vb:multiline_textfield { text = combined_text, width = 900, height = 700 }
@@ -2590,14 +2612,40 @@ local function show_available_plugins_dialog()
   my_dialog = renoise.app():show_custom_dialog("Debug: Available Plugin Information", vb:column {
     multiline_field,
     save_button
-  }, my_keyhandler_func)
+  }, my_AvailPlugkeyhandler_func)
 
+end
+
+function my_AvailPlugkeyhandler_func(dialog,key)
+
+local closer = preferences.pakettiDialogClose.value
+  if key.modifiers == "" and key.name == closer then
+dialog:close()
+dialog=nil
+return nil
+else
+
+    return key
+end
 end
 
 renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Debug:Dump VST/VST3/AU/LADSPA/DSSI/Native Effects to Dialog", invoke=function() show_available_plugins_dialog() end}
 
 
 
+---
+renoise.tool():add_keybinding{name="Global:Paketti:Clear All TrackDSPs from Current Track",
+  invoke=function()
+    local track = renoise.song().selected_track
+    if #track.devices <= 1 then
+      renoise.app():show_status("There were no Track DSPs to clear, doing nothing.")
+    else
+      -- Loop to delete devices from position 2 until only one device remains
+      while #track.devices > 1 do
+        track:delete_device_at(2)
+      end
+      renoise.app():show_status("All Track DSPs cleared from the current track.")
+    end end}
 
 
 

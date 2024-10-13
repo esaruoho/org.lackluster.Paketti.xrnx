@@ -1,15 +1,3 @@
--- Beat Detector Modified Script with Optimized Menu Entries
--- Version: 0.09
--- Author: martblek (martblek@gmail.com)
--- Enhancements by: ChatGPT
-
--- Disable diagnostics for undefined globals (specific to the Renoise API)
----@diagnostic disable: undefined-global, lowercase-global, undefined-field
-
--- Initialize variables
-VERSION = 0.09
-AUTHOR = 'martblek (martblek@gmail.com)'
-
 vb = renoise.ViewBuilder()
 vbs = vb.views
 dialog = nil
@@ -294,7 +282,7 @@ function Row(idx, text, _min, _max, _default, unit, format_func)
   return gui
 end
 
-make_gui = vb:column{
+makeBeatDetector_gui = vb:column{
   style='invisible',
   spacing=4,
   margin=4,
@@ -374,13 +362,25 @@ make_gui = vb:column{
   },
 }
 
+function my_BeatDetectkeyhandler_func(dialog, key)
+local closer = preferences.pakettiDialogClose.value
+  if key.modifiers == "" and key.name == closer then
+    dialog:close()
+    dialog = nil
+    return nil
+else
+    return key
+  end
+end
+
+
 -- Prepare and show dialog
 function prepare_for_start()
   if dialog and dialog.visible then
     dialog:show()
     return
   else
-    dialog = renoise.app():show_custom_dialog('BeatDetector Modified v'..VERSION, make_gui)
+    dialog = renoise.app():show_custom_dialog('BeatDetector Modified v0.354', makeBeatDetector_gui, my_BeatDetectkeyhandler_func)
   end
 end
 

@@ -1,3 +1,35 @@
+
+function PakettiRandomDeviceChain(path)
+  local files={}
+  for file in io.popen('ls "'..path..'"'):lines() do
+    if file:match("%.xrnt$") or file:match("%.xrdp$") then
+      table.insert(files,file)
+    end
+  end
+
+  if #files==0 then
+    renoise.app():show_status("No device chains or presets found in the specified folder.")
+    return
+  end
+
+  local random_index=math.random(1,#files)
+  local random_file=path..files[random_index]
+
+  renoise.song():insert_track_at(renoise.song().selected_track_index+1)
+  renoise.song().selected_track_index=renoise.song().selected_track_index+1
+
+  if random_file:match("%.xrnt$") then
+    renoise.app():load_track_device_chain(random_file)
+  elseif random_file:match("%.xrdp$") then
+    renoise.app():load_track_device_preset(random_file)
+  end
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Create New Track&Load Random Device Chain/Preset",invoke=function() PakettiRandomDeviceChain(preferences.PakettiDeviceChainPath.value) end}
+
+
+
+
 function PakettiLoadDeviceChain(chainName)
 renoise.app():load_track_device_chain(chainName) 
 end
@@ -10,6 +42,11 @@ end
 renoise.tool():add_keybinding{name="Global:Paketti:Load Device Chain SimpleSend",invoke=function()
 PakettiLoadDeviceChain("DeviceChains/SimpleSendMidi.xrnt")
 end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Load Device Chain Paketti Doofer Rudiments",invoke=function()
+PakettiLoadDeviceChain("DeviceChains/PakettiDooferRudiments.xrnt")
+end}
+
 
 renoise.tool():add_keybinding{name="Global:Paketti:Load Device Chain ClippyClip",invoke=function()
 PakettiLoadDevicePreset("DeviceChains/ClippyClip.xrdp")

@@ -2,7 +2,17 @@ local dialog
 local vb = renoise.ViewBuilder()
 local initial_value = nil
 local dialog = nil
+local pakettiDeviceChainPathDisplayId
 local function my_keyhandler_func(dialog, key)
+local closer = preferences.pakettiDialogClose.value
+
+  if key.modifiers == "" and key.name == closer then
+dialog:close()
+dialog=nil
+return nil
+end
+
+
   if not (key.modifiers == "" and key.name == "exclamation") then
     return key
   else
@@ -53,6 +63,8 @@ end
 
 -- Main Preferences Document with Segments
 preferences = renoise.Document.create("ScriptingToolPreferences") {
+  pakettiDialogClose="esc",
+  PakettiDeviceChainPath = "DeviceChains/",
   upperFramePreference=0,
   _0G01_Loader=false,
   RandomBPM=false,
@@ -102,6 +114,7 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
     WipeSlicesBeatSyncMode=1,
     WipeSlicesOneShot=false,
     WipeSlicesAutoseek=false,
+    WipeSlicesAutofade=true,
     WipeSlicesMuteGroup=1,
     WipeSlicesNNA=1,
     WipeSlicesBeatSyncGlobal=false,
@@ -141,6 +154,7 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
     text="Good afternoon, this is eSpeak, a Text-to-Speech engine, speaking. Shall we play a game?",
     executable=default_executable,
     clear_all_samples=true,
+    add_render_to_current_instrument=false,
     render_on_change=false
   },
 
@@ -156,7 +170,9 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
     Slot07="",
     Slot08="",
     Slot09="",
-    Slot10=""
+    Slot10="",
+    RandomizeEnabled=false,
+    RandomizePercentage=10,
   },
 
   RandomizeSettings = {
@@ -337,6 +353,10 @@ function create_loop_mode_switch(preference)
   }
 end
 
+ if preferences.pakettiLoaderFilterType.value ~= nil then
+ initial_value = get_filter_type_index(preferences.pakettiLoaderFilterType.value)
+else preferences.pakettiLoaderFilterType.value ="LP Moog" end
+
 local dialog_content = nil
 function show_paketti_preferences()
 local threshold_label = vb:text {
@@ -347,6 +367,7 @@ local threshold_label = vb:text {
     text = string.format("%.3f%%", preferences.PakettiMoveSilenceThreshold.value * 100), width=100
   }
 
+local pakettiDeviceChainPathDisplayId = "pakettiDeviceChainPathDisplay_" .. tostring(math.random(2, 30000))
 
 
 
@@ -354,9 +375,6 @@ local upperbuttonwidth=160
     if dialog and dialog.visible then dialog_content=nil dialog:close() return
      end
  -- Get the initial value (index) for the popup
- if preferences.pakettiLoaderFilterType.value ~= nil then
-local initial_value = get_filter_type_index(preferences.pakettiLoaderFilterType.value)
-else preferences.pakettiLoaderFilterType.value ="LP Moog" end
 local pakettiDefaultXRNIDisplayId = "pakettiDefaultXRNIDisplay_" .. tostring(math.random(2,30000))
 
 --    local pakettiDefaultXRNIDisplayId = "pakettiDefaultXRNIDisplay_" .. tostring(os.time())
@@ -620,7 +638,7 @@ vb:row {
         vb:text{style="strong",font="bold",text="Wipe & Slices Settings"},
         vb:row { vb:text{text="Slice Loop Mode",width=150},create_loop_mode_switch(preferences.WipeSlices.WipeSlicesLoopMode) },
         vb:row { vb:text{text="Slice Loop Release/Exit Mode",width=150},vb:checkbox{value=preferences.WipeSlices.WipeSlicesLoopRelease.value,notifier=function(value) preferences.WipeSlices.WipeSlicesLoopRelease.value=value end} },
-        vb:row { vb:text{text="Slice BeatSync Mode",width=150},vb:switch{items={"Repitch","Time-Stretch (Percussion)","Time-Stretch (Texture)"},value=preferences.WipeSlices.WipeSlicesBeatSyncMode.value,width=420,
+        vb:row { vb:text{text="Slice BeatSync Mode",width=150},vb:switch{items={"Repitch","Time-Stretch (Percussion)","Time-Stretch (Texture)","Off"},value=preferences.WipeSlices.WipeSlicesBeatSyncMode.value,width=420,
           notifier=function(value) preferences.WipeSlices.WipeSlicesBeatSyncMode.value=value end}
         },
         vb:row { vb:text{text="Slice One-Shot",width=150},vb:switch{items={"Off","On"},value=preferences.WipeSlices.WipeSlicesOneShot.value and 2 or 1,width=200,
@@ -629,14 +647,55 @@ vb:row {
         vb:row { vb:text{text="Slice Autoseek",width=150},vb:switch{items={"Off","On"},value=preferences.WipeSlices.WipeSlicesAutoseek.value and 2 or 1,width=200,
           notifier=function(value) preferences.WipeSlices.WipeSlicesAutoseek.value=(value==2) end}
         },
+        vb:row { vb:text{text="Slice Autofade",width=150},vb:switch{items={"Off","On"},value=preferences.WipeSlices.WipeSlicesAutofade.value and 2 or 1,width=200,
+        
+          notifier=function(value) preferences.WipeSlices.WipeSlicesAutofade.value=(value==2) end}
+        },
         vb:row { vb:text{text="New Note Action(NNA) Mode",width=150},vb:switch{items={"Cut","Note-Off","Continue"},value=preferences.WipeSlices.WipeSlicesNNA.value,width=300,
           notifier=function(value) preferences.WipeSlices.WipeSlicesNNA.value=value end}
         },
         vb:row { vb:text{text="Mute Group",width=150},vb:switch{items={"Off","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"},value=preferences.WipeSlices.WipeSlicesMuteGroup.value+1,width=400,
           notifier=function(value) preferences.WipeSlices.WipeSlicesMuteGroup.value=value-1 end}
         }
-      }
-    }
+      },
+--    },
+    
+    vb:text{style="strong", font="bold", text="Random Device Chain Loader Path"},
+
+vb:row{
+    vb:textfield{
+        text = preferences.PakettiDeviceChainPath.value,
+        width = 300,
+        id = pakettiDeviceChainPathDisplayId,
+        notifier = function(value)
+            preferences.PakettiDeviceChainPath.value = value
+        end
+    },
+    vb:button{
+        text = "Browse",
+        width = 100,
+        notifier = function()
+            local path = renoise.app():prompt_for_path("Select Device Chain Path")
+            if path and path ~= "" then
+                preferences.PakettiDeviceChainPath.value = path
+                vb.views[pakettiDeviceChainPathDisplayId].text = path
+            else
+                renoise.app():show_status("No path was selected, returning to default.")
+                preferences.PakettiDeviceChainPath.value = "DeviceChains/"
+                vb.views[pakettiDeviceChainPathDisplayId].text = "DeviceChains/"
+            end
+        end
+    },
+    vb:button{
+        text = "Reset to Default",
+        width = 100,
+        notifier = function()
+            preferences.PakettiDeviceChainPath.value = "DeviceChains/"
+            vb.views[pakettiDeviceChainPathDisplayId].text = "DeviceChains/"
+        end
+    }}
+},
+    
   },
 
   -- Bottom Buttons

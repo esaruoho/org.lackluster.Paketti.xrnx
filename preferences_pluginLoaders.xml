@@ -101,3 +101,27 @@
 <MIDIMapping name="Paketti:Load Plugin (AU) Vintage">
   <Path>Audio/Generators/AU/aumu:V4vi:Manu</Path>
 </MIDIMapping>
+<KeyBinding name="Global:Paketti:Load Plugin (AU) One">
+  <Path>Audio/Generators/AU/aumu:FOne:FabF</Path>
+</KeyBinding>
+<MIDIMapping name="Paketti:Load Plugin (AU) One">
+  <Path>Audio/Generators/AU/aumu:FOne:FabF</Path>
+</MIDIMapping>
+<KeyBinding name="Global:Paketti:Load Plugin (VST) MonoFury">
+  <Path>Audio/Generators/VST/MonoFury</Path>
+</KeyBinding>
+<MIDIMapping name="Paketti:Load Plugin (VST) MonoFury">
+  <Path>Audio/Generators/VST/MonoFury</Path>
+</MIDIMapping>
+<KeyBinding name="Global:Paketti:Load Plugin (VST) Absynth 5">
+  <Path>Audio/Generators/VST/Absynth 5</Path>
+</KeyBinding>
+<MIDIMapping name="Paketti:Load Plugin (VST) Absynth 5">
+  <Path>Audio/Generators/VST/Absynth 5</Path>
+</MIDIMapping>
+<KeyBinding name="Global:Paketti:Load Plugin (VST) Reaktor 6">
+  <Path>Audio/Generators/VST/Reaktor 6</Path>
+</KeyBinding>
+<MIDIMapping name="Paketti:Load Plugin (VST) Reaktor 6">
+  <Path>Audio/Generators/VST/Reaktor 6</Path>
+</MIDIMapping>

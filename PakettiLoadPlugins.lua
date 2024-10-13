@@ -498,10 +498,23 @@ function showPluginListDialog()
     dialog_content_view
   }
 
-  custom_dialog = renoise.app():show_custom_dialog("Load Plugin(s)", dialog_content)
+  custom_dialog = renoise.app():show_custom_dialog("Load Plugin(s)", dialog_content, my_pluginLoaderkeyhandlerfunc)
 
   -- Initial Update
   updatePluginList()
+end
+
+function my_pluginLoaderkeyhandlerfunc(dialog, key)
+
+local closer = preferences.pakettiDialogClose.value
+  if key.modifiers == "" and key.name == closer then
+    custom_dialog:close()
+    custom_dialog = nil
+    current_plugin_list_content = nil  -- Reset current content
+    return nil
+else
+return key
+end
 end
 
 -- Initialize preferences file and load keybindings and MIDI mappings
@@ -509,8 +522,5 @@ initializePreferencesFile()
 loadFromPreferencesFile()
 
 -- Register the menu entry to show the plugin list dialog
-renoise.tool():add_menu_entry{
-  name = "--Main Menu:Tools:Paketti..:Plugins/Devices:Load Plugins Dialog",
-  invoke = function() showPluginListDialog() end
-}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Load Plugins Dialog",invoke=function() showPluginListDialog() end}
 

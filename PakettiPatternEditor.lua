@@ -417,6 +417,14 @@ renoise.tool():add_keybinding{name="Global:Paketti:BPM Increase (+0.1)",invoke=f
 renoise.tool():add_keybinding{name="Global:Paketti:BPM Decrease (-0.5)",invoke=function() adjust_bpm(-0.5, 0) end}
 renoise.tool():add_keybinding{name="Global:Paketti:BPM Increase (+0.5)",invoke=function() adjust_bpm(0.5, 0) end}
 
+renoise.tool():add_midi_mapping{name="Paketti:BPM Decrease (-1)",invoke=function(message) if message:is_trigger() then adjust_bpm(-1, 0) end end}
+renoise.tool():add_midi_mapping{name="Paketti:BPM Increase (+1)",invoke=function(message) if message:is_trigger() then adjust_bpm(1, 0) end end}
+renoise.tool():add_midi_mapping{name="Paketti:BPM Decrease (-0.1)",invoke=function(message) if message:is_trigger() then adjust_bpm(-0.1, 0) end end}
+renoise.tool():add_midi_mapping{name="Paketti:BPM Increase (+0.1)",invoke=function(message) if message:is_trigger() then adjust_bpm(0.1, 0) end end}
+renoise.tool():add_midi_mapping{name="Paketti:BPM Decrease (-0.5)",invoke=function(message) if message:is_trigger() then adjust_bpm(-0.5, 0) end end}
+renoise.tool():add_midi_mapping{name="Paketti:BPM Increase (+0.5)",invoke=function(message) if message:is_trigger() then adjust_bpm(0.5, 0) end end}
+
+
 
 function pakettiPatternDoubler()
   -- Retrieve the current song object
@@ -2565,10 +2573,12 @@ function ShowRenameDialogForTrack(index)
 
   -- Key handler for the text field
   local function key_handler(dialog, key)
+    local closer = preferences.pakettiDialogClose.value
+  
     if key.name == "return" and not key.repeated then
       rename_track_and_close(vb.views.track_name_field.text)
       return
-    elseif key.name == "esc" then
+    elseif key.modifiers == "" and key.name == closer then
       close_dialog()
       return
     else
@@ -3441,16 +3451,7 @@ function toggle_match_editstep()
   end
 end
 
--- Add menu entry
-renoise.tool():add_menu_entry {
-  name = "Main Menu:Tools:Match Effect Column EditStep with Note Placement",
-  invoke = function() toggle_match_editstep() end
-}
-
--- Add key binding
-renoise.tool():add_keybinding {
-  name = "Global:Tools:Toggle Match EditStep with Note Placement",
-  invoke = function() toggle_match_editstep() end
-}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Match Effect Column EditStep with Note Placement",invoke=function() toggle_match_editstep() end}
+renoise.tool():add_keybinding{name="Global:Tools:Toggle Match EditStep with Note Placement",invoke=function() toggle_match_editstep() end}
 
 

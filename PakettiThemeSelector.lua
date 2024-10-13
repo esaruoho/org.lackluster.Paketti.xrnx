@@ -8,7 +8,14 @@ local themes_path = renoise.tool().bundle_path .. "Themes/"
 local themes = os.filenames(themes_path, "*.xrnc")
 
 local function pakettiThemeSelectorUpdateKeyHandler(dialog, key)
-  if not (key.modifiers == "" and key.name == "exclamation") then
+local closer = preferences.pakettiDialogClose.value
+  if key.modifiers == "" and key.name == closer then
+dialog:close()
+dialog=nil
+return nil
+end
+
+  if not (key.modifiers == "" and key.name == "esco") then
     return key
   else
     dialog:close()

@@ -87,11 +87,12 @@ end
 
 -- Function to handle key events for the dialog (including closing it)
 function pakettiPhraseSettingsKeyHandler(dialog, key)
-  if key.modifiers == "" and key.name == "esc" then
+local closer = preferences.pakettiDialogClose.value
+  if key.modifiers == "" and key.name == closer then
     dialog:close()
     pakettiInitPhraseSettingsDialog = nil
-    return
-  else
+    return nil
+else
     return key
   end
 end

@@ -1,3 +1,103 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- TODO: make this use loadnative("name",XML) okay?
+function PakettiInvertDeviceTrackDSP()
+  loadnative("Audio/Effects/Native/Gainer")
+  
+  -- Load the preset XML file into the plugin device
+  local preset_xml = providePresetXML("Presets/PakettiGainerInverter.xml")
+  
+  if not preset_xml then
+    renoise.app():show_status("Preset loading failed.")
+    return
+  end
+  
+  local device = renoise.song().selected_device or renoise.song().selected_sample_device
+  
+  if device then
+    device.active_preset_data = preset_xml
+    renoise.app():show_status("Preset successfully loaded from: Presets/PakettiGainerInverter.xml")
+  else
+    renoise.app():show_status("No device found to apply the preset.")
+  end
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Insert Inverter Device to TrackDSP/SampleFX",invoke=function() PakettiInvertDeviceTrackDSP() end}
+
+renoise.tool():add_midi_mapping{name="Paketti:Insert Inverter Device to TrackDSP/SampleFX",invoke=function(message) if message:is_trigger() then PakettiInvertDeviceTrackDSP() end end}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 local function flood_fill_column()
 
   local song = renoise.song()

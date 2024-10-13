@@ -118,52 +118,25 @@ local dialog_content=vb:column{
   }
 }
 
-local function my_keyhandler_func(dialog, key)
+local function my_PPEffectkeyhandler_func(dialog, key)
   -- Check for specific keys to handle in the dialog
-  if key.name == "esc" then
-    dialog:close()
+  local closer = preferences.pakettiDialogClose.value
+  if key.modifiers == "" and key.name == closer then
+dialog:close()
+dialog=nil
     renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
-    return
-  end
 
-  -- Allow other keys to pass through to the pattern editor
+return nil
+else
   return key
 end
-
+end
 
 --renoise.app():show_custom_dialog("FX", dialog_content)
-renoise.tool():add_menu_entry{name = "Pattern Editor:Paketti..:Other Trackers..:Open Player Pro Tools Effect Dialog", invoke = function() renoise.app():show_custom_dialog("FX", dialog_content, my_keyhandler_func) 
+renoise.tool():add_menu_entry{name = "Pattern Editor:Paketti..:Other Trackers..:Open Player Pro Tools Effect Dialog", invoke = function() renoise.app():show_custom_dialog("FX", dialog_content, my_PPEffectkeyhandler_func) 
 renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
 end}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+---------------
 
 local vb
 local dialog
@@ -467,15 +440,19 @@ end
 
 
 local function PakettiPlayerProNoteGridKeyHandlerFunc(dialog, key)
-  if key.modifiers == "" and key.name == "exclamation" then
-    print("Exclamation key pressed, closing dialog.")
-    dialog:close()
-  else
-    return key
+
+local closer = preferences.pakettiDialogClose.value
+  if key.modifiers == "" and key.name == closer then
+dialog:close()
+dialog=nil
+return nil
+else
   end
 end
 
 local function PakettiPlayerProNoteGridShowDropdownGrid()
+renoise.app().window.active_middle_frame=1
+
   if dialog and dialog.visible then
     print("Dialog is visible, closing dialog.")
     PakettiPlayerProNoteGridCloseDialog()
@@ -519,7 +496,7 @@ renoise.app().window.active_middle_frame_observable:add_notifier(function()
 end)
 
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Other Trackers..:Open Player Pro Note Column Dialog", invoke=PakettiPlayerProNoteGridShowDropdownGrid}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Open Player Pro Note Column Dialog", invoke=PakettiPlayerProNoteGridShowDropdownGrid}
+renoise.tool():add_keybinding{name="Global:Paketti:Open Player Pro Note Column Dialog", invoke=PakettiPlayerProNoteGridShowDropdownGrid}
 
 PakettiPlayerProNoteGridAddNoteMenuEntries()
 --------------
@@ -854,15 +831,19 @@ local function pakettiPlayerProShowMainDialog()
     }
   }
 
-  local function my_keyhandler_func(dialog, key)
-    if not (key.modifiers == "" and key.name == "exclamation") then
-      return key
-    else
-      dialog:close()
-    end
-  end
+  local function my_PPkeyhandler_func(dialog, key)
+  
+local closer = preferences.pakettiDialogClose.value
+  if key.modifiers == "" and key.name == closer then
+dialog:close()
+dialog=nil
+return nil
+else
 
-  dialog = renoise.app():show_custom_dialog("Player Pro Main Dialog", dialog_content, my_keyhandler_func)
+    return key
+  end
+end
+  dialog = renoise.app():show_custom_dialog("Player Pro Main Dialog", dialog_content, my_PPkeyhandler_func)
 end
 
 renoise.tool():add_menu_entry{name = "Pattern Editor:Paketti..:Other Trackers..:Open Player Pro Tools Dialog", invoke = pakettiPlayerProShowMainDialog}

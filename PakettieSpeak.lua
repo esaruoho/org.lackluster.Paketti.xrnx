@@ -6,235 +6,10 @@ local rnt = renoise.tool()
 local ra = renoise.app()
 local button_press_active = false
 
--- Full list of languages
-local LANGUAGES = {
-  {"Afrikaans","af"},
-  {"Albanian","sq"},
-  {"Amharic","am"},
-  {"Aragonese","an"},
-  {"Arabic","ar"},
-  {"Armenian (East Armenia)","hy"},
-  {"Armenian (West Armenia)","hyw"},
-  {"Assamese","as"},
-  {"Azerbaijani","az"},
-  {"Bashkir","ba"},
-  {"Basque","eu"},
-  {"Belarusian","be"},
-  {"Bengali","bn"},
-  {"Bishnupriya Manipuri","bpy"},
-  {"Bosnian","bs"},
-  {"Bulgarian","bg"},
-  {"Catalan","ca"},
-  {"Cherokee","chr"},
-  {"Chinese (Cantonese)","yue"},
-  {"Chinese (Cantonese, Latin as Jyutping)","yue-Latn-jyutping"},
-  {"Chinese (Mandarin, Latin as English)","cmn"},
-  {"Chinese (Mandarin, Latin as Pinyin)","cmn-Latn-pinyin"},
-  {"Chuvash","cv"},
-  {"Croatian","hr"},
-  {"Czech","cs"},
-  {"Danish","da"},
-  {"Dutch","nl"},
-  {"English (America)","en-US"},
-  {"English (America, New York City)","en-US-nyc"},
-  {"English (Caribbean)","en-029"},
-  {"English (Great Britain)","en"},
-  {"English (Lancaster)","en-GB-x-gbclan"},
-  {"English (Received Pronunciation)","en-GB-x-rp"},
-  {"English (Scotland)","en-GB-scotland"},
-  {"English (West Midlands)","en-GB-x-gbcwmd"},
-  {"Esperanto","eo"},
-  {"Estonian","et"},
-  {"Finnish","fi"},
-  {"French (Belgium)","fr-BE"},
-  {"French (France)","fr"},
-  {"French (Switzerland)","fr-CH"},
-  {"Gaelic (Irish)","ga"},
-  {"Gaelic (Scottish)","gd"},
-  {"Georgian","ka"},
-  {"German","de"},
-  {"Greek","el"},
-  {"Greek (Ancient)","grc"},
-  {"Greenlandic","kl"},
-  {"Gujarati","gu"},
-  {"Haitian Creole","ht"},
-  {"Hakka Chinese","hak"},
-  {"Hawaiian","haw"},
-  {"Hebrew","he"},
-  {"Hindi","hi"},
-  {"Hungarian","hu"},
-  {"Icelandic","is"},
-  {"Ido","io"},
-  {"Indonesian","id"},
-  {"Interlingua","ia"},
-  {"Italian","it"},
-  {"Japanese","ja"},
-  {"Kazakh","kk"},
-  {"K'iche'","quc"},
-  {"Klingon","piqd"},
-  {"Kannada","kn"},
-  {"Konkani","kok"},
-  {"Korean","ko"},
-  {"Kurdish","ku"},
-  {"Kyrgyz","ky"},
-  {"Lang Belta","qdb"},
-  {"Latin","la"},
-  {"Latgalian","ltg"},
-  {"Latvian","lv"},
-  {"Lingua Franca Nova","lfn"},
-  {"Lithuanian","lt"},
-  {"Lojban","jbo"},
-  {"Luxembourgish","lb"},
-  {"Lule Saami","smj"},
-  {"Macedonian","mk"},
-  {"Maori","mi"},
-  {"Malay","ms"},
-  {"Malayalam","ml"},
-  {"Maltese","mt"},
-  {"Marathi","mr"},
-  {"Myanmar (Burmese)","my"},
-  {"Nahuatl (Classical)","nci"},
-  {"Nepali","ne"},
-  {"Norwegian Bokmål","nb"},
-  {"Nogai","nog"},
-  {"Oromo","om"},
-  {"Oriya","or"},
-  {"Papiamento","pap"},
-  {"Persian","fa"},
-  {"Persian (Pinglish)","fa-Latn"},
-  {"Polish","pl"},
-  {"Portuguese (Brazil)","pt-BR"},
-  {"Portuguese (Portugal)","pt"},
-  {"Punjabi","pa"},
-  {"Pyash","py"},
-  {"Quechua","qu"},
-  {"Quenya","qya"},
-  {"Romanian","ro"},
-  {"Russian","ru"},
-  {"Russian (Latvia)","ru-LV"},
-  {"Sindarin","sjn"},
-  {"Sindhi","sd"},
-  {"Sinhala","si"},
-  {"Shan (Tai Yai)","shn"},
-  {"Slovak","sk"},
-  {"Slovenian","sl"},
-  {"Spanish (Latin America)","es-419"},
-  {"Spanish (Spain)","es"},
-  {"Swahili","sw"},
-  {"Swedish","sv"},
-  {"Tamil","ta"},
-  {"Telugu","te"},
-  {"Thai","th"},
-  {"Turkish","tr"},
-  {"Turkmen","tk"},
-  {"Tatar","tt"},
-  {"Ukrainian","uk"},
-  {"Urdu","ur"},
-  {"Uyghur","ug"},
-  {"Uzbek","uz"},
-  {"Vietnamese (Central)","vi-VN-x-central"},
-  {"Vietnamese (Northern)","vi"},
-  {"Vietnamese (Southern)","vi-VN-x-south"},
-  {"Welsh","cy"}
-}
+local LANGUAGES = {{"Afrikaans","af"},{"Albanian","sq"},{"Amharic","am"},{"Aragonese","an"},{"Arabic","ar"},{"Armenian (East Armenia)","hy"},{"Armenian (West Armenia)","hyw"},{"Assamese","as"},{"Azerbaijani","az"},{"Bashkir","ba"},{"Basque","eu"},{"Belarusian","be"},{"Bengali","bn"},{"Bishnupriya Manipuri","bpy"},{"Bosnian","bs"},{"Bulgarian","bg"},{"Catalan","ca"},{"Cherokee","chr"},{"Chinese (Cantonese)","yue"},{"Chinese (Cantonese, Latin as Jyutping)","yue-Latn-jyutping"},{"Chinese (Mandarin, Latin as English)","cmn"},{"Chinese (Mandarin, Latin as Pinyin)","cmn-Latn-pinyin"},{"Chuvash","cv"},{"Croatian","hr"},{"Czech","cs"},{"Danish","da"},{"Dutch","nl"},{"English (America)","en-US"},{"English (America, New York City)","en-US-nyc"},{"English (Caribbean)","en-029"},{"English (Great Britain)","en"},{"English (Lancaster)","en-GB-x-gbclan"},{"English (Received Pronunciation)","en-GB-x-rp"},{"English (Scotland)","en-GB-scotland"},{"English (West Midlands)","en-GB-x-gbcwmd"},{"Esperanto","eo"},{"Estonian","et"},{"Finnish","fi"},{"French (Belgium)","fr-BE"},{"French (France)","fr"},{"French (Switzerland)","fr-CH"},{"Gaelic (Irish)","ga"},{"Gaelic (Scottish)","gd"},{"Georgian","ka"},{"German","de"},{"Greek","el"},{"Greek (Ancient)","grc"},{"Greenlandic","kl"},{"Gujarati","gu"},{"Haitian Creole","ht"},{"Hakka Chinese","hak"},{"Hawaiian","haw"},{"Hebrew","he"},{"Hindi","hi"},{"Hungarian","hu"},{"Icelandic","is"},{"Ido","io"},{"Indonesian","id"},{"Interlingua","ia"},{"Italian","it"},{"Japanese","ja"},{"Kazakh","kk"},{"K'iche'","quc"},{"Klingon","piqd"},{"Kannada","kn"},{"Konkani","kok"},{"Korean","ko"},{"Kurdish","ku"},{"Kyrgyz","ky"},{"Lang Belta","qdb"},{"Latin","la"},{"Latgalian","ltg"},{"Latvian","lv"},{"Lingua Franca Nova","lfn"},{"Lithuanian","lt"},{"Lojban","jbo"},{"Luxembourgish","lb"},{"Lule Saami","smj"},{"Macedonian","mk"},{"Maori","mi"},{"Malay","ms"},{"Malayalam","ml"},{"Maltese","mt"},{"Marathi","mr"},{"Myanmar (Burmese)","my"},{"Nahuatl (Classical)","nci"},{"Nepali","ne"},{"Norwegian Bokmål","nb"},{"Nogai","nog"},{"Oromo","om"},{"Oriya","or"},{"Papiamento","pap"},{"Persian","fa"},{"Persian (Pinglish)","fa-Latn"},{"Polish","pl"},{"Portuguese (Brazil)","pt-BR"},{"Portuguese (Portugal)","pt"},{"Punjabi","pa"},{"Pyash","py"},{"Quechua","qu"},{"Quenya","qya"},{"Romanian","ro"},{"Russian","ru"},{"Russian (Latvia)","ru-LV"},{"Sindarin","sjn"},{"Sindhi","sd"},{"Sinhala","si"},{"Shan (Tai Yai)","shn"},{"Slovak","sk"},{"Slovenian","sl"},{"Spanish (Latin America)","es-419"},{"Spanish (Spain)","es"},{"Swahili","sw"},{"Swedish","sv"},{"Tamil","ta"},{"Telugu","te"},{"Thai","th"},{"Turkish","tr"},{"Turkmen","tk"},{"Tatar","tt"},{"Ukrainian","uk"},{"Urdu","ur"},{"Uyghur","ug"},{"Uzbek","uz"},{"Vietnamese (Central)","vi-VN-x-central"},{"Vietnamese (Northern)","vi"},{"Vietnamese (Southern)","vi-VN-x-south"},{"Welsh","cy"}}
 
--- Full list of voices
-local VOICES = {
-  "None",
-  "adam",
-  "Alex",
-  "Alicia",
-  "Andrea",
-  "Andy",
-  "anika",
-  "anikaRobot",
-  "Annie",
-  "announcer",
-  "antonio",
-  "AnxiousAndy",
-  "aunty",
-  "belinda",
-  "benjamin",
-  "boris",
-  "caleb",
-  "croak",
-  "david",
-  "Demonic",
-  "Denis",
-  "Diogo",
-  "ed",
-  "edward",
-  "edward2",
-  "f1",
-  "f2",
-  "f3",
-  "f4",
-  "f5",
-  "fast",
-  "Gene",
-  "Gene2",
-  "grandma",
-  "grandpa",
-  "gustave",
-  "Henrique",
-  "Hugo",
-  "iven",
-  "iven2",
-  "iven3",
-  "iven4",
-  "Jacky",
-  "john",
-  "kaukovalta",
-  "klatt",
-  "klatt2",
-  "klatt3",
-  "klatt4",
-  "klatt5",
-  "klatt6",
-  "Lee",
-  "linda",
-  "m1",
-  "m2",
-  "m3",
-  "m4",
-  "m5",
-  "m6",
-  "m7",
-  "m8",
-  "marcelo",
-  "Marco",
-  "Mario",
-  "max",
-  "miguel",
-  "Michael",
-  "michel",
-  "Mike",
-  "Mr serious",
-  "Nguyen",
-  "norbert",
-  "pablo",
-  "paul",
-  "pedro",
-  "quincy",
-  "RicishayMax",
-  "RicishayMax2",
-  "RicishayMax3",
-  "rob",
-  "robert",
-  "robosoft",
-  "sandro",
-  "shelby",
-  "steph",
-  "Storm",
-  "travis",
-  "Tweaky",
-  "victor",
-  "whisper",
-  "whisperf",
-  "zac"
-}
+local VOICES = {"None","adam","Alex","Alicia","Andrea","Andy","anika","anikaRobot","Annie","announcer","antonio","AnxiousAndy","aunty","belinda","benjamin","boris","caleb","croak","david","Demonic","Denis","Diogo","ed","edward","edward2","f1","f2","f3","f4","f5","fast","Gene","Gene2","grandma","grandpa","gustave","Henrique","Hugo","iven","iven2","iven3","iven4","Jacky","john","kaukovalta","klatt","klatt2","klatt3","klatt4","klatt5","klatt6","Lee","linda","m1","m2","m3","m4","m5","m6","m7","m8","marcelo","Marco","Mario","max","miguel","Michael","michel","Mike","Mr serious","Nguyen","norbert","pablo","paul","pedro","quincy","RicishayMax","RicishayMax2","RicishayMax3","rob","robert","robosoft","sandro","shelby","steph","Storm","travis","Tweaky","victor","whisper","whisperf","zac"}
 
--- Initialize language and voice names
 local LANGUAGE_NAMES = {}
 local LANGUAGE_SHORTS = {}
 local VOICES_NAMES = {}
@@ -258,7 +33,6 @@ else
   default_executable = "/usr/bin/espeak-ng"
 end
 
--- Utility functions for path conversion
 function PakettieSpeakConvertPath(path)
   path = tostring(path)
   if os_name == "WINDOWS" then
@@ -279,7 +53,6 @@ end
 
 local selected_textfile = ""
 
--- Function to load text from a file
 function PakettieSpeakLoadTextfile(refresh)
   if not refresh then
     selected_textfile = renoise.app():prompt_for_filename_to_read({"*.txt"}, "Load Textfile")
@@ -301,7 +74,6 @@ function PakettieSpeakLoadTextfile(refresh)
   end
 end
 
--- Function to split text into lines
 function PakettieSpeakGetLines(text)
   local lines = {}
   for line in text:gmatch("[^\r\n]+") do
@@ -310,8 +82,8 @@ function PakettieSpeakGetLines(text)
   return lines
 end
 
--- Function to update the max value of 'Which row' valuebox
 function PakettieSpeakUpdateLineCount()
+  if not dialog then return end
   local text = vb.views.PakettieSpeak_text_field.text
   local lines = PakettieSpeakGetLines(text)
   local line_count = #lines
@@ -326,7 +98,150 @@ local control_width = 190
 local valuebox_width = 60
 local button_width = 190
 
-local function PakettieSpeakUpdateSelection()
+local path_to_espeak = vb:text{ width = control_width, height = 24, text ="Path to eSpeak", font="bold"}
+
+local randomize_everything = vb:row{
+      vb:button{id = "PakettieSpeak_randomize_everything",
+        text = "Randomized String",
+        width = button_width + button_width,
+        height = 24,
+        notifier = function()
+          local characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#€%&/()=?"
+          local result = ""
+          local count = math.random(10, 100)
+          for i = 1, count do
+            local random_index = math.random(1, #characters)
+            result = result .. characters:sub(random_index, random_index)
+          end
+          vb.views.PakettieSpeak_text_field.text = result
+          ReSpeak.text.value = result
+          PakettieSpeakCreateSample()
+          PakettieSpeakUpdateLineCount()
+        end
+      }
+    }
+    
+    local randomize_consonants = vb:button{id = "PakettieSpeak_randomize_consonants",
+        text = "Randomize Consonants",
+        width = button_width,
+        height = 24,
+        notifier = function()
+          local consonants = "bcdfghjklmnpqrstvwxyz"
+          local result = ""
+          local count = math.random(10, 100)
+          for i = 1, count do
+            local random_index = math.random(1, #consonants)
+            result = result .. consonants:sub(random_index, random_index)
+          end
+          vb.views.PakettieSpeak_text_field.text = result
+          ReSpeak.text.value = result
+          PakettieSpeakCreateSample()
+          PakettieSpeakUpdateLineCount()
+        end
+              }
+
+local randomize_vowels = vb:button{id = "PakettieSpeak_randomize_vowels",
+        text = "Randomize Vowels",
+        width = button_width,
+        height = 24,
+        notifier = function()
+          local vowels = "aeiou"
+          local result = ""
+          local count = math.random(10, 100)
+          for i = 1, count do
+            local random_index = math.random(1, #vowels)
+            result = result .. vowels:sub(random_index, random_index)
+          end
+          vb.views.PakettieSpeak_text_field.text = result
+          ReSpeak.text.value = result
+          PakettieSpeakCreateSample()
+          PakettieSpeakUpdateLineCount()
+        end
+      }
+    
+
+local exe_button = vb:button{id="PakettieSpeak_exe_button",
+        width = control_width,
+        height = 24,
+        text = PakettieSpeakRevertPath(ReSpeak.executable),
+        notifier = function()
+          local filename = renoise.app():prompt_for_filename_to_read({"*.*"}, "Select Executable")
+          if filename ~= "" then
+          
+            ReSpeak.executable = PakettieSpeakConvertPath(filename)
+            renoise.tool().preferences.pakettiReSpeak.executable = ReSpeak.executable
+            vb.views.PakettieSpeak_exe_button.text = PakettieSpeakRevertPath(ReSpeak.executable)
+            vb.views.PakettieSpeak_exe_button.width = math.min(#vb.views.PakettieSpeak_exe_button.text * 8, control_width)
+          end end}
+
+local horalign =vb:horizontal_aligner{mode="right",path_to_espeak,exe_button}
+local consonants_vowels = vb:row{randomize_consonants,randomize_vowels,}
+
+local loadtext_refresh=    vb:row{
+      vb:button{id = "PakettieSpeak_load_textfile_button",
+        text = "Load Textfile",
+        width = button_width,
+        height = 24,
+        notifier = function()
+          PakettieSpeakLoadTextfile(false)
+        end
+      },
+      vb:button{
+        text = "Refresh",
+        width = button_width,
+        height = 24,
+        notifier = function()
+          PakettieSpeakLoadTextfile(true)
+          print("Refresh: loaded textfile and updated textfield")
+          ReSpeak.text.value = vb.views.PakettieSpeak_text_field.text
+          PakettieSpeakUpdateLineCount()
+        end
+      }
+    }
+
+local eSpeak_textfield=    vb:column{
+      margin = renoise.ViewBuilder.DEFAULT_CONTROL_MARGIN,
+      spacing = renoise.ViewBuilder.DEFAULT_CONTROL_SPACING,
+      width = 380,
+      style = "group",
+      vb:multiline_textfield{
+        id = "PakettieSpeak_text_field",
+        width = 373,
+        height = 100,
+        style = "border",
+        text = tostring(ReSpeak.text.value),
+        notifier = function()
+          PakettieSpeakUpdateLineCount()
+        end
+      }
+    }
+
+local which_row= vb:row{
+      vb:text{text = "Which row:", width=80},
+      vb:valuebox{
+        id = "PakettieSpeak_which_row",
+        min = 0,
+        max = 1,
+        value = 0,
+        notifier = function(value)
+          local text = vb.views.PakettieSpeak_text_field.text
+          local lines = PakettieSpeakGetLines(text)
+          if value == 0 then
+            ReSpeak.text.value = text -- Render all text
+          else
+            local selected_line = lines[value] or ""
+            ReSpeak.text.value = selected_line
+          end
+          if ReSpeak.render_on_change.value then
+            PakettieSpeakCreateSample(ReSpeak.text.value)
+          end
+        end
+      }
+    }
+
+
+
+function PakettieSpeakUpdateSelection()
   local text = vb.views.PakettieSpeak_text_field.text
   local start = vb.views.PakettieSpeak_start_pos.value
   local length = vb.views.PakettieSpeak_length_pos.value
@@ -347,166 +262,8 @@ local function PakettieSpeakUpdateSelection()
   end
 end
 
--- Function to create the GUI
-function PakettieSpeakMakeGUI()
-  return vb:column{
-    width = dialog_width,
-    vb:space{height = 5},
-    vb:horizontal_aligner{
-      mode = "center",
-      vb:text{
-        width = control_width,
-        height = 24,
-        text = "Path to eSpeak",
-        font = "bold"
-      }
-    },
-    vb:horizontal_aligner{
-      mode = "center",
-      vb:button{
-        id = "PakettieSpeak_exe_button",
-        width = control_width,
-        height = 24,
-        text = PakettieSpeakRevertPath(ReSpeak.executable),
-        notifier = function()
-          local filename = renoise.app():prompt_for_filename_to_read({"*.*"}, "Select Executable")
-          if filename ~= "" then
-            ReSpeak.executable = PakettieSpeakConvertPath(filename)
-            renoise.tool().preferences.pakettiReSpeak.executable = ReSpeak.executable
-            vb.views.PakettieSpeak_exe_button.text = PakettieSpeakRevertPath(ReSpeak.executable)
-            vb.views.PakettieSpeak_exe_button.width = math.min(#vb.views.PakettieSpeak_exe_button.text * 8, control_width)
-          end
-        end
-      }
-    },
-    vb:space{height = 5},
-    -- Randomize Buttons
-    vb:row{
-      vb:button{
-        id = "PakettieSpeak_randomize_everything",
-        text = "Randomized String",
-        width = button_width + button_width,
-        height = 24,
-        notifier = function()
-          local characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#€%&/()=?"
-          local result = ""
-          local count = math.random(10, 100)
-          for i = 1, count do
-            local random_index = math.random(1, #characters)
-            result = result .. characters:sub(random_index, random_index)
-          end
-          vb.views.PakettieSpeak_text_field.text = result
-          ReSpeak.text.value = result
-          PakettieSpeakCreateSample()
-          PakettieSpeakUpdateLineCount()
-        end
-      }
-    },
-    vb:row{
-      vb:button{
-        id = "PakettieSpeak_randomize_consonants",
-        text = "Randomize Consonants",
-        width = button_width,
-        height = 24,
-        notifier = function()
-          local consonants = "bcdfghjklmnpqrstvwxyz"
-          local result = ""
-          local count = math.random(10, 100)
-          for i = 1, count do
-            local random_index = math.random(1, #consonants)
-            result = result .. consonants:sub(random_index, random_index)
-          end
-          vb.views.PakettieSpeak_text_field.text = result
-          ReSpeak.text.value = result
-          PakettieSpeakCreateSample()
-          PakettieSpeakUpdateLineCount()
-        end
-      },
-      vb:button{
-        id = "PakettieSpeak_randomize_vowels",
-        text = "Randomize Vowels",
-        width = button_width,
-        height = 24,
-        notifier = function()
-          local vowels = "aeiou"
-          local result = ""
-          local count = math.random(10, 100)
-          for i = 1, count do
-            local random_index = math.random(1, #vowels)
-            result = result .. vowels:sub(random_index, random_index)
-          end
-          vb.views.PakettieSpeak_text_field.text = result
-          ReSpeak.text.value = result
-          PakettieSpeakCreateSample()
-          PakettieSpeakUpdateLineCount()
-        end
-      }
-    },
-    -- Load Textfile and Refresh Buttons
-    vb:row{
-      vb:button{
-        id = "PakettieSpeak_load_textfile_button",
-        text = "Load Textfile",
-        width = button_width,
-        height = 24,
-        notifier = function()
-          PakettieSpeakLoadTextfile(false)
-        end
-      },
-      vb:button{
-        text = "Refresh",
-        width = button_width,
-        height = 24,
-        notifier = function()
-          PakettieSpeakLoadTextfile(true)
-          print("Refresh: loaded textfile and updated textfield")
-          ReSpeak.text.value = vb.views.PakettieSpeak_text_field.text
-          PakettieSpeakUpdateLineCount()
-        end
-      }
-    },
-    -- Text Field
-    vb:column{
-      margin = renoise.ViewBuilder.DEFAULT_CONTROL_MARGIN,
-      spacing = renoise.ViewBuilder.DEFAULT_CONTROL_SPACING,
-      width = 380,
-      style = "group",
-      vb:multiline_textfield{
-        id = "PakettieSpeak_text_field",
-        width = 373,
-        height = 100,
-        style = "border",
-        text = tostring(ReSpeak.text.value),
-        notifier = function()
-          PakettieSpeakUpdateLineCount()
-        end
-      }
-    },
-    -- Which Row and Selection Controls
-    vb:row{
-      vb:text{text = "Which row:"},
-      vb:valuebox{
-        id = "PakettieSpeak_which_row",
-        min = 0,
-        max = 1,
-        value = 0,
-        notifier = function(value)
-          local text = vb.views.PakettieSpeak_text_field.text
-          local lines = PakettieSpeakGetLines(text)
-          if value == 0 then
-            ReSpeak.text.value = text -- Render all text
-          else
-            local selected_line = lines[value] or ""
-            ReSpeak.text.value = selected_line
-          end
-          if ReSpeak.render_on_change.value then
-            PakettieSpeakCreateSample(ReSpeak.text.value)
-          end
-        end
-      }
-    },
-    vb:row{
-      vb:text{text = "Start:"},
+local start_pos=    vb:row{
+      vb:text{text = "Start:", width=80},
       vb:valuebox{
         id = "PakettieSpeak_start_pos",
         min = 1,
@@ -550,17 +307,18 @@ function PakettieSpeakMakeGUI()
           end
         end
       }
-    },
-    vb:row{
-      vb:text{text = "Selection:"},
+    }
+
+local eSpeakselection=   vb:row{
+      vb:text{text = "Selection:", width=80},
       vb:textfield{
         id = "PakettieSpeak_selection_display",
-        width = 323,
+        width = 290,
         height = 20,
         edit_mode = false
       }
-    },
-    vb:horizontal_aligner{
+    }
+ local eSpeakGenerateSelection=   vb:horizontal_aligner{
       mode = "center",
       vb:button{
         text = "Generate Selection",
@@ -582,13 +340,9 @@ function PakettieSpeakMakeGUI()
           end
         end
       }
-    },
-    -- Settings Controls
-    vb:column{
-      margin = renoise.ViewBuilder.DEFAULT_CONTROL_MARGIN,
-      spacing = renoise.ViewBuilder.DEFAULT_CONTROL_SPACING,
-      width = 373,
-      vb:row{
+    }
+
+local settingsControls=      vb:row{
         vb:text{text = "Language:", width = 80},
         vb:popup{
           id = "PakettieSpeak_language",
@@ -632,11 +386,10 @@ function PakettieSpeakMakeGUI()
             end
           end
         }
-      },
-      -- Voice Control
-      vb:row{
-        vb:text{text = "Voice:", width = 80},
-        vb:popup{
+      }
+
+local eSpeakvoice=      vb:row{
+        vb:text{text = "Voice:", width = 80},        vb:popup{
           id = "PakettieSpeak_voice",
           width = 250,
           items = VOICES,
@@ -677,10 +430,9 @@ function PakettieSpeakMakeGUI()
               renoise.app():show_status("You are at the bottom of the list")
             end
           end
-        }
-      },
-      -- Other Controls (Word Gap, Pitch Capitals, etc.)
-      vb:row{
+        }}
+
+local eSpeakgapbox= vb:row{
         vb:text{width = 80, text = "Word Gap:"},
         vb:valuebox{
           id = "PakettieSpeak_gap_box",
@@ -694,8 +446,9 @@ function PakettieSpeakMakeGUI()
             print("Word Gap set to:", gap)
           end
         }
-      },
-      vb:row{
+      }
+
+local eSpeakpitchcap=  vb:row{
         vb:text{width = 80, text = "Pitch Capitals:"},
         vb:valuebox{
           id = "PakettieSpeak_capitals_box",
@@ -709,8 +462,9 @@ function PakettieSpeakMakeGUI()
             print("Pitch Capitals set to:", capitals)
           end
         }
-      },
-      vb:row{
+      }
+
+local eSpeakpitchbox=     vb:row{
         vb:text{width = 80, text = "Pitch:"},
         vb:valuebox{
           id = "PakettieSpeak_pitch_box",
@@ -724,8 +478,9 @@ function PakettieSpeakMakeGUI()
             print("Pitch set to:", pitch)
           end
         }
-      },
-      vb:row{
+      }
+
+local eSpeakamplitude=      vb:row{
         vb:text{width = 80, text = "Amplitude:"},
         vb:valuebox{
           id = "PakettieSpeak_amplitude_box",
@@ -739,8 +494,9 @@ function PakettieSpeakMakeGUI()
             print("Amplitude set to:", amplitude)
           end
         }
-      },
-      vb:row{
+      }
+      
+      local eSpeakspeedbox=  vb:row{
         vb:text{width = 80, text = "Speed:"},
         vb:valuebox{
           id = "PakettieSpeak_speed_box",
@@ -755,8 +511,20 @@ function PakettieSpeakMakeGUI()
           end
         }
       }
-    },
-    -- Checkboxes
+
+local settingsColumn=    vb:column{
+      margin = renoise.ViewBuilder.DEFAULT_CONTROL_MARGIN,
+      spacing = renoise.ViewBuilder.DEFAULT_CONTROL_SPACING,
+      width = 373,
+         settingsControls,
+ 
+          eSpeakvoice,
+    eSpeakgapbox,
+    eSpeakpitchcap,
+    eSpeakpitchbox,
+    eSpeakamplitude,
+    eSpeakspeedbox,}
+ local clearallsamples=   -- Checkboxes
     vb:row{
       vb:checkbox{
         id = "PakettieSpeak_clear_all_samples",
@@ -769,8 +537,22 @@ function PakettieSpeakMakeGUI()
         end
       },
       vb:text{text = "Overwrite Samples in Selected Instrument"}
-    },
-    vb:row{
+    }
+ local addrendertocurrentinstrument=vb:row{
+  vb:checkbox{
+    id = "PakettieSpeak_add_render_to_current_instrument",
+    width = 18,
+    height = 18,
+    value = ReSpeak.add_render_to_current_instrument.value == true,
+    notifier = function(bool)
+      ReSpeak.add_render_to_current_instrument.value = bool
+      vb.views.PakettieSpeak_clear_all_samples.value = false
+      print("Add Render to Current Instrument set to:", bool)
+    end
+  },
+  vb:text{text = "Add Render to Current Instrument"}
+}
+ local renderonchange= vb:row{
       vb:checkbox{
         id = "PakettieSpeak_render_on_change",
         width = 18,
@@ -782,10 +564,8 @@ function PakettieSpeakMakeGUI()
         end
       },
       vb:text{text = "+/- Click Should Render Again"}
-    },
-    vb:space{height = 10},
-    -- Load and Save Settings Buttons
-    vb:horizontal_aligner{
+    }
+local eSpeakloadsave=    vb:horizontal_aligner{
       mode = "center",
       vb:button{
         id = "PakettieSpeak_load_button",
@@ -818,6 +598,7 @@ function PakettieSpeakMakeGUI()
             end
           end
         end
+        
       },
       vb:button{
         id = "PakettieSpeak_save_button",
@@ -837,10 +618,9 @@ function PakettieSpeakMakeGUI()
           end
         end
       }
-    },
-    vb:space{height = 5},
-    -- Generate Sample and Randomize Settings Buttons
-    vb:horizontal_aligner{
+    }
+
+local lastbuttons=    vb:horizontal_aligner{
       mode = "center",
       vb:button{
         text = "Generate Sample",
@@ -849,6 +629,7 @@ function PakettieSpeakMakeGUI()
         notifier = function()
           ReSpeak.text.value = vb.views.PakettieSpeak_text_field.text
           PakettieSpeakCreateSample()
+          normalize_selected_sample()
           renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
         end
       },
@@ -861,7 +642,7 @@ function PakettieSpeakMakeGUI()
           ReSpeak.language.value = vb.views.PakettieSpeak_language.value
           vb.views.PakettieSpeak_voice.value = math.random(1, #VOICES)
           ReSpeak.voice.value = vb.views.PakettieSpeak_voice.value
-          local random_gap = math.random(1, 200)
+          local random_gap = math.random(1, 100)
           vb.views.PakettieSpeak_gap_box.value = random_gap
           ReSpeak.word_gap.value = random_gap
           local random_capitals = math.random(1, 100)
@@ -878,23 +659,50 @@ function PakettieSpeakMakeGUI()
           end
         end
       }
-    },
-    vb:space{height = 10}
-  }
+    }
+
+ local wholegui=vb:column{
+    width = dialog_width,
+    horalign,
+    randomize_everything,
+    consonants_vowels,
+    loadtext_refresh,
+    eSpeak_textfield,
+    which_row, 
+    start_pos,
+    eSpeakselection,
+    eSpeakGenerateSelection,
+    settingsColumn,
+    clearallsamples,
+    addrendertocurrentinstrument,
+    renderonchange,
+    eSpeakloadsave,
+    lastbuttons}
+    
+ 
+function PakettieSpeakMakeGUI()
+  return wholegui
 end
 
--- Function to show the GUI
 function PakettieSpeakShowGUI()
-  dialog = renoise.app():show_custom_dialog("Paketti eSpeak Text-to-Speech", PakettieSpeakMakeGUI(), PakettieSpeakKeyHandlerFunc)
+  local gui = PakettieSpeakMakeGUI()
+  dialog = renoise.app():show_custom_dialog("Paketti eSpeak Text-to-Speech", gui, PakettieSpeakKeyHandlerFunc)
   PakettieSpeakUpdateLineCount() -- Update line count when showing the dialog
 end
 
--- Prepare function
 function PakettieSpeakPrepare()
   print("Starting dialog with settings:")
   print("Text:", ReSpeak.text.value)
-  -- ... (other print statements)
-
+  print("Loaded Language:",ReSpeak.language.value)
+  print("Loaded Voice:",ReSpeak.voice.value)
+  print("Loaded Word Gap:",ReSpeak.word_gap.value)
+  print("Loaded Pitch Capitals:",ReSpeak.capitals.value)
+  print("Loaded Pitch:",ReSpeak.pitch.value)
+  print("Loaded Amplitude:",ReSpeak.amplitude.value)
+  print("Loaded Speed:",ReSpeak.speed.value)
+  print("Loaded Executable:",ReSpeak.executable.value)
+  print("Loaded Clear All Samples:",ReSpeak.clear_all_samples.value)
+  
   if dialog and dialog.visible then
     dialog:show()
     return
@@ -911,16 +719,50 @@ function PakettieSpeakPrepare()
   PakettieSpeakShowGUI()
 end
 
--- Key handler function
 function PakettieSpeakKeyHandlerFunc(dialog, key)
-  if key.modifiers == "" and key.name == "esc" then
+--  if key.modifiers == "" and key.name == "esc" then
+if key.modifiers == "control" and key.name == "r" then
+          PakettieSpeakLoadTextfile(true)
+          print("Refresh: loaded textfile and updated textfield")
+          ReSpeak.text.value = vb.views.PakettieSpeak_text_field.text
+          PakettieSpeakUpdateLineCount()
+end
+
+if key.modifiers == "control" and key.name == "return" then
+      ReSpeak.text.value = vb.views.PakettieSpeak_text_field.text
+      PakettieSpeakCreateSample()
+      normalize_selected_sample()
+end
+
+if key.modifiers == "alt" and key.name == "return" then
+          local text = vb.views.PakettieSpeak_text_field.text
+          local start = vb.views.PakettieSpeak_start_pos.value
+          local length = vb.views.PakettieSpeak_length_pos.value
+          local end_pos = start + length - 1
+          if start <= #text and end_pos <= #text and start <= end_pos then
+            local selected_text = text:sub(start, end_pos)
+            print("Selected text:", selected_text)
+            renoise.app():show_status("Selected text: " .. selected_text)
+            ReSpeak.text.value = selected_text
+            PakettieSpeakCreateSample()
+          else
+            renoise.app():show_status("Invalid selection range")
+          end
+
+
+end
+
+local closer = preferences.pakettiDialogClose.value
+print (closer)
+  if key.modifiers == "" and key.name == closer then
     dialog:close()
+    dialog = nil
+    --vb = nil
   else
     return key
   end
 end
 
--- Toggle dialog function
 function PakettieSpeakToggleDialog()
   if dialog and dialog.visible then
     ReSpeak.text.value = vb.views.PakettieSpeak_text_field.text
@@ -930,7 +772,6 @@ function PakettieSpeakToggleDialog()
   end
 end
 
--- Function to create sample
 function PakettieSpeakCreateSample(custom_text)
   local text_to_render = custom_text or ReSpeak.text.value
   print(text_to_render)
@@ -938,20 +779,20 @@ function PakettieSpeakCreateSample(custom_text)
   local path = os.tmpname() .. ".wav"
 
   local cmd = executable
-  cmd = cmd .. " -a " .. ReSpeak.amplitude.value
-  cmd = cmd .. " -v " .. LANGUAGE_SHORTS[ReSpeak.language.value]
+  cmd=cmd .. " -a " .. ReSpeak.amplitude.value
+  cmd=cmd .. " -v " .. LANGUAGE_SHORTS[ReSpeak.language.value]
 
   if ReSpeak.voice.value ~= 1 then
     cmd = cmd .. "+" .. VOICES[ReSpeak.voice.value]
   end
 
-  cmd = cmd .. " -b 1 -m "
-  cmd = cmd .. " -p " .. ReSpeak.pitch.value
-  cmd = cmd .. " -s " .. ReSpeak.speed.value
-  cmd = cmd .. " -g " .. ReSpeak.word_gap.value
-  cmd = cmd .. " -k " .. ReSpeak.capitals.value
-  cmd = cmd .. " -w " .. path
-  cmd = cmd .. ' "' .. text_to_render .. '"'
+  cmd=cmd .. " -b 1 -m "
+  cmd=cmd .. " -p " .. ReSpeak.pitch.value
+  cmd=cmd .. " -s " .. ReSpeak.speed.value
+  cmd=cmd .. " -g " .. ReSpeak.word_gap.value
+  cmd=cmd .. " -k " .. ReSpeak.capitals.value
+  cmd=cmd .. " -w " .. path
+  cmd=cmd .. ' "' .. text_to_render .. '"'
 
   print("Command to be executed:" .. cmd)
 
@@ -960,29 +801,54 @@ function PakettieSpeakCreateSample(custom_text)
   local song = renoise.song()
   local instrument
 
-  if ReSpeak.clear_all_samples.value then
+  -- **Check if "Add Render to Current Instrument" is Enabled**
+  if ReSpeak.add_render_to_current_instrument.value then
+    -- **If No Instruments Exist, Load the Pitchbend Instrument**
+    if #song.instruments == 0 then
+      pakettiPreferencesDefaultInstrumentLoader()
+      print("No instruments found. Loaded pitchbend instrument.")
+    end
+
     instrument = song.selected_instrument
-    -- Ensure pakettiPreferencesDefaultInstrumentLoader() is defined
+    if not instrument then
+      renoise.app():show_error("No instrument selected and failed to load the pitchbend instrument.")
+      return
+    end
+
+    -- **Add a New Sample Slot to the Current Instrument**
+    local new_sample_index = #instrument.samples + 1
+    local sample = instrument:insert_sample_at(new_sample_index)
+    song.selected_sample_index = new_sample_index
+    sample.name = "eSpeak (" .. LANGUAGE_NAMES[ReSpeak.language.value] .. ", " .. VOICES_NAMES[ReSpeak.voice.value] .. ")"
+    print("Added new sample slot to current instrument:", sample.name)
+
+  elseif ReSpeak.clear_all_samples.value then
+    -- **Existing Behavior: Clear All Samples and Add One**
+    instrument = song.selected_instrument
     pakettiPreferencesDefaultInstrumentLoader()
     while #instrument.samples > 0 do
       instrument:delete_sample_at(1)
     end
     local sample = instrument:insert_sample_at(1)
-    song.selected_instrument.name = "eSpeak (" .. LANGUAGE_NAMES[ReSpeak.language.value] .. ", " .. VOICES_NAMES[ReSpeak.voice.value] .. ")"
+    song.selected_sample_index = 1
     sample.name = "eSpeak (" .. LANGUAGE_NAMES[ReSpeak.language.value] .. ", " .. VOICES_NAMES[ReSpeak.voice.value] .. ")"
+    print("Cleared all samples and added new sample:", sample.name)
+
   else
+    -- **Existing Behavior: Insert New Instrument and Add Sample**
     instrument = song:insert_instrument_at(renoise.song().selected_instrument_index + 1)
-    song.selected_instrument_index = renoise.song().selected_instrument_index + 1
+    song.selected_instrument_index = song.selected_instrument_index + 1
     pakettiPreferencesDefaultInstrumentLoader()
-    song.selected_instrument.name = "eSpeak (" .. LANGUAGE_NAMES[ReSpeak.language.value] .. ", " .. VOICES_NAMES[ReSpeak.voice.value] .. ")"
-    song.selected_instrument:insert_sample_at(1)
-    local sample = song.selected_instrument.samples[1]
+    instrument = song.selected_instrument
+    instrument.name = "eSpeak (" .. LANGUAGE_NAMES[ReSpeak.language.value] .. ", " .. VOICES_NAMES[ReSpeak.voice.value] .. ")"
+    local sample = instrument:insert_sample_at(1)
     sample.name = "eSpeak (" .. LANGUAGE_NAMES[ReSpeak.language.value] .. ", " .. VOICES_NAMES[ReSpeak.voice.value] .. ")"
-    normalize_selected_sample()
+    song.selected_sample_index = 1
+    print("Inserted new instrument and added sample:", sample.name)
   end
 
-  instrument.name = "eSpeak (" .. LANGUAGE_NAMES[ReSpeak.language.value] .. ", " .. VOICES_NAMES[ReSpeak.voice.value] .. ")"
-  local sample = song.selected_instrument.samples[1]
+  -- **Load the Rendered WAV File into the Selected Sample**
+  local sample = song.selected_sample
   local buffer = sample.sample_buffer
 
   print("Loading path:" .. path)
@@ -991,11 +857,17 @@ function PakettieSpeakCreateSample(custom_text)
     return
   end
 
-  local bool, result = buffer:load_from(path)
-  local currentActiveMiddleFrame = renoise.app().window.active_middle_frame
+  local success, result = buffer:load_from(path)
+  if not success then
+    renoise.app():show_error("Failed to load sample from " .. path)
+    return
+  end
+
   renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
   normalize_selected_sample()
+  print("Sample loaded successfully.")
 end
+-- **End of Modified Function**
 
 -- Check if file exists
 function PakettieSpeakFileExists(path)
@@ -1003,38 +875,16 @@ function PakettieSpeakFileExists(path)
   return f ~= nil and io.close(f)
 end
 
--- Add menu entry and keybindings
-renoise.tool():add_menu_entry{
-  name = "Sample Editor:Paketti..:Paketti eSpeak Text-to-Speech...",
-  invoke = function()
-    PakettieSpeakToggleDialog()
-  end
-}
-
-renoise.tool():add_keybinding{
-  name = "Global:Paketti:Paketti eSpeak Text-to-Speech",
-  invoke = function()
-    PakettieSpeakToggleDialog()
-  end
-}
-
--- Generate Sample Keybinding
-renoise.tool():add_keybinding{
-  name = "Global:Paketti:Paketti eSpeak Generate Sample",
-  invoke = function()
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Paketti eSpeak Text-to-Speech...",invoke=function() PakettieSpeakToggleDialog() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Paketti eSpeak Text-to-Speech",invoke=function() PakettieSpeakToggleDialog() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Paketti eSpeak Generate Sample",invoke=function()
     if dialog and dialog.visible then
       ReSpeak.text.value = vb.views.PakettieSpeak_text_field.text
       PakettieSpeakCreateSample()
-    else
-      PakettieSpeakPrepare()
-    end
-  end
-}
+      normalize_selected_sample()
+    else PakettieSpeakPrepare() end end }
 
--- Generate Selection Keybinding
-renoise.tool():add_keybinding{
-  name = "Global:Paketti:Paketti eSpeak Generate Selection",
-  invoke = function()
+renoise.tool():add_keybinding{name="Global:Paketti:Paketti eSpeak Generate Selection",invoke=function()
     if dialog and dialog.visible then
       local text = vb.views.PakettieSpeak_text_field.text
       local start = vb.views.PakettieSpeak_start_pos.value
@@ -1049,17 +899,10 @@ renoise.tool():add_keybinding{
       else
         renoise.app():show_status("Invalid selection range")
       end
-    else
-      PakettieSpeakPrepare()
-    end
-  end
-}
+    else PakettieSpeakPrepare() end end}
 
--- Generate Row Keybindings
 for value = 0, 31 do
-  renoise.tool():add_keybinding{
-    name = ("Global:Paketti:Paketti eSpeak Generate Row %02d"):format(value),
-    invoke = function()
+  renoise.tool():add_keybinding{name=("Global:Paketti:Paketti eSpeak Generate Row %02d"):format(value),invoke=function()
       local text = vb.views.PakettieSpeak_text_field.text
       local lines = PakettieSpeakGetLines(text)
       -- If value is 0, take all the content, otherwise select the specific line.
@@ -1068,26 +911,16 @@ for value = 0, 31 do
       if selected_line == "" then return end
       ReSpeak.text.value = selected_line
       if ReSpeak.render_on_change.value then
-        PakettieSpeakCreateSample(ReSpeak.text.value)
-      end
-    end
-  }
+        PakettieSpeakCreateSample(ReSpeak.text.value) end end}
 end
 
--- Refresh Keybinding
-renoise.tool():add_keybinding{
-  name = "Global:Paketti:Paketti eSpeak Refresh",
-  invoke = function()
+renoise.tool():add_keybinding{name="Global:Paketti:Paketti eSpeak Refresh",invoke=function()
     if dialog and dialog.visible then
       PakettieSpeakLoadTextfile(true)
       print("Refresh: loaded textfile and updated textfield")
       ReSpeak.text.value = vb.views.PakettieSpeak_text_field.text
       PakettieSpeakUpdateLineCount()
-    else
-      PakettieSpeakPrepare()
-    end
-  end
-}
+    else PakettieSpeakPrepare() end end}
 
 _AUTO_RELOAD_DEBUG = function() end
 

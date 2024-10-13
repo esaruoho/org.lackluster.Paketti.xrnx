@@ -151,44 +151,32 @@ vb:horizontal_aligner{mode="distribute",
   }
 }
 
-
 local function my_keyhandler_func(dialog, key)
-  if not (key.modifiers == "" and key.name == "exclamation") then
-    return key
-  else
+local closer = preferences.pakettiDialogClose.value
+  if key.modifiers == "" and key.name == closer then
     dialog:close()
     dialog = nil
     return nil
+else
+    return key
   end
 end
-
 
 function show_about_dialog()
   if dialog and dialog.visible then
     dialog:close() -- Close the dialog if it's open
   else
-    dialog = renoise.app():show_custom_dialog("About Paketti / Donations, written by Esa Juhani Ruoho (C) 2024", dialog_content, my_keyhandler_func)
+    dialog = renoise.app():show_custom_dialog("About Paketti / Donations, written by Esa Juhani Ruoho (C) 2009-2024", dialog_content, my_keyhandler_func)
   end
 end
 
 renoise.tool():add_menu_entry{name = "--Main Menu:Tools:Paketti..:!!About..:About Paketti/Donations...", invoke = function() show_about_dialog() end}
-
-
-
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:!Preferences:Open Paketti Path",invoke=function() renoise.app():open_path(renoise.tool().bundle_path)end}
-
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Debug:Inspect Plugin",invoke=function() inspectPlugin() end}
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Debug:Inspect Device in Slot 2",invoke=function() inspectEffect() end}
-
-renoise.tool():add_menu_entry{name = "--Main Menu:Tools:Paketti..:Pattern Editor:Random BPM (60-180)",
-   invoke = function()
-        -- Define a list of possible BPM values
+renoise.tool():add_menu_entry{name = "--Main Menu:Tools:Paketti..:Pattern Editor:Random BPM (60-180)",invoke = function()
         local bpmList = {80, 100, 115, 123, 128, 132, 135, 138, 160}
-        
-        -- Get the current BPM
         local currentBPM = renoise.song().transport.bpm
-        
-        -- Filter the list to exclude the current BPM
         local newBpmList = {}
         for _, bpm in ipairs(bpmList) do
             if bpm ~= currentBPM then
@@ -196,7 +184,6 @@ renoise.tool():add_menu_entry{name = "--Main Menu:Tools:Paketti..:Pattern Editor
             end
         end
 
-        -- Select a random BPM from the filtered list
         if #newBpmList > 0 then
             local selectedBPM = newBpmList[math.random(#newBpmList)]
             renoise.song().transport.bpm = selectedBPM
@@ -262,7 +249,7 @@ function squigglerdialog()
   }
   
   -- Using a local variable for 'dialog' to limit its scope to this function.
-  local dialog = renoise.app():show_custom_dialog("Copy the Squiggler to your clipboard", content)
+  local dialog = renoise.app():show_custom_dialog("Copy the Squiggler to your clipboard", content, my_keyhandler_func)
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:∿ Squiggly Sinewave to Clipboard (macOS)", invoke=function() squigglerdialog() end}
@@ -295,7 +282,7 @@ local function create_paketti_dialog()
  --       vb:button{text="Strip Silence", width=50, notifier=function()
  --       PakettiStripSilenceShowThresholdDialog() end},
         vb:button{text="eSpeak TTS", width=50, notifier=function()
-       pakettiReSpeakToggleDialog() end },
+       PakettieSpeakToggleDialog() end },
        vb:button{text="Coluga", width=50, notifier=function()
        PakettiColugaShowDialog() end },
        vb:button{text="Output Routings", width=50, notifier=function()
@@ -335,7 +322,7 @@ local function toggle_paketti_dialog()
     dialog_instance = nil
   else
 
-    dialog_instance = renoise.app():show_custom_dialog("Paketti Dialog of Dialogs", create_paketti_dialog())
+    dialog_instance = renoise.app():show_custom_dialog("Paketti Dialog of Dialogs", create_paketti_dialog(), my_keyhandler_func)
   end
 end
 

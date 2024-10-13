@@ -1255,12 +1255,22 @@ function show_new_song_dialog()
   }
 
   -- Open the new dialog and assign it to the 'dialog' variable
-  dialog = renoise.app():show_custom_dialog("New Song", dialog_content)
+  dialog = renoise.app():show_custom_dialog("New Song", dialog_content, my_ctrl_n_keyhandler_func)
+end
+
+function my_ctrl_n_keyhandler_func(dialog, key)
+
+local closer = preferences.pakettiDialogClose.value
+  if key.modifiers == "" and key.name == closer then
+    dialog:close()
+    dialog = nil
+    return nil
+else
+    return key  -- Allow other key events to be handled as usual
+  end
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker CTRL-N New Song Dialog", invoke=function() show_new_song_dialog() end}
-
-
 -----------------------------------------------------
 -----------------------------------------------------
 -----------------------------------------------------

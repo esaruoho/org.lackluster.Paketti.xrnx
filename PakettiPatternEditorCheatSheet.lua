@@ -931,6 +931,11 @@ function CheatSheet()
   }
 
   local function keyhandler_func(dialog, key)
+local closer = preferences.pakettiDialogClose.value
+  if key.modifiers == "" and key.name == closer then
+   dialog:close()
+   return end
+   
     if key.name == "!" then
       dialog:close()
       renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR

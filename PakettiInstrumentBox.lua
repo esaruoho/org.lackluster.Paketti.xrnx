@@ -145,4 +145,78 @@ renoise.tool():add_menu_entry{name="Sample List:Paketti..:Create Empty Sample Sl
 renoise.tool():add_menu_entry{name="Sample Navigation:Paketti..:Create Empty Sample Slices", invoke=function() emptyslices() end}
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 
+-- Helper function to ensure the required number of instruments exist, with a max limit of 255 (FE)
+local function ensure_instruments_count(count)
+  local song = renoise.song()
+  local max_instruments = 255  -- Allow creation up to 255 instruments (FE in hex)
+
+  while #song.instruments < count and #song.instruments <= max_instruments do
+    song:insert_instrument_at(#song.instruments + 1)
+  end
+end
+
+-- Function to select the next chunk, properly handling the maximum chunk of FE
+local function select_next_chunk()
+  local song = renoise.song()
+  local current_index = song.selected_instrument_index
+  local next_chunk_index = math.floor((current_index - 1) / 16) * 16 + 16 + 1  -- Calculate the next chunk, ensuring alignment
+
+  -- Ensure the next chunk index does not exceed the maximum of 256 (index 255)
+  next_chunk_index = math.min(next_chunk_index, 255)
+
+  ensure_instruments_count(next_chunk_index)
+  song.selected_instrument_index = next_chunk_index
+  renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
+end
+
+-- Function to select the previous chunk, properly handling lower bounds and correct chunk stepping
+local function select_previous_chunk()
+  local song = renoise.song()
+  local current_index = song.selected_instrument_index
+
+  -- Correctly calculate the previous chunk, ensuring it does not get stuck or fail to decrement
+  local previous_chunk_index = math.max(1, math.floor((current_index - 2) / 16) * 16 + 1)
+
+  song.selected_instrument_index = previous_chunk_index
+  renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
+end
+
+-- Function to directly select a specific chunk, limited to FE as the maximum chunk
+local function select_chunk(chunk_index)
+  local target_index = chunk_index + 1
+  ensure_instruments_count(target_index)
+  renoise.song().selected_instrument_index = target_index
+  renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
+end
+
+-- Keybindings and MIDI mappings for chunk navigation with your exact naming convention
+renoise.tool():add_keybinding { name = "Global:Paketti:Select Next Chunk (00..F0)", invoke = select_next_chunk }
+renoise.tool():add_keybinding { name = "Global:Paketti:Select Previous Chunk (00..F0)", invoke = select_previous_chunk }
+
+renoise.tool():add_midi_mapping {
+  name = "Paketti:Select Next Chunk (00..FE)",
+  invoke = function(message) if message:is_trigger() then select_next_chunk() end end
+}
+
+renoise.tool():add_midi_mapping {
+  name = "Paketti:Select Previous Chunk (00..FE)",
+  invoke = function(message) if message:is_trigger() then select_previous_chunk() end end
+}
+
+-- Keybindings and MIDI mappings for selecting specific chunks (00 to F0), with FE as the max chunk
+for i = 0, 15 do
+  local chunk_hex = string.format("%02X", i * 16)
+  local chunk_index = i * 16
+
+  renoise.tool():add_keybinding {
+    name = "Global:Paketti:Select Chunk " .. chunk_hex,
+    invoke = function() select_chunk(chunk_index) end
+  }
+
+  renoise.tool():add_midi_mapping {
+    name = "Paketti:Select Chunk " .. chunk_hex,
+    invoke = function(message) if message:is_trigger() then select_chunk(chunk_index) end end
+  }
+end
+
 

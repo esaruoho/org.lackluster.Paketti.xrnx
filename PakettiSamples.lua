@@ -318,12 +318,25 @@ local function create_dialog_content(close_dialog)
     }
 end
 
+function my_appSelection_keyhandlerfunc(dialog,key)
+
+local closer = preferences.pakettiDialogClose.value
+  if key.modifiers == "" and key.name == closer then
+dialog:close()
+dialog=nil
+return nil
+else
+
+    return key
+end
+end
+
 -- Show the dialog
 function show_app_selection_dialog()
     local dialog = nil
     dialog = renoise.app():show_custom_dialog("App Selection & Smart Folders / Backup Folders", create_dialog_content(function()
         dialog:close()
-    end))
+    end), my_appSelection_keyhandlerfunc)
 end
 
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:App Selection & Smart Folders",invoke=show_app_selection_dialog}
@@ -1011,7 +1024,6 @@ end
     end
 
 -- Apply settings to all samples created by the slicing
--- Apply settings to all samples created by the slicing
 for i, sample in ipairs(s.instruments[currInst].samples) do
     sample.new_note_action = preferences.WipeSlices.WipeSlicesNNA.value
     sample.oneshot = preferences.WipeSlices.WipeSlicesOneShot.value
@@ -1021,26 +1033,34 @@ for i, sample in ipairs(s.instruments[currInst].samples) do
     if dontsync then 
         sample.beat_sync_enabled = false
     else
-        sample.beat_sync_mode = preferences.WipeSlices.WipeSlicesBeatSyncMode.value
+        local beat_sync_mode = preferences.WipeSlices.WipeSlicesBeatSyncMode.value
 
-        -- Only set beat_sync_lines if beatsynclines is valid
-        if beatsynclines / changer < 1 then 
-            sample.beat_sync_lines = beatsynclines
-        else 
-            sample.beat_sync_lines = beatsynclines / changer
+        -- Validate the beat_sync_mode value
+        if beat_sync_mode < 1 or beat_sync_mode > 3 then
+            sample.beat_sync_enabled = false  -- Disable beat sync for invalid mode
+        else
+            sample.beat_sync_mode = beat_sync_mode
+
+            -- Only set beat_sync_lines if beatsynclines is valid
+            if beatsynclines / changer < 1 then 
+                sample.beat_sync_lines = beatsynclines
+            else 
+                sample.beat_sync_lines = beatsynclines / changer
+            end
+
+            -- Enable beat sync for this sample since dontsync is false and mode is valid
+            sample.beat_sync_enabled = true
         end
-
-        -- Enable beat sync for this sample since dontsync is false
-        sample.beat_sync_enabled = true
     end
 
     sample.loop_mode = preferences.WipeSlices.WipeSlicesLoopMode.value
     sample.loop_release = preferences.WipeSlices.WipeSlicesLoopRelease.value
     sample.transpose = currentTranspose
-    sample.autofade = true
+    sample.autofade = preferences.WipeSlices.WipeSlicesAutofade.value
     sample.interpolation_mode = 4
     sample.oversample_enabled = true
 end
+
 
     -- Ensure beat sync is enabled for the original sample
 --    s.instruments[currInst].samples[1].beat_sync_lines = 128
@@ -1869,8 +1889,6 @@ function selectPaddedSliceFromCurrentSlice()
   sample.sample_buffer.display_range = {thisSlicePadding, nextSlicePadding}
   sample.sample_buffer.display_length = nextSlicePadding - thisSlicePadding
 
-  -- Debug info
-  print(string.format("Slice Info - Current index: %d, Slice Start: %d, Slice End: %d", currentSliceIndex, thisSlicePadding, nextSlicePadding))
   renoise.app():show_status(string.format("Slice Info - Current index: %d, Slice Start: %d, Slice End: %d", currentSliceIndex, thisSlicePadding, nextSlicePadding))
 
   preferences.sliceCounter.value = currentSliceIndex
@@ -1913,14 +1931,8 @@ function Global_Paketti_cycle_loop_mode(forwards)
     end
   end
   
-  -- Determine the new mode index
-  if forwards then
-    current_index = current_index % #loop_modes + 1
-  else
-    current_index = (current_index - 2) % #loop_modes + 1
-  end
-  
-  -- Set the new loop mode
+  if forwards then current_index = current_index % #loop_modes + 1
+  else current_index = (current_index - 2) % #loop_modes + 1 end 
   sample.loop_mode = loop_modes[current_index]
 end
 
@@ -1956,21 +1968,10 @@ function Global_Paketti_cycle_loop_mode_all_samples(forwards)
   end
 end
 
--- Add key binding for cycling loop mode forwards for a single sample
-renoise.tool():add_keybinding{name="Global:Paketti:Sample Loop Cycler (Forwards)",
-  invoke=function() Global_Paketti_cycle_loop_mode(true) end}
-
--- Add key binding for cycling loop mode backwards for a single sample
-renoise.tool():add_keybinding{name="Global:Paketti:Sample Loop Cycler (Backwards)",
-  invoke=function() Global_Paketti_cycle_loop_mode(false) end}
-
--- Add key binding for cycling loop mode forwards for all samples in an instrument
-renoise.tool():add_keybinding{name="Global:Paketti:All Samples Loop Cycler (Forwards)",
-  invoke=function() Global_Paketti_cycle_loop_mode_all_samples(true) end}
-
--- Add key binding for cycling loop mode backwards for all samples in an instrument
-renoise.tool():add_keybinding{name="Global:Paketti:All Samples Loop Cycler (Backwards)",
-  invoke=function() Global_Paketti_cycle_loop_mode_all_samples(false) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Sample Loop Cycler (Forwards)",invoke=function() Global_Paketti_cycle_loop_mode(true) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Sample Loop Cycler (Backwards)",invoke=function() Global_Paketti_cycle_loop_mode(false) end}
+renoise.tool():add_keybinding{name="Global:Paketti:All Samples Loop Cycler (Forwards)",invoke=function() Global_Paketti_cycle_loop_mode_all_samples(true) end}
+renoise.tool():add_keybinding{name="Global:Paketti:All Samples Loop Cycler (Backwards)",invoke=function() Global_Paketti_cycle_loop_mode_all_samples(false) end}
 -------------
 -- Function to reverse the sample buffer
 function PakettiReverseSampleBuffer(sample_buffer)
@@ -2023,28 +2024,6 @@ function CopySampleSettings(from_sample, to_sample)
   to_sample.interpolation_mode = from_sample.interpolation_mode
   to_sample.name = from_sample.name
 end
-
---[[function CopySampleSettings(from_sample, to_sample)
-  to_sample.volume = from_sample.volume
-  to_sample.panning = from_sample.panning
-  to_sample.transpose = from_sample.transpose
-  to_sample.fine_tune = from_sample.fine_tune
-  to_sample.beat_sync_enabled = from_sample.beat_sync_enabled
-  to_sample.beat_sync_lines = from_sample.beat_sync_lines
-  to_sample.beat_sync_mode = from_sample.beat_sync_mode
-  to_sample.oneshot = from_sample.oneshot
-  to_sample.loop_release = from_sample.loop_release
-  to_sample.loop_mode = from_sample.loop_mode
-  to_sample.loop_start = from_sample.loop_start
-  to_sample.loop_end = from_sample.loop_end
-  to_sample.mute_group = from_sample.mute_group
-  to_sample.new_note_action = from_sample.new_note_action
-  to_sample.autoseek = from_sample.autoseek
-  to_sample.autofade = from_sample.autofade
-  to_sample.oversample_enabled = from_sample.oversample_enabled
-  to_sample.interpolation_mode = from_sample.interpolation_mode
-  to_sample.name = from_sample.name
-end ]]--
 
 -- Function to copy slice settings (excluding loop start and loop end)
 function CopySliceSettings(from_sample, to_sample)
@@ -2158,7 +2137,7 @@ renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Duplicate and Revers
 renoise.tool():add_midi_mapping{name="Paketti:Duplicate and Reverse Instrument [Trigger]", invoke=function(message) if message:is_trigger() then PakettiDuplicateAndReverseInstrument() end end}
 
 -----
-local function pakettiSampleBufferHalfSelector(half)
+function pakettiSampleBufferHalfSelector(half)
   local song = renoise.song()
   local instrument = song.selected_instrument
   if not instrument then
@@ -2732,50 +2711,35 @@ renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Clean Render and
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Clean Render and Save Selected Track/Group as .FLAC", invoke=function() CleanRenderAndSaveSelection("FLAC") end}
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Clean Render and Save Selected Track/Group as .WAV", invoke=function() CleanRenderAndSaveSelection("WAV") end}
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Clean Render and Save Selected Track/Group as .FLAC", invoke=function() CleanRenderAndSaveSelection("FLAC") end}
-renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Duplicate and Reverse Instrument", invoke=PakettiDuplicateAndReverseInstrument}
-
-
 renoise.tool():add_keybinding{name="Global:Paketti:Clean Render&Save Selected Track/Group (.WAV)", invoke=function() CleanRenderAndSaveSelection("WAV") end}
 renoise.tool():add_keybinding{name="Global:Paketti:Clean Render&Save Selected Track/Group (.FLAC)", invoke=function() CleanRenderAndSaveSelection("FLAC") end}
+renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Duplicate and Reverse Instrument", invoke=PakettiDuplicateAndReverseInstrument}
+
 ---------
 function PakettiInjectDefaultXRNI()
   local song = renoise.song()
   local selected_instrument_index = song.selected_instrument_index
   local original_instrument = song.selected_instrument
 
-  -- Debug: Log initial status
-  print("Starting PakettiInjectDefaultXRNI...")
-  print("Selected Instrument Index: " .. selected_instrument_index)
-  print("Original Instrument Name: " .. (original_instrument and original_instrument.name or "None"))
-
   if not original_instrument or #original_instrument.samples == 0 then
     renoise.app():show_status("No instrument or samples selected.")
-    print("No instrument or no samples found. Exiting.")
     return
   end
 
-  -- Insert a new instrument below the current one
   local new_instrument_index = selected_instrument_index + 1
   song:insert_instrument_at(new_instrument_index)
   song.selected_instrument_index = new_instrument_index
   local new_instrument = song.selected_instrument
 
-  -- Load the default XRNI into the new instrument slot
   pakettiPreferencesDefaultInstrumentLoader()
-
-  -- Re-assign new_instrument after loading XRNI
   new_instrument = renoise.song().selected_instrument
 
   -- Copy the samples and their settings from the original instrument to the new instrument
   for i = 1, #original_instrument.samples do
     local from_sample = original_instrument.samples[i]
-    print("Copying sample #" .. i .. " from instrument index " .. selected_instrument_index .. " with name: " .. from_sample.name)
     
     -- Check if the sample has slice markers
     if #from_sample.slice_markers > 0 then
-      print("Sample #" .. i .. " is a sliced sample. Copying slices.")
-      
-      -- Copy only raw sample data
       local to_sample = new_instrument:sample(i)
       local from_buffer = from_sample.sample_buffer
       local to_sample_buffer = to_sample.sample_buffer
@@ -2814,27 +2778,21 @@ function PakettiInjectDefaultXRNI()
     end
   end
 
-  -- Rename the new instrument
   new_instrument.name = original_instrument.name .. " (Pakettified)"
   print("New Instrument renamed to: " .. new_instrument.name)
 
   -- Apply modulation and filter settings if needed
   if preferences.pakettiPitchbendLoaderEnvelope.value then
     new_instrument.sample_modulation_sets[1].devices[2].is_active = true
-    print("Pitchbend Loader Envelope activated.")
   end
 
   if preferences.pakettiLoaderFilterType.value then
     new_instrument.sample_modulation_sets[1].filter_type = preferences.pakettiLoaderFilterType.value
-    print("Loader Filter Type set to preference.")
   end
 
   -- Return focus to the Instrument Sample Editor
   renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
-  print("Focus returned to Instrument Sample Editor.")
-  print("PakettiInjectDefaultXRNI completed successfully.")
   new_instrument.sample_modulation_sets[1].name = "Pitchbend"
-
 end
 
 -- Add keybinding and menu entry to invoke the PakettiInjectDefaultXRNI function
@@ -2864,7 +2822,6 @@ end
 
 end
 renoise.tool():add_keybinding{name="Global:Paketti:Show/Hide PitchStep on Selected Instrument",invoke=function() PakettiShowPitchStepper() end}
-
 -------------------
 function BeatSyncFromSelection()
   local song=renoise.song()
@@ -2890,3 +2847,219 @@ end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Smart BeatSync from Selection",invoke=function()
 BeatSyncFromSelection() end}
+--
+render_context = {
+    source_track = 0,
+    target_track = 0,
+    target_instrument = 0,
+    temp_file_path = "",
+    original_pattern_size = 0}
+
+-- Function to resize pattern if necessary
+function PakettiSeamlessCheckAndResizePattern()
+    local song = renoise.song()
+    local pattern_index = song.selected_pattern_index
+    local current_pattern = song:pattern(pattern_index)
+    local current_pattern_size = current_pattern.number_of_lines
+
+    -- Save the original pattern size
+    render_context.original_pattern_size = current_pattern_size
+
+    -- If pattern size is less than 257, double it up to a maximum of 512
+    if current_pattern_size < 257 then
+        -- Double the pattern size until it's no more than 512
+        while current_pattern_size < 512 do
+            current_pattern_size = current_pattern_size * 2
+        end
+        -- Set the pattern size to the new value
+    -- Call pakettiResizeAndFill() based on the original size before resizing
+    if render_context.original_pattern_size == 256 then
+        pakettiResizeAndFill(512)
+    elseif render_context.original_pattern_size == 128 then
+        pakettiResizeAndFill(256)
+    elseif render_context.original_pattern_size == 64 then
+        pakettiResizeAndFill(128)
+    elseif render_context.original_pattern_size == 32 then
+        pakettiResizeAndFill(64)
+    elseif render_context.original_pattern_size == 16 then
+        pakettiResizeAndFill(32)
+    end end end
+
+function PakettiSeamlessRestorePatternSize()
+    local song = renoise.song()
+    local pattern_index = song.selected_pattern_index
+    local current_pattern = song:pattern(pattern_index)
+    current_pattern.number_of_lines = render_context.original_pattern_size
+end
+
+-- Function to initiate rendering
+function PakettiSeamlessStartRendering()
+    local render_priority = "high"
+    local selected_track = renoise.song().selected_track
+
+
+    for _, device in ipairs(selected_track.devices) do
+        if device.name == "#Line Input" then
+            render_priority = "realtime"
+            break
+        end
+    end
+
+    -- Set up rendering options
+    local render_options = {
+        sample_rate = preferences.renderSampleRate.value,
+        bit_depth = preferences.renderBitDepth.value,
+        interpolation = "precise",
+        priority = render_priority,
+        start_pos = renoise.SongPos(renoise.song().selected_sequence_index, 1),
+        end_pos = renoise.SongPos(renoise.song().selected_sequence_index, renoise.song().patterns[renoise.song().selected_pattern_index].number_of_lines),
+    }
+
+    -- Set render context
+    render_context.source_track = renoise.song().selected_track_index
+    render_context.target_instrument = renoise.song().selected_instrument_index + 1
+    render_context.temp_file_path = os.tmpname() .. ".wav"
+
+    -- Start rendering with the correct function call
+    local success, error_message = renoise.song():render(render_options, render_context.temp_file_path, PakettiSeamlessRenderingDoneCallback)
+    if not success then
+        print("Rendering failed: " .. error_message)
+    else
+        -- Start a timer to monitor rendering progress
+        renoise.tool():add_timer(PakettiSeamlessMonitorRendering, 500)
+    end
+end
+
+-- Callback function that gets called when rendering is complete
+function PakettiSeamlessRenderingDoneCallback()
+    local song = renoise.song()
+    local renderTrack = render_context.source_track
+    local renderedInstrument = render_context.target_instrument
+
+    -- Remove the monitoring timer
+    renoise.tool():remove_timer(PakettiSeamlessMonitorRendering)
+
+    -- Restore the original pattern size after rendering
+    PakettiSeamlessRestorePatternSize()
+
+    -- Use pakettiPreferencesDefaultInstrumentLoader before loading the sample
+    pakettiPreferencesDefaultInstrumentLoader()
+
+    -- Load rendered sample into the selected instrument
+    local new_instrument = song:instrument(renoise.song().selected_instrument_index)
+    new_instrument.samples[1].sample_buffer:load_from(render_context.temp_file_path)
+    os.remove(render_context.temp_file_path)
+
+    -- Set the selected_instrument_index to the newly created instrument
+    song.selected_instrument_index = renderedInstrument - 1
+
+
+    -- Switch to instrument sample editor's middle frame
+    renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
+
+    pakettiSampleBufferHalfSelector(1)
+
+
+renoise.song().selected_sample.loop_start=renoise.song().selected_sample.sample_buffer.selection_end
+renoise.song().selected_sample.loop_end=renoise.song().selected_sample.sample_buffer.number_of_frames
+renoise.song().selected_sample.loop_mode=2
+renoise.song().selected_sample.name = renoise.song().selected_track.name
+renoise.song().selected_instrument.name = renoise.song().selected_track.name
+    if renoise.song().transport.edit_mode then
+        renoise.song().transport.edit_mode = false
+        renoise.song().transport.edit_mode = true
+    else
+        renoise.song().transport.edit_mode = true
+        renoise.song().transport.edit_mode = false
+    end
+end
+
+function PakettiSeamlessMonitorRendering()
+    if renoise.song().rendering then
+        local progress = renoise.song().rendering_progress
+        print("Rendering in progress: " .. (progress * 100) .. "% complete")
+    else
+        renoise.tool():remove_timer(PakettiSeamlessMonitorRendering)
+        print("Rendering not in progress or already completed.")
+    end
+end
+
+function PakettiSeamlessRenderGroupTrack()
+    local song = renoise.song()
+    local group_track_index = song.selected_track_index
+    local group_track = song:track(group_track_index)
+    local start_track_index = group_track_index + 1
+    local end_track_index = start_track_index + group_track.visible_note_columns - 1
+
+    for i = start_track_index, end_track_index do
+        song:track(i):solo()
+    end
+    PakettiSeamlessStartRendering()
+end
+
+function PakettiSeamlessCleanRenderSelection()
+    local song = renoise.song()
+    local renderTrack = song.selected_track_index
+    local renderedInstrument = song.selected_instrument_index + 1
+
+    print("Initial selected_instrument_index: " .. song.selected_instrument_index)
+    song:insert_instrument_at(renderedInstrument)
+    song.selected_instrument_index = renderedInstrument
+    print("selected_instrument_index after creating new instrument: " .. song.selected_instrument_index)
+    PakettiSeamlessCheckAndResizePattern()
+    if song:track(renderTrack).type == renoise.Track.TRACK_TYPE_GROUP then
+        PakettiSeamlessRenderGroupTrack()
+    else
+        PakettiSeamlessStartRendering()
+    end
+end
+
+-- Menu and keybinding for rendering
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Clean Render Seamless Selected Track/Group", invoke = function() PakettiSeamlessCleanRenderSelection() end}
+renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Clean Render Seamless Selected Track/Group", invoke = function() PakettiSeamlessCleanRenderSelection() end}
+renoise.tool():add_menu_entry{name="Mixer:Paketti..:Clean Render Seamles Selected Track/Group", invoke = function() PakettiSeamlessCleanRenderSelection() end}
+renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Clean Render Seamless Selected Track/Group", invoke = function() PakettiSeamlessCleanRenderSelection() end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Clean Render Seamless Selected Track/Group", invoke = function() PakettiSeamlessCleanRenderSelection() end}
+renoise.tool():add_keybinding{name="Mixer:Paketti:Clean Render Seamless Selected Track/Group", invoke = function() PakettiSeamlessCleanRenderSelection() end}
+
+--
+function PakettiFlipSample(fraction)
+  local song = renoise.song()
+  local sample = song.selected_sample
+  local buffer = sample.sample_buffer
+
+  if buffer.has_sample_data then
+    buffer:prepare_sample_data_changes()
+    local frames = buffer.number_of_frames
+    local rotation_amount = math.floor(frames * fraction)  -- Calculate the number of frames to rotate
+    for c = 1, buffer.number_of_channels do
+      local temp_data = {}
+      for i = 1, frames do
+        temp_data[i] = buffer:sample_data(c, i)
+      end
+      for i = 1, frames do
+        local new_pos = (i + rotation_amount - 1 + frames) % frames + 1
+        buffer:set_sample_data(c, new_pos, temp_data[i])
+      end
+    end
+    buffer:finalize_sample_data_changes()
+
+    renoise.app():show_status("Sample flipped by fraction " .. fraction)
+  else
+    renoise.app():show_status("No sample data to flip.")
+  end
+end
+
+renoise.tool():add_keybinding{name="Sample Editor:Paketti:Flip Sample by 1/4", invoke=function() PakettiFlipSample(1/4) end}
+renoise.tool():add_keybinding{name="Sample Editor:Paketti:Flip Sample by 1/2", invoke=function() PakettiFlipSample(1/2) end}
+renoise.tool():add_keybinding{name="Sample Editor:Paketti:Flip Sample by 1/8", invoke=function() PakettiFlipSample(1/8) end}
+renoise.tool():add_keybinding{name="Sample Editor:Paketti:Flip Sample by 1/16", invoke=function() PakettiFlipSample(1/16) end}
+
+
+renoise.tool():add_keybinding{name="Global:Paketti:Eight 120-fy",invoke=function()
+    local instrument = renoise.song().selected_instrument
+    for _, sample in ipairs(instrument.samples) do
+      sample.sample_mapping.base_note=48
+      sample.sample_mapping.note_range={0,119}
+    end
+    renoise.app():show_status("Base notes set to C-4 and key mapping adjusted for all samples.") end}

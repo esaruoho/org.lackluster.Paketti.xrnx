@@ -540,8 +540,21 @@ current_device_list_content = nil
     dialog_content_view
   }
 
-  custom_dialog = renoise.app():show_custom_dialog("Load Device(s)", dialog_content)
+  custom_dialog = renoise.app():show_custom_dialog("Load Device(s)", dialog_content, my_Devicekeyhandler_func)
 
   -- Initial Update
   updateDeviceList()
 end
+
+function my_Devicekeyhandler_func(custom_dialog, key)
+local closer = preferences.pakettiDialogClose.value
+  if key.modifiers == "" and key.name == closer then
+
+    custom_dialog:close()
+    custom_dialog = nil
+    return nil
+else
+    return key
+  end
+end
+

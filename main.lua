@@ -1,23 +1,21 @@
+local rx = require 'rx'
 require "Paketti0G01_Loader"
 require "PakettiKeyBindings"
 require "PakettiThemeSelector"
 require "PakettieSpeak"
 require "base64float"
-local rx = require 'rx'
 require "PakettiAutomation"
 require "PakettiAudioProcessing"
 require "PakettiBeatDetect"
 require "PakettiControls"
 require "PakettiDeviceChains"
+require "PakettiDynamicViews"
+require "PakettiEightOneTwenty"
 require "PakettiGater"
 require "PakettiImpulseTracker"
 require "PakettiInstrumentBox"
 require "PakettiLoaders"
 require "PakettiLoadDevices"
---require "PakettiLoadNativeGUI"
---require "PakettiLoadVSTGUI"
---require "PakettiLoadAUVST3GUI"
---require "PakettiLoadLADSPADSSI"
 require "PakettiLoadPlugins"
 require "PakettiMainMenuEntries"
 require "PakettiMidi"
@@ -33,14 +31,9 @@ require "PakettiTkna"
 require "PakettiRecorder" 
 require "PakettiExperimental_Verify"
 require "Coluga/PakettiColuga"
--- These were requested via GitHub / Renoise Forum / Renoise Discord - always get in touch with me (esaruoho@icloud.com)
--- Or post a feature on https://github.com/esaruoho/org.lackluster.Paketti.xrnx/issues/new
 require "PakettiRequests"
 
 ------------------------------------------------
--- Autoexec.bat
--- everytime a new Renoise song is created, run this
-
 local themes_path = renoise.tool().bundle_path .. "Themes/"
 local themes = os.filenames(themes_path, "*.xrnc")
 local selected_theme_index = nil

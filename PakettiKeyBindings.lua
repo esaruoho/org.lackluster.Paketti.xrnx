@@ -3,22 +3,34 @@ function extract_midi_mappings()
   -- Define a list of required Lua files (replace with your actual files)
   local required_files = {
     "Coluga/PakettiColuga.lua",
+    "Paketti0G01_Loader.lua",
+    "PakettiAudioProcessing.lua",
+    "PakettiAutomation.lua",
     "PakettiControls.lua",
+    "PakettiDeviceChains.lua",
+    "PakettiDynamicViews.lua",
+    "PakettieSpeak.lua",
     "PakettiExperimental_Verify.lua",
+    "PakettiGater.lua",
     "PakettiImpulseTracker.lua",
-    "PakettiLoadAUVST3GUI.lua",
-    "PakettiLoadLADSPADSSI.lua",
-    "PakettiLoadNativeGUI.lua",
-    "PakettiLoadPlugins.lua",
-    "PakettiLoadVSTGUI.lua",
+    "PakettiInstrumentBox.lua",
+    "PakettiLoadDevices.lua",
     "PakettiLoaders.lua",
+    "PakettiLoadPlugins.lua",
+    "PakettiMainMenuEntries.lua",
     "PakettiMidi.lua",
+    "PakettiOctaMEDSuite.lua",
     "PakettiPatternEditor.lua",
+    "PakettiPatternEditorCheatSheet.lua",
+    "PakettiPatternMatrix.lua",
     "PakettiPatternSequencer.lua",
+    "PakettiPhraseEditor.lua",
+    "PakettiPlayerProSuite.lua",
+    "PakettiRecorder.lua",
     "PakettiRequests.lua",
     "PakettiSamples.lua",
+    "PakettiThemeSelector.lua",
     "PakettiTkna.lua",
-    -- Add more required files as necessary
   }
 
   -- Table to store extracted midi mappings
@@ -459,14 +471,17 @@ grouped_mappings["Unused Mappings"] = unused_mappings
 local PakettiMidiMappingDialog = nil
 
 -- Function to handle key events
-function my_keyhandler_func(dialog, key)
-  if not (key.modifiers == "" and key.name == "exclamation") then
-    return key
-  else
-    dialog:close()
+function my_MidiMappingkeyhandler_func(dialog, key)
+
+local closer = preferences.pakettiDialogClose.value
+  if key.modifiers == "" and key.name == closer then
+dialog:close()
     PakettiMidiMappingDialog = nil
-    return nil
-  end
+return nil
+else
+
+    return key
+end
 end
 
 -- Function to create and show the MIDI mappings dialog
@@ -582,7 +597,7 @@ function show_midi_mappings_dialog()
   PakettiMidiMappingDialog = renoise.app():show_custom_dialog(
     "Paketti MIDI Mappings",
     dialog_content,
-    function(dialog, key) return my_keyhandler_func(dialog, key) end
+    function(dialog, key) return my_MidiMappingkeyhandler_func(dialog, key) end
   )
 end
 
@@ -833,14 +848,15 @@ function pakettiKeyBindingsUpdateList()
 end
 
 -- Function to handle key events
-function my_keyhandler_func(dialog, key)
-  if not (key.modifiers == "" and key.name == "exclamation") then
-    return key
-  else
+function my_PakettiKeybindingskeyhandler_func(dialog, key)
+local closer = preferences.pakettiDialogClose.value
+  if key.modifiers == "" and key.name == closer then
     dialog:close()
     dialog = nil
     return nil
-  end
+else
+    return key
+end
 end
 
 -- Main function to display the Paketti keybindings dialog
@@ -934,13 +950,27 @@ function showPakettiKeyBindingsDialog()
       },
       identifier_switch,
       show_shortcuts_switch,
+vb:row{vb:button{text="Save as Textfile", notifier = function()
+    local filename = renoise.app():prompt_for_filename_to_write(".txt", "Available Plugins Saver")
+    if filename then
+      local file, err = io.open(filename, "w")
+      if file then
+        file:write(keybinding_list.text)  -- Correct reference to multiline_field's text
+        file:close()
+        renoise.app():show_status("File saved successfully")
+      else
+        renoise.app():show_status("Error saving file: " .. err)
+      end
+    end
+  end}},
+
       search_text,
       search_textfield,
       keybinding_list,
       selected_shortcuts_text,
       total_shortcuts_text
     },
-    my_keyhandler_func  -- Key handler function
+    my_PakettiKeybindingskeyhandler_func  -- Key handler function
   )
 
   -- Initial list update
@@ -1206,18 +1236,19 @@ function renoiseKeyBindingsUpdateList()
 end
 
 -- Function to handle key events
-function my_keyhandler_func(dialog, key)
-  if not (key.modifiers == "" and key.name == "exclamation") then
-    return key
-  else
+function my_RenoiseKeybindingskeyhandler_func(dialog, key)
+  local closer = preferences.pakettiDialogClose.value
+  if key.modifiers == "" and key.name == closer then
     dialog:close()
-    dialog = nil
+    dialog=nil
     return nil
+  else
+    return key
   end
 end
 
 -- Main function to display the Renoise keybindings dialog
-function showRenoiseKeyBindingsDialog()
+function showRenoiseKeyBindingsDialog(selectedIdentifier)  -- Accept an optional parameter
   -- Check if the dialog is already visible and close it
   if renoise_dialog and renoise_dialog.visible then
     renoise_dialog:close()
@@ -1253,11 +1284,22 @@ function showRenoiseKeyBindingsDialog()
   end
   table.sort(identifier_items)
 
+  -- Determine the index of the selectedIdentifier
+  local selected_index = 1 -- Default to "All"
+  if selectedIdentifier then
+    for i, id in ipairs(identifier_items) do
+      if id == selectedIdentifier then
+        selected_index = i
+        break
+      end
+    end
+  end
+
   -- Create the dropdown menu for identifier selection
   renoise_identifier_dropdown = vb:popup {
     items = identifier_items,
     width = 300,
-    value = 1, -- Default to "All"
+    value = selected_index,  -- Set the dropdown to the selected identifier
     notifier = renoiseKeyBindingsUpdateList
   }
 
@@ -1289,7 +1331,6 @@ function showRenoiseKeyBindingsDialog()
   -- UI Elements
   renoise_search_textfield = vb:textfield{width=300, notifier=renoiseKeyBindingsUpdateList}
 
-
   renoise_total_shortcuts_text = vb:text {
     text = "Total: 0 shortcuts, 0 unassigned",
     font = "bold",
@@ -1303,7 +1344,8 @@ function showRenoiseKeyBindingsDialog()
     width = 1100, -- Adjusted width to fit the dialog
     align = "left"
   }
-renoise_search_text = vb:text{text="Filter with"}
+
+  renoise_search_text = vb:text{text="Filter with"}
 
   renoise_keybinding_list = vb:multiline_textfield { width = 1100, height = 600, font = "mono" }
 
@@ -1321,13 +1363,31 @@ renoise_search_text = vb:text{text="Filter with"}
       renoise_identifier_dropdown,
       renoise_show_script_filter_switch,
       renoise_show_shortcuts_switch,
+      vb:row{
+        vb:button{
+          text="Save as Textfile",
+          notifier = function()
+            local filename = renoise.app():prompt_for_filename_to_write(".txt", "Available Plugins Saver")
+            if filename then
+              local file, err = io.open(filename, "w")
+              if file then
+                file:write(renoise_keybinding_list.text)  -- Correct reference to multiline_field's text
+                file:close()
+                renoise.app():show_status("File saved successfully")
+              else
+                renoise.app():show_status("Error saving file: " .. err)
+              end
+            end
+          end
+        }
+      },
       renoise_search_text,
       renoise_search_textfield,
       renoise_keybinding_list,
       renoise_selected_shortcuts_text,
       renoise_total_shortcuts_text
     },
-    my_keyhandler_func  -- Key handler function
+    my_RenoiseKeybindingskeyhandler_func  -- Key handler function
   )
 
   -- Initial list update
@@ -1341,7 +1401,7 @@ end
 -- Add main menu entry for Renoise keybindings dialog
 renoise.tool():add_menu_entry {
   name = "Main Menu:Tools:Paketti..:!Preferences:Renoise KeyBindings..",
-  invoke = function() showRenoiseKeyBindingsDialog() end
+  invoke = function() showRenoiseKeyBindingsDialog() end  -- No identifier passed
 }
 
 -- Add submenu entries under corresponding identifiers
@@ -1360,7 +1420,7 @@ local renoise_identifiers = {
 for _, identifier in ipairs(renoise_identifiers) do
   renoise.tool():add_menu_entry {
     name = "Main Menu:Tools:Paketti..:!Preferences:Renoise KeyBindings..:" .. identifier,
-    invoke = function() showRenoiseKeyBindingsDialog(identifier) end
+    invoke = function() showRenoiseKeyBindingsDialog(identifier) end  -- Pass identifier
   }
 end
 
@@ -1368,7 +1428,7 @@ end
 for _, identifier in ipairs(renoise_identifiers) do
   renoise.tool():add_menu_entry {
     name = identifier .. ":Paketti..:Show Renoise KeyBindings",
-    invoke = function() showRenoiseKeyBindingsDialog(identifier) end
+    invoke = function() showRenoiseKeyBindingsDialog(identifier) end  -- Pass identifier
   }
 end
 

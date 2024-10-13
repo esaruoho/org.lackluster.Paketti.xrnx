@@ -443,11 +443,8 @@ function showAvailableRoutings()
     }
 
     -- Show the dialog
-    dialog = renoise.app():show_custom_dialog("Output Routings", dialog_content)
+    dialog = renoise.app():show_custom_dialog("Output Routings", dialog_content, my_keyhandler_func)
 end
-
-
-
 
 function simpleOutputRoute(output)
   -- Get the selected track from the current song
@@ -1877,7 +1874,7 @@ function trackOutputRoutingsGUI_create()
     -- Create a column to hold up to 18 tracks
     local column_content = vb:column{
       margin = 5,
-      spacing = 5,
+      --spacing = 5,
       width = 200 -- Set column width to accommodate track name and dropdown
     }
 
@@ -1898,7 +1895,7 @@ function trackOutputRoutingsGUI_create()
       local dropdown = vb:popup{
         items = available_output_routings,
         value = table.find(available_output_routings, current_output_routing),
-        width = 120 -- Set width to 200% of 60 to be 120
+        width = 220 -- Set width to 200% of 60 to be 120
       }
       
       -- Store the dropdown element
@@ -1958,8 +1955,21 @@ function trackOutputRoutingsGUI_create()
   })
 
   -- Show the dialog
-  dialog = renoise.app():show_custom_dialog("Track Output Routings", content)
+  dialog = renoise.app():show_custom_dialog("Track Output Routings", content, my_trackOutputkeyhandler_func)
 end
+
+-- Keyhandler function for dialog
+function my_trackOutputkeyhandler_func(dialog, key)
+local closer = preferences.pakettiDialogClose.value
+  if key.modifiers == "" and key.name == closer then
+    dialog:close()
+    dialog = nil
+    return nil
+else
+    return key
+  end
+end
+
 
 ------------
 
@@ -3785,13 +3795,6 @@ function create_instrument_from_convolver(convolver_device, track_index, device_
   print(string.format("Exported '%s' of length %d, sample rate %d, stereo: %s to new instrument", sample_name, num_frames, sample_rate, tostring(stereo)))
 end
 
--- Key handler function
-local function my_keyhandler_func(dialog, key)
-  if not (key.modifiers == "" and key.name == "exclamation") then
-    return key
-  end
-end
-
 -- Function to show the GUI for selecting or adding a Convolver device
 function show_convolver_selection_dialog(callback)
   print("Showing Convolver selection dialog")
@@ -3801,7 +3804,7 @@ function show_convolver_selection_dialog(callback)
     local dialog_content = vb:column {}
     local sample_name_text = vb:text {
       text = "Selected Sample: " .. (renoise.song().selected_sample and renoise.song().selected_sample.name or "None"),
-      style = "strong"
+      style = "strong", font="bold"
     }
     dialog_content:add_child(sample_name_text)
     dialog_content:add_child(vb:button {
@@ -3876,8 +3879,21 @@ function show_convolver_selection_dialog(callback)
     end
     return dialog_content
   end
-  dialog = renoise.app():show_custom_dialog("Select or Add Convolver Device", create_dialog_content(), my_keyhandler_func)
+  dialog = renoise.app():show_custom_dialog("Select or Add Convolver Device", create_dialog_content(), my_Convolverkeyhandler_func)
 end
+
+-- Keyhandler function for dialog
+function my_Convolverkeyhandler_func(dialog, key)
+local closer = preferences.pakettiDialogClose.value
+  if key.modifiers == "" and key.name == closer then
+    dialog:close()
+    dialog = nil
+    return nil
+else
+    return key
+  end
+end
+
 
 -- Function to handle import and export actions
 function handle_convolver_action(device, track_index, device_index, action)
@@ -4230,7 +4246,7 @@ renoise.tool():add_keybinding{name="Global:Paketti:Change Master Track Volume by
 -------
 
 
-local function pakettiResizeAndFill(patternSize)
+function pakettiResizeAndFill(patternSize)
   local song = renoise.song()
   local pattern = song.selected_pattern
   local current_length = pattern.number_of_lines
@@ -4634,6 +4650,19 @@ local function load_strategies()
   file:close()
 end
 
+local function my_keyhandler_func(dialog, key)
+local closer = preferences.pakettiDialogClose.value
+  if key.modifiers == "" and key.name == closer then
+    dialog:close()
+    dialog = nil
+    return nil
+else
+    return key
+  end
+end
+
+
+
 local function get_random_message()
   if #strategies > 0 then
     return strategies[rs(#strategies)]
@@ -4701,7 +4730,7 @@ function create_oblique_strategies_dialog()
     }
   }
   
-  dialog = renoise.app():show_custom_dialog("Oblique Strategies", dialog_content)
+  dialog = renoise.app():show_custom_dialog("Oblique Strategies", dialog_content, my_keyhandler_func)
 end
 
 function shuffle_oblique_strategies()
@@ -5101,7 +5130,7 @@ function PakettiTrackDaterTitlerDialog()
   -- Initialize filename display
   update_filename_display()
 
-  dialog = renoise.app():show_custom_dialog("Paketti Track Dater & Titler", dialog_content)
+  dialog = renoise.app():show_custom_dialog("Paketti Track Dater & Titler", dialog_content, my_keyhandler_func)
 end
 
 -- Adding the menu entries
@@ -6338,15 +6367,16 @@ local device_dropdowns = {}
 local available_devices = {}
 
 -- Key handler function
-local function my_keyhandler_func(dialog_ref, key)
-  -- Check if the '!' key (exclamation) was pressed without modifiers
-  if key.modifiers == "" and key.name == "exclamation" then
+local function my_userPrefskeyhandler_func(dialog_ref, key)
+
+local closer = preferences.pakettiDialogClose.value
+  if key.modifiers == "" and key.name == closer then
     PakettiUserPreferenceSavePreferences(device_dropdowns, available_devices)  -- Save preferences before closing
-    dialog_ref:close()  -- Close the dialog if the exclamation key is pressed
-    dialog = nil  -- Clear the dialog reference
-    -- Return focus to the active middle frame after closing
+    dialog_ref:close()
+    dialog = nil
     renoise.app().window.active_middle_frame = renoise.app().window.active_middle_frame
-  else
+    return nil
+else
     return key  -- Allow other key events to be handled as usual
   end
 end
@@ -6513,11 +6543,7 @@ function PakettiUserPreferencesShowerDialog()
   })
 
   -- Show the dialog with the key handler and return focus to the active middle frame
-  dialog = renoise.app():show_custom_dialog(
-    "Paketti User Preferences for Show/Hide Slots",
-    vb:column(rows),
-    my_keyhandler_func  -- Attach the key handler
-  )
+  dialog = renoise.app():show_custom_dialog("Paketti User Preferences for Show/Hide Slots",vb:column(rows),my_userPrefskeyhandler_func)
 
   -- After opening the dialog, set the focus back to the active middle frame
   renoise.app().window.active_middle_frame = renoise.app().window.active_middle_frame
@@ -6627,30 +6653,28 @@ end}
 ------------
 
 
-function PakettiSetSelectedTrackVolumePostFX(number)
+function PakettiSetSelectedTrackVolumePostFX(dB_change)
+  local currVol_dB = math.lin2db(renoise.song().selected_track.postfx_volume.value)
+  local newVol_dB = currVol_dB + dB_change
 
-local currVol=renoise.song().selected_track.postfx_volume.value
-local newVol = currVol+number
+  if newVol_dB < math.infdb then
+    newVol_dB = math.infdb
+    renoise.app():show_status("Selected Track PostFX Volume cannot go lower than -inf dB, setting to silence.")
+  elseif newVol_dB > 3 then
+    newVol_dB = 3
+    renoise.app():show_status("Selected Track PostFX Volume cannot go higher than 3 dB, setting to 3 dB.")
+  end
 
-if newVol < 0 then newVol = 0
-renoise.app():show_status("Selected Track PostFX Volume cannot go lower than 0, setting to 0")
- renoise.song().selected_track.postfx_volume.value=0
-return
-end
-if newVol > 1.41254 then 
-renoise.app():show_status("Selected Track PostFX Volume cannot go higher than 1.41254, setting to 1.41254")
- renoise.song().selected_track.postfx_volume.value_string="3.000 dB"
-return
-end
- renoise.song().selected_track.postfx_volume.value=newVol
+  renoise.song().selected_track.postfx_volume.value = math.db2lin(newVol_dB)
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Change Selected Track Volume by +0.01",invoke=function() PakettiSetSelectedTrackVolumePostFX(0.01) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Change Selected Track Volume by +0.05",invoke=function() PakettiSetSelectedTrackVolumePostFX(0.05) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Change Selected Track Volume by +0.1",invoke=function() PakettiSetSelectedTrackVolumePostFX(0.1) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Change Selected Track Volume by -0.01",invoke=function() PakettiSetSelectedTrackVolumePostFX(-0.01) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Change Selected Track Volume by -0.05",invoke=function() PakettiSetSelectedTrackVolumePostFX(-0.05) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Change Selected Track Volume by -0.1",invoke=function() PakettiSetSelectedTrackVolumePostFX(-0.1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Change Selected Track Volume by +0.1dB",invoke=function() PakettiSetSelectedTrackVolumePostFX(0.1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Change Selected Track Volume by +0.5dB",invoke=function() PakettiSetSelectedTrackVolumePostFX(0.5) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Change Selected Track Volume by +1dB",invoke=function() PakettiSetSelectedTrackVolumePostFX(1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Change Selected Track Volume by -0.1dB",invoke=function() PakettiSetSelectedTrackVolumePostFX(-0.1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Change Selected Track Volume by -0.5dB",invoke=function() PakettiSetSelectedTrackVolumePostFX(-0.5) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Change Selected Track Volume by -1dB",invoke=function() PakettiSetSelectedTrackVolumePostFX(-1) end}
+
 
 
 
@@ -6714,6 +6738,687 @@ renoise.tool():add_keybinding{name="Global:Paketti:Select Sample Next",invoke=fu
 renoise.tool():add_keybinding{name="Global:Paketti:Select Sample Previous",invoke=function()SampleSelector(-1)end}
 renoise.tool():add_midi_mapping{name="Paketti:Select Sample Next",invoke=function(message)if message:is_trigger()then SampleSelector(1)end end}
 renoise.tool():add_midi_mapping{name="Paketti:Select Sample Previous",invoke=function(message)if message:is_trigger()then SampleSelector(-1)end end}
+
+
+---
+
+
+
+
+
+
+
+
+function PakettiSerialOutputRoutings(is_non_continual, noMaster, includeMaster)
+  local availOut = renoise.song().selected_track.available_output_routings
+  local seq_count = renoise.song().sequencer_track_count
+  local send_count = renoise.song().send_track_count
+
+  -- Determine the valid range of output routings based on noMaster flag
+  local start_index = noMaster and 2 or 1
+  local num_routings = #availOut - start_index + 1
+
+  -- Ensure there are enough routings based on the configuration
+  if num_routings < 1 then
+    renoise.app():show_status("Not enough available output routings to apply the configuration!")
+    return
+  end
+
+  local track_index = 1
+
+  -- Function to assign output routings in sequence
+  local function assign_routing(i)
+    local routing_index
+    if is_non_continual then
+      -- Non-Continual mode: assign the last routing after exceeding available outputs
+      routing_index = track_index + start_index - 1
+      if routing_index > #availOut then routing_index = #availOut end
+    else
+      -- Continual mode: wrap around with modulo
+      routing_index = ((track_index - 1) % num_routings) + start_index
+    end
+    renoise.song().tracks[i].output_routing = availOut[routing_index]
+    track_index = track_index + 1
+  end
+
+  -- Loop through the sequencer tracks (normal tracks)
+  for i = 1, seq_count do
+    assign_routing(i)
+  end
+
+  -- Handle the Master track
+  if includeMaster then
+    assign_routing(seq_count + 1)
+  else
+    -- Assign Master track to the last available routing if not part of the sequence
+    renoise.song().tracks[seq_count + 1].output_routing = availOut[#availOut]
+  end
+
+  -- Loop through the send tracks
+  for i = 1, send_count do
+    assign_routing(seq_count + 1 + i)
+  end
+
+  -- Print the output routings for all tracks (for debugging)
+  for i = 1, seq_count + send_count + 1 do oprint(renoise.song().tracks[i].output_routing) end
+end
+
+-- Keybindings with {} on the same line
+renoise.tool():add_keybinding{name="Global:Paketti:Output Routing (Non-Continual, Skip Master, Exclude Master)",invoke=function() PakettiSerialOutputRoutings(true, true, false) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Output Routing (Continual, Skip Master, Exclude Master)",invoke=function() PakettiSerialOutputRoutings(false, true, false) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Output Routing (Non-Continual, Include Master, Exclude Master)",invoke=function() PakettiSerialOutputRoutings(true, false, false) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Output Routing (Continual, Include Master, Exclude Master)",invoke=function() PakettiSerialOutputRoutings(false, false, false) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Output Routing (Non-Continual, Skip Master, Include Master in Cycle)",invoke=function() PakettiSerialOutputRoutings(true, true, true) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Output Routing (Continual, Skip Master, Include Master in Cycle)",invoke=function() PakettiSerialOutputRoutings(false, true, true) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Output Routing (Non-Continual, Include Master, Include Master in Cycle)",invoke=function() PakettiSerialOutputRoutings(true, false, true) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Output Routing (Continual, Include Master, Include Master in Cycle)",invoke=function() PakettiSerialOutputRoutings(false, false, true) end}
+
+
+------
+
+
+
+
+
+
+
+
+
+
+
+
+function resetOutputRoutings()
+local calculation = renoise.song().sequencer_track_count + 1
+local calculationSends = calculation + renoise.song().send_track_count
+
+for i=1,renoise.song().sequencer_track_count do
+renoise.song().tracks[i].output_routing="Master"
+end
+
+for i=calculation+1,calculationSends do
+renoise.song().tracks[i].output_routing="Master"
+end
+rprint (renoise.song().tracks[calculation].available_output_routings)
+renoise.song().tracks[calculation].output_routing=renoise.song().tracks[calculation].available_output_routings[1]
+
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Reset Output Routings to Master",invoke=function() resetOutputRoutings() end}
+
+
+function PlayCurrentLineAdvance(direction)
+  local s=renoise.song()
+  local t=s.transport
+  local curr_pos=s.transport.edit_pos
+  local num_lines=s.selected_pattern.number_of_lines
+  local step=t.edit_step
+    
+  renoise.song().transport.follow_player = false
+  
+  -- Play the current line
+  t:start_at(s.selected_line_index)
+
+  -- Small delay to ensure the note is triggered
+  local start_time = os.clock()
+  while (os.clock() - start_time < 0.05) do
+    -- Minimum delay to allow the line to play correctly
+  end
+  
+  -- Stop playback immediately after playing the line
+  t:stop()
+  
+  -- Adjust the selected line index based on the direction
+  if direction == 1 then
+    -- Forward movement
+    if s.selected_line_index + direction > num_lines then
+      s.selected_line_index = 1
+    else
+      s.selected_line_index = s.selected_line_index + direction
+    end
+  elseif direction == -1 then
+    -- Backward movement
+    if s.selected_line_index + direction < 1 then
+      s.selected_line_index = num_lines
+    else
+      s.selected_line_index = s.selected_line_index + direction
+    end
+  elseif direction == "random" then
+      s.selected_line_index = math.random(1, renoise.song().selected_pattern.number_of_lines)
+  end
+end
+
+-- Key bindings for forward and backward movement
+renoise.tool():add_keybinding{name="Global:Paketti:Play Current Line&Step Forwards", invoke=function() PlayCurrentLineAdvance(1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Play Current Line&Step Backwards", invoke=function() PlayCurrentLineAdvance(-1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Play Current Line&Step Random", invoke=function() PlayCurrentLineAdvance("random") end}
+
+function PakettiDeviceBypass(number,state)
+local number = number +1
+if state == "toggle" then
+if renoise.song().selected_track.devices[number].is_active 
+then  renoise.song().selected_track.devices[number].is_active = false
+return 
+else renoise.song().selected_track.devices[number].is_active = true return 
+end
+end
+if state == "enable" then renoise.song().selected_track.devices[number].is_active=true end
+if state == "disable" then renoise.song().selected_track.devices[number].is_active=false end
+
+end
+
+for i=1,34 do
+  local formatted_number=string.format("%02d",i)
+  renoise.tool():add_keybinding{name="Global:Paketti:Device Control "..formatted_number.. " (Enable)",invoke=function() PakettiDeviceBypass(i,"enable") end}
+  renoise.tool():add_keybinding{name="Global:Paketti:Device Control "..formatted_number .." (Disable)",invoke=function() PakettiDeviceBypass(i,"disable") end}
+  renoise.tool():add_keybinding{name="Global:Paketti:Device Control "..formatted_number .. " (Toggle)",invoke=function() PakettiDeviceBypass(i,"toggle") end}
+  renoise.tool():add_midi_mapping{name="Paketti:Device Control "..formatted_number.. " (Enable)",invoke=function(message) if message:is_trigger() then PakettiDeviceBypass(i,"enable") end end}
+  renoise.tool():add_midi_mapping{name="Paketti:Device Control "..formatted_number .." (Disable)",invoke=function(message) if message:is_trigger() then PakettiDeviceBypass(i,"disable") end end}
+  renoise.tool():add_midi_mapping{name="Paketti:Device Control "..formatted_number .. " (Toggle)",invoke=function(message) if message:is_trigger() then PakettiDeviceBypass(i,"toggle") end end}  
+end
+------------
+-- Global variable to store the last selected line
+local last_selected_line = nil
+
+function setRandomLine(step)
+  local num_lines = renoise.song().selected_pattern.number_of_lines
+  local random_line
+
+  -- Debug print: Log the number of lines in the current pattern
+  print("Number of lines in pattern: " .. num_lines)
+
+  -- If step is nil, treat it as fully random
+  if step == nil then
+    step = 1
+  end
+
+  -- Check if the step is a string (like "LPB") or a number
+  if step == "lpb" then
+    -- Use the actual LPB value from the transport
+    step = renoise.song().transport.lpb
+  end
+
+  -- Validate the step value (ensure it's a number)
+--  step = tonumber(step)
+  if not step then
+    print("Invalid step value provided.")
+    return
+  end
+
+  -- Handle the case where the step value (LPB or numeric) is too high for the pattern length
+  if step >= num_lines then
+    print("LPB is too high for this pattern (LPB: " .. step .. ", Pattern Length: " .. num_lines .. ")")
+    return
+  end
+
+  -- Repeat the line selection until a new line (different from last) is found
+  repeat
+    -- Random line must be a multiple of step + 1
+    local max_multiplier = math.floor((num_lines - 1) / step)
+    local random_multiplier = math.random(0, max_multiplier)
+    random_line = 1 + step * random_multiplier
+    -- Debug print: Show step/LPB information
+    print("Step: " .. step .. " | Max multiplier: " .. max_multiplier .. " | Random multiplier: " .. random_multiplier .. " | Resulting line: " .. random_line)
+
+  until random_line ~= last_selected_line -- Keep selecting until we find a new line
+
+  -- Ensure the random line is valid
+  random_line = math.min(random_line, num_lines)
+  print("Final line selected: " .. random_line)
+
+  -- Store the current selected line to compare next time
+  last_selected_line = random_line
+
+  -- Check if follow_player is on or off
+  if not renoise.song().transport.follow_player then
+    -- If follow_player is off, just set the line index and don't start playing
+    renoise.song().selected_line_index = random_line
+    print("Follow player is off. Line selected: " .. random_line)
+  else
+    -- If follow_player is on, move to the selected line and start playing
+    renoise.song().transport:start_at(random_line)
+    print("Follow player is on. Starting at line: " .. random_line)
+  end
+end
+
+
+
+
+-- Add MIDI mapping to trigger with default step=1 (random)
+renoise.tool():add_midi_mapping{name="Paketti:Play at Random Line in Current Pattern", invoke=function(message)
+  if message:is_trigger() then setRandomLine(1) end
+end}
+
+-- Add keybinding with default step=1 (random)
+renoise.tool():add_keybinding{name="Global:Paketti:Play at Random Line in Current Pattern", invoke=function()
+  setRandomLine(1)
+end}
+
+
+renoise.tool():add_midi_mapping{name="Paketti:Play at Random Line in Current Pattern 2", invoke=function(message)
+  if message:is_trigger() then setRandomLine(2) end
+end}
+
+-- Add keybinding with default step=0 (random)
+renoise.tool():add_keybinding{name="Global:Paketti:Play at Random Line in Current Pattern 2",invoke=function() setRandomLine(2) end}
+
+renoise.tool():add_midi_mapping{name="Paketti:Play at Random Line in Current Pattern 4", invoke=function(message)
+  if message:is_trigger() then setRandomLine(4) end
+end}
+
+-- Add keybinding with default step=0 (random)
+renoise.tool():add_keybinding{name="Global:Paketti:Play at Random Line in Current Pattern 4",invoke=function()
+  setRandomLine(4)
+end}
+
+
+
+renoise.tool():add_midi_mapping{name="Paketti:Play at Random Line in Current Pattern LPB", invoke=function(message)
+  if message:is_trigger() then setRandomLine("lpb") end
+end}
+
+-- Add keybinding with default step=0 (random)
+renoise.tool():add_keybinding{name="Global:Paketti:Play at Random Line in Current Pattern LPB",invoke=function()
+  setRandomLine("lpb")
+end}
+
+
+
+function playAtRow(number)
+if number > renoise.song().selected_pattern.number_of_lines then
+renoise.app():show_status("There is no such row " .. number .. " in the selected pattern, which has " .. renoise.song().selected_pattern.number_of_lines .. " lines, doing nothing.")
+elseif not renoise.song().transport.playing then
+  local s=renoise.song()
+  local t=s.transport
+  local curr_pos=s.transport.edit_pos
+  local num_lines=s.selected_pattern.number_of_lines
+  local step=t.edit_step
+    
+  renoise.song().transport.follow_player = false
+  
+  -- Play the current line
+  t:start_at(number)
+
+  -- Small delay to ensure the note is triggered
+  local start_time = os.clock()
+  while (os.clock() - start_time < 0.05) do
+    -- Minimum delay to allow the line to play correctly
+  end
+  
+  -- Stop playback immediately after playing the line
+  t:stop()
+renoise.song().selected_line_index=number
+return
+else
+
+
+renoise.song().transport:start_at(number)
+
+end
+end
+
+for i=0,511 do
+local formatnumber = string.format("%03d",i)
+local hexnumber = string.format("%03X", i)
+renoise.tool():add_keybinding{name="Global:Paketti:Play at Row " .. formatnumber .. " (" .. hexnumber .. ")",invoke=function()
+playAtRow(i+1) end}
+renoise.tool():add_midi_mapping{name="Paketti:Play at Row " .. formatnumber .. " (" .. hexnumber .. ")",invoke=function()
+playAtRow(i+1) end}
+
+end
+
+
+
+
+
+
+
+
+---------
+
+
+
+
+
+
+
+
+
+
+
+
+
+local dialog = nil
+local vb = renoise.ViewBuilder()
+local global_slider_width = 20
+local global_slider_height = 100
+local sliders = {volume={}, delay={}, panning={}}
+local loop_values = {volume=16, delay=16, panning=16}
+local auto_grab_enabled = false  -- Default value for auto-grab checkbox
+
+function close_dialog()
+  if dialog and dialog.visible then
+    dialog:close()
+    dialog = nil
+  end
+end
+
+function my_VDPkeyhandler_func(dialog, key)
+  local closer = preferences.pakettiDialogClose.value
+  if key.modifiers == "" and key.name == closer then
+    dialog:close()
+    dialog = nil
+    return nil
+  else
+    return key
+  end
+end
+
+-- Ensure focus goes back to the pattern editor (middle frame)
+function focus_pattern_editor()
+  renoise.app().window.active_middle_frame = 1
+end
+
+-- Function to check if selected track is a normal track (not Group, Send, or Master)
+function is_normal_track()
+  local track_type = renoise.song().selected_track.type
+  return track_type == renoise.Track.TRACK_TYPE_SEQUENCER -- Normal track
+end
+
+-- Show error message when the wrong type of track is selected
+function handle_invalid_track()
+  renoise.app():show_status("Please select a Track, not a Group, Send or Master, doing nothing.")
+end
+
+function print_row(slider_set, track_column)
+  local song = renoise.song()
+  local pattern_index = song.selected_pattern_index
+  local pattern = song.patterns[pattern_index]
+  local track_index = song.selected_track_index
+  local lines = pattern.number_of_lines
+
+  -- Make the appropriate column visible
+  song.selected_track[track_column .. "_column_visible"] = true
+
+  -- Define value range caps
+  local value_cap = {
+    volume = 128,  -- 00-80 hex, capped at 128 decimal
+    delay = 256,   -- 00-FF hex, capped at 255
+    panning = 128  -- 00-80 hex, capped at 128 decimal
+  }
+
+  for line = 1, lines do
+    local index = (line - 1) % loop_values[slider_set] + 1
+    local slider_value = sliders[slider_set][index].value
+
+    -- Retrieve the note column
+    local note_column = renoise.song().selected_pattern.tracks[track_index]:line(line):note_column(1)
+
+    -- Assign the value based on the slider set (volume, delay, or panning)
+    if slider_set == "volume" then
+      note_column.volume_value = math.min(math.floor(slider_value * value_cap.volume), 128)
+    elseif slider_set == "delay" then
+      note_column.delay_value = math.min(math.floor(slider_value * value_cap.delay), 255)
+    elseif slider_set == "panning" then
+      note_column.panning_value = math.min(math.floor(slider_value * value_cap.panning), 128)
+    end
+  end
+
+  focus_pattern_editor()  -- Refocus on the pattern editor
+  renoise.app():show_status(slider_set .. " sliders printed to pattern!")
+end
+
+function print_all()
+  print_row("volume", "volume")
+  print_row("delay", "delay")
+  print_row("panning", "panning")
+  focus_pattern_editor()  -- Refocus after printing all
+end
+
+-- Reset row values to default (volume=255, delay=00, panning=40)
+function reset_row(slider_set)
+  local default_value = {
+    volume = 1,     -- Volume reset to 255 (1 in normalized range)
+    delay = 0,      -- Delay reset to 00 (0 in normalized range)
+    panning = 0.5   -- Panning reset to 40 (0.5 in normalized range)
+  }
+
+  for _, slider in ipairs(sliders[slider_set]) do
+    slider.value = default_value[slider_set]
+  end
+end
+
+-- Randomize slider values for a given row and print afterward
+function randomize_row(slider_set)
+  local range_max = {
+    volume = 128,  -- 00-80 hex range for volume
+    delay = 255,   -- 00-FF hex range for delay
+    panning = 128  -- 00-80 hex range for panning, centered at 64
+  }
+  
+  for _, slider in ipairs(sliders[slider_set]) do
+    slider.value = math.random(0, range_max[slider_set]) / range_max[slider_set] -- Normalize to 0-1 range
+  end
+
+  -- Print after randomizing
+  print_row(slider_set, slider_set)
+end
+
+-- Randomize all sliders (volume, delay, panning) and print afterward
+function randomize_all()
+  randomize_row("volume")
+  randomize_row("delay")
+  randomize_row("panning")
+  focus_pattern_editor()  -- Refocus after randomizing all
+end
+
+-- Shift row left or right and print afterward
+function shift_row(slider_set, direction)
+  local slider_vals = {}
+  
+  for _, slider in ipairs(sliders[slider_set]) do
+    table.insert(slider_vals, slider.value)
+  end
+
+  if direction == "left" then
+    local first_value = table.remove(slider_vals, 1)
+    table.insert(slider_vals, first_value)
+  elseif direction == "right" then
+    local last_value = table.remove(slider_vals)
+    table.insert(slider_vals, 1, last_value)
+  end
+
+  for i, slider in ipairs(sliders[slider_set]) do
+    slider.value = slider_vals[i]
+  end
+
+  -- Print after shifting
+  print_row(slider_set, slider_set)
+end
+
+function receive_row(slider_set, track_column)
+  local song = renoise.song()
+  local pattern_index = song.selected_pattern_index
+  local pattern = song.patterns[pattern_index]
+  local track_index = song.selected_track_index
+  local lines = pattern.number_of_lines
+
+  for line = 1, math.min(lines, 16) do
+    local note_column = renoise.song().selected_pattern.tracks[track_index]:line(line):note_column(1)
+
+    local value
+    if slider_set == "volume" then
+      value = math.min(note_column.volume_value / 128, 1) -- Normalize and cap at 1
+    elseif slider_set == "delay" then
+      value = math.min(note_column.delay_value / 256, 1) -- Normalize and cap at 1
+    elseif slider_set == "panning" then
+      -- If panning value is 0 or 255, set it to 0.5 (middle, which is 40 in hex)
+      value = (note_column.panning_value == 0 or note_column.panning_value == 255) and 0.5 or math.min(note_column.panning_value / 128, 1)
+    end
+
+    sliders[slider_set][line].value = value
+  end
+end
+
+-- Automatically receive current values when opening the dialog
+function auto_receive_all()
+  if not is_normal_track() then
+    handle_invalid_track()
+    return
+  end
+
+  receive_row("volume", "volume")
+  receive_row("delay", "delay")
+  receive_row("panning", "panning")
+end
+
+-- Observe track changes and auto-update if auto-grab is enabled
+function observe_track_changes()
+  renoise.song().selected_track_observable:add_notifier(function()
+    if auto_grab_enabled then
+      if not is_normal_track() then
+        handle_invalid_track()
+        return
+      end
+
+      auto_receive_all()
+      renoise.app():show_status("Track changed: auto-grab updated sliders.")
+    end
+  end)
+end
+
+-- Create a row of sliders
+function create_sliders(row, initial_value, range)
+  local slider_row = {}
+  for i = 1, 16 do
+    local slider = vb:slider {
+      width = global_slider_width,
+      height = global_slider_height,
+      min = 0,
+      max = range,
+      value = initial_value
+    }
+    table.insert(slider_row, slider)
+    row:add_child(slider)
+  end
+  return slider_row
+end
+
+function create_row_controls(slider_set, initial_value, range, loop_default)
+  local row = vb:row {vb:text{text=slider_set:gsub("^%l", string.upper), font="bold", style="strong", width=60,}}
+
+  local sliders_row = create_sliders(row, initial_value, range)
+
+  row:add_child(vb:valuebox {
+    min = 1,
+    max = 16,
+    value = loop_default,
+    notifier = function(value) loop_values[slider_set] = value end
+  })
+
+  row:add_child(vb:button {
+    text = "Randomize",
+    notifier = function() randomize_row(slider_set) end
+  })
+  
+  row:add_child(vb:button {
+    text = "Print",
+    notifier = function() print_row(slider_set, slider_set) end
+  })
+
+  row:add_child(vb:button {
+    text = "Reset",
+    notifier = function() reset_row(slider_set) print_row(slider_set, slider_set) end
+  })
+
+  row:add_child(vb:button {
+    text = "Receive",
+    notifier = function() receive_row(slider_set, slider_set) end
+  })
+
+  row:add_child(vb:button {
+    text = "<<",
+    notifier = function() shift_row(slider_set, "left") end
+  })
+
+  row:add_child(vb:button {
+    text = ">>",
+    notifier = function() shift_row(slider_set, "right") end
+  })
+
+  return row, sliders_row
+end
+
+-- Show the GUI dialog
+function show_VDPdialog()
+  if dialog and dialog.visible then
+    dialog:show()
+    return
+  end
+
+  if not is_normal_track() then
+    handle_invalid_track()
+    return
+  end
+
+  vb = renoise.ViewBuilder()
+
+  local volume_row, volume_sliders = create_row_controls("volume", 0, 1, 16) -- 00-80 hex for volume
+  sliders.volume = volume_sliders
+
+  local delay_row, delay_sliders = create_row_controls("delay", 0, 1, 16) -- 00-FF hex for delay
+  sliders.delay = delay_sliders
+
+  local panning_row, panning_sliders = create_row_controls("panning", 0.5, 1, 16) -- 00-80 hex for panning, start at 40 (center)
+  sliders.panning = panning_sliders
+
+  -- Automatically receive current values from the selected track
+  auto_receive_all()
+
+  -- Observe track changes if auto-grab is enabled
+  observe_track_changes()
+
+  -- Layout the dialog with the auto-grab checkbox
+  local content = vb:column {
+    volume_row,
+    delay_row,
+    panning_row,
+    vb:row {
+      vb:checkbox {
+        value = auto_grab_enabled,
+        notifier = function(value)
+          auto_grab_enabled = value
+          renoise.app():show_status("Auto-grab " .. (value and "enabled" or "disabled"))
+        end
+      },
+      vb:text {text="Auto-grab"}
+    },
+    vb:row {  -- Print All and Randomize All buttons
+      vb:button {
+        text = "Print All",
+        notifier = function() print_all() end
+      },
+      vb:button {
+        text = "Randomize All",
+        notifier = function() randomize_all() print_all() end
+      }
+    }
+  }
+
+  -- Focus on the middle frame when dialog opens
+  focus_pattern_editor()
+
+  dialog = renoise.app():show_custom_dialog("Paketti Volume/Delay/Pan Slider Controls", content, my_VDPkeyhandler_func)
+end
+
+-- Trigger the dialog to show
+renoise.tool():add_keybinding{name="Global:Paketti:Open VolDelayPan Slider Dialog...",invoke=function() show_VDPdialog() end}
+
+renoise.tool():add_midi_mapping{name="Global:Paketti:Open VolDelayPan Slider Dialog...",invoke=function(message)  if message:is_trigger() then show_VDPdialog() end end}
+-----
+
+renoise.tool():add_keybinding{name="Global:Paketti:Wipe All Columns of Selected Track",invoke=function()
+renoise.song().selected_pattern.tracks[renoise.song().selected_track_index]:clear()
+end}
 
 
 

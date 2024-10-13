@@ -880,12 +880,13 @@ end
 
 -- Custom key handler function
 local function my_keyhandler_func(dialog, key)
-  if not (key.modifiers == "" and key.name == "exclamation") then
+  local closer = preferences.pakettiDialogClose.value
+  if key.modifiers == "" and key.name == closer then
+dialog:close()
+dialog = nil
+return
+else 
     return key
-  else
-    dialog:close()
-    dialog = nil
-    return nil
   end
 end
 

@@ -203,3 +203,21 @@
 <MIDIMapping name="Track Devices:Paketti:Load Device (Native) Bus Compressor">
   <Path>Audio/Effects/Native/Bus Compressor</Path>
 </MIDIMapping>
+<KeyBinding name="Global:Track Devices:Load Device (VST3/AU) TDR Kotelnikov">
+  <Path>Audio/Effects/AU/aufx:Td96:Tdrl</Path>
+</KeyBinding>
+<MIDIMapping name="Track Devices:Paketti:Load Device (VST3/AU) TDR Kotelnikov">
+  <Path>Audio/Effects/AU/aufx:Td96:Tdrl</Path>
+</MIDIMapping>
+<KeyBinding name="Global:Track Devices:Load Device (Native) (Hidden) Scream Filter">
+  <Path>Audio/Effects/Native/Scream Filter</Path>
+</KeyBinding>
+<MIDIMapping name="Track Devices:Paketti:Load Device (Native) (Hidden) Scream Filter">
+  <Path>Audio/Effects/Native/Scream Filter</Path>
+</MIDIMapping>
+<KeyBinding name="Global:Track Devices:Load Device (Native) (Hidden) Flanger">
+  <Path>Audio/Effects/Native/Flanger</Path>
+</KeyBinding>
+<MIDIMapping name="Track Devices:Paketti:Load Device (Native) (Hidden) Flanger">
+  <Path>Audio/Effects/Native/Flanger</Path>
+</MIDIMapping>

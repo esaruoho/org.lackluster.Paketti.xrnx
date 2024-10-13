@@ -1,21 +1,20 @@
 local vb = renoise.ViewBuilder()
+  local buffer = nil
+  local current_name = nil
+  local current_rate = nil
+  local current_length = nil
+  local current_bit_depth = nil
+  local destination_rate = nil
+  local destination_bit_depth = nil
 
 local pitch_shift_amount = 0
 local dialog = nil
 local content = nil
 local slider_value=vb:text{text="1"} -- initial text showing the slider value
 
-  local sample_name_text = vb:text{
-    id = "sample_name_text",  -- Assign ID for later reference
-    text = "Name: No valid sample selected"
-  }
+  local sample_name_text=vb:text{id="sample_name_text",text="Name: No valid sample selected"}
+  local details_text=vb:text{id="details_text",text="Details: No valid sample selected"}
   
-  local details_text = vb:text{
-    id = "details_text",  -- Assign ID for later reference
-    text = "Details: No valid sample selected"
-  }
-
-
 -- Utility function to copy sample settings
 local function copy_sample_settings(from_sample, to_sample)
   to_sample.volume = from_sample.volume
@@ -451,6 +450,8 @@ local function DestructiveResample(target_sample_rate, target_bit_depth)
   end
 end
 
+
+
 -- Function to create combined dialog content with full resampling functionality
 local function create_combined_dialog_content()
   local vb = renoise.ViewBuilder()  -- Create a fresh ViewBuilder instance every time the dialog is opened
@@ -471,6 +472,8 @@ local function create_combined_dialog_content()
   local destination_bit_depth = current_bit_depth
   local threshold_label=vb:text{text=string.format("%.3f%%", preferences.PakettiStripSilenceThreshold.value*100),width=60}
   local begthreshold_label=vb:text{text=string.format("%.3f%%", preferences.PakettiMoveSilenceThreshold.value*100),width=60}
+
+
 
   
   -- Create the dialog content
@@ -594,6 +597,8 @@ vb:row{vb:button{text="Normalize Sample",notifier=function() normalize_selected_
 }},
 
 
+
+
     
 vb:column{style="group",margin=5,width=365,
 
@@ -617,90 +622,76 @@ vb:column{style="group",margin=5,width=365,
       vb:row {vb:button {text = "Audio Diff", notifier = function() create_audio_diff_sample() set_middle_frame_focus() end},}},
     
     -- Resampling Section
-    vb:column {
-      style="group", margin=5,
-      vb:text {text = "Resample", style="strong", font="bold"},
-      sample_name_text,
-      details_text, 
-      vb:space { height = 10 },
-
-      -- Sample Rate Slider
-      vb:slider {
-        id = "rate_slider",
-        min = 225,
-        max = 192000,
-        value = current_rate,
-        width = 354,
-        notifier = function(value)
-          destination_rate = math.floor(value)
-          vb.views.rate_label.text = "Destination Sample Rate: " .. destination_rate .. "Hz"
-        end,},
-      vb:text { id = "rate_label", text = "Destination Sample Rate: " .. current_rate .. "Hz" },
-
-      -- Sample Rate Buttons
-      vb:row { width="100%",
-        vb:button {
-          text = "Halve Sample Rate",
-          notifier = function()
-            destination_rate = math.max(225, math.floor(vb.views.rate_slider.value / 2))
-            vb.views.rate_slider.value = destination_rate
-          end,},
-        vb:button {
-          text = "Double Sample Rate",
-          notifier = function()
-            destination_rate = math.min(192000, math.floor(vb.views.rate_slider.value * 2))
-            vb.views.rate_slider.value = destination_rate
-          end},
-        vb:button {
-          text = "Resample to 44.1 kHz",
-          notifier = function()
-            destination_rate = 44100
-            vb.views.rate_slider.value = destination_rate
-            RenderSampleAtNewRate(destination_rate, vb.views.bitdepth_switch.value * 8)
-          end},},
-      
-      -- Bit Depth Switch
-      vb:row {
-        vb:text {text = "Bit Depth:"},
-        vb:switch {width=300,
-          id = "bitdepth_switch",
-          items = { "8bit", "16bit", "24bit", "32bit" },
-          value = (current_bit_depth / 8),
-          notifier = function(idx)
-            destination_bit_depth = idx * 8
-          end,},},
-      vb:space { height = 5 },
-     
-      vb:button {
-        text = "Process",
-        notifier = function()
-          -- Re-fetch selected sample and instrument data before processing
-          local song = renoise.song()
-          local instrument = song.selected_instrument
-          local sample_index = song.selected_sample_index
-          local sample = instrument:sample(sample_index)
-          local buffer = sample.sample_buffer
-
-          -- Check if the sample rate and bit depth are already correct
-          if destination_rate == buffer.sample_rate and destination_bit_depth == buffer.bit_depth then
-            renoise.app():show_status("Sample rate and bit depth are already set to the selected values.")
-          elseif destination_rate >= buffer.sample_rate then
-            -- Render to a higher or equal sample rate or just change bit depth
-            RenderSampleAtNewRate(destination_rate, destination_bit_depth)
-          else
-            -- If the sample rate is reduced, use destructive resampling
-            DestructiveResample(destination_rate, destination_bit_depth)
-          end
-           update_sample_details(sample_name_text, details_text)
-
-            end,},
+    vb:column{style="group", margin=5,
+    vb:text{text="Resample", style="strong", font="bold"},
+        sample_name_text,
+        details_text, 
+    vb:space{height=10}, 
+    vb:slider{
+      id="rate_slider",
+      min=225,
+      max=192000,
+      value=current_rate,
+      width=354,
+      notifier=function(value)
+        destination_rate=math.floor(value)
+        vb.views.rate_label.text="Destination Sample Rate: "..destination_rate.."Hz" end},
+    
+    vb:text{id="rate_label",text="Destination Sample Rate: "..current_rate.."Hz"},
+    vb:row{width="100%",
+    vb:button{
+      text="Halve Sample Rate",
+      notifier=function()
+        destination_rate=math.max(225,math.floor(vb.views.rate_slider.value/2))
+        vb.views.rate_slider.value=destination_rate
+      end,},
+    vb:button{
+      text="Double Sample Rate",
+      notifier=function()
+        destination_rate=math.min(192000,math.floor(vb.views.rate_slider.value*2))
+        vb.views.rate_slider.value=destination_rate
+      end,},
+    vb:button{
+      text="Resample to 44.1 kHz",
+      notifier=function()
+        destination_rate=44100
+        vb.views.rate_slider.value=destination_rate
+        RenderSampleAtNewRate(destination_rate, vb.views.bitdepth_switch.value*8)
+      end}},
+    vb:row{vb:text{text="Bit Depth:"},
+      vb:switch{
+        width=300,
+        id="bitdepth_switch",
+        items={"8bit","16bit","24bit","32bit"},
+        value=(current_bit_depth/8),
+        notifier=function(idx) destination_bit_depth=idx*8 end,},},
+    vb:space{height=5},
+    vb:button{
+      text="Process",
+      notifier=function()
+        local song=renoise.song()
+        local instrument=song.selected_instrument
+        local sample_index=song.selected_sample_index
+        local sample=instrument:sample(sample_index)
+        local buffer=sample.sample_buffer
+  
+        if destination_rate==buffer.sample_rate and destination_bit_depth==buffer.bit_depth then
+          renoise.app():show_status("Sample rate and bit depth are already set to the selected values.")
+        elseif destination_rate>=buffer.sample_rate then
+          RenderSampleAtNewRate(destination_rate,destination_bit_depth)
+        else
+          DestructiveResample(destination_rate,destination_bit_depth)
+        end
+        update_sample_details(sample_name_text,details_text)
+      end}},
+  
         vb:button{text="Close",
         notifier=function()
         PakettiAudioProcessingToolsDialogClose()
  update_sample_details(sample_name_text, details_text) 
         end}
         
-        }}
+        },
  update_sample_details(sample_name_text, details_text)
    update_sample_details(details_text, sample_name_text)
   return dialog_content
@@ -783,7 +774,7 @@ function PakettiAudioProcessingToolsDialogShow()
   local content = create_combined_dialog_content()
   if content then
     -- Show the dialog with the created content and key handler
-    dialog = renoise.app():show_custom_dialog("Paketti Audio Processing Tools", content, my_keyhandler_func)
+    dialog = renoise.app():show_custom_dialog("Paketti Audio Processing Tools", content, my_AudioProckeyhandler_func)
   else
     renoise.app():show_status("A sample must be selected.")
     
@@ -806,9 +797,14 @@ function PakettiAudioProcessingToolsDialogClose()
 end
 
 -- Keyhandler function for dialog
-local function my_keyhandler_func(dialog, key)
-  if not (key.modifiers == "" and key.name == "exclamation") then return key
-  else dialog:close() dialog = nil return nil
+function my_AudioProckeyhandler_func(dialog, key)
+local closer = preferences.pakettiDialogClose.value
+  if key.modifiers == "" and key.name == closer then
+    dialog:close()
+    dialog = nil
+    return nil
+else
+    return key
   end
 end
 
@@ -1157,9 +1153,6 @@ function update_sample_details(details_text, sample_name_text)
   sample_name_text.text = "Name: No valid sample selected"
 end
 
-
-
-
 -- Function to apply the recursive DC offset correction algorithm
 function remove_dc_offset_recursive()
   local sample_buffer = renoise.song().selected_sample.sample_buffer
@@ -1180,10 +1173,8 @@ function remove_dc_offset_recursive()
   -- (-3dB @ 30Hz): R = 1 - (190 / samplerate)
   -- (-3dB @ 20Hz):   R = 1 - (126 / samplerate)
 
-  -- Initialize the new data array
   local new_data = {}
 
-  -- Traverse the sample data and apply the recursive filter
   for ch = 1, sample_buffer.number_of_channels do
     new_data[1] = sample_buffer:sample_data(ch, 1)
 
@@ -1193,7 +1184,6 @@ function remove_dc_offset_recursive()
       new_data[i] = current_value - previous_value + R * new_data[i - 1]
     end
 
-    -- Apply the new data back to the sample buffer
     sample_buffer:prepare_sample_data_changes()
 
     for i = 1, sample_buffer.number_of_frames do
@@ -1206,89 +1196,58 @@ function remove_dc_offset_recursive()
   renoise.app():show_status("Recursive DC Offset correction applied successfully.")
 end
 
--- Adding a keybinding to trigger the remove_dc_offset_recursive function
 renoise.tool():add_keybinding {name = "Sample Editor:Process:Recursive Remove DC Offset", invoke = function() remove_dc_offset_recursive() end}
 
 function remove_dc_offset_recursive_1to50()
-
-
 local iterations = math.random(1, 50)
 for i = 1, iterations do
   remove_dc_offset_recursive()
 end
   renoise.app():show_status("Ran Recursive DC Offset " .. iterations .. " times.")
-
-
-
 end
 
-
 renoise.tool():add_keybinding{name="Sample Editor:Process:Recursive Remove DC Offset Random Times",invoke=function() remove_dc_offset_recursive_1to50() end}
------
 ---------------
 
 function Paketti_Diagonal_Line_to_Sample()
-  -- Get the currently selected instrument index
   local selected_instrument_index = renoise.song().selected_instrument_index
-
-  -- Calculate the new instrument index (one lower)
   local new_instrument_index = math.max(1, selected_instrument_index - 1)
-
-  -- Insert a new instrument at the new index
   renoise.song():insert_instrument_at(new_instrument_index)
-
-  -- Select the new instrument
   renoise.song().selected_instrument_index = new_instrument_index
 
-  -- Create a new sample slot in the new instrument
   local new_instrument = renoise.song().instruments[new_instrument_index]
   local sample = new_instrument:insert_sample_at(1)
 
-  -- Create a sample buffer with a length of 16800 samples
   sample.sample_buffer:create_sample_data(44100, 16, 1, 16800)
 
-  -- Prepare the buffer for changes
   local buffer = sample.sample_buffer
   buffer:prepare_sample_data_changes()
 
-  -- Fill the buffer with a diagonal line (max to min amplitude)
   for i=1, buffer.number_of_frames do
-    -- Calculate the amplitude value (linear descent from 1.0 to -1.0)
     local value = 1.0 - (2.0 * (i - 1) / (buffer.number_of_frames - 1))
     buffer:set_sample_data(1, i, value)
   end
 
-  -- Finalize the buffer changes
   buffer:finalize_sample_data_changes()
-
-  -- Show a status message
   renoise.app():show_status("Paketti Diagonal Line to Sample created successfully.")
 end
 
--- Add the keybinding
 renoise.tool():add_keybinding{name="Global:Paketti:Diagonal Line to 16800 length Sample",invoke=function() Paketti_Diagonal_Line_to_Sample() end}
 
-
-
 function normalize_selected_sample()
-  -- Access the selected sample in the current song
   local selected_sample = renoise.song().selected_sample
   
-  -- If on a slice, use the original sample (first sample of the instrument)
   if selected_sample.is_slice_alias then
     selected_sample = renoise.song().selected_instrument:sample(1)
   end
   
-  -- Check if the selected (or original) sample has valid sample data
   if not selected_sample or not selected_sample.sample_buffer or not selected_sample.sample_buffer.has_sample_data then
     renoise.app():show_status("Normalization failed: No valid sample to normalize.")
     return
   end
 
-  -- Step 1: Access the sample buffer
   local sbuf = selected_sample.sample_buffer
   
-  -- Step 2: Find the highest amplitude (peak)
   local highest_detected = 0
   
   for frame_idx = 1, sbuf.number_of_frames do
@@ -1300,13 +1259,11 @@ function normalize_selected_sample()
     end
   end
   
-  -- Step 3: Check if the peak is non-zero
   if highest_detected == 0 then
     renoise.app():show_status("Normalization failed: highest detected peak is 0.")
     return
   end
   
-  -- Step 4: Normalize the sample data
   sbuf:prepare_sample_data_changes()
   
   for frame_idx = 1, sbuf.number_of_frames do
@@ -1321,10 +1278,8 @@ function normalize_selected_sample()
     end
   end
   
-  -- Step 5: Finalize changes
   sbuf:finalize_sample_data_changes()
   
-  -- Step 6: Confirm successful normalization
   if sbuf.has_sample_data then
     renoise.app():show_status("Sample successfully normalized (maximized volume).")
   else
@@ -1332,6 +1287,5 @@ function normalize_selected_sample()
   end
 end
 
-
-
 renoise.tool():add_keybinding{name="Global:Paketti:Paketti Normalize Sample",invoke=function() normalize_selected_sample() end}
+
