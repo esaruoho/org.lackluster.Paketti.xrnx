@@ -20,6 +20,22 @@ local loop_modes = {"Off", "Forward", "Backward", "PingPong"}
 local vb = nil        -- ViewBuilder instance
 local logview = nil   -- Log view
 
+-- Ensure preferences are defined elsewhere in your code
+-- Example:
+-- preferences = {
+--   pakettiColuga = {
+--     pakettiColugaOutputDirectory = { value = "" },
+--     pakettiColugaClipLength = { value = 10 },
+--     pakettiColugaLoopMode = { value = 2 },
+--     pakettiColugaAmountOfVideos = { value = 1 },
+--     pakettiColugaLoadWholeVideo = { value = false },
+--     pakettiColugaNewInstrumentOrSameInstrument = { value = false },
+--     pakettiColugaFormatToSave = { value = 1 },
+--     pakettiColugaPathToSave = { value = "" },
+--     pakettiColugaYT_DLPLocation = { value = "" },
+--   }
+-- }
+
 -- =====================
 -- Helper Functions
 -- =====================
@@ -315,6 +331,7 @@ function PakettiColugaSignalCompletion(completion_signal_file)
   file:close()
   PakettiColugaLogMessage("Created completion signal file: " .. completion_signal_file)
 end
+
 
 -- =====================
 -- Main Functionalities
@@ -632,7 +649,8 @@ function PakettiColugaDialogContent()
     id = "main_column",
     width = 650,
     margin = 10,
-    vb:text { id="hi", text = "YT-DLP is able to download content from YouTube, Twitter, SoundCloud, Bandcamp and Instagram (tested).", font = "bold" },
+    vb:text { id="hi", text = "YT-DLP is able to download content from:", font="bold"},
+    vb:text{id="List",text="YouTube, Twitter, Facebook, SoundCloud, Bandcamp and Instagram (tested).", font = "bold" },
     vb:row {
       margin = 5,
       vb:column {
@@ -820,6 +838,13 @@ end
 
 -- Key Handler function for the dialog
 function PakettiColugaKeyHandlerFunc(dialog, key)
+local closer = preferences.pakettiDialogClose.value
+  if key.modifiers == "" and key.name == closer then
+    dialog:close()
+    dialog = nil
+    return nil
+end
+
   if key.modifiers == "" and key.name == "return" then
     PakettiColugaLogMessage("Enter key pressed, starting process.")
     PakettiColugaStartYTDLP()
