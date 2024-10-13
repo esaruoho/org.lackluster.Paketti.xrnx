@@ -23,18 +23,23 @@ jobs:
       # Modify main.lua: Comment out PakettieSpeak and PakettiBeatDetect require lines
       - name: Modify main.lua
         run: |
-          sed -i '/require.*PakettieSpeak/s/^/-- /' main.lua
-          sed -i '/require.*PakettiBeatDetect/s/^/-- /' main.lua
+          sed -i '/require\s*["'\'']PakettieSpeak["'\'']/s/^/-- /' main.lua
+          sed -i '/require\s*["'\'']PakettiBeatDetect["'\'']/s/^/-- /' main.lua
+
+      # Comment out specific function in Paketti0G01_Loader.lua
+      - name: Comment out function in Paketti0G01_Loader.lua
+        run: |
+          sed -i '/function update_loadPaleGreenTheme_preferences()/,/end/s/^/-- /' Paketti0G01_Loader.lua
 
       # Remove style attributes (with or without spaces around =) from all .lua files
       - name: Remove style attributes from .lua files
         run: |
           find . -type f -name "*.lua" -exec sed -i 's/style\s*=\s*"[^"]*"//g' {} +
 
-      # Modify manifest.xml: Change api version from 6 to 5
+      # Modify manifest.xml: Change ApiVersion from 6 to 5
       - name: Modify manifest.xml
         run: |
-          sed -i 's/<api version="6"/<api version="5"/' manifest.xml
+          sed -i 's/<ApiVersion>6<\/ApiVersion>/<ApiVersion>5<\/ApiVersion>/g' manifest.xml
 
       # Zip the modified contents, excluding Git and GitHub directories
       - name: Zip XRNX Package (Older Version)
