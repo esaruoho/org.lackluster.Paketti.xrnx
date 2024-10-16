@@ -14,9 +14,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
       
-      # Zip the contents or specified directory of the repo
+      # Zip the contents or specified directory of the repo, excluding specific XML files
       - name: Zip XRNX Package
-        run: zip -r org.lackluster.Paketti_V3.54.xrnx . -x "*.git*" "*.github*"
+        run: |
+          zip -r org.lackluster.Paketti_V3.54.xrnx . \
+            -x "*.git*" "*.github*" \
+            "preferences.xml" \
+            "preferences_deviceLoaders.xml" \
+            "preferences_midigen.xml" \
+            "preferences_pluginLoaders.xml" \
+            "preferencesDynamicView.xml"
       
       # Dynamically generate a tag name and set it as an environment variable
       - name: Generate Tag Name
