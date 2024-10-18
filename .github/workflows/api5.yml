@@ -43,7 +43,13 @@ jobs:
 
       # Zip the modified contents, excluding Git and GitHub directories
       - name: Zip XRNX Package (Older Version)
-        run: zip -r org.lackluster.Paketti_V3.54.xrnx . -x "*.git*" "*.github*"
+        run: zip -r org.lackluster.Paketti_V3.54.xrnx . \
+            -x "*.git*" "*.github*" \
+            "preferences.xml" \
+            "preferences_deviceLoaders.xml" \
+            "preferences_midigen.xml" \
+            "preferences_pluginLoaders.xml" \
+            "preferencesDynamicView.xml"
 
       # Dynamically generate a tag name for the older version and set it as an environment variable
       - name: Generate Tag Name for Older Version
