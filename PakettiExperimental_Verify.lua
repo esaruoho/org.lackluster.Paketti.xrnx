@@ -1,39 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 -- TODO: make this use loadnative("name",XML) okay?
 function PakettiInvertDeviceTrackDSP()
   loadnative("Audio/Effects/Native/Gainer")
@@ -45,11 +9,16 @@ function PakettiInvertDeviceTrackDSP()
     renoise.app():show_status("Preset loading failed.")
     return
   end
-  
-  local device = renoise.song().selected_device or renoise.song().selected_sample_device
+  local device 
+  if renoise.app().window.active_middle_frame == 7 or renoise.app().window.active_middle_frame == 6 then 
+  device = renoise.song().selected_sample_device
+  else
+  device = renoise.song().selected_device
+  end 
   
   if device then
     device.active_preset_data = preset_xml
+    device.display_name = "Inverter"
     renoise.app():show_status("Preset successfully loaded from: Presets/PakettiGainerInverter.xml")
   else
     renoise.app():show_status("No device found to apply the preset.")
@@ -59,6 +28,7 @@ end
 renoise.tool():add_keybinding{name="Global:Paketti:Insert Inverter Device to TrackDSP/SampleFX",invoke=function() PakettiInvertDeviceTrackDSP() end}
 
 renoise.tool():add_midi_mapping{name="Paketti:Insert Inverter Device to TrackDSP/SampleFX",invoke=function(message) if message:is_trigger() then PakettiInvertDeviceTrackDSP() end end}
+
 
 
 
@@ -2707,10 +2677,7 @@ end
 --
 --end
 --renoise.tool():add_keybinding{name="Global:Paketti:Stair", invoke=function() stairs() end}
-renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Devices..:Bypass All Devices on Channel", invoke=function() effectbypass() end}
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Devices..:Enable All Devices on Channel", invoke=function() effectenable() end}
 ----------------------------
-
 -- has-line-input + add-line-input
 function has_line_input()
 -- Write some code to find the line input in the correct place
@@ -3317,13 +3284,6 @@ renoise.tool():add_menu_entry{name="Sample Navigator:Paketti..:Unison Generator"
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Unison Generator",invoke=PakettiCreateUnisonSamples}
 renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Unison Generator",invoke=PakettiCreateUnisonSamples}
 renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Unison Generator",invoke=PakettiCreateUnisonSamples}
-
-
-
-
-
-
-
 
 ---------
 -- Helper function to check if in a valid note column

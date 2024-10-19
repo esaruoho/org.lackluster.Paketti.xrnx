@@ -455,6 +455,113 @@ function DoubleSelect()
 end
 
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Impulse Tracker ALT-D Double Select", invoke=function() DoubleSelect() end}
+
+-----------
+-- Function to select the pattern range in automation
+function selectPatternRangeInAutomation()
+  local song = renoise.song()
+
+  -- Check if the automation lower frame is displayed
+  if not (renoise.app().window.active_lower_frame == renoise.ApplicationWindow.LOWER_FRAME_TRACK_AUTOMATION) then
+    renoise.app():show_status("Automation lower frame is not displayed.")
+    return
+  end
+
+  local selected_pattern_index = song.selected_pattern_index
+  local selected_track_index = song.selected_track_index
+
+  -- Check if an automatable parameter is selected
+  local automation_parameter = song.selected_automation_parameter
+  if not automation_parameter or not automation_parameter.is_automatable then
+    renoise.app():show_status("Please select an automatable parameter.")
+    return
+  end
+
+  -- Get the selection in the pattern editor
+  local pattern_selection = song.selection_in_pattern
+  if pattern_selection == nil then
+    renoise.app():show_status("No selection in pattern editor.")
+    return
+  end
+
+  local start_line = pattern_selection.start_line
+  local end_line = pattern_selection.end_line
+
+  -- Access the track's automation for the selected parameter
+  local track_automation = song:pattern(selected_pattern_index):track(selected_track_index)
+  local envelope = track_automation:find_automation(automation_parameter)
+
+  -- If no automation envelope exists, create one
+  if not envelope then
+    envelope = track_automation:create_automation(automation_parameter)
+  end
+
+  -- Calculate automation selection range based on pattern selection
+  local pattern_lines = song:pattern(selected_pattern_index).number_of_lines
+  local automation_start = math.floor((start_line / pattern_lines) * envelope.length)
+  local automation_end = math.floor(((end_line + 1) / pattern_lines) * envelope.length)
+
+  -- Set the selection range in the automation envelope
+  envelope.selection_range = { automation_start, automation_end }
+
+  -- Notify the user
+  renoise.app():show_status("Automation selection set from line " .. start_line .. " to line " .. end_line)
+end
+
+-- IT: ALT-D (whole track) Double-select
+function DoubleSelectAutomation()
+  local s = renoise.song()
+  local lpb = s.transport.lpb
+  local sip = s.selection_in_pattern
+  local last_column = s.selected_track.visible_effect_columns + s.selected_track.visible_note_columns
+  local protectrow = lpb + s.selected_line_index - 1
+  if protectrow > s.selected_pattern.number_of_lines then
+    protectrow = s.selected_pattern.number_of_lines
+  end
+
+  if sip == nil or sip.start_track ~= s.selected_track_index or s.selected_line_index ~= s.selection_in_pattern.start_line then
+    s.selection_in_pattern = {
+      start_line = s.selected_line_index,
+      end_line = protectrow,
+      start_track = s.selected_track_index,
+      end_track = s.selected_track_index,
+      start_column = 1,
+      end_column = last_column
+    }
+  else
+    local endline = sip.end_line
+    local startline = sip.start_line
+    local new_endline = (endline - startline) * 2 + (startline + 1)
+
+    if new_endline > s.selected_pattern.number_of_lines then
+      new_endline = s.selected_pattern.number_of_lines
+    end
+
+    s.selection_in_pattern = {
+      start_line = startline,
+      end_line = new_endline,
+      start_track = s.selected_track_index,
+      end_track = s.selected_track_index,
+      start_column = 1,
+      end_column = last_column
+    }
+  end
+
+  -- After updating the pattern selection, update the automation selection
+  selectPatternRangeInAutomation()
+end
+
+renoise.tool():add_keybinding{
+  name = "Pattern Editor:Paketti:Impulse Tracker ALT-D Double Select W/ Automation",
+  invoke = function() DoubleSelectAutomation() end
+}
+
+
+
+
+
+
+
 --------------------------------------------------------------------------------------------------------------------------------
 -- Protman's set octave
 -- Protman: Thanks to suva for the function per octave declaration loop :)
@@ -1297,7 +1404,30 @@ renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker CTRL-N New So
 -----------------------------------------------------
 
 ----ALT-U
-function Deselect_All() renoise.song().selection_in_pattern=nil end
+function Deselect_All()
+  local song = renoise.song()
+  
+  -- Deselect the selection in the pattern editor
+  song.selection_in_pattern = nil
+  
+  -- If the automation lower frame is showing, clear the automation selection
+  if renoise.app().window.active_lower_frame == renoise.ApplicationWindow.LOWER_FRAME_TRACK_AUTOMATION then
+    local selected_track_index = song.selected_track_index
+    local selected_pattern_index = song.selected_pattern_index
+    local automation_parameter = song.selected_automation_parameter
+
+    -- Check if an automatable parameter is selected
+    if automation_parameter then
+      local track_automation = song:pattern(selected_pattern_index):track(selected_track_index)
+      local envelope = track_automation:find_automation(automation_parameter)
+
+      -- If there is an automation envelope, clear its selection
+      if envelope then
+        envelope.selection_range = {1,1} 
+      end
+    end
+  end
+end
 function Deselect_Phr() renoise.song().selection_in_phrase =nil end
 
 renoise.tool():add_keybinding{name="Pattern Editor:Selection:Impulse Tracker ALT-U Unmark Selection",invoke=function() Deselect_All() end}

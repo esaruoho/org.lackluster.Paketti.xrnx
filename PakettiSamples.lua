@@ -1453,9 +1453,10 @@ end
 
 renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Clean Render Selected Track/Group", invoke = function() pakettiCleanRenderSelection() end}
 renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Clean Render Selected Track/Group", invoke = function() pakettiCleanRenderSelection() end}
-renoise.tool():add_menu_entry{name="Mixer:Paketti..:Clean Render Selected Track/Group", invoke = function() pakettiCleanRenderSelection() end}
 renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Clean Render Selected Track/Group", invoke = function() pakettiCleanRenderSelection() end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Clean Render Selected Track/Group", invoke = function() pakettiCleanRenderSelection() end}
+renoise.tool():add_menu_entry{name="--Mixer:Paketti..:Clean Render Selected Track/Group", invoke = function() pakettiCleanRenderSelection() end}
+
 renoise.tool():add_keybinding{name="Mixer:Paketti:Clean Render Selected Track/Group", invoke = function() pakettiCleanRenderSelection() end}
 ------
 -- Define render state (initialized when starting to render)
@@ -1661,7 +1662,13 @@ end
 
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Clean Render Selected Track/Group LPB*2", invoke = function() pakettiCleanRenderSelectionLPB() end}
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Clean Render Selected Track/Group LPB*2", invoke = function() pakettiCleanRenderSelectionLPB() end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Clean Render Seamless Selected Track/Group", invoke = function() PakettiSeamlessCleanRenderSelection() end}
+
+
 renoise.tool():add_menu_entry{name="Mixer:Paketti..:Clean Render Selected Track/Group LPB*2", invoke = function() pakettiCleanRenderSelectionLPB() end}
+renoise.tool():add_menu_entry{name="Mixer:Paketti..:Clean Render Seamless Selected Track/Group", invoke = function() PakettiSeamlessCleanRenderSelection() end}
+
+
 renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Clean Render Selected Track/Group LPB*2", invoke = function() pakettiCleanRenderSelectionLPB() end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Clean Render Selected Track/Group LPB*2", invoke = function() pakettiCleanRenderSelectionLPB() end}
 renoise.tool():add_keybinding{name="Mixer:Paketti:Clean Render Selected Track/Group LPB*2", invoke = function() pakettiCleanRenderSelectionLPB() end}
@@ -2711,6 +2718,13 @@ renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Clean Render and
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Clean Render and Save Selected Track/Group as .FLAC", invoke=function() CleanRenderAndSaveSelection("FLAC") end}
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Clean Render and Save Selected Track/Group as .WAV", invoke=function() CleanRenderAndSaveSelection("WAV") end}
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Clean Render and Save Selected Track/Group as .FLAC", invoke=function() CleanRenderAndSaveSelection("FLAC") end}
+
+renoise.tool():add_menu_entry{name="Mixer:Paketti..:Clean Render and Save Selected Track/Group as .WAV", invoke=function() CleanRenderAndSaveSelection("WAV") end}
+renoise.tool():add_menu_entry{name="Mixer:Paketti..:Clean Render and Save Selected Track/Group as .FLAC", invoke=function() CleanRenderAndSaveSelection("FLAC") end}
+
+
+
+
 renoise.tool():add_keybinding{name="Global:Paketti:Clean Render&Save Selected Track/Group (.WAV)", invoke=function() CleanRenderAndSaveSelection("WAV") end}
 renoise.tool():add_keybinding{name="Global:Paketti:Clean Render&Save Selected Track/Group (.FLAC)", invoke=function() CleanRenderAndSaveSelection("FLAC") end}
 renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Duplicate and Reverse Instrument", invoke=PakettiDuplicateAndReverseInstrument}
@@ -3016,8 +3030,6 @@ end
 
 -- Menu and keybinding for rendering
 renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Clean Render Seamless Selected Track/Group", invoke = function() PakettiSeamlessCleanRenderSelection() end}
-renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Clean Render Seamless Selected Track/Group", invoke = function() PakettiSeamlessCleanRenderSelection() end}
-renoise.tool():add_menu_entry{name="Mixer:Paketti..:Clean Render Seamles Selected Track/Group", invoke = function() PakettiSeamlessCleanRenderSelection() end}
 renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Clean Render Seamless Selected Track/Group", invoke = function() PakettiSeamlessCleanRenderSelection() end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Clean Render Seamless Selected Track/Group", invoke = function() PakettiSeamlessCleanRenderSelection() end}
 renoise.tool():add_keybinding{name="Mixer:Paketti:Clean Render Seamless Selected Track/Group", invoke = function() PakettiSeamlessCleanRenderSelection() end}

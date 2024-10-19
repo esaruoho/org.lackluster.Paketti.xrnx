@@ -1306,17 +1306,7 @@ renoise.tool():add_menu_entry{name="Mixer:Paketti..:Expose/Hide Selected Track A
 renoise.tool():add_keybinding{name="Global:Paketti:Expose/Hide Selected Track ALL Device Parameters", invoke=function() exposeHideParametersInMixer() end}  
 
 
-
-
-
-
-
-
-
-
-
-
-
+--[[
 function launchApp(appName)
 os.execute(appName)
 end
@@ -1326,35 +1316,61 @@ function terminalApp(scriptPath)
     os.execute(command)
 end
 
---renoise.tool():add_menu_entry{name="Disk Browser Files:Paketti..:Run Experimental Script",invoke=function() terminalApp("/Users/esaruoho/torretemp.sh") end}
-
---renoise.tool():add_menu_entry{name="Disk Browser Files:Paketti..:Run Experimental Script",invoke=function() terminalApp("/Users/esaruoho/macOS_EnableScriptingTools.sh") end}
+renoise.tool():add_menu_entry{name="Disk Browser Files:Paketti..:Run Experimental Script",invoke=function() terminalApp("/Users/esaruoho/macOS_EnableScriptingTools.sh") end}
 renoise.tool():add_menu_entry{name="Disk Browser Files:Paketti..:Open macOS Terminal",invoke=function() launchApp("open -a Terminal.app") end}
-
-
-
-
-----
+]]--
 
 function effectbypass()
 local number = (table.count(renoise.song().selected_track.devices))
- for i=2,number  do 
-  renoise.song().selected_track.devices[i].is_active=false
+for i=2,number do renoise.song().selected_track.devices[i].is_active=false
  end
- renoise.app():show_status("Disabled all Track DSP Devices on Selected Channel")
+ renoise.app():show_status("Disabled all Track DSP Devices on Selected Track")
 end
 
 function effectenable()
 local number = (table.count(renoise.song().selected_track.devices))
-for i=2,number  do 
-renoise.song().selected_track.devices[i].is_active=true
+for i=2,number do renoise.song().selected_track.devices[i].is_active=true
 end
-renoise.app():show_status("Enabled all Track DSP Devices on Selected Channel")
+renoise.app():show_status("Enabled all Track DSP Devices on Selected Track")
 end
 
-renoise.tool():add_menu_entry{name="--Mixer:Paketti..:Bypass All Devices on Channel", invoke=function() effectbypass() end}
-renoise.tool():add_menu_entry{name="Mixer:Paketti..:Enable All Devices on Channel", invoke=function() effectenable() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Bypass All Devices on Track", invoke=function() effectbypass() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Enable All Devices on Track", invoke=function() effectenable() end}
 
+renoise.tool():add_menu_entry{name="--Mixer:Paketti..:Bypass All Devices on Track", invoke=function() effectbypass() end}
+renoise.tool():add_menu_entry{name="Mixer:Paketti..:Enable All Devices on Track", invoke=function() effectenable() end}
+renoise.tool():add_menu_entry {name="Mixer:Paketti..:Bypass All Devices on All Tracks",invoke=function() PakettiAllDevices(false) end}
+renoise.tool():add_menu_entry {name="Mixer:Paketti..:Enable All Devices on All Tracks",invoke=function() PakettiAllDevices(true) end}
+renoise.tool():add_menu_entry{name="Mixer:Paketti..:Bypass/Enable All Other Track DSP Devices (Toggle)",invoke=function() toggle_bypass_selected_device() end}
+renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Devices..:Bypass All Devices on Track", invoke=function() effectbypass() end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Devices..:Enable All Devices on Track", invoke=function() effectenable() end}
+
+
+function PakettiAllDevices(state)
+  local song = renoise.song()
+  local total_tracks = song.sequencer_track_count + 1 + song.send_track_count
+
+  for i = 1, total_tracks do
+    local track = song.tracks[i]
+    if #track.devices > 1 then
+      for j = 2, #track.devices do
+        track.devices[j].is_active = state
+      end
+    end
+  end
+
+  local status_message = state and "Enabled" or "Bypassed"
+  renoise.app():show_status("All devices " .. status_message .. " from device[2] onward for all tracks")
+end
+
+renoise.tool():add_keybinding {name="Global:Paketti:Bypass All Devices on All Tracks",invoke=function() PakettiAllDevices(false) end}
+renoise.tool():add_keybinding {name="Global:Paketti:Enable All Devices on All Tracks",invoke=function() PakettiAllDevices(true) end}
+
+renoise.tool():add_midi_mapping {name="Paketti:Bypass All Devices on All Tracks",invoke=function(message) if message:is_trigger() then PakettiAllDevices(false) end end}
+renoise.tool():add_midi_mapping {name="Paketti:Enable All Devices on All Tracks",invoke=function(message) if message:is_trigger() then PakettiAllDevices(true) end end}
+
+renoise.tool():add_menu_entry {name="Pattern Editor:Paketti..:Bypass All Devices on All Tracks",invoke=function() PakettiAllDevices(false) end}
+renoise.tool():add_menu_entry {name="Pattern Editor:Paketti..:Enable All Devices on All Tracks",invoke=function() PakettiAllDevices(true) end}
 
 
 -- Utility function to print a formatted list from the provided items
@@ -1408,9 +1424,6 @@ function listDevicesByType(typeFilter)
     end
     printItems(deviceItems)
 end
-
-
-
 
 function insertMonoToEnd()
     local track = renoise.song().selected_track
@@ -1916,7 +1929,7 @@ end}
 -- Adding menu entries and keybinding for the combined randomizer dialog
 renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Randomize Devices and Plugins Dialog",invoke=function() openCombinedRandomizerDialog() end}
 renoise.tool():add_menu_entry{name="DSP Device:Paketti..:Randomize Devices and Plugins Dialog",invoke=function() openCombinedRandomizerDialog() end}
-renoise.tool():add_menu_entry{name="Mixer:Paketti..:Randomize Devices and Plugins Dialog",invoke=function() openCombinedRandomizerDialog() end}
+renoise.tool():add_menu_entry{name="--Mixer:Paketti..:Randomize Devices and Plugins Dialog",invoke=function() openCombinedRandomizerDialog() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Randomize Devices and Plugins Dialog",invoke=function() openCombinedRandomizerDialog() end}
 
 -- Adding keybindings for user preferences for the selected device

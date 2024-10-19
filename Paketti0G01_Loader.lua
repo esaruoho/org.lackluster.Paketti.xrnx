@@ -77,23 +77,6 @@ local function find_sample_rate_index(rate)
     return 1 -- default to 22050 if not found
 end
 
-local function pakettiGetXRNIDefaultPresetFiles()
-    local presetsFolder = "Presets/"
-    local files = {}
-    local handle = io.popen('ls "' .. presetsFolder .. '"')
-    if handle then
-        for file in handle:lines() do
-            if file:match("%.xrni$") then
-                table.insert(files, file)
-            end
-        end
-        handle:close()
-    end
-    return files
-end
-
-local presetFiles = pakettiGetXRNIDefaultPresetFiles()
-
 local os_name=os.platform()
 local default_executable
 if os_name=="WINDOWS"then
@@ -185,8 +168,8 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
   },
   
 -- changes made
-  -- Paketti ReSpeak Segment
-  pakettiReSpeak = {
+  -- Paketti eSpeak Segment
+  pakettieSpeak = {
     word_gap=3,
     capitals=5,
     pitch=35,
@@ -280,14 +263,17 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
     Length = 64,
     SetName = false,
     Name = ""
-    }
+    },
+  pakettiDynamicViews = {
+  bla ="ble"
+  }
 }
 
 -- Assigning Preferences to renoise.tool
 renoise.tool().preferences = preferences
 
 -- Accessing Segments
-ReSpeak = renoise.tool().preferences.pakettiReSpeak
+eSpeak = renoise.tool().preferences.pakettieSpeak
 pakettiThemeSelector = renoise.tool().preferences.pakettiThemeSelector
 WipeSlices = renoise.tool().preferences.WipeSlices
 AppSelection = renoise.tool().preferences.AppSelection
@@ -307,26 +293,24 @@ end
 -- Call the initialization function once
 initialize_filter_index()
 
-
-
-
--- Function to load preset files
 local function pakettiGetXRNIDefaultPresetFiles()
     local presetsFolder = "Presets/"
-    local files = {}
-    local handle = io.popen('ls "' .. presetsFolder .. '"')
-    if handle then
-        for file in handle:lines() do
-            if file:match("%.xrni$") then
-                table.insert(files, file)
-            end
-        end
-        handle:close()
+    local files = os.filenames(presetsFolder, "*.xrni")
+    
+    -- Check if any presets were found
+    if not files or #files == 0 then
+        renoise.app():show_status("No .xrni preset files found in: " .. presetsFolder)
+        return { "<No Preset Selected>" }
     end
+    
+    -- Sort the files alphabetically for better user experience
+    table.sort(files, function(a, b) return a:lower() < b:lower() end)
+    
+    -- Insert a default option at the beginning
+    table.insert(files, 1, "<No Preset Selected>")
+    
     return files
 end
-
-local presetFiles = pakettiGetXRNIDefaultPresetFiles()
 
 -- Function to create horizontal rule
 function horizontal_rule()
@@ -395,6 +379,8 @@ function show_paketti_preferences()
         return
     end
 
+        local presetFiles = pakettiGetXRNIDefaultPresetFiles()
+    
     -- Get the initial value (index) for the popup
     local pakettiDefaultXRNIDisplayId = "pakettiDefaultXRNIDisplay_" .. tostring(math.random(2,30000))
     local pakettiDefaultDrumkitXRNIDisplayId = "pakettiDefaultDrumkitXRNIDisplay_" .. tostring(math.random(2,30000))

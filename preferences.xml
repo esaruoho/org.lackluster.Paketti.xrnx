@@ -2,21 +2,8 @@
 <ScriptingToolPreferences doc_version="0">
   <selectionNewInstrumentLoop>2</selectionNewInstrumentLoop>
   <selectionNewInstrumentInterpolation>4</selectionNewInstrumentInterpolation>
-  <pakettiLoaderLoopMode>2</pakettiLoaderLoopMode>
+  <pakettiLoaderLoopMode>1.0</pakettiLoaderLoopMode>
   <RandomBPM>false</RandomBPM>
-  <pakettiReSpeak>
-    <pitch>69</pitch>
-    <capitals>58</capitals>
-    <text>leglegl</text>
-    <voice>68</voice>
-    <executable>/opt/homebrew/bin/espeak-ng</executable>
-    <render_on_change>true</render_on_change>
-    <amplitude>3</amplitude>
-    <word_gap>4</word_gap>
-    <clear_all_samples>false</clear_all_samples>
-    <language>52</language>
-    <speed>201</speed>
-  </pakettiReSpeak>
   <pakettiLoaderInterpolation>4</pakettiLoaderInterpolation>
   <pakettiDefaultXRNI>12st_Pitchbend.xrni</pakettiDefaultXRNI>
   <loadPaleGreenTheme>false</loadPaleGreenTheme>
@@ -55,6 +42,7 @@
     <WipeSlicesLoopRelease>false</WipeSlicesLoopRelease>
     <WipeSlicesMuteGroup>1.0</WipeSlicesMuteGroup>
     <WipeSlicesBeatSyncGlobal>false</WipeSlicesBeatSyncGlobal>
+    <WipeSlicesAutofade>false</WipeSlicesAutofade>
     <slicePreviousDirection>1.0</slicePreviousDirection>
     <WipeSlicesLoopMode>2</WipeSlicesLoopMode>
     <WipeSlicesAutoseek>false</WipeSlicesAutoseek>
@@ -62,17 +50,18 @@
     <WipeSlicesNNA>1.0</WipeSlicesNNA>
   </WipeSlices>
   <pakettiCheatSheet>
-    <pakettiCheatSheetRandomizeMax>147.11538461538461</pakettiCheatSheetRandomizeMax>
-    <pakettiCheatSheetRandomizeMin>91.835664335664333</pakettiCheatSheetRandomizeMin>
+    <pakettiCheatSheetRandomizeMax>51.713286713286706</pakettiCheatSheetRandomizeMax>
+    <pakettiCheatSheetRandomizeMin>10.6993006993007</pakettiCheatSheetRandomizeMin>
     <pakettiCheatSheetRandomizeDontOverwrite>false</pakettiCheatSheetRandomizeDontOverwrite>
     <pakettiCheatSheetRandomizeWholeTrack>true</pakettiCheatSheetRandomizeWholeTrack>
-    <pakettiCheatSheetRandomizeSwitch>true</pakettiCheatSheetRandomizeSwitch>
+    <pakettiCheatSheetRandomizeSwitch>false</pakettiCheatSheetRandomizeSwitch>
     <pakettiCheatSheetRandomize>true</pakettiCheatSheetRandomize>
-    <pakettiCheatSheetFillAll>58</pakettiCheatSheetFillAll>
+    <pakettiCheatSheetFillAll>81</pakettiCheatSheetFillAll>
   </pakettiCheatSheet>
-  <renderSampleRate>88200</renderSampleRate>
-  <pakettiLoaderFilterType>LP Clean</pakettiLoaderFilterType>
+  <pakettiDialogClose>esc</pakettiDialogClose>
+  <pakettiLoaderFilterType>LP Moog</pakettiLoaderFilterType>
   <pakettiLoaderOverSampling>true</pakettiLoaderOverSampling>
+  <PakettiDeviceChainPath>DeviceChains/</PakettiDeviceChainPath>
   <UserPreferences>
     <userPreferredDevice05>Audio/Effects/AU/aufx:dLay:oDin</userPreferredDevice05>
     <userPreferredDevice07>Audio/Effects/Native/Distortion 2</userPreferredDevice07>
@@ -88,8 +77,9 @@
   </UserPreferences>
   <selectionNewInstrumentAutoFade>true</selectionNewInstrumentAutoFade>
   <upperFramePreference>0.0</upperFramePreference>
-  <pakettiLoaderOneshot>false</pakettiLoaderOneshot>
-  <selectionNewInstrumentSelect>true</selectionNewInstrumentSelect>
+  <pakettiDynamicViews>
+    <bla>ble</bla>
+  </pakettiDynamicViews>
   <pakettiPhraseInitDialog>
     <NoteColumns>1.0</NoteColumns>
     <LPB>4</LPB>
@@ -105,6 +95,7 @@
     <DelayColumnVisible>false</DelayColumnVisible>
     <PanningColumnVisible>false</PanningColumnVisible>
   </pakettiPhraseInitDialog>
+  <pakettiLoaderOneshot>false</pakettiLoaderOneshot>
   <pakettiColuga>
     <pakettiColugaNewInstrumentOrSameInstrument>true</pakettiColugaNewInstrumentOrSameInstrument>
     <pakettiColugaPathToSave>/Users/esaruoho/Music/samples/colugatest/ColugaSampleSave/</pakettiColugaPathToSave>
@@ -116,20 +107,41 @@
     <pakettiColugaYT_DLPLocation>/opt/homebrew/Cellar/yt-dlp/2024.8.6/libexec/bin/yt-dlp</pakettiColugaYT_DLPLocation>
     <pakettiColugaLoadWholeVideo>true</pakettiColugaLoadWholeVideo>
   </pakettiColuga>
+  <selectionNewInstrumentSelect>true</selectionNewInstrumentSelect>
   <OctaMEDPickPutSlots>
-    <Slot10>Slot 10: Empty</Slot10>
-    <UseEditStep>false</UseEditStep>
+    <Slot10>--- .. .. 40 .. ....||</Slot10>
+    <RandomizeEnabled>false</RandomizeEnabled>
+    <UseEditStep>true</UseEditStep>
+    <RandomizePercentage>29.333333333333332</RandomizePercentage>
     <SetSelectedInstrument>false</SetSelectedInstrument>
-    <Slot09>Slot 09: Empty</Slot09>
-    <Slot01>C-3 08 7F 20 30 ....||0B00|0D00</Slot01>
+    <Slot09>||0B32</Slot09>
+    <Slot01>C-6 08 7F 20 30 ....||0B00|0D00</Slot01>
     <Slot03>--- .. .. .. 55 ....||</Slot03>
     <Slot05>OFF .. .. .. .. .... | --- .. .. .. .. .... | --- .. .. .. .. .... | --- .. .. .. .. ....||</Slot05>
     <Slot04>--- .. .. .. AA .... | --- .. .. .. 55 .... | --- .. .. .. AA .... | --- .. .. .. AA ....||</Slot04>
     <Slot08>--- .. .. .. .. 0B00||0D30</Slot08>
-    <Slot07>C-4 00 30 50 30 0AF0 | F-4 00 .. .. .. ....||0B00|0S00|0E00|0F00</Slot07>
+    <Slot07>C-1 00 30 50 30 0AF0 | F-4 00 .. .. .. ....||0B00|0S00|0E00|0F00</Slot07>
     <Slot06>OFF .. .. .. .. .... | --- .. .. .. .. .... | --- .. .. .. .. .... | --- .. .. .. .. ....||</Slot06>
-    <Slot02>C-4 00 .. .. .. .... | D-4 00 .. .. .. .... | F-4 00 .. .. .. .... | G-4 00 .. .. .. ....||0B05|0C04|0D03|0E01</Slot02>
+    <Slot02>C-2 01 .. .. .. .... | --- .. .. .. .. ....||</Slot02>
   </OctaMEDPickPutSlots>
+  <pakettieSpeak>
+    <pitch>67</pitch>
+    <capitals>69</capitals>
+    <add_render_to_current_instrument>false</add_render_to_current_instrument>
+    <text>Hello, I am Macintosh. It sure is great to get out of that bag!
+
+Unaccustomed as I am to public speaking, I'd like to share with you a maxim I thought of the first time I met an IBM mainframe: Never trust a computer that you can't lift!
+
+Obviously, I can talk, but right now I'd like to sit back and listen. So it is with considerable pride that I introduce a man who has been like a father to me... Steve Jobs!</text>
+    <voice>81</voice>
+    <executable>/opt/homebrew/bin/espeak-ng</executable>
+    <render_on_change>false</render_on_change>
+    <amplitude>5</amplitude>
+    <word_gap>1.0</word_gap>
+    <clear_all_samples>true</clear_all_samples>
+    <language>31</language>
+    <speed>22</speed>
+  </pakettieSpeak>
   <pakettiThemeSelector>
     <FavoritedList>
       <Favorited>&lt;No Theme Selected&gt;</Favorited>
@@ -137,7 +149,6 @@
       <Favorited>Little Phatty Theme</Favorited>
       <Favorited>ulneiz_graycream</Favorited>
       <Favorited>phase_plant</Favorited>
-      <Favorited>small_hours_r</Favorited>
       <Favorited>Default</Favorited>
       <Favorited>Pico-8 Dusty Chocolate</Favorited>
       <Favorited>Academic</Favorited>
@@ -147,7 +158,6 @@
       <Favorited>Space Latte Metal</Favorited>
       <Favorited>redark</Favorited>
       <Favorited>Osi-Cyberpunk1</Favorited>
-      <Favorited>purple poison arrow frog</Favorited>
       <Favorited>Graphite RC1</Favorited>
       <Favorited>sQeetz_Emerald</Favorited>
       <Favorited>Osi-BladeRunner</Favorited>
@@ -155,26 +165,25 @@
       <Favorited>Osi-TrackerHacker</Favorited>
       <Favorited>mango-theme</Favorited>
       <Favorited>Textured</Favorited>
-      <Favorited>BW</Favorited>
       <Favorited>Zero-G-Inverted</Favorited>
-      <Favorited>Basic Light Theme</Favorited>
       <Favorited>Breed</Favorited>
-      <Favorited>Xan-Neon</Favorited>
       <Favorited>sea dragon</Favorited>
       <Favorited>Brown #12</Favorited>
       <Favorited>Willingly (Jr‚tion)</Favorited>
       <Favorited>Black and Pink</Favorited>
       <Favorited>Sononoise-Dark</Favorited>
       <Favorited>Orange biology</Favorited>
+      <Favorited>Mineral-Hills-Mod-of-dracula-redux-theme-1.0-LightBlueButtons</Favorited>
     </FavoritedList>
     <RenoiseLaunchFavoritesLoad>true</RenoiseLaunchFavoritesLoad>
     <RenoiseLaunchRandomLoad>false</RenoiseLaunchRandomLoad>
     <PreviousSelectedTheme>Darkness A</PreviousSelectedTheme>
   </pakettiThemeSelector>
-  <pakettiLoaderNNA>2</pakettiLoaderNNA>
+  <renderBitDepth>32</renderBitDepth>
   <pakettiDefaultDrumkitXRNI>12st_Pitchbend_Drumkit_C0.xrni</pakettiDefaultDrumkitXRNI>
-  <pakettiLoaderLoopExit>false</pakettiLoaderLoopExit>
+  <pakettiLoaderNNA>2</pakettiLoaderNNA>
   <selectionNewInstrumentAutoseek>false</selectionNewInstrumentAutoseek>
+  <pakettiLoaderLoopExit>false</pakettiLoaderLoopExit>
   <renderBypass>true</renderBypass>
   <pakettiPitchbendLoaderEnvelope>false</pakettiPitchbendLoaderEnvelope>
   <pakettiLoaderAutoseek>false</pakettiLoaderAutoseek>
@@ -190,7 +199,7 @@
     <AppSelection2>/Applications/Ableton Live 12 Suite.app</AppSelection2>
   </AppSelection>
   <pakettiLoaderAutoFade>true</pakettiLoaderAutoFade>
-  <renderBitDepth>32</renderBitDepth>
+  <renderSampleRate>88200</renderSampleRate>
   <_0G01_Loader>false</_0G01_Loader>
   <PakettiStripSilenceThreshold>0.021075268817204128</PakettiStripSilenceThreshold>
 </ScriptingToolPreferences>

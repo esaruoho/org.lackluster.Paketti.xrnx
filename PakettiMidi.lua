@@ -1576,7 +1576,7 @@ local function clamp_value(value)
   return math.max(0.0, math.min(1.0, value))
 end
 
-local function record_midi_value(value)
+function record_midi_value(value)
   local song = renoise.song()
   local automation_parameter = song.selected_automation_parameter
 
@@ -1651,7 +1651,6 @@ local function record_midi_value(value)
   print("Automation recorded at playhead: " .. playhead_line .. " with value: " .. tostring(clamped_value))
 end
 
--- MIDI mapping function
 renoise.tool():add_midi_mapping{
   name = "Paketti:Record Automation to Selected Parameter",
   invoke = function(midi_msg)
@@ -1660,7 +1659,6 @@ renoise.tool():add_midi_mapping{
     local normalized_value = midi_msg.int_value / 127
     print("Received MIDI value: " .. tostring(midi_msg.int_value) .. " (normalized: " .. tostring(normalized_value) .. ")")
     
-    -- Call the function to record the value
     record_midi_value(normalized_value)
   end
 }

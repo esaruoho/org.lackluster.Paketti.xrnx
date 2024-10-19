@@ -824,6 +824,41 @@ renoise.tool():add_keybinding {name = "Sample Editor:Paketti:Invert Right, Sum M
 renoise.tool():add_keybinding {name = "Sample Editor:Paketti:Audio Diff", invoke = function() create_audio_diff_sample() end}
 renoise.tool():add_keybinding {name = "Global:Paketti:Paketti Audio Processing Tools Dialog...", invoke = function() PakettiAudioProcessingToolsDialogShow() end}
 
+function update_sample_details(details_text, sample_name_text)
+  -- If UI elements are not properly initialized, exit early
+ -- if not details_text or not sample_name_text then
+ --   print("UI elements are not initialized yet.")
+ --   return
+ -- end
+
+  local song = renoise.song()
+  if song then
+    local instrument = song.selected_instrument
+    if instrument then
+      local sample_index = song.selected_sample_index
+
+      if sample_index > 0 and sample_index <= #instrument.samples then
+        local sample = instrument:sample(sample_index)
+        if sample then
+          local buffer = sample.sample_buffer
+          if buffer and buffer.has_sample_data then
+            -- Update the UI elements with valid sample data
+            details_text.text = string.format("Details: %dHz, %dbit, %d frames", 
+              buffer.sample_rate, buffer.bit_depth, buffer.number_of_frames)
+            sample_name_text.text = "Name: " .. sample.name
+
+            renoise.app():show_status("Sample details and name updated.")
+            return  -- Exit after successful update
+          end
+        end
+      end
+    end
+  end
+
+  -- Fallback if no valid sample is available
+  details_text.text = "Details: No valid sample selected"
+  sample_name_text.text = "Name: No valid sample selected"
+end
 
 function PakettiStripSilence()
   local song = renoise.song()
@@ -933,7 +968,6 @@ function PakettiStripSilence()
 
   renoise.app():show_status("Removed Silence from beginning + end of sample at threshold " .. (threshold * 100) .. "%")
 end
-
 
 function PakettiMoveSilence()
   local song = renoise.song()
@@ -1116,42 +1150,6 @@ end
 -- Adding keybinding and menu entry on single lines
 renoise.tool():add_keybinding { name="Sample Editor:Paketti:Max Amp DC Offset Kick Generator", invoke=function() pakettiMaxAmplitudeDCOffsetKickCreator() end }
 renoise.tool():add_menu_entry { name="Sample Editor:Paketti..:Max Amp DC Offset Kick Generator", invoke=function() pakettiMaxAmplitudeDCOffsetKickCreator() end }
-
-function update_sample_details(details_text, sample_name_text)
-  -- If UI elements are not properly initialized, exit early
- -- if not details_text or not sample_name_text then
- --   print("UI elements are not initialized yet.")
- --   return
- -- end
-
-  local song = renoise.song()
-  if song then
-    local instrument = song.selected_instrument
-    if instrument then
-      local sample_index = song.selected_sample_index
-
-      if sample_index > 0 and sample_index <= #instrument.samples then
-        local sample = instrument:sample(sample_index)
-        if sample then
-          local buffer = sample.sample_buffer
-          if buffer and buffer.has_sample_data then
-            -- Update the UI elements with valid sample data
-            details_text.text = string.format("Details: %dHz, %dbit, %d frames", 
-              buffer.sample_rate, buffer.bit_depth, buffer.number_of_frames)
-            sample_name_text.text = "Name: " .. sample.name
-
-            renoise.app():show_status("Sample details and name updated.")
-            return  -- Exit after successful update
-          end
-        end
-      end
-    end
-  end
-
-  -- Fallback if no valid sample is available
-  details_text.text = "Details: No valid sample selected"
-  sample_name_text.text = "Name: No valid sample selected"
-end
 
 -- Function to apply the recursive DC offset correction algorithm
 function remove_dc_offset_recursive()

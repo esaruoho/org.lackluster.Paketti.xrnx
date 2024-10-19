@@ -1,4 +1,4 @@
-local vb -- ViewBuilder will be initialized within the function scope
+local vb
 local checkboxes = {}
 local deviceReadableNames = {}
 local addedKeyBindings = {}
@@ -8,13 +8,10 @@ local device_types = {"Native", "VST", "VST3", "AudioUnit", "LADSPA", "DSSI"}
 local custom_dialog
 local dialog_content_view
 local device_list_view
-local current_device_list_content = nil  -- Variable to keep track of current content
+local current_device_list_content = nil
 
--- Variable to control the number of devices per column
-local DEVICES_PER_COLUMN = 39  -- Adjusted as per your request
-
--- Variable for random selection percentage
-local random_select_percentage = 0  -- Initialized to 0%
+local DEVICES_PER_COLUMN = 39
+local random_select_percentage = 0
 
 -- Initialize Preferences File
 function initializePreferencesFile()
@@ -67,7 +64,6 @@ function saveToPreferencesFile(keyBindingName, midiMappingName, path)
   file:close()
 end
 
--- Check if any devices are selected
 function isAnyDeviceSelected()
   for _, cb_info in ipairs(checkboxes) do
     if cb_info.checkbox.value then
@@ -77,11 +73,10 @@ function isAnyDeviceSelected()
   return false
 end
 
--- Load Selected Devices
 function loadSelectedDevices()
   if not isAnyDeviceSelected() then
     renoise.app():show_status("Nothing was selected, doing nothing.")
-    return false  -- Indicate that no devices were loaded
+    return false
   end
 
   local track_index = renoise.song().selected_track_index
@@ -96,10 +91,9 @@ function loadSelectedDevices()
       end
     end
   end
-  return true  -- Indicate that devices were loaded
+  return true
 end
 
--- Add as Shortcut
 function addAsShortcut()
   if not isAnyDeviceSelected() then
     renoise.app():show_status("Nothing was selected, doing nothing.")
@@ -153,21 +147,19 @@ function addAsShortcut()
   renoise.app():show_status("Devices added. Open Settings -> Keys, search for 'Load Device' or Midi Mappings and search for 'Load Device'")
 end
 
--- Reset Selection
 function resetSelection()
   for _, cb_info in ipairs(checkboxes) do
     cb_info.checkbox.value = false
   end
 end
 
--- Update Random Selection based on Slider
 function updateRandomSelection()
   if #checkboxes == 0 then
     renoise.app():show_status("Nothing to randomize from.")
     return
   end
 
-  resetSelection()  -- Clear previous selections
+  resetSelection()
 
   local numDevices = #checkboxes
   local percentage = random_select_percentage
@@ -193,26 +185,20 @@ function updateRandomSelection()
     indices[i] = i
   end
 
-  -- Shuffle indices
   for i = numDevices, 2, -1 do
     local j = math.random(1, i)
     indices[i], indices[j] = indices[j], indices[i]
   end
 
-  -- Select the first numSelections devices
   for i = 1, numSelections do
     local idx = indices[i]
     checkboxes[idx].checkbox.value = true
   end
 end
 
--- Create Device List
 function createDeviceList(plugins, title)
   if #plugins == 0 then
-    return vb:column{
- --     vb:text{text=title, font="bold", height=20},
-      vb:text{text="No Devices found for this type.", font="italic", height=20}
-    }
+    return vb:column{vb:text{text="No Devices found for this type.", font="italic", height=20}}
   end
 
   -- Determine number of columns based on DEVICES_PER_COLUMN
@@ -235,11 +221,7 @@ function createDeviceList(plugins, title)
       local checkbox_id = "checkbox_" .. title .. "_" .. tostring(device_index) .. "_" .. tostring(math.random(1000000))
       local checkbox = vb:checkbox{value=false, id=checkbox_id}
       checkboxes[#checkboxes + 1] = {checkbox=checkbox, path=plugin.path, name=plugin.name}
-      local plugin_row = vb:row{
-        spacing=4,
-        checkbox,
-        vb:text{text=plugin.name}
-      }
+      local plugin_row = vb:row{spacing=4,checkbox,vb:text{text=plugin.name}}
       columns[col]:add_child(plugin_row)
       device_index = device_index + 1
     end
@@ -251,17 +233,11 @@ function createDeviceList(plugins, title)
   end
 
   return vb:column{
- --   vb:text{text=title, font="bold", height=20},
-    vb:horizontal_aligner{
-      mode = "center",
-      column_container
-    }
-  }
+    vb:horizontal_aligner{mode="center",column_container}}
 end
 
--- Update Device List
 function updateDeviceList()
-  checkboxes = {}  -- Clear previous checkboxes
+  checkboxes = {}
   deviceReadableNames = {}
   local track_index = renoise.song().selected_track_index
   local available_devices = renoise.song().tracks[track_index].available_devices
@@ -292,8 +268,7 @@ function updateDeviceList()
       {name = "(Hidden) RingMod", path = "Audio/Effects/Native/RingMod"},
       {name = "(Hidden) Scream Filter", path = "Audio/Effects/Native/Scream Filter"},
       {name = "(Hidden) Shaper", path = "Audio/Effects/Native/Shaper"},
-      {name = "(Hidden) Stutter", path = "Audio/Effects/Native/Stutter"}
-    }
+      {name = "(Hidden) Stutter", path = "Audio/Effects/Native/Stutter"}}
 
     for i, device_path in ipairs(available_devices) do
       if device_path:find("Native/") then
@@ -302,12 +277,10 @@ function updateDeviceList()
       end
     end
 
-    -- Sort the native devices by name (including devices starting with special characters)
     table.sort(native_devices, function(a, b)
       return a.name:lower() < b.name:lower()
     end)
 
-    -- Append hidden devices at the end
     for _, hidden_device in ipairs(hidden_devices) do
       table.insert(native_devices, hidden_device)
     end
@@ -333,7 +306,6 @@ function updateDeviceList()
       end
     end
 
-    -- Sort the VST3 devices alphabetically
     table.sort(vst3_devices, function(a, b)
       return a.name:lower() < b.name:lower()
     end)
@@ -349,7 +321,6 @@ function updateDeviceList()
       end
     end
 
-    -- Sort the AudioUnit devices alphabetically
     table.sort(au_devices, function(a, b)
       return a.name:lower() < b.name:lower()
     end)
@@ -390,7 +361,6 @@ elseif current_device_type == "LADSPA" then
       end
     end
 
-    -- Sort the DSSI devices by name
     table.sort(dssi_devices, function(a, b)
       return a.name:lower() < b.name:lower()
     end)
@@ -398,7 +368,6 @@ elseif current_device_type == "LADSPA" then
     device_list_content = createDeviceList(dssi_devices, "DSSI Devices")
   end
 
-  -- Update the device_list_view
   if current_device_list_content then
     device_list_view:remove_child(current_device_list_content)
   end
@@ -407,7 +376,6 @@ elseif current_device_type == "LADSPA" then
   current_device_list_content = device_list_content
 end
 
--- Show Device List Dialog
 function showDeviceListDialog()
 current_device_list_content = nil
 
@@ -415,19 +383,15 @@ current_device_list_content = nil
   checkboxes = {}
   local track_index = renoise.song().selected_track_index
 
-  -- Dropdown Menu
   local dropdown = vb:popup{
     items = device_types,
     value = 1,
     notifier = function(index)
       current_device_type = device_types[index]
       updateDeviceList()
-    end
-  }
+    end}
 
-  -- Random Selection Slider
   local random_selection_controls = vb:row{
-   -- spacing = 10,
     vb:text{text = "Random Select:", width = 80, style="strong",font="bold"},
     vb:slider{
       id = "random_select_slider",
@@ -438,118 +402,55 @@ current_device_list_content = nil
       notifier = function(value)
         random_select_percentage = value
         updateRandomSelection()
-      end
-    },
-    vb:text{
-      id = "random_percentage_text",
-      text = "None",
-      width = 40,
-      align = "center"
-    },
-          vb:button{
-        text = "All",
-      --  height = button_height,
-        width = 20,
+      end},
+    vb:text{id="random_percentage_text",text="None",width=40,
+      align="center"},
+          vb:button{text="All",width=20,
         notifier = function()
           for _, cb_info in ipairs(checkboxes) do
             cb_info.checkbox.value = true
           end
           vb.views["random_select_slider"].value = 100
           vb.views["random_percentage_text"].text = "All"
-        end
-      },
-           vb:button{
-        text = "None",
-   --     height = button_height,
-        width = 20,
+        end},
+           vb:button{text="None",width=20,
         notifier = function()
           resetSelection()
           vb.views["random_select_slider"].value = 0
           vb.views["random_percentage_text"].text = "None"
-        end
-      }
+        end}}
 
-  }
-
-  -- Action Buttons
   local button_height = renoise.ViewBuilder.DEFAULT_DIALOG_BUTTON_HEIGHT
   local action_buttons = vb:column{
-   -- uniform = true,
-  --  width = "100%",
-       vb:horizontal_aligner{
-      width = "100%",
-         vb:button{
-        text = "Load Device(s)",
-        width = 60,
-   --     height = button_height,
+       vb:horizontal_aligner{width="100%",
+         vb:button{text="Load Device(s)",width=60,
         notifier = function()
           if loadSelectedDevices() then
             renoise.app():show_status("Devices loaded.")
           end
         end
       },
-    vb:button{
-      text = "Add Device(s) as Shortcut(s) & MidiMappings",
-  --    height = button_height,
-      width = 140,
-      notifier = addAsShortcut
-    },
- 
-            vb:button{
-        text = "Cancel",
-     --   height = button_height,
-        width = 30,
-        notifier = function()
-          custom_dialog:close()
-        end
-      }
-
-    
- --[[      vb:button{
-        text = "Load Device(s) & Close",
-        width = "33%",
-        height = button_height,
-        notifier = function()
-          if loadSelectedDevices() then
-            custom_dialog:close()
-          end
-        end
-      },]]--
-    }
-  }
-
-  -- Placeholder for Device List
+    vb:button{text="Add Device(s) as Shortcut(s) & MidiMappings",width=140,
+      notifier = addAsShortcut},
+        vb:button{text="Cancel",width=30,
+        notifier = function() custom_dialog:close() end}}}
   device_list_view = vb:column{}
-
-  -- Main Dialog Content
-  dialog_content_view = vb:column{
-    margin = 10,
-    spacing = 5,
-    device_list_view,
---    action_buttons
-  }
+  dialog_content_view = vb:column{margin = 10,spacing = 5,device_list_view,}
 
   -- Wrap in a column to include the dropdown
   local dialog_content = vb:column{
     vb:horizontal_aligner{
       vb:text{text = "Device Type: ", font="bold",style="strong"},
-      dropdown,action_buttons,random_selection_controls},
---      vb:horizontal_aligner{
-  --        random_selection_controls},--random_selection_controls
-    
-    dialog_content_view
-  }
+      dropdown,action_buttons,random_selection_controls},dialog_content_view}
 
   custom_dialog = renoise.app():show_custom_dialog("Load Device(s)", dialog_content, my_Devicekeyhandler_func)
 
-  -- Initial Update
   updateDeviceList()
 end
 
 function my_Devicekeyhandler_func(custom_dialog, key)
 local closer = preferences.pakettiDialogClose.value
   if key.modifiers == "" and key.name == closer then
-
     custom_dialog:close()
     custom_dialog = nil
     return nil
