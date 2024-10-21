@@ -679,7 +679,7 @@ function show_paketti_preferences()
         },
         vb:button{
             text = "Browse",
-            width = 100,
+            width = 60,
             notifier = function()
                 local path = renoise.app():prompt_for_path("Select Device Chain Path")
                 if path and path ~= "" then
@@ -699,6 +699,10 @@ function show_paketti_preferences()
                 preferences.PakettiDeviceChainPath.value = "DeviceChains/"
                 vb.views[pakettiDeviceChainPathDisplayId].text = "DeviceChains/"
             end
+        },
+        vb:button{text="Load Random Chain",width=100,notifier=function()
+        PakettiRandomDeviceChain(preferences.PakettiDeviceChainPath.value)
+        end
         }}
     },
         

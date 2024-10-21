@@ -346,7 +346,7 @@ renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Oblique Strategies
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Paketti Track Renamer Dialog...",invoke=function() PakettiTrackRenamerDialog() end}
 
 
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Paketti eSpeak Text-to-Speech Dialog...",invoke=function()pakettiReSpeakToggleDialog()end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Paketti eSpeak Text-to-Speech Dialog...",invoke=function()pakettieSpeakToggleDialog()end}
 renoise.tool():add_menu_entry { name = "Main Menu:Tools:Paketti..:Paketti Coluga Downloader Dialog...", invoke = function() PakettiColugaShowDialog() end }
 renoise.tool():add_menu_entry {name = "Main Menu:Tools:Paketti..:Audio Processing Tools Dialog...", invoke = function() PakettiAudioProcessingToolsDialogShow() end}
 

@@ -7203,7 +7203,7 @@ function randomize_row(slider_set)
 end
 
 -- Randomize all sliders (volume, delay, panning) and print afterward
-function randomize_all()
+function randomizenongroovebox_all()
   randomize_row("volume")
   randomize_row("delay")
   randomize_row("panning")
@@ -7398,7 +7398,7 @@ function show_VDPdialog()
       },
       vb:button {
         text = "Randomize All",
-        notifier = function() randomize_all() print_all() end
+        notifier = function() randomizenongroovebox_all() print_all() end
       }
     }
   }
