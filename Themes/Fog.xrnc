@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SkinColors doc_version="5">
+<SkinColors doc_version="7">
   <Main_Back>66,70,73</Main_Back>
   <Main_Font>186,192,193</Main_Font>
   <Alternate_Main_Back>0,0,0</Alternate_Main_Back>
@@ -17,16 +17,19 @@
   <Selection_Font>255,255,255</Selection_Font>
   <StandBy_Selection_Back>161,161,161</StandBy_Selection_Back>
   <StandBy_Selection_Font>0,0,0</StandBy_Selection_Font>
+  <Midi_Mapping_Back>255,0,0</Midi_Mapping_Back>
+  <Midi_Mapping_Font>0,0,0</Midi_Mapping_Font>
   <ToolTip_Back>229,229,229</ToolTip_Back>
   <ToolTip_Font>41,41,41</ToolTip_Font>
   <ValueBox_Back>50,50,50</ValueBox_Back>
   <ValueBox_Font>141,213,0</ValueBox_Font>
+  <ValueBox_Font_Icons>203,203,203</ValueBox_Font_Icons>
   <SliderBar_Back>88,92,95</SliderBar_Back>
   <SliderBar_Font>255,255,255</SliderBar_Font>
   <Fader>203,209,215</Fader>
   <Folder>255,255,255</Folder>
-  <Pattern_Default_Back>34,36,36</Pattern_Default_Back>
-  <Pattern_Default_Font>126,126,126</Pattern_Default_Font>
+  <Pattern_Default_Back>67,71,71</Pattern_Default_Back>
+  <Pattern_Default_Font>202,202,202</Pattern_Default_Font>
   <Pattern_Default_Font_Volume>36,191,100</Pattern_Default_Font_Volume>
   <Pattern_Default_Font_Panning>147,191,95</Pattern_Default_Font_Panning>
   <Pattern_Default_Font_Pitch>198,160,78</Pattern_Default_Font_Pitch>
@@ -43,7 +46,7 @@
   <Pattern_PlayPosition_Font>204,204,204</Pattern_PlayPosition_Font>
   <Pattern_CenterBar_Back>181,218,91</Pattern_CenterBar_Back>
   <Pattern_CenterBar_Font>255,255,255</Pattern_CenterBar_Font>
-  <Pattern_CenterBar_Back_StandBy>86,104,43</Pattern_CenterBar_Back_StandBy>
+  <Pattern_CenterBar_Back_StandBy>85,86,85</Pattern_CenterBar_Back_StandBy>
   <Pattern_CenterBar_Font_StandBy>255,255,255</Pattern_CenterBar_Font_StandBy>
   <Pattern_Selection>140,213,0</Pattern_Selection>
   <Pattern_StandBy_Selection>19,22,25</Pattern_StandBy_Selection>
