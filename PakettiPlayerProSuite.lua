@@ -173,6 +173,7 @@ print (editstep)
       line:note_column(col).instrument_string = instrument_string
     end
     print("Note column info - Instrument String: " .. line:note_column(col).instrument_string .. ", Instrument Value: " .. tostring(line:note_column(col).instrument_value))
+    renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
   end
 
   local function clear_note_line(line, col)
@@ -458,7 +459,8 @@ renoise.app().window.active_middle_frame=1
     PakettiPlayerProNoteGridCloseDialog()
   else
     print("Dialog is not visible, creating new dialog.")
-    dialog = renoise.app():show_custom_dialog("Player Pro Note Selector with EditStep", PakettiPlayerProNoteGridCreateDialogContent(), PakettiPlayerProNoteGridKeyHandlerFunc)
+    dialog = renoise.app():show_custom_dialog("Player Pro Note Selector with EditStep", PakettiPlayerProNoteGridCreateDialogContent(), --PakettiPlayerProNoteGridKeyHandlerFunc)
+ my_PPEffectkeyhandler_func)
     print("Dialog opened.")
     renoise.app():show_status("Opening Paketti PlayerPro Note Dialog")
     -- Return focus to the Pattern Editor

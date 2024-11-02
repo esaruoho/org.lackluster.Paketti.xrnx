@@ -443,7 +443,7 @@ function monitor_doofer1_macros(device)
   -- Macro 5 -> BPM
   local function macro5_notifier()
     local value=device.parameters[5].value
-    local bpm_value=(value/100)*(187-32)+32
+    local bpm_value=(value/100)*(260-20)+32
     renoise.song().transport.bpm=bpm_value
   end
 
@@ -503,6 +503,30 @@ function monitor_doofer2_macros(device)
   local function macro2_notifier()
     local value=device.parameters[2].value
     set_sample_record(value)
+    renoise.song().selected_track_index = 1
+
+
+      local s=renoise.song()
+  local currTrak=s.selected_track_index
+  local currPatt=s.selected_pattern_index
+  local rightinstrument=nil
+  local rightinstrument=renoise.song().selected_instrument_index-1
+
+  if preferences._0G01_Loader.value then
+    local new_track_index = currTrak + 1
+    s:insert_track_at(new_track_index)
+    s.selected_track_index = new_track_index
+    currTrak = new_track_index
+    local line=s.patterns[currPatt].tracks[currTrak].lines[1]
+    line.note_columns[1].note_string="C-4"
+    line.note_columns[1].instrument_value=rightinstrument
+    line.effect_columns[1].number_string="0G"
+    line.effect_columns[1].amount_string="01"
+      
+  end
+
+    
+    
   end
 
   -- Macro 3 -> Pattern Length
@@ -1175,7 +1199,8 @@ local w=renoise.app().window
     --w.active_upper_frame = 1
     --w.active_middle_frame= 4
     --w.active_lower_frame = 1 -- TrackDSP
-    w.lock_keyboard_focus=true
+    -- w.lock_keyboard_focus=true
+    renoise.app():show_status("There is no Plugin in the Selected Instrument Slot, doing nothing.")
     else
      if pd.external_editor_visible==false then pd.external_editor_visible=true else pd.external_editor_visible=false end
      end
@@ -1186,10 +1211,14 @@ renoise.tool():add_menu_entry{name="Track Automation:Paketti..:Open External Edi
 
 
 function AutomationDeviceShowUI()
+if renoise.song().selected_automation_device.external_editor_available ~= false then
 if renoise.song().selected_automation_device.external_editor_visible
 then renoise.song().selected_automation_device.external_editor_visible=false
 else
 renoise.song().selected_automation_device.external_editor_visible=true
+end
+else 
+renoise.app():show_status("The selected automation device does not have an External Editor available, doing nothing.")
 end
 end
 

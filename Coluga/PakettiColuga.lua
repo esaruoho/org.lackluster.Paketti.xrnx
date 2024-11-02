@@ -6,10 +6,6 @@
   - Includes all helper functions and main functionalities
 --]]
 
--- =====================
--- Global Variables
--- =====================
-
 local yt_dlp_path = ""
 local ffmpeg_path = ""
 local RUNTIME = tostring(os.time())
@@ -18,27 +14,7 @@ local dialog = nil
 local dialog_content = nil
 local loop_modes = {"Off", "Forward", "Backward", "PingPong"}
 local vb = nil        -- ViewBuilder instance
-local logview = nil   -- Log view
-
--- Ensure preferences are defined elsewhere in your code
--- Example:
--- preferences = {
---   pakettiColuga = {
---     pakettiColugaOutputDirectory = { value = "" },
---     pakettiColugaClipLength = { value = 10 },
---     pakettiColugaLoopMode = { value = 2 },
---     pakettiColugaAmountOfVideos = { value = 1 },
---     pakettiColugaLoadWholeVideo = { value = false },
---     pakettiColugaNewInstrumentOrSameInstrument = { value = false },
---     pakettiColugaFormatToSave = { value = 1 },
---     pakettiColugaPathToSave = { value = "" },
---     pakettiColugaYT_DLPLocation = { value = "" },
---   }
--- }
-
--- =====================
--- Helper Functions
--- =====================
+local logview = nil   
 
 -- Function to detect the operating system and assign paths
 function PakettiColugaSetExecutablePaths()
@@ -853,11 +829,7 @@ end
   end
 end
 
--- =====================
--- Dialog Control Functions
--- =====================
 
--- Function to show/hide the dialog
 function PakettiColugaShowDialog()
   if dialog and dialog.visible then
     PakettiColugaLogMessage("Dialog is visible, closing dialog.")
@@ -869,23 +841,19 @@ function PakettiColugaShowDialog()
   end
 end
 
--- Function to close the dialog
 function PakettiColugaCloseDialog()
   if dialog and dialog.visible then
     dialog:close()
   end
   dialog = nil
-  logview = nil  -- Reset the logview when dialog is closed
-  vb = nil       -- Reset the ViewBuilder when dialog is closed
+  logview = nil  
+  vb = nil       
   renoise.app():show_status("Closing Paketti Coluga Dialog")
 end
 
--- =====================
--- GUI and Tool Registration
--- =====================
 
 renoise.tool():add_keybinding { name = "Global:Tools:Paketti Coluga Downloader", invoke = PakettiColugaShowDialog }
-renoise.tool():add_menu_entry { name = "Sample Editor:Paketti..:Paketti Coluga Downloader...", invoke = PakettiColugaShowDialog }
-renoise.tool():add_menu_entry { name = "Sample Navigator:Paketti..:Paketti Coluga Downloader...", invoke = PakettiColugaShowDialog }
-renoise.tool():add_menu_entry { name = "Instrument Box:Paketti..:Paketti Coluga Downloader...", invoke = PakettiColugaShowDialog }
+--renoise.tool():add_menu_entry { name = "Sample Editor:Paketti..:Paketti Coluga Downloader...", invoke = PakettiColugaShowDialog }
+--renoise.tool():add_menu_entry { name = "Sample Navigator:Paketti..:Paketti Coluga Downloader...", invoke = PakettiColugaShowDialog }
+--renoise.tool():add_menu_entry { name = "Instrument Box:Paketti..:Paketti Coluga Downloader...", invoke = PakettiColugaShowDialog }
 

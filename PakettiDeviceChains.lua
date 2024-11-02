@@ -28,6 +28,9 @@ end
 renoise.tool():add_keybinding{name="Global:Paketti:Create New Track&Load Random Device Chain/Preset",invoke=function() PakettiRandomDeviceChain(preferences.PakettiDeviceChainPath.value) end}
 
 
+renoise.tool():add_keybinding{name="Global:Paketti:Load Device Chain EQ10 Macro Experimental",invoke=function()
+PakettiLoadDeviceChain("DeviceChains/eq10macrotest.xrnt")
+end}
 
 
 function PakettiLoadDeviceChain(chainName)

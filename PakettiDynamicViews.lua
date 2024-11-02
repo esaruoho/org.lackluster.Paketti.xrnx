@@ -510,8 +510,8 @@ function build_dialog_interface(vb, start_dv, end_dv, close_dialog)
   end
   -- Add Save, Save & Close, and Load buttons to the bottom
   interface:add_child(vb:row {
-    vb:button { text = "Save Dynamic Views as .txt", height = 20, width = 150, pressed = function() save_dynamic_views_to_txt() end },
-    vb:button { text = "Load Dynamic Views from .txt", height = 20, width = 150, pressed = function() load_dynamic_views_from_txt() end },
+    vb:button { text = "Save Dynamic Views as a textfile", height = 20, width = 150, pressed = function() save_dynamic_views_to_txt() end },
+    vb:button { text = "Load Dynamic Views from a textfile", height = 20, width = 150, pressed = function() load_dynamic_views_from_txt() end },
     vb:button { text = "Save & Close", height = 20, width = 100, pressed = function()
       renoise.app():show_status("Saving current settings")
       saveDynamicViewPreferences()
@@ -617,21 +617,86 @@ function load_dynamic_views_from_txt()
   renoise.app():show_status("Dynamic Views loaded successfully.")
 end
 
+-- Updated function to set dynamic view step from MIDI knob value
+function set_dynamic_view_step_from_knob(dv, knob_value)
+  local dv_id = string.format("%02d", dv)
+  local steps_count = 0
+  local max_steps = steps_per_view
+  local configured_steps = {}
+
+  -- Determine the list of configured steps
+  for step = 1, max_steps do
+    local upper_frame_index = DynamicViewPrefs["dynamic_view" .. dv_id .. "_upper_step" .. step].value
+    local middle_frame_index = DynamicViewPrefs["dynamic_view" .. dv_id .. "_middle_step" .. step].value
+    local lower_frame_index = DynamicViewPrefs["dynamic_view" .. dv_id .. "_lower_step" .. step].value
+
+    -- Check checkboxes
+    local has_checkbox_selected = 
+      DynamicViewPrefs["dynamic_view" .. dv_id .. "_sample_record_visible_step" .. step].value or
+      DynamicViewPrefs["dynamic_view" .. dv_id .. "_disk_browser_visible_step" .. step].value or
+      DynamicViewPrefs["dynamic_view" .. dv_id .. "_instrument_box_visible_step" .. step].value or
+      DynamicViewPrefs["dynamic_view" .. dv_id .. "_pattern_matrix_visible_step" .. step].value or
+      DynamicViewPrefs["dynamic_view" .. dv_id .. "_pattern_advanced_edit_visible_step" .. step].value
+
+    if upper_frame_index > 1 or middle_frame_index > 1 or lower_frame_index > 1 or has_checkbox_selected then
+      table.insert(configured_steps, step)
+    end
+  end
+
+  steps_count = #configured_steps
+
+  if steps_count > 0 then
+    -- Map knob value to configured steps
+    local index = math.floor((knob_value / 127) * (steps_count - 1) + 0.5) + 1
+    if index < 1 then index = 1 end
+    if index > steps_count then index = steps_count end
+    local step = configured_steps[index]
+
+    apply_dynamic_view_step(dv, step)
+    current_steps[dv] = step
+
+    -- Optionally, show status message
+    -- Get the middle frame label
+    local middle_frame_index = DynamicViewPrefs["dynamic_view" .. dv_id .. "_middle_step" .. step].value
+    local middle_frame_label = ""
+    if middle_frame_index > 1 then
+      middle_frame_label = views_middle[middle_frame_index - 1].label
+    else
+      middle_frame_label = "<Change Nothing>"
+    end
+    local status_message = "Paketti Dynamic View " .. dv_id .. " - Set to Step " .. string.format("%02d", step) .. ": " .. middle_frame_label
+    renoise.app():show_status(status_message)
+  else
+    renoise.app():show_status("Paketti Dynamic View " .. dv_id .. " - No configured steps to select.")
+  end
+end
+
+
+
+
 -- Add menu entries and keybindings for each dynamic view
 for dv = 1, dynamic_views_count do
   local dv_id = string.format("%02d", dv)
   renoise.tool():add_keybinding{name="Global:Paketti:Cycle Paketti Dynamic View " .. dv_id, invoke=function() cycle_dynamic_view(dv) end}
   renoise.tool():add_midi_mapping{name="Paketti:Cycle Paketti Dynamic View " .. dv_id, invoke=function() cycle_dynamic_view(dv) end}
+  renoise.tool():add_midi_mapping{name="Paketti:Midi Paketti Dynamic View " .. dv_id .. " x[Knob]", 
+    invoke=function(midi_message)
+      if midi_message:is_abs_value() then
+        local knob_value = midi_message.int_value
+        set_dynamic_view_step_from_knob(dv, knob_value)
+      end
+    end}
+  
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Paketti Dynamic View Preferences Dialog 1-4", invoke=function() showDynamicViewDialog(1, 4) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Paketti Dynamic View Preferences Dialog 5-8", invoke=function() showDynamicViewDialog(5, 8) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Paketti Dynamic View Preferences Dialog 1-4...", invoke=function() showDynamicViewDialog(1, 4) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Paketti Dynamic View Preferences Dialog 5-8...", invoke=function() showDynamicViewDialog(5, 8) end}
 
-renoise.tool():add_midi_mapping{name="Paketti:Paketti Dynamic View Preferences Dialog 1-4", invoke=function() showDynamicViewDialog(1, 4) end}
-renoise.tool():add_midi_mapping{name="Paketti:Paketti Dynamic View Preferences Dialog 5-8", invoke=function() showDynamicViewDialog(5, 8) end}
+renoise.tool():add_midi_mapping{name="Paketti:Paketti Dynamic View Preferences Dialog 1-4...", invoke=function() showDynamicViewDialog(1, 4) end}
+renoise.tool():add_midi_mapping{name="Paketti:Paketti Dynamic View Preferences Dialog 5-8...", invoke=function() showDynamicViewDialog(5, 8) end}
 
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:!Preferences:Paketti Dynamic View Preferences Dialog 1-4",invoke=function() showDynamicViewDialog(1, 4) end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:!Preferences:Paketti Dynamic View Preferences Dialog 5-8",invoke=function() showDynamicViewDialog(5, 8) end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:!Preferences:Save Dynamic Views as .txt", invoke=function() save_dynamic_views_to_txt() end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:!Preferences:Paketti Load Dynamic Views from .txt", invoke=function() load_dynamic_views_from_txt() end}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:!Preferences..:Paketti Dynamic View Preferences Dialog 1-4...",invoke=function() showDynamicViewDialog(1, 4) end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:!Preferences..:Paketti Dynamic View Preferences Dialog 5-8...",invoke=function() showDynamicViewDialog(5, 8) end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:!Preferences..:Paketti Save Dynamic Views as a textfile", invoke=function() save_dynamic_views_to_txt() end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:!Preferences..:Paketti Load Dynamic Views from a textfile", invoke=function() load_dynamic_views_from_txt() end}
 

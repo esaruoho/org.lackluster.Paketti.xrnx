@@ -612,13 +612,13 @@ function generate_paketti_midi_mappings()
   end
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Paketti MIDI Mappings",
+renoise.tool():add_keybinding{name="Global:Paketti:Paketti MIDI Mappings...",
   invoke = function() show_midi_mappings_dialog() end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:!Preferences:Paketti MIDI Mappings",
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:!Preferences..:Paketti MIDI Mappings...",
   invoke = function() show_midi_mappings_dialog() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Generate Paketti Midi Mappings to Console",
   invoke = function() generate_paketti_midi_mappings() end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:!Preferences:Generate Paketti Midi Mappings to Console",
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:!Preferences..:Debug..:Generate Paketti Midi Mappings to Console",
   invoke = function() generate_paketti_midi_mappings() end}
 
 
@@ -982,7 +982,7 @@ vb:row{vb:button{text="Save as Textfile", notifier = function()
 end
 
 -- Add main menu entry for Paketti keybindings dialog
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:!Preferences:Paketti KeyBindings..",invoke = function() showPakettiKeyBindingsDialog() end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:!Preferences..:Paketti KeyBindings...",invoke = function() showPakettiKeyBindingsDialog() end}
 
 -- Add specific menu entries under corresponding identifiers
 local identifiers = {
@@ -997,7 +997,7 @@ local identifiers = {
 }
 
 for _, identifier in ipairs(identifiers) do
-  renoise.tool():add_menu_entry {name = identifier .. ":Paketti..:Show Paketti KeyBindings",
+  renoise.tool():add_menu_entry {name = identifier .. ":Paketti..:Show Paketti KeyBindings...",
     invoke = function() showPakettiKeyBindingsDialog(identifier) end}
 end
 
@@ -1400,7 +1400,7 @@ end
 
 -- Add main menu entry for Renoise keybindings dialog
 renoise.tool():add_menu_entry {
-  name = "Main Menu:Tools:Paketti..:!Preferences:Renoise KeyBindings..",
+  name = "Main Menu:Tools:Paketti..:!Preferences..:Renoise KeyBindings...",
   invoke = function() showRenoiseKeyBindingsDialog() end  -- No identifier passed
 }
 
@@ -1419,7 +1419,7 @@ local renoise_identifiers = {
 
 for _, identifier in ipairs(renoise_identifiers) do
   renoise.tool():add_menu_entry {
-    name = "Main Menu:Tools:Paketti..:!Preferences:Renoise KeyBindings..:" .. identifier,
+    name = "Main Menu:Tools:Paketti..:!Preferences..:Renoise KeyBindings..:" .. identifier,
     invoke = function() showRenoiseKeyBindingsDialog(identifier) end  -- Pass identifier
   }
 end
@@ -1427,7 +1427,7 @@ end
 -- Add specific menu entries under corresponding identifiers
 for _, identifier in ipairs(renoise_identifiers) do
   renoise.tool():add_menu_entry {
-    name = identifier .. ":Paketti..:Show Renoise KeyBindings",
+    name = identifier .. ":Paketti..:Show Renoise KeyBindings...",
     invoke = function() showRenoiseKeyBindingsDialog(identifier) end  -- Pass identifier
   }
 end

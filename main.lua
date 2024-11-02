@@ -1,4 +1,9 @@
 local rx = require 'rx'
+
+function formatDigits(digits, number)
+  return string.format("%0" .. digits .. "d", number)
+end
+
 require "Paketti0G01_Loader"
 require "PakettiKeyBindings"
 require "PakettiThemeSelector"
@@ -29,9 +34,12 @@ require "PakettiPlayerProSuite"
 require "PakettiSamples"
 require "PakettiTkna"
 require "PakettiRecorder" 
-require "PakettiExperimental_Verify"
 require "Coluga/PakettiColuga"
 require "PakettiRequests"
+require "PakettiExperimental_Verify"
+
+
+
 
 ------------------------------------------------
 local themes_path = renoise.tool().bundle_path .. "Themes/"

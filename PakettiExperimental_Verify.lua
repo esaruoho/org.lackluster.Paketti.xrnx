@@ -1,35 +1,183 @@
--- TODO: make this use loadnative("name",XML) okay?
-function PakettiInvertDeviceTrackDSP()
-  loadnative("Audio/Effects/Native/Gainer")
-  
-  -- Load the preset XML file into the plugin device
-  local preset_xml = providePresetXML("Presets/PakettiGainerInverter.xml")
-  
-  if not preset_xml then
-    renoise.app():show_status("Preset loading failed.")
-    return
-  end
-  local device 
-  if renoise.app().window.active_middle_frame == 7 or renoise.app().window.active_middle_frame == 6 then 
-  device = renoise.song().selected_sample_device
+-- Function with an option to retain or clear silence rows
+local function DuplicateSelectionWithPaddingMoveCursor(retain_silence_content)
+    local song = renoise.song()
+    local selection = song.selection_in_pattern
+
+    -- Check if there's a selection
+    if not selection then
+        renoise.app():show_status("Nothing was selected, doing nothing.")
+        return
+    end
+
+    local pattern = song.selected_pattern
+    local pattern_lines = pattern.number_of_lines
+    local selected_track_index = song.selected_track_index
+
+    -- Determine selection start and end lines
+    local start_line = selection.start_line
+    local end_line = selection.end_line
+    local selection_length = end_line - start_line + 1
+
+    -- Calculate required end position to fit content, silence, content, and final silence
+    local required_end_position = end_line + (selection_length * 3)  -- original + silence + duplicated + final silence
+
+    -- Check if the required pattern length exceeds the max limit of 512 lines
+    if required_end_position > 512 then
+        renoise.app():show_status("Already at maximum pattern length, doing nothing.")
+        return
+    end
+
+    -- Resize pattern only if required end position exceeds current length
+    if required_end_position > pattern_lines then
+        pattern.number_of_lines = required_end_position
+        pattern_lines = required_end_position
+        renoise.app():show_status("Pattern resized to " .. required_end_position .. " lines to accommodate duplication and silence.")
+    end
+
+    -- Calculate positions for silent rows and duplicated content
+    local silence_start = end_line + 1
+    local paste_start = silence_start + selection_length
+    local paste_end = paste_start + selection_length - 1
+    local final_silence_start = paste_end + 1
+
+    -- Reference to the track for modifying lines
+    local track = pattern:track(selected_track_index)
+
+    -- Copy the selected lines into a table
+    local content_copy = {}
+    for line = start_line, end_line do
+        local line_data = track:line(line)
+        content_copy[#content_copy + 1] = {
+            note_columns = {},
+            effect_columns = {}
+        }
+        -- Copy each note column
+        for nc = 1, #line_data.note_columns do
+            local note_column = line_data:note_column(nc)
+            content_copy[#content_copy].note_columns[nc] = {
+                note_value = note_column.note_value,
+                instrument_value = note_column.instrument_value,
+                volume_value = note_column.volume_value,
+                panning_value = note_column.panning_value,
+                delay_value = note_column.delay_value,
+                effect_number_value = note_column.effect_number_value,
+                effect_amount_value = note_column.effect_amount_value
+            }
+        end
+        -- Copy each effect column
+        for ec = 1, #line_data.effect_columns do
+            local effect_column = line_data:effect_column(ec)
+            content_copy[#content_copy].effect_columns[ec] = {
+                number_value = effect_column.number_value,
+                amount_value = effect_column.amount_value
+            }
+        end
+    end
+
+    -- Insert silence after original content (retain or clear based on function parameter)
+    for line = silence_start, silence_start + selection_length - 1 do
+        if not retain_silence_content then
+            track:line(line):clear()
+        end
+    end
+
+    -- Paste duplicated content after the silent rows
+    for i, line_content in ipairs(content_copy) do
+        local target_line = track:line(paste_start + i - 1)
+        -- Paste note columns
+        for nc, note_data in ipairs(line_content.note_columns) do
+            local note_column = target_line:note_column(nc)
+            note_column.note_value = note_data.note_value
+            note_column.instrument_value = note_data.instrument_value
+            note_column.volume_value = note_data.volume_value
+            note_column.panning_value = note_data.panning_value
+            note_column.delay_value = note_data.delay_value
+            note_column.effect_number_value = note_data.effect_number_value
+            note_column.effect_amount_value = note_data.effect_amount_value
+        end
+        -- Paste effect columns
+        for ec, effect_data in ipairs(line_content.effect_columns) do
+            local effect_column = target_line:effect_column(ec)
+            effect_column.number_value = effect_data.number_value
+            effect_column.amount_value = effect_data.amount_value
+        end
+    end
+
+    -- Insert final silence after the duplicated content (retain or clear based on function parameter)
+    for line = final_silence_start, final_silence_start + selection_length - 1 do
+        if not retain_silence_content then
+            track:line(line):clear()
+        end
+    end
+
+    -- Set selection and move cursor to the equivalent row in the pasted content
+    song.selection_in_pattern = {
+        start_line = paste_start,
+        end_line = paste_end,
+        start_track = selection.start_track,
+        end_track = selection.end_track
+    }
+    song.transport.edit_pos = renoise.SongPos(song.selected_sequence_index, paste_start + (song.transport.edit_pos.line - start_line))
+end
+
+-- Example usage:
+-- DuplicateSelectionWithPaddingMoveCursor(true) -- to retain existing content in silence blocks
+-- DuplicateSelectionWithPaddingMoveCursor(false) -- to clear existing content in silence blocks
+
+
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Duplicate Selection with Padding&Move Cursor 1", invoke=function() DuplicateSelectionWithPaddingMoveCursor(false) end}
+
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Duplicate Selection with Padding&Move Cursor 2", invoke=function() DuplicateSelectionWithPaddingMoveCursor(true) end}
+
+
+
+
+
+
+
+
+
+
+function loadNewWithCurrentSliceMarkers()
+  local song=renoise.song()
+  local selected_sample=song.selected_sample
+
+  -- Check if the selected sample has slice markers
+  if #selected_sample.slice_markers==0 then
+    renoise.app():show_status("Please select an instrument with slice markers, doing nothing for now.")
   else
-  device = renoise.song().selected_device
-  end 
-  
-  if device then
-    device.active_preset_data = preset_xml
-    device.display_name = "Inverter"
-    renoise.app():show_status("Preset successfully loaded from: Presets/PakettiGainerInverter.xml")
-  else
-    renoise.app():show_status("No device found to apply the preset.")
+    -- Retain slice markers
+    local saved_markers=selected_sample.slice_markers
+
+    -- Trigger the file loader to load a new sample
+    pitchBendMultipleSampleLoader()
+
+    -- Wait for the sample to load and then apply markers
+    local new_sample=song.selected_sample -- Assumes the loaded sample replaces selected_sample
+
+    if new_sample then
+      local new_sample_length=new_sample.sample_buffer.number_of_frames
+
+      -- Filter markers to fit within the new sample length
+      local valid_markers={}
+      for _, marker in ipairs(saved_markers) do
+        if marker<=new_sample_length then
+          table.insert(valid_markers,marker)
+        end
+      end
+
+      -- Apply the valid slice markers to the new sample
+      new_sample.slice_markers=valid_markers
+      renoise.app():show_status("Slice markers applied to the newly loaded sample.")
+    else
+      renoise.app():show_status("No new sample loaded; slice markers not applied.")
+    end
   end
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Insert Inverter Device to TrackDSP/SampleFX",invoke=function() PakettiInvertDeviceTrackDSP() end}
-
-renoise.tool():add_midi_mapping{name="Paketti:Insert Inverter Device to TrackDSP/SampleFX",invoke=function(message) if message:is_trigger() then PakettiInvertDeviceTrackDSP() end end}
-
-
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Load New Instrument with Current Slice Markers",invoke=function() loadNewWithCurrentSliceMarkers() end}
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Load New Instrument with Current Slice Markers",invoke=function() loadNewWithCurrentSliceMarkers() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load New Instrument with Current Slice Markers",invoke=function() loadNewWithCurrentSliceMarkers() end}
 
 
 
@@ -38,23 +186,93 @@ renoise.tool():add_midi_mapping{name="Paketti:Insert Inverter Device to TrackDSP
 
 
 
+-- MIDI Mapping for adjusting selected instrument transpose
+renoise.tool():add_midi_mapping{name="Paketti:Midi Selected Instrument Transpose (-64-+64)",
+  invoke=function(message)
+    -- Ensure the selected instrument exists
+    local instrument=renoise.song().selected_instrument
+    if not instrument then return end
+    
+    -- Map the MIDI message value (0-127) to transpose range (-64 to 64)
+    local transpose_value=math.floor((message.int_value/127)*128 - 64)
+    instrument.transpose=math.max(-64,math.min(transpose_value,64))
+    
+    -- Status update for debugging
+    renoise.app():show_status("Transpose adjusted to "..instrument.transpose)
+  end
+}
 
 
 
 
 
+local function PakettiAutomationPlayModeChange_SetPlaymode(mode)
+  local song = renoise.song()
+  local automation_parameter = song.selected_automation_parameter
+  if not automation_parameter or not automation_parameter.is_automatable then
+    renoise.app():show_status("Please select an automatable parameter.")
+    return
+  end
 
+  local envelope = song:pattern(song.selected_pattern_index):track(song.selected_track_index):find_automation(automation_parameter)
+  if not envelope then
+    renoise.app():show_status("No automation envelope found for the selected parameter.")
+    return
+  end
 
+  envelope.playmode = mode
+  renoise.app():show_status("Playmode set to " .. mode)
+end
 
+local function PakettiAutomationPlayModeChange_Next()
+  local song = renoise.song()
+  local automation_parameter = song.selected_automation_parameter
+  if not automation_parameter or not automation_parameter.is_automatable then
+    renoise.app():show_status("Please select an automatable parameter.")
+    return
+  end
 
+  local envelope = song:pattern(song.selected_pattern_index):track(song.selected_track_index):find_automation(automation_parameter)
+  if not envelope then
+    renoise.app():show_status("No automation envelope found for the selected parameter.")
+    return
+  end
 
+  envelope.playmode = (envelope.playmode % 3) + 1
+  renoise.app():show_status("Next playmode selected: " .. envelope.playmode)
+end
 
+local function PakettiAutomationPlayModeChange_Previous()
+  local song = renoise.song()
+  local automation_parameter = song.selected_automation_parameter
+  if not automation_parameter or not automation_parameter.is_automatable then
+    renoise.app():show_status("Please select an automatable parameter.")
+    return
+  end
 
+  local envelope = song:pattern(song.selected_pattern_index):track(song.selected_track_index):find_automation(automation_parameter)
+  if not envelope then
+    renoise.app():show_status("No automation envelope found for the selected parameter.")
+    return
+  end
 
+  envelope.playmode = (envelope.playmode - 2) % 3 + 1
+  renoise.app():show_status("Previous playmode selected: " .. envelope.playmode)
+end
 
+-- Add Keybindings
+renoise.tool():add_keybinding {name="Global:Paketti:Select Automation Playmode (Next)",invoke=PakettiAutomationPlayModeChange_Next}
+renoise.tool():add_keybinding {name="Global:Paketti:Select Automation Playmode (Previous)",invoke=PakettiAutomationPlayModeChange_Previous}
+renoise.tool():add_keybinding {name="Global:Paketti:Select Automation Playmode 01 Points",invoke=function() PakettiAutomationPlayModeChange_SetPlaymode(renoise.PatternTrackAutomation.PLAYMODE_POINTS) end}
+renoise.tool():add_keybinding {name="Global:Paketti:Select Automation Playmode 02 Lines",invoke=function() PakettiAutomationPlayModeChange_SetPlaymode(renoise.PatternTrackAutomation.PLAYMODE_LINES) end}
+renoise.tool():add_keybinding {name="Global:Paketti:Select Automation Playmode 03 Curves",invoke=function() PakettiAutomationPlayModeChange_SetPlaymode(renoise.PatternTrackAutomation.PLAYMODE_CURVES) end}
 
-
-
+-- Add MIDI Mappings
+renoise.tool():add_midi_mapping {name="Paketti:Select Automation Playmode (Next)",invoke=PakettiAutomationPlayModeChange_Next}
+renoise.tool():add_midi_mapping {name="Paketti:Select Automation Playmode (Previous)",invoke=PakettiAutomationPlayModeChange_Previous}
+renoise.tool():add_midi_mapping {name="Paketti:Select Automation Playmode 01 Points",invoke=function() PakettiAutomationPlayModeChange_SetPlaymode(renoise.PatternTrackAutomation.PLAYMODE_POINTS) end}
+renoise.tool():add_midi_mapping {name="Paketti:Select Automation Playmode 02 Lines",invoke=function() PakettiAutomationPlayModeChange_SetPlaymode(renoise.PatternTrackAutomation.PLAYMODE_LINES) end}
+renoise.tool():add_midi_mapping {name="Paketti:Select Automation Playmode 03 Curves",invoke=function() PakettiAutomationPlayModeChange_SetPlaymode(renoise.PatternTrackAutomation.PLAYMODE_CURVES) end}
 
 
 
@@ -1296,7 +1514,7 @@ function PakettiToggleSoloTracks()
 end
 
 -- Add menu entry, keybinding, and MIDI mapping for the toggle solo tracks function
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Toggle Solo Tracks",invoke=PakettiToggleSoloTracks}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor..:Toggle Solo Tracks",invoke=PakettiToggleSoloTracks}
 renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Toggle Solo Tracks",invoke=PakettiToggleSoloTracks}
 renoise.tool():add_keybinding{name="Global:Paketti:Toggle Solo Tracks",invoke=PakettiToggleSoloTracks}
 renoise.tool():add_midi_mapping{name="Paketti:Toggle Solo Tracks",invoke=PakettiToggleSoloTracks}
@@ -1376,7 +1594,7 @@ function set_group_mute_state(group, mute_state)
   end
 end
 
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Toggle Mute Tracks",invoke=toggle_mute_tracks}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor..:Toggle Mute Tracks",invoke=toggle_mute_tracks}
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Toggle Mute Tracks",invoke=toggle_mute_tracks}
 renoise.tool():add_keybinding{name="Global:Paketti:Toggle Mute Tracks",invoke=toggle_mute_tracks}
 renoise.tool():add_midi_mapping{name="Paketti:Toggle Mute Tracks",invoke=toggle_mute_tracks}
@@ -2311,7 +2529,7 @@ function openVisiblePagesToFitParameters()
 end
 
 -- Register the function to a menu entry
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Open Visible Pages to Fit Plugin Parameter Count",invoke=openVisiblePagesToFitParameters}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices..:Open Visible Pages to Fit Plugin Parameter Count",invoke=openVisiblePagesToFitParameters}
 renoise.tool():add_menu_entry{name="DSP Device:Paketti..:Open Visible Pages to Fit Plugin Parameter Count",invoke=openVisiblePagesToFitParameters}
 
 -- Register a keybinding for easier access (optional)
@@ -2948,7 +3166,6 @@ else
   return
 end end end}
 
-renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Record To Current", invoke=function() recordtocurrenttrack() end}
 ----------------------------------------------------------------------------------------------------------
 --esa- 2nd keybind for Record Toggle ON/OFF with effect_column reading
 function RecordToggle()
@@ -2988,28 +3205,8 @@ show_manual (
     "Research/FormulaDevice.txt" -- the textfile which contains the manual
   )
 end}
+
 ---------------------------
-function G01()
-  local s=renoise.song()
-  local currTrak=s.selected_track_index
-  local currPatt=s.selected_pattern_index
-  local rightinstrument=nil
-  local rightinstrument=renoise.song().selected_instrument_index-1
-
-  if preferences._0G01_Loader.value then
-    local new_track_index = currTrak + 1
-    s:insert_track_at(new_track_index)
-    s.selected_track_index = new_track_index
-    currTrak = new_track_index
-    local line=s.patterns[currPatt].tracks[currTrak].lines[1]
-    line.note_columns[1].note_string="C-4"
-    line.note_columns[1].instrument_value=rightinstrument
-    line.effect_columns[1].number_string="0G"
-    line.effect_columns[1].amount_string="01"
-      
-  end
-
-end
 
 ---------
 function move_up(chg)
@@ -3168,13 +3365,11 @@ renoise.song().selected_note_column_index=1
 startcolumncycling(12) end}
 ----------------------------
 
-
-
 function PakettiCreateUnisonSamples()
   local song = renoise.song()
   local selected_instrument_index = song.selected_instrument_index
   local instrument = song.selected_instrument
-  
+
   if not instrument then
     renoise.app():show_status("No instrument selected.")
     return
@@ -3185,105 +3380,101 @@ function PakettiCreateUnisonSamples()
     return
   end
 
-  if #instrument.samples == 1 then
-    local original_instrument = instrument
-    local original_sample = original_instrument.samples[1]
-    local original_sample_name = original_sample.name
-    local original_instrument_name = original_instrument.name
-    original_sample.loop_mode = 2
-    -- Create a new instrument underneath the selected instrument
-    local new_instrument_index = selected_instrument_index + 1
-    song:insert_instrument_at(new_instrument_index)
-    song.selected_instrument_index = new_instrument_index
-    local new_instrument = renoise.song().selected_instrument
-    pakettiPreferencesDefaultInstrumentLoader()
-   
-    if preferences.pakettiPitchbendLoaderEnvelope.value then
-renoise.song().selected_instrument.sample_modulation_sets[1].devices[2].is_active = true else end
-
-    
-    -- Copy sample buffer from the original instrument to the new instrument
-    renoise.song().selected_instrument.samples[1]:copy_from(original_sample)
-    
-    -- Rename the new instrument to match the original instrument's name
-    renoise.song().selected_instrument.name = original_instrument.name .. " (Unison)"
---    new_instrument.name = original_instrument_name
-    local og=renoise.song().selected_instrument_index-1
-    local original_sample_index = renoise.song().instruments[og].samples[1]
-    -- Create 7 additional sample slots.
-    for i = 2, 8 do
-      renoise.song().selected_instrument:insert_sample_at(i)
-      local new_sample = renoise.song().selected_instrument:sample(i)
-      renoise.song().selected_instrument.samples[i]:copy_from(renoise.song().selected_instrument.samples[1])
-      renoise.song().selected_instrument.samples[i].loop_mode = 2
-    end
-    
-    -- Define the finetune adjustments.
-    local finetune_values = {-3, -2, -1, 1, 2, 3, 4}
-    local fraction_values = {1/8, 2/8, 3/8, 4/8, 5/8, 6/8, 7/8}
-    local unison_range = 8  -- Change this value as needed
-
-    -- Adjust finetune and sample buffer content.
-    for i = 2, 8 do
-      local sample = renoise.song().selected_instrument.samples[i]
-      local new_sample_buffer = sample.sample_buffer
-      local fraction = fraction_values[i - 1]
-        sample.panning = math.random() < 0.5 and 0.0 or 1.0
-          sample.fine_tune = math.random(-unison_range, unison_range)
-      -- Adjust finetune, force Forwards
---      if i <= 8 then
---        sample.fine_tune = finetune_values[i - 1] or 0
-        sample.loop_mode = 2
---      end
-      
-      -- Adjust sample buffer.
-      if original_sample.sample_buffer.has_sample_data then
-        new_sample_buffer:prepare_sample_data_changes()
-        for channel = 1, original_sample.sample_buffer.number_of_channels do
-          for frame = 1, original_sample.sample_buffer.number_of_frames do
-            local new_frame_index = frame + math.floor(original_sample.sample_buffer.number_of_frames * fraction)
-            if new_frame_index > original_sample.sample_buffer.number_of_frames then
-              new_frame_index = new_frame_index - original_sample.sample_buffer.number_of_frames
-            end
-            new_sample_buffer:set_sample_data(channel, new_frame_index, original_sample.sample_buffer:sample_data(channel, frame))
-          end
-        end
-        new_sample_buffer:finalize_sample_data_changes()
-      end
-      
-      -- Rename the sample to match the original sample's name
-      sample.name = string.format("%s (Unison %d [%d])", original_sample_name, i - 1, sample.fine_tune)
-    end
-    
-    -- Set the volume to -7 dB for each sample in the instrument.
-    local volume = math.db2lin(-14)
-    for i = 1, #renoise.song().selected_instrument.samples do
-      renoise.song().selected_instrument.samples[i].volume = volume
-    end
-  else
-    renoise.app():show_status("Cannot create Unison because Instrument has more than 1 Sample.")
+  -- Determine the selected sample index
+  local selected_sample_index = song.selected_sample_index
+  if not selected_sample_index or selected_sample_index < 1 or selected_sample_index > #instrument.samples then
+    renoise.app():show_status("No valid sample selected.")
+    return
   end
-  
-local info=""
-local loop_modes={"No Loop","Forward","Backward","PingPong"}
-for i=1,#renoise.song().selected_instrument.samples do
-  local sample=renoise.song().selected_instrument.samples[i]
-    renoise.song().selected_instrument.samples[i].device_chain_index=1
 
+  local original_sample = instrument.samples[selected_sample_index]
+  local original_sample_name = original_sample.name
+  local original_instrument_name = instrument.name
+  original_sample.loop_mode = 2
 
-  sample.loop_mode = 2
-end
-  
-renoise.song().selected_instrument.volume=0.3  
-  
+  -- Create a new instrument underneath the selected instrument
+  local new_instrument_index = selected_instrument_index + 1
+  song:insert_instrument_at(new_instrument_index)
+  song.selected_instrument_index = new_instrument_index
+  local new_instrument = renoise.song().selected_instrument
+  pakettiPreferencesDefaultInstrumentLoader()
+
+  if preferences.pakettiPitchbendLoaderEnvelope.value then
+    renoise.song().selected_instrument.sample_modulation_sets[1].devices[2].is_active = true
+  end
+
+  -- Copy sample buffer from the original instrument's selected sample to the new instrument
+  renoise.song().selected_instrument.samples[1]:copy_from(original_sample)
+
+  -- Rename the new instrument to match the original instrument's name with " (Unison)" appended
+  renoise.song().selected_instrument.name = original_instrument_name .. " (Unison)"
+
+  -- Create 7 additional sample slots for unison
+  for i = 2, 8 do
+    renoise.song().selected_instrument:insert_sample_at(i)
+    local new_sample = renoise.song().selected_instrument:sample(i)
+    renoise.song().selected_instrument.samples[i]:copy_from(renoise.song().selected_instrument.samples[1])
+    renoise.song().selected_instrument.samples[i].loop_mode = 2
+  end
+
+  -- Define the finetune and panning adjustments
+  local fraction_values = {1/8, 2/8, 3/8, 4/8, 5/8, 6/8, 7/8}
+  local unison_range = 8  -- Adjust as needed
+
+  -- Adjust finetune and panning for each unison sample
+  for i = 2, 8 do
+    local sample = renoise.song().selected_instrument.samples[i]
+    local fraction = fraction_values[i - 1]
+    sample.panning = math.random() < 0.5 and 0.0 or 1.0
+    sample.fine_tune = math.random(-unison_range, unison_range)
+    sample.loop_mode = 2
+
+    -- Adjust sample buffer if sample data exists
+    if original_sample.sample_buffer.has_sample_data then
+      local new_sample_buffer = sample.sample_buffer
+      new_sample_buffer:prepare_sample_data_changes()
+      for channel = 1, original_sample.sample_buffer.number_of_channels do
+        for frame = 1, original_sample.sample_buffer.number_of_frames do
+          local new_frame_index = frame + math.floor(original_sample.sample_buffer.number_of_frames * fraction)
+          if new_frame_index > original_sample.sample_buffer.number_of_frames then
+            new_frame_index = new_frame_index - original_sample.sample_buffer.number_of_frames
+          end
+          new_sample_buffer:set_sample_data(channel, new_frame_index, original_sample.sample_buffer:sample_data(channel, frame))
+        end
+      end
+      new_sample_buffer:finalize_sample_data_changes()
+    end
+
+    -- Rename the sample to include unison details
+    local panning_label = sample.panning == 0 and "50L" or "50R"
+    sample.name = string.format("%s (Unison %d [%d] (%s))", original_sample_name, i - 1, sample.fine_tune, panning_label)
+  end
+
+  -- Set the volume to -14 dB for each sample in the new instrument
+  local volume = math.db2lin(-14)
+  for i = 1, #renoise.song().selected_instrument.samples do
+    renoise.song().selected_instrument.samples[i].volume = volume
+  end
+
+  -- Apply loop mode and other settings to all samples in the new instrument
+  for i = 1, #renoise.song().selected_instrument.samples do
+    local sample = renoise.song().selected_instrument.samples[i]
+    renoise.song().selected_instrument.samples[i].device_chain_index = 1
+    sample.loop_mode = 2
+  end
+
+  -- Set the instrument volume
+  renoise.song().selected_instrument.volume = 0.3
+
+  renoise.app():show_status("Unison samples created successfully.")
 end
 
 -- Adding keybinding and menu entries
-renoise.tool():add_keybinding{name="Global:Paketti:Paketti Unison Generator",invoke=PakettiCreateUnisonSamples}
-renoise.tool():add_menu_entry{name="Sample Navigator:Paketti..:Unison Generator",invoke=PakettiCreateUnisonSamples}
-renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Unison Generator",invoke=PakettiCreateUnisonSamples}
-renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Unison Generator",invoke=PakettiCreateUnisonSamples}
-renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Unison Generator",invoke=PakettiCreateUnisonSamples}
+renoise.tool():add_keybinding{name="Global:Paketti:Paketti Unison Generator", invoke=PakettiCreateUnisonSamples}
+renoise.tool():add_menu_entry{name="--Sample Navigator:Paketti..:Unison Generator", invoke=PakettiCreateUnisonSamples}
+renoise.tool():add_menu_entry{name="--Sample Editor:Paketti..:Unison Generator", invoke=PakettiCreateUnisonSamples}
+renoise.tool():add_menu_entry{name="--Sample Mappings:Paketti..:Unison Generator", invoke=PakettiCreateUnisonSamples}
+
 
 ---------
 -- Helper function to check if in a valid note column
@@ -3410,33 +3601,10 @@ local function match_delay_to_current_row()
 end
 
 -- Add keybindings for the sub-column type function
-renoise.tool():add_keybinding {
-  name = "Pattern Editor:Paketti:Match Current Sub Column Selection",
-  invoke = function()
-    match_current_sub_column_to_track()
-  end
-}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Match Current Sub Column Selection", invoke = function() match_current_sub_column_to_track() end}
 
--- Add keybindings for each specific column matching function
-renoise.tool():add_keybinding {
-  name = "Pattern Editor:Paketti:Match Volume Column to Current Row",
-  invoke = function()
-    match_volume_to_current_row()
-  end
-}
-
-renoise.tool():add_keybinding {
-  name = "Pattern Editor:Paketti:Match Panning Column to Current Row",
-  invoke = function()
-    match_panning_to_current_row()
-  end
-}
-
-renoise.tool():add_keybinding {
-  name = "Pattern Editor:Paketti:Match Delay Column to Current Row",
-  invoke = function()
-    match_delay_to_current_row()
-  end
-}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Match Volume Column to Current Row",invoke = function() match_volume_to_current_row()end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Match Panning Column to Current Row",invoke = function() match_panning_to_current_row() end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Match Delay Column to Current Row",invoke = function() match_delay_to_current_row() end}
 
 

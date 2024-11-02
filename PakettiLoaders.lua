@@ -263,90 +263,104 @@ function loadnative(effect)
     return false
   end
 
-if w.active_middle_frame == 6 then
-w.active_middle_frame = 7 end
+  if w.active_middle_frame == 6 then
+    w.active_middle_frame = 7
+  end
 
-  if w.active_middle_frame==7 then
-    local chain=s.selected_sample_device_chain
-    local chain_index=s.selected_sample_device_chain_index
+  if w.active_middle_frame == 7 then
+    local chain = s.selected_sample_device_chain
+    local chain_index = s.selected_sample_device_chain_index
 
-    if chain==nil or chain_index==0 then
+    if chain == nil or chain_index == 0 then
       s.selected_instrument:insert_sample_device_chain_at(1)
-      chain=s.selected_sample_device_chain
-      chain_index=1
+      chain = s.selected_sample_device_chain
+      chain_index = 1
     end
 
     if chain then
-      local sample_devices=chain.devices
-      checkline=(table.count(sample_devices))<2 and 2 or (sample_devices[2] and sample_devices[2].name=="#Line Input" and 3 or 2)
-      checkline=math.min(checkline,#sample_devices+1)
+      local sample_devices = chain.devices
+      checkline = (table.count(sample_devices)) < 2 and 2 or (sample_devices[2] and sample_devices[2].name == "#Line Input" and 3 or 2)
+      checkline = math.min(checkline, #sample_devices + 1)
 
       if is_blacklisted(effect, samplefx_blacklist) then
-        renoise.app():show_status("The device "..get_device_name(effect).." cannot be added to a Sample FX chain.")
+        renoise.app():show_status("The device " .. get_device_name(effect) .. " cannot be added to a Sample FX chain.")
         return
       end
 
-      chain:insert_device_at(effect,checkline)
-      sample_devices=chain.devices
+      -- Adjust checkline for #Send and #Multiband Send devices
+      local device_name = get_device_name(effect)
+      if device_name == "#Send" or device_name == "#Multiband Send" then
+        checkline = #sample_devices + 1
+      end
+
+      chain:insert_device_at(effect, checkline)
+      sample_devices = chain.devices
 
       if sample_devices[checkline] then
-        local device=sample_devices[checkline]
-        if device.name=="DC Offset" then device.parameters[2].value=1 end
-        if device.name=="#Multiband Send" then 
-          device.parameters[1].show_in_mixer=false
-          device.parameters[3].show_in_mixer=false
-          device.parameters[5].show_in_mixer=false 
-          device.active_preset_data=read_file("Presets/PakettiMultiSend.XML")
+        local device = sample_devices[checkline]
+        if device.name == "Maximizer" then device.parameters[1].show_in_mixer = true end
+        if device.name == "DC Offset" then device.parameters[2].value = 1 end
+        if device.name == "#Multiband Send" then 
+          device.parameters[1].show_in_mixer = false
+          device.parameters[3].show_in_mixer = false
+          device.parameters[5].show_in_mixer = false 
+          device.active_preset_data = read_file("Presets/PakettiMultiSend.xml")
         end
-        if device.name=="#Line Input" then device.parameters[2].show_in_mixer=true end
-        if device.name=="#Send" then 
-          device.parameters[2].show_in_mixer=false
-          device.active_preset_data=read_file("Presets/PakettiSend.XML")
+        if device.name == "#Line Input" then device.parameters[2].show_in_mixer = true end
+        if device.name == "#Send" then 
+          device.parameters[2].show_in_mixer = false
+          device.active_preset_data = read_file("Presets/PakettiSend.xml")
         end
-      renoise.song().selected_sample_device_index=checkline
+        renoise.song().selected_sample_device_index = checkline
       end
     else
       renoise.app():show_status("No sample selected.")
     end
   else
-    local sdevices=s.selected_track.devices
-    checkline=(table.count(sdevices))<2 and 2 or (sdevices[2] and sdevices[2].name=="#Line Input" and 3 or 2)
-    checkline=math.min(checkline,#sdevices+1)
+    local sdevices = s.selected_track.devices
+    checkline = (table.count(sdevices)) < 2 and 2 or (sdevices[2] and sdevices[2].name == "#Line Input" and 3 or 2)
+    checkline = math.min(checkline, #sdevices + 1)
 
-    w.lower_frame_is_visible=true
-    w.active_lower_frame=1
+    w.lower_frame_is_visible = true
+    w.active_lower_frame = 1
 
-    local track_type=renoise.song().selected_track.type
-    local device_name=get_device_name(effect)
-    
-    if track_type==2 and is_blacklisted(effect,master_blacklist) then
-      renoise.app():show_status("The device "..device_name.." cannot be added to a Master track.")
+    local track_type = renoise.song().selected_track.type
+    local device_name = get_device_name(effect)
+
+    if track_type == 2 and is_blacklisted(effect, master_blacklist) then
+      renoise.app():show_status("The device " .. device_name .. " cannot be added to a Master track.")
       return
-    elseif track_type==3 and is_blacklisted(effect,send_blacklist) then
-      renoise.app():show_status("The device "..device_name.." cannot be added to a Send track.")
+    elseif track_type == 3 and is_blacklisted(effect, send_blacklist) then
+      renoise.app():show_status("The device " .. device_name .. " cannot be added to a Send track.")
       return
-    elseif track_type==4 and is_blacklisted(effect,group_blacklist) then
-      renoise.app():show_status("The device "..device_name.." cannot be added to a Group track.")
+    elseif track_type == 4 and is_blacklisted(effect, group_blacklist) then
+      renoise.app():show_status("The device " .. device_name .. " cannot be added to a Group track.")
       return
     end
 
-    s.selected_track:insert_device_at(effect,checkline)
-    s.selected_device_index=checkline
-    sdevices=s.selected_track.devices
+    -- Adjust checkline for #Send and #Multiband Send devices
+    if device_name == "#Send" or device_name == "#Multiband Send" then
+      checkline = #sdevices + 1
+    end
+
+    s.selected_track:insert_device_at(effect, checkline)
+    s.selected_device_index = checkline
+    sdevices = s.selected_track.devices
 
     if sdevices[checkline] then
-      local device=sdevices[checkline]
-      if device.name=="DC Offset" then device.parameters[2].value=1 end
-      if device.name=="#Multiband Send" then 
-        device.parameters[1].show_in_mixer=false
-        device.parameters[3].show_in_mixer=false
-        device.parameters[5].show_in_mixer=false 
-        device.active_preset_data=read_file("Presets/PakettiMultiSend.XML")
+      local device = sdevices[checkline]
+      if device.name == "DC Offset" then device.parameters[2].value = 1 end
+      if device.name == "Maximizer" then device.parameters[1].show_in_mixer = true end
+      if device.name == "#Multiband Send" then 
+        device.parameters[1].show_in_mixer = false
+        device.parameters[3].show_in_mixer = false
+        device.parameters[5].show_in_mixer = false 
+        device.active_preset_data = read_file("Presets/PakettiMultiSend.xml")
       end
-      if device.name=="#Line Input" then device.parameters[2].show_in_mixer=true end
-      if device.name=="#Send" then 
-        device.parameters[2].show_in_mixer=false
-        device.active_preset_data=read_file("Presets/PakettiSend.XML")
+      if device.name == "#Line Input" then device.parameters[2].show_in_mixer = true end
+      if device.name == "#Send" then 
+        device.parameters[2].show_in_mixer = false
+        device.active_preset_data = read_file("Presets/PakettiSend.xml")
       end
     end
   end
@@ -869,7 +883,7 @@ renoise.tool():add_keybinding{name="Global:Paketti:Inspect Device in Slot 2", in
 ------------------------------------------------------------------------------------------------------
 -- Add the menu entry to show plugin details
 -- Add the menu entry to show plugin details
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Debug:Show Plugin Details",invoke=function() show_plugin_details_gui() end}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices..:Debug..:Show Plugin Details",invoke=function() show_plugin_details_gui() end}
 
 -- Declare the customdialog variable at the beginning
 customdialog = nil
@@ -1021,7 +1035,7 @@ end
 -----
 
 -- Add the menu entry to show effect details
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Debug:Show Effect Details",invoke=function() show_effect_details_gui() end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices..:Debug..:Show Effect Details",invoke=function() show_effect_details_gui() end}
 
 -- Declare the customdialog variable at the beginning
 customdialog = nil
@@ -1275,7 +1289,7 @@ end
 end
 end
 end
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Expose/Hide Selected Device Parameters in Mixer",invoke = function() exposeHideParametersInMixer() end}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices..:Expose/Hide Selected Device Parameters in Mixer",invoke = function() exposeHideParametersInMixer() end}
 renoise.tool():add_menu_entry{name="--Mixer:Paketti..:Expose/Hide Selected Device Parameters",invoke = function() exposeHideParametersInMixer() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Expose/Hide Selected Device Parameters in Mixer", invoke=function() exposeHideParametersInMixer() end}  
 
@@ -1301,7 +1315,7 @@ end
 end
 end
 end
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Expose/Hide Selected Track ALL Device Parameters",invoke = function() exposeHideParametersInMixer() end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices..:Expose/Hide Selected Track ALL Device Parameters",invoke = function() exposeHideParametersInMixer() end}
 renoise.tool():add_menu_entry{name="Mixer:Paketti..:Expose/Hide Selected Track ALL Device Parameters",invoke = function() exposeHideAllParametersInMixer() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Expose/Hide Selected Track ALL Device Parameters", invoke=function() exposeHideParametersInMixer() end}  
 
@@ -1718,9 +1732,9 @@ function hide_all_external_editors()
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Hide Track DSP Device External Editors for All Tracks",invoke=function() hide_all_external_editors() end}
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Hide Track DSP Device External Editors for All Tracks",invoke=function() hide_all_external_editors() end}
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Bypass All Devices on Track", invoke=function() effectbypass() end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Enable All Devices on Track", invoke=function() effectenable() end}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices..:Hide Track DSP Device External Editors for All Tracks",invoke=function() hide_all_external_editors() end}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices..:Bypass All Devices on Track", invoke=function() effectbypass() end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices..:Enable All Devices on Track", invoke=function() effectenable() end}
 
 
 renoise.tool():add_midi_mapping{name="Paketti:Hide Track DSP Device External Editors for All Tracks",invoke=function(message) if message:is_trigger() then  hide_all_external_editors() end end}
@@ -1781,7 +1795,7 @@ local app_name = app_path:match("([^/\\]+)%.app$") or app_path:match("([^/\\]+)$
         table.insert(added_menu_entries, menu_entry_name)
       end
 
-      menu_entry_name = "Main Menu:Tools:Paketti..:Launch App:Launch App "..i.." "..app_name
+      menu_entry_name = "Main Menu:Tools:Paketti..:Launch App..:Launch App "..i.." "..app_name
       if not renoise.tool():has_menu_entry(menu_entry_name) then
         renoise.tool():add_menu_entry{
           name=menu_entry_name,
@@ -1789,7 +1803,7 @@ local app_name = app_path:match("([^/\\]+)%.app$") or app_path:match("([^/\\]+)$
         }
         table.insert(added_menu_entries, menu_entry_name)
       end
-      menu_entry_name = "Sample Navigator:Paketti..:Launch App:Launch App "..i.." "..app_name
+      menu_entry_name = "Sample Navigator:Paketti..:Launch App..:Launch App "..i.." "..app_name
       if not renoise.tool():has_menu_entry(menu_entry_name) then
         renoise.tool():add_menu_entry{
           name=menu_entry_name,
@@ -1797,7 +1811,7 @@ local app_name = app_path:match("([^/\\]+)%.app$") or app_path:match("([^/\\]+)$
         }
         table.insert(added_menu_entries, menu_entry_name)
       end
-      menu_entry_name = "Sample Editor:Paketti..:Launch App:Launch App "..i.." "..app_name
+      menu_entry_name = "Sample Editor:Paketti..:Launch App..:Launch App "..i.." "..app_name
       if not renoise.tool():has_menu_entry(menu_entry_name) then
         renoise.tool():add_menu_entry{
           name=menu_entry_name,
@@ -1815,7 +1829,7 @@ local app_name = app_path:match("([^/\\]+)%.app$") or app_path:match("([^/\\]+)$
   end
 
   -- Add static menu entry for configuring app selections
-  local configure_entry_name = "--Instrument Box:Paketti..:Launch App..:Configure Launch App Selection"
+  local configure_entry_name = "--Instrument Box:Paketti..:Launch App..:Configure Launch App Selection..."
   if not renoise.tool():has_menu_entry(configure_entry_name) then
     renoise.tool():add_menu_entry{
       name=configure_entry_name,
@@ -1824,7 +1838,7 @@ local app_name = app_path:match("([^/\\]+)%.app$") or app_path:match("([^/\\]+)$
     table.insert(added_menu_entries, configure_entry_name)
   end
 
-  configure_entry_name = "--Main Menu:Tools:Paketti..:Launch App:Configure Launch App Selection"
+  configure_entry_name = "--Main Menu:Tools:Paketti..:Launch App..:Configure Launch App Selection..."
   if not renoise.tool():has_menu_entry(configure_entry_name) then
     renoise.tool():add_menu_entry{
       name=configure_entry_name,
@@ -1832,6 +1846,27 @@ local app_name = app_path:match("([^/\\]+)%.app$") or app_path:match("([^/\\]+)$
     }
     table.insert(added_menu_entries, configure_entry_name)
   end
+
+  configure_entry_name = "--Sample Navigator:Paketti..:Launch App..:Configure Launch App Selection..."
+  if not renoise.tool():has_menu_entry(configure_entry_name) then
+    renoise.tool():add_menu_entry{
+      name=configure_entry_name,
+      invoke=show_app_selection_dialog
+    }
+    table.insert(added_menu_entries, configure_entry_name)
+  end  
+  configure_entry_name = "--Sample Editor:Paketti..:Launch App..:Configure Launch App Selection..."
+  if not renoise.tool():has_menu_entry(configure_entry_name) then
+    renoise.tool():add_menu_entry{
+      name=configure_entry_name,
+      invoke=show_app_selection_dialog
+    }
+    table.insert(added_menu_entries, configure_entry_name)
+
+
+  end  
+  
+  
 end
 
 function appSelectionUpdateMenuEntries()
@@ -1927,7 +1962,7 @@ renoise.tool():add_keybinding{name="Global:Paketti:Show/Hide Track DSP and FX Ch
 end}
 ---------------------
 -- Adding menu entries and keybinding for the combined randomizer dialog
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Randomize Devices and Plugins Dialog",invoke=function() openCombinedRandomizerDialog() end}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices..:Randomize Devices and Plugins Dialog",invoke=function() openCombinedRandomizerDialog() end}
 renoise.tool():add_menu_entry{name="DSP Device:Paketti..:Randomize Devices and Plugins Dialog",invoke=function() openCombinedRandomizerDialog() end}
 renoise.tool():add_menu_entry{name="--Mixer:Paketti..:Randomize Devices and Plugins Dialog",invoke=function() openCombinedRandomizerDialog() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Randomize Devices and Plugins Dialog",invoke=function() openCombinedRandomizerDialog() end}
@@ -2488,7 +2523,7 @@ end
 
 renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Randomize Selected Instrument Plugin Parameters",invoke=function()randomizeSelectedPlugin()end}
 renoise.tool():add_keybinding{name="Global:Paketti:Randomize Selected Plugin",invoke=function()randomizeSelectedPlugin()end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Randomize Selected Instrument Plugin Parameters",invoke=function()randomizeSelectedPlugin()end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices..:Randomize Selected Instrument Plugin Parameters",invoke=function()randomizeSelectedPlugin()end}
 
 -- Function to randomize parameters of the selected plugin
 function randomizeSelectedPlugin()
@@ -2521,7 +2556,7 @@ end
 
 -- Tool Registration
 renoise.tool():add_menu_entry{name="DSP Device:Paketti..:Randomize Selected Device Parameters",invoke=function()randomize_selected_device()end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Randomize Selected Device Parameters",invoke=function()randomize_selected_device()end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices..:Randomize Selected Device Parameters",invoke=function()randomize_selected_device()end}
 renoise.tool():add_keybinding{name="Global:Paketti:Randomize Selected Device",invoke=function()randomize_selected_device()end}
 
 -- Function to randomize parameters of the selected device
@@ -2642,7 +2677,7 @@ else
 end
 end
 
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Debug:Dump VST/VST3/AU/LADSPA/DSSI/Native Effects to Dialog", invoke=function() show_available_plugins_dialog() end}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices..:Debug..:Dump VST/VST3/AU/LADSPA/DSSI/Native Effects to Dialog", invoke=function() show_available_plugins_dialog() end}
 
 
 
@@ -2660,5 +2695,35 @@ renoise.tool():add_keybinding{name="Global:Paketti:Clear All TrackDSPs from Curr
       renoise.app():show_status("All Track DSPs cleared from the current track.")
     end end}
 
+----------
+-- TODO: make this use loadnative("name",XML) okay?
+function PakettiInvertDeviceTrackDSP()
+  loadnative("Audio/Effects/Native/Gainer")
+  
+  -- Load the preset XML file into the plugin device
+  local preset_xml = providePresetXML("Presets/PakettiGainerInverter.xml")
+  
+  if not preset_xml then
+    renoise.app():show_status("Preset loading failed.")
+    return
+  end
+  local device 
+  if renoise.app().window.active_middle_frame == 7 or renoise.app().window.active_middle_frame == 6 then 
+  device = renoise.song().selected_sample_device
+  else
+  device = renoise.song().selected_device
+  end 
+  
+  if device then
+    device.active_preset_data = preset_xml
+    device.display_name = "Inverter"
+    renoise.app():show_status("Preset successfully loaded from: Presets/PakettiGainerInverter.xml")
+  else
+    renoise.app():show_status("No device found to apply the preset.")
+  end
+end
 
+renoise.tool():add_keybinding{name="Global:Paketti:Insert Inverter Device to TrackDSP/SampleFX",invoke=function() PakettiInvertDeviceTrackDSP() end}
+
+renoise.tool():add_midi_mapping{name="Paketti:Insert Inverter Device to TrackDSP/SampleFX",invoke=function(message) if message:is_trigger() then PakettiInvertDeviceTrackDSP() end end}
 

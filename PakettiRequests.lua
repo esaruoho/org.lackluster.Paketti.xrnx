@@ -890,10 +890,10 @@ function doubleBeatsyncLinesSelected()
 end
 
 -- Main Menu Entries
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments:Beatsync Lines Halve (All)", invoke=function() halveBeatsyncLinesAll() end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments:Beatsync Lines Halve (Selected Sample)", invoke=function() halveBeatsyncLinesSelected() end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments:Beatsync Lines Double (All)", invoke=function() doubleBeatsyncLinesAll() end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments:Beatsync Lines Double (Selected Sample)", invoke=function() doubleBeatsyncLinesSelected() end}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Instruments..:Beatsync Lines Halve (All)", invoke=function() halveBeatsyncLinesAll() end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments..:Beatsync Lines Halve (Selected Sample)", invoke=function() halveBeatsyncLinesSelected() end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments..:Beatsync Lines Double (All)", invoke=function() doubleBeatsyncLinesAll() end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments..:Beatsync Lines Double (Selected Sample)", invoke=function() doubleBeatsyncLinesSelected() end}
 
 -- Sample Editor Menu Entries
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Beatsync Lines Halve (All)", invoke=function() halveBeatsyncLinesAll() end}
@@ -902,7 +902,7 @@ renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Beatsync Lines Doubl
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Beatsync Lines Double (Selected Sample)", invoke=function() doubleBeatsyncLinesSelected() end}
 
 -- Sample Navigator Menu Entries
-renoise.tool():add_menu_entry{name="Sample Navigator:Paketti..:Beatsync Lines Halve (All)", invoke=function() halveBeatsyncLinesAll() end}
+renoise.tool():add_menu_entry{name="--Sample Navigator:Paketti..:Beatsync Lines Halve (All)", invoke=function() halveBeatsyncLinesAll() end}
 renoise.tool():add_menu_entry{name="Sample Navigator:Paketti..:Beatsync Lines Halve (Selected Sample)", invoke=function() halveBeatsyncLinesSelected() end}
 renoise.tool():add_menu_entry{name="Sample Navigator:Paketti..:Beatsync Lines Double (All)", invoke=function() doubleBeatsyncLinesAll() end}
 renoise.tool():add_menu_entry{name="Sample Navigator:Paketti..:Beatsync Lines Double (Selected Sample)", invoke=function() doubleBeatsyncLinesSelected() end}
@@ -938,13 +938,13 @@ renoise.song().instruments[renoise.song().selected_instrument_index].sample_modu
 
 end
 
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Instruments:12st PitchBend Instrument Init",invoke=function() pitchedInstrument(12) end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments:24st PitchBend Instrument Init",invoke=function() pitchedInstrument(24) end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments:36st PitchBend Instrument Init",invoke=function() pitchedInstrument(36) end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments:48st PitchBend Instrument Init",invoke=function() pitchedInstrument(48) end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments:64st PitchBend Instrument Init",invoke=function() pitchedInstrument(64) end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments:96st PitchBend Instrument Init",invoke=function() pitchedInstrument(96) end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments:PitchBend Drumkit Instrument Init",invoke=function() pitchedDrumkit() end}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Instruments..:Initialize..:12st PitchBend Instrument Init",invoke=function() pitchedInstrument(12) end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments..:Initialize..:24st PitchBend Instrument Init",invoke=function() pitchedInstrument(24) end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments..:Initialize..:36st PitchBend Instrument Init",invoke=function() pitchedInstrument(36) end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments..:Initialize..:48st PitchBend Instrument Init",invoke=function() pitchedInstrument(48) end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments..:Initialize..:64st PitchBend Instrument Init",invoke=function() pitchedInstrument(64) end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments..:Initialize..:96st PitchBend Instrument Init",invoke=function() pitchedInstrument(96) end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments..:Initialize..:PitchBend Drumkit Instrument Init",invoke=function() pitchedDrumkit() end}
 
 renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Initialize..:12st PitchBend Instrument Init",invoke=function() pitchedInstrument(12) end}
 renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Initialize..:24st PitchBend Instrument Init",invoke=function() pitchedInstrument(24) end}
@@ -1018,7 +1018,6 @@ invoke=function() resetInstrumentTranspose(0) end}
 function selectedInstrumentVelocityTracking(enable)
   -- Access the selected instrument
   local instrument = renoise.song().instruments[renoise.song().selected_instrument_index]
-
   -- Determine the new state based on the passed argument
   local newState = (enable == 1)
 
@@ -1074,13 +1073,19 @@ else renoise.song().instruments[renoise.song().selected_instrument_index].sample
 
 renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Velocity Tracking On",
 invoke=function() 
+if renoise.song().selected_sample ~= nil then 
+
 renoise.song().instruments[renoise.song().selected_instrument_index].sample_mappings[1][renoise.song().selected_sample_index].map_velocity_to_volume=true
+end
 end}
 
 
 renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Velocity Tracking Off",
 invoke=function() 
+if renoise.song().selected_sample ~= nil then 
+
 renoise.song().instruments[renoise.song().selected_instrument_index].sample_mappings[1][renoise.song().selected_sample_index].map_velocity_to_volume=false
+end
 end}
 
 
@@ -1282,12 +1287,11 @@ function setInstrumentPanningValue(value)
 end
 
 -- Keybindings to adjust the panning of all samples in the selected instrument
-renoise.tool():add_keybinding{name="Sample Editor:Paketti:Set Selected Instrument Panning (+0.01)",invoke=function() setInstrumentPanning(0.01) end}
-renoise.tool():add_keybinding{name="Sample Editor:Paketti:Set Selected Instrument Panning (-0.01)",invoke=function() setInstrumentPanning(-0.01) end}
-renoise.tool():add_keybinding{name="Sample Editor:Paketti:Set Selected Instrument Panning Reset (Center)",invoke=function() setInstrumentPanningValue(0.5) end}
-renoise.tool():add_keybinding{name="Sample Editor:Paketti:Set Selected Instrument Panning 0.0 (Left)",invoke=function() setInstrumentPanningValue(0.0) end}
-renoise.tool():add_keybinding{name="Sample Editor:Paketti:Set Selected Instrument Panning 1.0 (Right)",invoke=function() setInstrumentPanningValue(1.0) end}
-
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Panning (+0.01)",invoke=function() setInstrumentPanning(0.01) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Panning (-0.01)",invoke=function() setInstrumentPanning(-0.01) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Panning Reset (Center)",invoke=function() setInstrumentPanningValue(0.5) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Panning 0.0 (Left)",invoke=function() setInstrumentPanningValue(0.0) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Panning 1.0 (Right)",invoke=function() setInstrumentPanningValue(1.0) end}
 ---------
 -- Global flag to track whether the Catch Octave notifier is enabled
 catch_octave_enabled = false
@@ -1376,7 +1380,7 @@ function toggle_catch_octave()
 end
 
 -- Add a menu entry and key binding for toggling Catch Octave
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Catch Octave",invoke = toggle_catch_octave}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor..:Catch Octave",invoke = toggle_catch_octave}
 
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Clone Current Sequence",invoke=clone_current_sequence}
 
@@ -1449,10 +1453,10 @@ function setSelectedInstrumentInterpolation(amount)
 end
 
 -- Adding key bindings for setting interpolation modes for all samples in the selected instrument
-renoise.tool():add_keybinding{name="Sample Editor:Paketti:Set Selected Instrument Interpolation to 1 (None)",invoke=function() setSelectedInstrumentInterpolation(1) end}
-renoise.tool():add_keybinding{name="Sample Editor:Paketti:Set Selected Instrument Interpolation to 2 (Linear)",invoke=function() setSelectedInstrumentInterpolation(2) end}
-renoise.tool():add_keybinding{name="Sample Editor:Paketti:Set Selected Instrument Interpolation to 3 (Cubic)",invoke=function() setSelectedInstrumentInterpolation(3) end}
-renoise.tool():add_keybinding{name="Sample Editor:Paketti:Set Selected Instrument Interpolation to 4 (Sinc)",invoke=function() setSelectedInstrumentInterpolation(4) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Interpolation to 1 (None)",invoke=function() setSelectedInstrumentInterpolation(1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Interpolation to 2 (Linear)",invoke=function() setSelectedInstrumentInterpolation(2) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Interpolation to 3 (Cubic)",invoke=function() setSelectedInstrumentInterpolation(3) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Interpolation to 4 (Sinc)",invoke=function() setSelectedInstrumentInterpolation(4) end}
 
 
 
@@ -2723,8 +2727,8 @@ function select_first_track_in_next_group(direction)
 end
 
 -- Add menu entries, keybindings, and MIDI mappings
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor:Jump to First Track In Next Group",invoke=function() select_first_track_in_next_group(1) end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Jump to First Track In Previous Group",invoke=function() select_first_track_in_next_group(0) end}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor..:Jump to First Track In Next Group",invoke=function() select_first_track_in_next_group(1) end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor..:Jump to First Track In Previous Group",invoke=function() select_first_track_in_next_group(0) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Jump to First Track In Next Group",invoke=function() select_first_track_in_next_group(1) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Jump to First Track In Previous Group",invoke=function() select_first_track_in_next_group(0) end}
 renoise.tool():add_keybinding{name="Pattern Matrix:Paketti:Jump to First Track In Next Group",invoke=function() select_first_track_in_next_group(1) end}
@@ -2878,35 +2882,35 @@ renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Global Set Visible Co
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Global Set Visible Column (Delay)",invoke=function() globalChangeVisibleColumnState("delay",true) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Global Set Visible Column (Sample Effects)",invoke=function() globalChangeVisibleColumnState("sample_effects",true) end}
 
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor:Visible Columns..:Global Visible Column (All)",invoke=function() globalChangeVisibleColumnState("volume",true)
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor..:Visible Columns..:Global Visible Column (All)",invoke=function() globalChangeVisibleColumnState("volume",true)
 globalChangeVisibleColumnState("panning",true) globalChangeVisibleColumnState("delay",true) globalChangeVisibleColumnState("sample_effects",true) end}
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor:Visible Columns..:Global Visible Column (None)",invoke=function() globalChangeVisibleColumnState("volume",false)
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor..:Visible Columns..:Global Visible Column (None)",invoke=function() globalChangeVisibleColumnState("volume",false)
 globalChangeVisibleColumnState("panning",false) globalChangeVisibleColumnState("delay",false) globalChangeVisibleColumnState("sample_effects",false) end}
 
 
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor:Visible Columns..:Toggle Visible Column (Volume) Globally",invoke=function() globalToggleVisibleColumnState("volume") end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Visible Columns..:Toggle Visible Column (Panning) Globally",invoke=function() globalToggleVisibleColumnState("panning") end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Visible Columns..:Toggle Visible Column (Delay) Globally",invoke=function() globalToggleVisibleColumnState("delay") end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Visible Columns..:Toggle Visible Column (Sample Effects) Globally",invoke=function() globalToggleVisibleColumnState("sample_effects") end}
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor:Visible Columns..:Global Visible Column (Volume)",invoke=function() globalChangeVisibleColumnState("volume",true) end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Visible Columns..:Global Visible Column (Panning)",invoke=function() globalChangeVisibleColumnState("panning",true) end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Visible Columns..:Global Visible Column (Delay)",invoke=function() globalChangeVisibleColumnState("delay",true) end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Visible Columns..:Global Visible Column (Sample Effects)",invoke=function() globalChangeVisibleColumnState("sample_effects",true) end}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor..:Visible Columns..:Toggle Visible Column (Volume) Globally",invoke=function() globalToggleVisibleColumnState("volume") end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor..:Visible Columns..:Toggle Visible Column (Panning) Globally",invoke=function() globalToggleVisibleColumnState("panning") end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor..:Visible Columns..:Toggle Visible Column (Delay) Globally",invoke=function() globalToggleVisibleColumnState("delay") end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor..:Visible Columns..:Toggle Visible Column (Sample Effects) Globally",invoke=function() globalToggleVisibleColumnState("sample_effects") end}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor..:Visible Columns..:Global Visible Column (Volume)",invoke=function() globalChangeVisibleColumnState("volume",true) end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor..:Visible Columns..:Global Visible Column (Panning)",invoke=function() globalChangeVisibleColumnState("panning",true) end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor..:Visible Columns..:Global Visible Column (Delay)",invoke=function() globalChangeVisibleColumnState("delay",true) end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor..:Visible Columns..:Global Visible Column (Sample Effects)",invoke=function() globalChangeVisibleColumnState("sample_effects",true) end}
 
-renoise.tool():add_menu_entry{name="--Main Menu:View:Paketti..:Pattern Editor:Visible Columns..:Global Visible Column (All)",invoke=function() globalChangeVisibleColumnState("volume",true)
+renoise.tool():add_menu_entry{name="--Main Menu:View:Paketti..:Pattern Editor..:Visible Columns..:Global Visible Column (All)",invoke=function() globalChangeVisibleColumnState("volume",true)
 globalChangeVisibleColumnState("panning",true) globalChangeVisibleColumnState("delay",true) globalChangeVisibleColumnState("sample_effects",true) end}
-renoise.tool():add_menu_entry{name="--Main Menu:View:Paketti..:Pattern Editor:Visible Columns..:Global Visible Column (None)",invoke=function() globalChangeVisibleColumnState("volume",false)
+renoise.tool():add_menu_entry{name="--Main Menu:View:Paketti..:Pattern Editor..:Visible Columns..:Global Visible Column (None)",invoke=function() globalChangeVisibleColumnState("volume",false)
 globalChangeVisibleColumnState("panning",false) globalChangeVisibleColumnState("delay",false) globalChangeVisibleColumnState("sample_effects",false) end}
 
 
-renoise.tool():add_menu_entry{name="--Main Menu:View:Paketti..:Pattern Editor:Visible Columns..:Toggle Visible Column (Volume) Globally",invoke=function() globalToggleVisibleColumnState("volume") end}
-renoise.tool():add_menu_entry{name="Main Menu:View:Paketti..:Pattern Editor:Visible Columns..:Toggle Visible Column (Panning) Globally",invoke=function() globalToggleVisibleColumnState("panning") end}
-renoise.tool():add_menu_entry{name="Main Menu:View:Paketti..:Pattern Editor:Visible Columns..:Toggle Visible Column (Delay) Globally",invoke=function() globalToggleVisibleColumnState("delay") end}
-renoise.tool():add_menu_entry{name="Main Menu:View:Paketti..:Pattern Editor:Visible Columns..:Toggle Visible Column (Sample Effects)Globally",invoke=function() globalToggleVisibleColumnState("sample_effects") end}
-renoise.tool():add_menu_entry{name="--Main Menu:View:Paketti..:Pattern Editor:Visible Columns..:Global Visible Column (Volume)",invoke=function() globalChangeVisibleColumnState("volume",true) end}
-renoise.tool():add_menu_entry{name="Main Menu:View:Paketti..:Pattern Editor:Visible Columns..:Global Visible Column (Panning)",invoke=function() globalChangeVisibleColumnState("panning",true) end}
-renoise.tool():add_menu_entry{name="Main Menu:View:Paketti..:Pattern Editor:Visible Columns..:Global Visible Column (Delay)",invoke=function() globalChangeVisibleColumnState("delay",true) end}
-renoise.tool():add_menu_entry{name="Main Menu:View:Paketti..:Pattern Editor:Visible Columns..:Global Visible Column (Sample Effects)",invoke=function() globalChangeVisibleColumnState("sample_effects",true) end}
+renoise.tool():add_menu_entry{name="--Main Menu:View:Paketti..:Pattern Editor..:Visible Columns..:Toggle Visible Column (Volume) Globally",invoke=function() globalToggleVisibleColumnState("volume") end}
+renoise.tool():add_menu_entry{name="Main Menu:View:Paketti..:Pattern Editor..:Visible Columns..:Toggle Visible Column (Panning) Globally",invoke=function() globalToggleVisibleColumnState("panning") end}
+renoise.tool():add_menu_entry{name="Main Menu:View:Paketti..:Pattern Editor..:Visible Columns..:Toggle Visible Column (Delay) Globally",invoke=function() globalToggleVisibleColumnState("delay") end}
+renoise.tool():add_menu_entry{name="Main Menu:View:Paketti..:Pattern Editor..:Visible Columns..:Toggle Visible Column (Sample Effects)Globally",invoke=function() globalToggleVisibleColumnState("sample_effects") end}
+renoise.tool():add_menu_entry{name="--Main Menu:View:Paketti..:Pattern Editor..:Visible Columns..:Global Visible Column (Volume)",invoke=function() globalChangeVisibleColumnState("volume",true) end}
+renoise.tool():add_menu_entry{name="Main Menu:View:Paketti..:Pattern Editor..:Visible Columns..:Global Visible Column (Panning)",invoke=function() globalChangeVisibleColumnState("panning",true) end}
+renoise.tool():add_menu_entry{name="Main Menu:View:Paketti..:Pattern Editor..:Visible Columns..:Global Visible Column (Delay)",invoke=function() globalChangeVisibleColumnState("delay",true) end}
+renoise.tool():add_menu_entry{name="Main Menu:View:Paketti..:Pattern Editor..:Visible Columns..:Global Visible Column (Sample Effects)",invoke=function() globalChangeVisibleColumnState("sample_effects",true) end}
 
 -----------
 -- Create Identical Track Function
@@ -2951,7 +2955,7 @@ renoise.tool():add_keybinding{name="Global:Paketti:Create Identical Track",invok
 renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Create Phrase",invoke=function() createPhrase() end}
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Create Identical Track",invoke=create_identical_track}
 renoise.tool():add_menu_entry{name="Mixer:Paketti..:Create Identical Track",invoke=create_identical_track}
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor:Create Identical Track",invoke=create_identical_track}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor..:Create Identical Track",invoke=create_identical_track}
 -------
 
 -- Function to toggle solo state for note columns in the selected track
@@ -3226,12 +3230,12 @@ function PakettiIsolateSlices()
     song.selected_instrument_index = selected_instrument_index + selected_sample_index
   end
 
-  song.transport.octave = 4
+  song.transport.octave = 3
   renoise.app():show_status(#sample.slice_markers > 0 and #sample.slice_markers .. " Slices isolated to new Instruments" or #instrument.samples .. " Samples isolated to new Instruments")
 end
 
 renoise.tool():add_menu_entry{name="--Sample Navigator:Paketti..:Isolate Slices or Samples to New Instruments",invoke=PakettiIsolateSlices}
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Instruments:Isolate Slices or Samples to New Instruments",invoke=PakettiIsolateSlices}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Instruments..:Isolate Slices or Samples to New Instruments",invoke=PakettiIsolateSlices}
 renoise.tool():add_menu_entry{name="--Sample Editor:Paketti..:Isolate Slices or Samples to New Instruments",invoke=PakettiIsolateSlices}
 renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Isolate Slices or Samples to New Instruments",invoke=PakettiIsolateSlices}
 renoise.tool():add_menu_entry{name="--Sample Mappings:Paketti..:Isolate Slices or Samples to New Instruments",invoke=PakettiIsolateSlices}
@@ -3373,7 +3377,7 @@ function PakettiReverseNotesInSelection()
   renoise.app():show_status("Notes and effect columns in the selection have been reversed.")
 end
 
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Reverse Notes in Selection",invoke=PakettiReverseNotesInSelection}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor..:Reverse Notes in Selection",invoke=PakettiReverseNotesInSelection}
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Reverse Notes in Selection",invoke=PakettiReverseNotesInSelection}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Reverse Notes in Selection",invoke=PakettiReverseNotesInSelection}
 
@@ -3442,8 +3446,8 @@ function PakettiOctaveBaseNoteDown()
 end
 
 -- Add the functions to the menu entries
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Octave Basenote Up",invoke=PakettiOctaveBaseNoteUp}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Octave Basenote Down",invoke=PakettiOctaveBaseNoteDown}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor..:Octave Basenote Up",invoke=PakettiOctaveBaseNoteUp}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor..:Octave Basenote Down",invoke=PakettiOctaveBaseNoteDown}
 
 -- Add keybindings for the functions
 renoise.tool():add_keybinding{name="Global:Paketti:Octave Basenote Up",invoke=PakettiOctaveBaseNoteUp}
@@ -3592,9 +3596,84 @@ end
 renoise.tool():add_keybinding{name="Global:Paketti:Populate Send Tracks for All Tracks",invoke=PakettiPopulateSendTracksAllTracks}
 renoise.tool():add_keybinding{name="Global:Paketti:Populate Send Tracks for Selected Track",invoke=PakettiPopulateSendTracksSelectedTrack}
 
+-- Function to populate send tracks for all tracks in the selected range
+function PakettiPopulateSendTracksToSelectionInPattern()
+  local song = renoise.song()
+  local selection_range = song.selection_in_pattern
+  
+  -- Check if selection exists
+  if not selection_range then
+    renoise.app():show_status("There is no Selection in Pattern, doing nothing.")
+    return
+  end
+  
+  local send_tracks = {}
+  local count = 0
+
+  -- Collect all send tracks
+  for i = 1, #song.tracks do
+    if song.tracks[i].type == renoise.Track.TRACK_TYPE_SEND then
+      table.insert(send_tracks, {index = count, name = song.tracks[i].name, track_number = i - 1})
+      count = count + 1
+    end
+  end
+
+  -- Path to the XML preset file
+  local PakettiSend_xml_file_path = "Presets/PakettiSend.XML"
+  local PakettiSend_xml_data = PakettiSendPopulatorReadFile(PakettiSend_xml_file_path)
+
+  -- Loop through each track in the selected range
+  for track_index = selection_range.start_track, selection_range.end_track do
+    local track = song.tracks[track_index]
+    
+    -- Only process sequencer and group tracks
+    if track.type == renoise.Track.TRACK_TYPE_SEQUENCER or track.type == renoise.Track.TRACK_TYPE_GROUP then
+      local existing_sends = {}
+
+      -- Collect existing send devices' target indices
+      for _, device in ipairs(track.devices) do
+        if device.name == "#Send" then
+          table.insert(existing_sends, device.parameters[3].value)
+        end
+      end
+
+      local sendcount = #track.devices + 1 -- Start after existing devices
+
+      -- Add send devices only if they don't already target the same send track
+      for i = 1, count do
+        local send_track = send_tracks[i]
+        local send_index = send_track.index
+        if not table.contains(existing_sends, send_index) then
+          track:insert_device_at("Audio/Effects/Native/#Send", sendcount)
+          local send_device = track.devices[sendcount]
+          send_device.active_preset_data = PakettiSend_xml_data
+          send_device.parameters[3].value = send_index
+          send_device.display_name = send_track.name
+          sendcount = sendcount + 1
+        else
+          -- Update the display name if the send already exists but was renamed
+          for _, device in ipairs(track.devices) do
+            if device.name == "#Send" and device.parameters[3].value == send_index then
+              device.display_name = send_track.name
+            end
+          end
+        end
+      end
+    else
+      renoise.app():show_status("Skipping unsupported track type for track index: " .. track_index)
+    end
+  end
+  renoise.app():show_status("Send tracks populated for all selected tracks.")
+end
+
+-- Registering the function with a keybinding
+renoise.tool():add_keybinding{name="Global:Paketti:Populate Send Tracks for All Selected Tracks",invoke=PakettiPopulateSendTracksToSelectionInPattern}
+
+
+
 -- Add menu entries for the new functions under Main Menu:Tools
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Populate Send Tracks for All Tracks",invoke=PakettiPopulateSendTracksAllTracks}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Populate Send Tracks for Selected Track",invoke=PakettiPopulateSendTracksSelectedTrack}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor..:Populate Send Tracks for All Tracks",invoke=PakettiPopulateSendTracksAllTracks}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor..:Populate Send Tracks for Selected Track",invoke=PakettiPopulateSendTracksSelectedTrack}
 
 -- Add menu entries for the new functions under Pattern Editor
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Populate Send Tracks for All Tracks",invoke=PakettiPopulateSendTracksAllTracks}
@@ -3878,7 +3957,7 @@ function show_convolver_selection_dialog(callback)
     end
     return dialog_content
   end
-  dialog = renoise.app():show_custom_dialog("Select or Add Convolver Device", create_dialog_content(), my_Convolverkeyhandler_func)
+  dialog = renoise.app():show_custom_dialog("Load, Import/Export Convolver Device", create_dialog_content(), my_Convolverkeyhandler_func)
 end
 
 -- Keyhandler function for dialog
@@ -3904,11 +3983,11 @@ function handle_convolver_action(device, track_index, device_index, action)
 end
 
 -- Adding menu entries
-renoise.tool():add_menu_entry { name = "--Main Menu:Tools:Paketti..:Show Convolver Selection Dialog...", invoke = function()
+renoise.tool():add_menu_entry { name = "--Main Menu:Tools:Paketti..:Plugins/Devices..:Show Convolver Selection Dialog...", invoke = function()
   show_convolver_selection_dialog(handle_convolver_action)
 end }
 
-renoise.tool():add_menu_entry { name = "Main Menu:Tools:Paketti..:Import Selected Sample to Selected Convolver", invoke = function()
+renoise.tool():add_menu_entry { name = "Main Menu:Tools:Paketti..:Plugins/Devices..:Import Selected Sample to Selected Convolver", invoke = function()
   print("Importing selected sample to Convolver via menu entry")
   local selected_device = renoise.song().selected_device
   local selected_track_index = renoise.song().selected_track_index
@@ -3968,7 +4047,7 @@ renoise.tool():add_menu_entry { name = "Mixer:Paketti..:Export Convolver IR into
   create_instrument_from_convolver(selected_device, selected_track_index, selected_device_index)
 end }
 
-renoise.tool():add_menu_entry { name = "Main Menu:Tools:Paketti..:Export Convolver IR into New Instrument", invoke = function()
+renoise.tool():add_menu_entry { name = "Main Menu:Tools:Paketti..:Plugins/Devices..:Export Convolver IR into New Instrument", invoke = function()
   print("Exporting Convolver IR into New Instrument via menu entry")
   local selected_device = renoise.song().selected_device
   local selected_track_index = renoise.song().selected_track_index
@@ -4308,11 +4387,11 @@ function pakettiResizeAndFill(patternSize)
   end
 end
 
-renoise.tool():add_menu_entry {name="Main Menu:Tools:Paketti..:Pattern Editor:Resize&Fill..:Paketti Pattern Resize and Fill 032",invoke=function() pakettiResizeAndFill(32) end}
-renoise.tool():add_menu_entry {name="Main Menu:Tools:Paketti..:Pattern Editor:Resize&Fill..:Paketti Pattern Resize and Fill 064",invoke=function() pakettiResizeAndFill(64) end}
-renoise.tool():add_menu_entry {name="Main Menu:Tools:Paketti..:Pattern Editor:Resize&Fill..:Paketti Pattern Resize and Fill 128",invoke=function() pakettiResizeAndFill(128) end}
-renoise.tool():add_menu_entry {name="Main Menu:Tools:Paketti..:Pattern Editor:Resize&Fill..:Paketti Pattern Resize and Fill 256",invoke=function() pakettiResizeAndFill(256) end}
-renoise.tool():add_menu_entry {name="Main Menu:Tools:Paketti..:Pattern Editor:Resize&Fill..:Paketti Pattern Resize and Fill 512",invoke=function() pakettiResizeAndFill(512) end}
+renoise.tool():add_menu_entry {name="Main Menu:Tools:Paketti..:Pattern Editor..:Resize&Fill..:Paketti Pattern Resize and Fill 032",invoke=function() pakettiResizeAndFill(32) end}
+renoise.tool():add_menu_entry {name="Main Menu:Tools:Paketti..:Pattern Editor..:Resize&Fill..:Paketti Pattern Resize and Fill 064",invoke=function() pakettiResizeAndFill(64) end}
+renoise.tool():add_menu_entry {name="Main Menu:Tools:Paketti..:Pattern Editor..:Resize&Fill..:Paketti Pattern Resize and Fill 128",invoke=function() pakettiResizeAndFill(128) end}
+renoise.tool():add_menu_entry {name="Main Menu:Tools:Paketti..:Pattern Editor..:Resize&Fill..:Paketti Pattern Resize and Fill 256",invoke=function() pakettiResizeAndFill(256) end}
+renoise.tool():add_menu_entry {name="Main Menu:Tools:Paketti..:Pattern Editor..:Resize&Fill..:Paketti Pattern Resize and Fill 512",invoke=function() pakettiResizeAndFill(512) end}
 
 renoise.tool():add_menu_entry {name="Pattern Editor:Paketti..:Resize&Fill..:Paketti Pattern Resize and Fill 032",invoke=function() pakettiResizeAndFill(32) end}
 renoise.tool():add_menu_entry {name="Pattern Editor:Paketti..:Resize&Fill..:Paketti Pattern Resize and Fill 064",invoke=function() pakettiResizeAndFill(64) end}
@@ -4758,10 +4837,19 @@ local use_dash_format = false
 local no_date = false
 local text_format = 1 -- 1=Off, 2=lowercase, 3=Capital, 4=UPPERCASE, 5=eLiTe
 local before_name_text = ""
+local date_format_option = "YYYY-MM-DD" -- default date format
+local date_formats = { -- list of possible date formats
+  "YYYY-MM-DD",
+  "DD-MM-YY",
+  "DD-MM-YYYY",
+  "YYYY-DD-MM",
+  "MM-DD-YY",
+  "MM-DD-YYYY"
+}
 local prefs_path = renoise.tool().bundle_path .. "preferencesSave.xml"
 
 -- Function to apply the selected text format
-local function apply_text_format(text)
+local function PakettiTitlerApplyTextFormat(text)
   if text_format == 3 then
     return text:gsub("(%a)(%w*)", function(a, b) return string.upper(a) .. string.lower(b) end)
   elseif text_format == 4 then
@@ -4782,7 +4870,7 @@ local function apply_text_format(text)
 end
 
 -- Function to generate a random string
-local function generate_random_string(length)
+local function PakettiTitlerGenerateRandomString(length)
   local charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
   local result = {}
   for i = 1, length do
@@ -4793,7 +4881,7 @@ local function generate_random_string(length)
 end
 
 -- Function to randomize from a textfile
-local function randomize_from_textfile(file_path, count)
+local function PakettiTitlerRandomizeFromTextfile(file_path, count)
   local words = {}
   for line in io.lines(file_path) do
     for word in line:gmatch("%w+") do
@@ -4808,19 +4896,39 @@ local function randomize_from_textfile(file_path, count)
 end
 
 -- Function to format the current date based on the selected format
-local function get_formatted_date()
-  local date = os.date("*t")
+local function PakettiTitlerGetFormattedDate()
   if no_date then
     return ""
-  elseif use_dash_format then
-    return string.format("%04d-%02d-%02d", date.year, date.month, date.day)
+  end
+
+  local date = os.date("*t")
+  local separator = use_dash_format and "-" or "_"
+
+  local year_full = string.format("%04d", date.year)
+  local year_short = string.sub(year_full, 3, 4) -- last two digits of the year
+  local month = string.format("%02d", date.month)
+  local day = string.format("%02d", date.day)
+
+  if date_format_option == "YYYY-MM-DD" then
+    return year_full .. separator .. month .. separator .. day
+  elseif date_format_option == "DD-MM-YY" then
+    return day .. separator .. month .. separator .. year_short
+  elseif date_format_option == "DD-MM-YYYY" then
+    return day .. separator .. month .. separator .. year_full
+  elseif date_format_option == "YYYY-DD-MM" then
+    return year_full .. separator .. day .. separator .. month
+  elseif date_format_option == "MM-DD-YY" then
+    return month .. separator .. day .. separator .. year_short
+  elseif date_format_option == "MM-DD-YYYY" then
+    return month .. separator .. day .. separator .. year_full
   else
-    return string.format("%04d_%02d_%02d", date.year, date.month, date.day)
+    -- Default to YYYY-MM-DD if unknown format
+    return year_full .. separator .. month .. separator .. day
   end
 end
 
 -- Function to split a string by a given separator
-local function split_string(input, separator)
+local function PakettiTitlerSplitString(input, separator)
   if separator == nil then
     separator = "%s"
   end
@@ -4832,14 +4940,14 @@ local function split_string(input, separator)
 end
 
 -- Function to save the song with the generated filename
-local function save_song_with_title(title)
-  local date = get_formatted_date()
+local function PakettiTitlerSaveSongWithTitle(title)
+  local date = PakettiTitlerGetFormattedDate()
   local separator = use_dash_format and "-" or "_"
   local filename = (no_date and "" or date .. separator)
   if before_name_text ~= "" then
-    filename = filename .. apply_text_format(before_name_text) .. separator
+    filename = filename .. PakettiTitlerApplyTextFormat(before_name_text) .. separator
   end
-  filename = filename .. apply_text_format(title) .. ".xrns"
+  filename = filename .. PakettiTitlerApplyTextFormat(title) .. ".xrns"
   local folder = renoise.app():prompt_for_path("Save Current Song (" .. filename .. ") to Folder")
   if folder and folder ~= "" then
     local full_path = folder .. "/" .. filename
@@ -4851,65 +4959,78 @@ local function save_song_with_title(title)
 end
 
 -- Function to update the full filename display
-local function update_filename_display()
-  local date = get_formatted_date()
+local function PakettiTitlerUpdateFilenameDisplay()
+  local date = PakettiTitlerGetFormattedDate()
   local title = vb.views.title_field.text
   local separator = use_dash_format and "-" or "_"
   local full_filename = (no_date and "" or date .. separator)
   if before_name_text ~= "" then
-    full_filename = full_filename .. apply_text_format(before_name_text) .. separator
+    full_filename = full_filename .. PakettiTitlerApplyTextFormat(before_name_text) .. separator
   end
-  full_filename = full_filename .. apply_text_format(title) .. ".xrns"
+  full_filename = full_filename .. PakettiTitlerApplyTextFormat(title) .. ".xrns"
   vb.views.filename_display.text = full_filename
 end
 
 -- Function to load preferences from XML
-local function load_preferences()
+local function PakettiTitlerPreferencesLoad()
   local prefs = renoise.Document.create("preferences") {
     textfile_path = default_file_path,
-    notes_file_path = default_notes_file_path
+    notes_file_path = default_notes_file_path,
+    trackTitlerDateFormat = date_format_option
   }
   prefs:load_from(prefs_path)
   selected_file_path = prefs.textfile_path.value
   notes_file_path = prefs.notes_file_path.value
+  date_format_option = prefs.trackTitlerDateFormat.value
 end
 
 -- Function to save preferences to XML
-local function save_preferences()
+local function PakettiTitlerPreferencesSave()
   local prefs = renoise.Document.create("preferences") {
     textfile_path = selected_file_path,
-    notes_file_path = notes_file_path
+    notes_file_path = notes_file_path,
+    trackTitlerDateFormat = date_format_option
   }
   prefs:save_as(prefs_path)
 end
 
+-- Function to get the index of the current date format
+local function PakettiTitlerGetDateFormatIndex()
+  for i, format in ipairs(date_formats) do
+    if format == date_format_option then
+      return i
+    end
+  end
+  return 1 -- default to first item if not found
+end
+
 -- Function to show the date & title dialog
-function PakettiTrackDaterTitlerDialog()
+function PakettiTitlerDialog()
   vb = renoise.ViewBuilder()
-  local date = get_formatted_date()
+  local date = PakettiTitlerGetFormattedDate()
   local default_title = ""
 
-  local function close_dialog()
+  local function PakettiTitlerCloseDialog()
     if dialog and dialog.visible then
       dialog:close()
     end
   end
 
-  local function handle_save()
+  local function PakettiTitlerHandleSave()
     local title = vb.views.title_field.text
-    save_song_with_title(title)
+    PakettiTitlerSaveSongWithTitle(title)
   end
 
-  local function random_string()
-    local random_string = generate_random_string(8)
+  local function PakettiTitlerRandomString()
+    local random_string = PakettiTitlerGenerateRandomString(8)
     vb.views.title_field.text = random_string
-    update_filename_display()
+    PakettiTitlerUpdateFilenameDisplay()
   end
 
-  local function browse_textfile()
+  local function PakettiTitlerBrowseTextfile()
     selected_file_path = renoise.app():prompt_for_filename_to_read({"*.txt"}, "Browse Textfile")
     if selected_file_path and selected_file_path ~= "" then
-      save_preferences() -- Save the selected file path
+      PakettiTitlerPreferencesSave() -- Save the selected file path
       vb.views.textfile_display.text = "Path: " .. selected_file_path -- Display the file path
     else
       selected_file_path = default_file_path
@@ -4917,16 +5038,16 @@ function PakettiTrackDaterTitlerDialog()
     end
   end
 
-  local function browse_notes_file()
+  local function PakettiTitlerBrowseNotesFile()
     local new_path = renoise.app():prompt_for_filename_to_read({"*.txt"}, "Select Notes File")
     if new_path and new_path ~= "" then
       notes_file_path = new_path
       vb.views.notes_file_field.text = notes_file_path
-      save_preferences()
+      PakettiTitlerPreferencesSave()
     end
   end
 
-  local function save_title_to_notes()
+  local function PakettiTitlerSaveTitleToNotes()
     local title = vb.views.title_field.text
     if title and title ~= "" then
       local file, err = io.open(notes_file_path, "a")
@@ -4942,7 +5063,7 @@ function PakettiTrackDaterTitlerDialog()
     end
   end
 
-  local function open_notes_path()
+  local function PakettiTitlerOpenNotesPath()
     local path = notes_file_path:match("(.*)[/\\]")
     if not path then
       path = '.'
@@ -4950,77 +5071,81 @@ function PakettiTrackDaterTitlerDialog()
     renoise.app():open_path(path)
   end
 
-  local function random_words()
+  local function PakettiTitlerRandomWords()
     -- Check if file exists before using it
     local file = io.open(selected_file_path, "r")
     if not file then
       renoise.app():show_status("Error: No valid textfile selected or file does not exist.")
-      browse_textfile()
+      PakettiTitlerBrowseTextfile()
       return
     end
     file:close()
     local count = vb.views.word_count.value
-    local random_title = randomize_from_textfile(selected_file_path, count)
+    local random_title = PakettiTitlerRandomizeFromTextfile(selected_file_path, count)
     vb.views.title_field.text = random_title
-    update_filename_display()
+    PakettiTitlerUpdateFilenameDisplay()
   end
 
-  local function switch_date_format(value)
+  local function PakettiTitlerSwitchDateSeparator(value)
     use_dash_format = (value == 2)
-    update_filename_display()
+    PakettiTitlerUpdateFilenameDisplay()
   end
 
-  local function handle_no_date(value)
+  local function PakettiTitlerHandleNoDate(value)
     no_date = value
-    update_filename_display()
+    PakettiTitlerUpdateFilenameDisplay()
   end
 
-  local function handle_before_name_change(new_value)
+  local function PakettiTitlerHandleBeforeNameChange(new_value)
     before_name_text = new_value
-    update_filename_display()
+    PakettiTitlerUpdateFilenameDisplay()
   end
 
-  local function handle_text_format(value)
+  local function PakettiTitlerHandleTextFormat(value)
     text_format = value
-    -- Update the filename display based on the new format
-    update_filename_display()
+    PakettiTitlerUpdateFilenameDisplay()
+  end
+
+  local function PakettiTitlerHandleDateFormatChange(value)
+    date_format_option = date_formats[value]
+    PakettiTitlerPreferencesSave()
+    PakettiTitlerUpdateFilenameDisplay()
   end
 
   -- Function to shift words to the left
-  local function shift_words_left()
-    local words = split_string(vb.views.title_field.text, " ")
+  local function PakettiTitlerShiftWordsLeft()
+    local words = PakettiTitlerSplitString(vb.views.title_field.text, " ")
     if #words > 1 then
       table.insert(words, table.remove(words, 1)) -- Move first word to the end
       vb.views.title_field.text = table.concat(words, " ")
-      update_filename_display()
+      PakettiTitlerUpdateFilenameDisplay()
     end
   end
 
   -- Function to shift words to the right
-  local function shift_words_right()
-    local words = split_string(vb.views.title_field.text, " ")
+  local function PakettiTitlerShiftWordsRight()
+    local words = PakettiTitlerSplitString(vb.views.title_field.text, " ")
     if #words > 1 then
       table.insert(words, 1, table.remove(words)) -- Move last word to the beginning
       vb.views.title_field.text = table.concat(words, " ")
-      update_filename_display()
+      PakettiTitlerUpdateFilenameDisplay()
     end
   end
 
   -- Load preferences
-  load_preferences()
+  PakettiTitlerPreferencesLoad()
 
   local dialog_content = vb:column{
     margin = 10,
-    width = 580, -- Set the dialog width
+    width = 580,
     vb:row{
       vb:text{text = "Before Name:", font = "mono"},
       vb:textfield{
         id = "before_name_field",
         text = before_name_text,
-        width = 200, -- Double the previous width
+        width = 200,
         notifier = function(text)
-          before_name_text = text
-          update_filename_display() -- Always refresh the filename display
+          PakettiTitlerHandleBeforeNameChange(text)
         end
       }
     },
@@ -5029,10 +5154,10 @@ function PakettiTrackDaterTitlerDialog()
       vb:textfield{
         id = "title_field",
         text = default_title,
-        width = 400, -- Double the previous width
+        width = 400,
         edit_mode = true,
         notifier = function(text)
-          update_filename_display() -- Always refresh the filename display
+          PakettiTitlerUpdateFilenameDisplay()
         end
       },
       vb:text{text = ".xrns"}
@@ -5042,24 +5167,24 @@ function PakettiTrackDaterTitlerDialog()
         id = "filename_display",
         text = "",
         font = "bold",
-        width = 800 -- Double the previous width
+        width = 800
       }
     },
     vb:row{
-      vb:button{text = "Save As", width = 135, notifier = handle_save},
-      vb:button{text = "Cancel", width = 135, notifier = close_dialog}
+      vb:button{text = "Save As", width = 135, notifier = PakettiTitlerHandleSave},
+      vb:button{text = "Cancel", width = 135, notifier = PakettiTitlerCloseDialog}
     },
     vb:row{
-      vb:button{text = "Random String", width = 135, notifier = random_string},
-      vb:button{text = "Browse Textfile", width = 135, notifier = browse_textfile}
+      vb:button{text = "Random String", width = 135, notifier = PakettiTitlerRandomString},
+      vb:button{text = "Browse Textfile", width = 135, notifier = PakettiTitlerBrowseTextfile}
     },
     vb:row{
       vb:text{id = "textfile_display", text = "Path: " .. selected_file_path}
     },
     vb:row{
-      vb:button{text = "Random Words", width = 135, notifier = random_words},
-      vb:button{text = "Shift Left", width = 135, notifier = shift_words_left},
-      vb:button{text = "Shift Right", width = 135, notifier = shift_words_right}
+      vb:button{text = "Random Words", width = 135, notifier = PakettiTitlerRandomWords},
+      vb:button{text = "Shift Left", width = 135, notifier = PakettiTitlerShiftWordsLeft},
+      vb:button{text = "Shift Right", width = 135, notifier = PakettiTitlerShiftWordsRight}
     },
     vb:row{
       vb:text{text = "Wordcount:"},
@@ -5068,25 +5193,35 @@ function PakettiTrackDaterTitlerDialog()
         min = 1,
         max = 16,
         value = 2,
-        notifier = random_words -- Update the title if value changes
+        notifier = PakettiTitlerRandomWords
       }
     },
     vb:row{
       vb:checkbox{
         id = "no_date_checkbox",
         value = no_date,
-        notifier = handle_no_date
+        notifier = PakettiTitlerHandleNoDate
       },
       vb:text{text = "No Date"}
     },
     vb:row{
-      vb:text{text = "Date Format:"},
+      vb:text{text = "Separator:"},
       vb:switch{
-        id = "date_format_switch",
+        id = "date_separator_switch",
         items = {"_", "-"},
         width = 50,
-        value = 1,
-        notifier = switch_date_format
+        value = use_dash_format and 2 or 1,
+        notifier = PakettiTitlerSwitchDateSeparator
+      }
+    },
+    vb:row{
+      vb:text{text = "Date Format:"},
+      vb:popup{
+        width= 300,
+        id = "date_format_popup",
+        items = date_formats,
+        value = PakettiTitlerGetDateFormatIndex(),
+        notifier = PakettiTitlerHandleDateFormatChange
       }
     },
     vb:row{
@@ -5096,10 +5231,9 @@ function PakettiTrackDaterTitlerDialog()
         items = {"Off", "lowercase", "Capital", "UPPERCASE", "eLiTe"},
         width = 350,
         value = text_format,
-        notifier = handle_text_format -- Handle text format change
+        notifier = PakettiTitlerHandleTextFormat
       }
     },
-    -- New row for Save Notes functionality
     vb:row{
       vb:text{text = "Save notes:"},
       vb:textfield{
@@ -5108,35 +5242,34 @@ function PakettiTrackDaterTitlerDialog()
         width = 200,
         notifier = function(text)
           notes_file_path = text
-          save_preferences()
+          PakettiTitlerPreferencesSave()
         end
       },
       vb:button{
         text = "Browse",
-        notifier = browse_notes_file
+        notifier = PakettiTitlerBrowseNotesFile
       },
       vb:button{
         text = "Save",
-        notifier = save_title_to_notes
+        notifier = PakettiTitlerSaveTitleToNotes
       },
       vb:button{
         text = "Open Path",
-        notifier = open_notes_path
+        notifier = PakettiTitlerOpenNotesPath
       }
     }
   }
 
   -- Initialize filename display
-  update_filename_display()
+  PakettiTitlerUpdateFilenameDisplay()
 
-  dialog = renoise.app():show_custom_dialog("Paketti Track Dater & Titler", dialog_content, my_keyhandler_func)
+  dialog = renoise.app():show_custom_dialog("Paketti Track Dater & Titler", dialog_content)
 end
 
 -- Adding the menu entries
-renoise.tool():add_menu_entry{name = "Main Menu:File:Paketti..:Paketti Track Dater & Titler...", invoke = PakettiTrackDaterTitlerDialog}
-renoise.tool():add_keybinding{name = "Global:Paketti:Paketti Track Dater & Titler", invoke = PakettiTrackDaterTitlerDialog}
-
-renoise.tool():add_menu_entry{name = "Main Menu:File:Save (Paketti Track Dater & Titler)...", invoke = PakettiTrackDaterTitlerDialog}
+renoise.tool():add_menu_entry{name = "Main Menu:File:Paketti..:Paketti Track Dater & Titler...", invoke = PakettiTitlerDialog}
+renoise.tool():add_keybinding{name = "Global:Paketti:Paketti Track Dater & Titler", invoke = PakettiTitlerDialog}
+renoise.tool():add_menu_entry{name = "Main Menu:File:Save (Paketti Track Dater & Titler)...", invoke = PakettiTitlerDialog}
 
 ------
 renoise.tool():add_keybinding{
@@ -5300,12 +5433,29 @@ function sample_random()
 end
 
 -- Add MIDI mapping for knob control in one line
-renoise.tool():add_midi_mapping{name="Paketti:Midi Set Selected Sample Velocity Range", invoke=function(midi_message) midi_sample_velocity_switcharoo(midi_message.int_value) end}
+renoise.tool():add_midi_mapping{name="Paketti:Midi Set Selected Sample Velocity Range 7F", invoke=function(midi_message) midi_sample_velocity_switcharoo(midi_message.int_value) end}
 
 -- Add keybindings for moving up, down, and random sample selection, all in one line
 renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample (+1) Velocity Range 7F others 00", invoke=function() sample_one_down() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample (-1) Velocity Range 7F others 00", invoke=function() sample_one_up() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample (Random) Velocity Range 7F others 00", invoke=function() sample_random() end}
+
+renoise.tool():add_midi_mapping{name="Paketti:Set Selected Sample (+1) Velocity Range 7F others 00", invoke=function(message) if message:is_trigger() then sample_one_down() end end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Selected Sample (-1) Velocity Range 7F others 00", invoke=function(message) if message:is_trigger() then sample_one_up() end end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Selected Sample (Random) Velocity Range 7F others 00", invoke=function(message) if message:is_trigger() then sample_random() end end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Selected Sample Velocity Range 7F",
+invoke=function(message)  if message:is_trigger() then SelectedSampleVelocityRange(0,127)
+end end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Selected Sample Velocity Range 00",
+invoke=function(message)  if message:is_trigger() then SelectedSampleVelocityRange(0,0)
+end end}
+
+
+renoise.tool():add_menu_entry{name="--Sample Mappings:Paketti..:Set Selected Sample (+1) Velocity Range 7F others 00", invoke=function() sample_one_down() end}
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Set Selected Sample (-1) Velocity Range 7F others 00", invoke=function() sample_one_up() end}
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Set Selected Sample (Random) Velocity Range 7F others 00", invoke=function() sample_random() end}
+
+
 
 function SelectedSampleVelocityRange(number1,number2)
   local ing = renoise.song().selected_instrument
@@ -5486,11 +5636,11 @@ end
 
 
 renoise.tool():add_keybinding {name="Global:Paketti:Randomize Selected Sample Finetune/Transpose +6/-6",invoke=function() randomize_sample_pitch_and_finetune(6,6) end}
-renoise.tool():add_menu_entry {name="Sample Editor:Paketti..:Randomize Selected Sample Finetune/Transpose +6/-6",invoke=function() randomize_sample_pitch_and_finetune(6,6) end}
-renoise.tool():add_midi_mapping {name="Global:Paketti:Randomize Selected Sample Finetune/Transpose +6/-6",invoke=function() randomize_sample_pitch_and_finetune(6,6) end}
+renoise.tool():add_menu_entry {name="--Sample Editor:Paketti..:Randomize Selected Sample Finetune/Transpose +6/-6",invoke=function() randomize_sample_pitch_and_finetune(6,6) end}
+renoise.tool():add_midi_mapping {name="Paketti:Randomize Selected Sample Finetune/Transpose +6/-6",invoke=function() randomize_sample_pitch_and_finetune(6,6) end}
 renoise.tool():add_keybinding {name="Global:Paketti:Randomize Selected Sample Transpose +6/-6 Finetune +127/-127",invoke=function() randomize_sample_pitch_and_finetune(6,127) end}
 renoise.tool():add_menu_entry {name="Sample Editor:Paketti..:Randomize Selected Sample Transpose +6/-6 Finetune +127/-127",invoke=function() randomize_sample_pitch_and_finetune(6,127) end}
-renoise.tool():add_midi_mapping {name="Global:Paketti:Randomize Selected Sample Transpose +6/-6 Finetune +127/-127",invoke=function() randomize_sample_pitch_and_finetune(6,127) end}
+renoise.tool():add_midi_mapping {name="Paketti:Randomize Selected Sample Transpose +6/-6 Finetune +127/-127",invoke=function() randomize_sample_pitch_and_finetune(6,127) end}
 ----------
 function DuplicateMaximizeConvertAndSave(format)
   local song = renoise.song()
@@ -5933,7 +6083,7 @@ local function detect_and_apply_triplet_pattern()
     end
 end
 
-renoise.tool():add_menu_entry {name = "Main Menu:Tools:Expand to Triplets (Note every row, note every 2nd row)",invoke = function() pcall(detect_and_apply_triplet_pattern)end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Xperimental/Work in Progress:Expand to Triplets (Note every row, note every 2nd row)",invoke = function() pcall(detect_and_apply_triplet_pattern)end}
 ----------
 
 
@@ -6149,15 +6299,7 @@ renoise.tool():add_keybinding{
   invoke=next_chord
 }
 
--- MIDI mapping for direct chord access
-renoise.tool():add_midi_mapping{
-  name="Global:Paketti:Chord Selector [0-127]",
-  invoke=function(midi_message) midi_chord_mapping(midi_message.int_value) end
-}
-
-
-
-
+renoise.tool():add_midi_mapping{name="Paketti:Chord Selector [0-127]",invoke=function(midi_message) midi_chord_mapping(midi_message.int_value) end}
 
 function FinderShower2(plugin)
 for i=2,#renoise.song().tracks[renoise.song().sequencer_track_count+1].devices do
@@ -6567,7 +6709,7 @@ renoise.tool():add_keybinding {
 }
 
 renoise.tool():add_menu_entry {
-  name = "Main Menu:Tools:Paketti..:Plugins/Devices:SlotShow:Show/Hide User Preference Devices Master Dialog",
+  name = "Main Menu:Tools:Paketti..:Plugins/Devices..:SlotShow..:Show/Hide User Preference Devices Master Dialog",
   invoke = function() PakettiUserPreferencesShowerDialog() end
 }
 
@@ -6582,12 +6724,12 @@ for i = 1, 10 do
   local slot = string.format("%02d", i)
 
   renoise.tool():add_menu_entry {
-    name = "Main Menu:Tools:Paketti..:Plugins/Devices:SlotShow:Show/Hide Slot " .. slot .. " on Master",
+    name = "Main Menu:Tools:Paketti..:Plugins/Devices..:SlotShow..:Show/Hide Slot " .. slot .. " on Master",
     invoke = function() FinderShowerByPath(preferences.UserPreferences["userPreferredDevice" .. slot].value, "master") end
   }
 
   renoise.tool():add_menu_entry {
-    name = "Main Menu:Tools:Paketti..:Plugins/Devices:SlotShow:Show/Hide Slot " .. slot .. " on Selected Track",
+    name = "Main Menu:Tools:Paketti..:Plugins/Devices..:SlotShow..:Show/Hide Slot " .. slot .. " on Selected Track",
     invoke = function() FinderShowerByPath(preferences.UserPreferences["userPreferredDevice" .. slot].value, "selected_track") end
   }
 
@@ -6601,7 +6743,7 @@ for i = 1, 10 do
     invoke = function() FinderShowerByPath(preferences.UserPreferences["userPreferredDevice" .. slot].value, "selected_track") end
   }
 renoise.tool():add_midi_mapping {
-  name = "Global:Paketti:Show/Hide Slot " .. slot .. " on Master",
+  name = "Paketti:Show/Hide Slot " .. slot .. " on Master",
   invoke = function(message)
     if message:is_trigger() then
       FinderShowerByPath(preferences.UserPreferences["userPreferredDevice" .. slot].value, "master")
@@ -6610,7 +6752,7 @@ renoise.tool():add_midi_mapping {
 }
 
 renoise.tool():add_midi_mapping {
-  name = "Global:Paketti:Show/Hide Slot " .. slot .. " on Selected Track",
+  name = "Paketti:Show/Hide Slot " .. slot .. " on Selected Track",
   invoke = function(message)
     if message:is_trigger() then
       FinderShowerByPath(preferences.UserPreferences["userPreferredDevice" .. slot].value, "selected_track")
@@ -7412,12 +7554,72 @@ end
 -- Trigger the dialog to show
 renoise.tool():add_keybinding{name="Global:Paketti:Open VolDelayPan Slider Dialog...",invoke=function() show_VDPdialog() end}
 
-renoise.tool():add_midi_mapping{name="Global:Paketti:Open VolDelayPan Slider Dialog...",invoke=function(message)  if message:is_trigger() then show_VDPdialog() end end}
+renoise.tool():add_midi_mapping{name="Paketti:Open VolDelayPan Slider Dialog...",invoke=function(message)  if message:is_trigger() then show_VDPdialog() end end}
 -----
 
 renoise.tool():add_keybinding{name="Global:Paketti:Wipe All Columns of Selected Track",invoke=function()
 renoise.song().selected_pattern.tracks[renoise.song().selected_track_index]:clear()
 end}
 
+---
+function PakettiGlobalSample(interpolation)
+  local song=renoise.song()
+  local interpolation_modes={"none","linear","cubic","sinc"}
+  
+  local interpolation_name=interpolation_modes[interpolation] or "unknown"
+
+  for i=1,#song.instruments do
+    local instrument=song.instruments[i]
+    
+    if instrument==nil then
+      renoise.app():show_status("Instrument "..i.." is nil, skipping.")
+    elseif #instrument.samples==0 then
+      renoise.app():show_status("Instrument "..i.." has no samples, skipping.")
+    else
+      for y=1,#instrument.samples do
+        instrument.samples[y].interpolation_mode=interpolation
+      end
+      renoise.app():show_status("Set interpolation for all samples in instrument "..i..".")
+    end
+  end
+  
+  renoise.app():show_status("Finished setting interpolation to "..interpolation_name.." for all instruments.")
+end
+
+
+renoise.tool():add_keybinding{name="Global:Paketti:Set Interpolation 1 (None) Globally",invoke=function() PakettiGlobalSample(1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Interpolation 2 (Linear) Globally",invoke=function() PakettiGlobalSample(2) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Interpolation 3 (Cubic) Globally",invoke=function() PakettiGlobalSample(3) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Interpolation 4 (Sinc) Globally",invoke=function() PakettiGlobalSample(4) end}
+
+--
+for i=2,32 do
+local actualNumber = formatDigits(2,i -1)
+renoise.tool():add_keybinding{name="Global:Paketti:Show/Hide Selected Track Device " .. actualNumber, invoke=function() ShowHideSelectedTrack(i)
+end}
+renoise.tool():add_midi_mapping{name="Paketti:Show/Hide Selected Track Device " .. string.format("%02d", actualNumber), invoke=function(message) if message:is_trigger() then ShowHideSelectedTrack(i)
+end end}
+end
+
+function ShowHideSelectedTrack(slot)
+  local track=renoise.song().selected_track
+  local device=track.devices[slot]
+
+  if device~=nil then
+    if device.external_editor_available then
+      if device.external_editor_visible then
+        device.external_editor_visible=false
+        renoise.app():show_status("The device "..device.name.." has been hidden.")
+      else
+        device.external_editor_visible=true
+        renoise.app():show_status("The device "..device.name.." External Editor has been opened.")
+      end
+    else
+      renoise.app():show_status("There is no External Editor for device "..device.name)
+    end
+  else
+    renoise.app():show_status("There is no device in slot "..slot)
+  end
+end
 
 

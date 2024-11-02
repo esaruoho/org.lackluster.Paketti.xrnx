@@ -12,6 +12,7 @@ local donations = {
   {"2024-08-08", "dmt", 20.00},
   {"2024-09-06", "Casiino", 8.63, {"Instagram", "https://www.instagram.com/elcasiino/"}},
   {"2024-09-19", "Casiino", 12.87, {"Instagram", "https://www.instagram.com/elcasiino/"}},
+  {"2024-10-25", "grymmjack", 9.11, {"YouTube", "https://youtube.com/grymmjack"}, {"Soundcloud","https://soundcloud.com/grymmjack"},{"GitHub","https://github.com/grymmjack"}},
 }
 
 local total_amount = 0
@@ -28,7 +29,7 @@ local dialog_content = vb:column{
   vb:multiline_textfield{width = textfield_width, height = 40, text = "There's probably tons more, but: dBlue, danoise, cortex, pandabot, ffx, Joule, Avaruus, astu/flo, syflom, Protman, vV, Bantai, taktik, Snowrobot, MXB, Jenoki, Kmaki, aleksip, Unless, martblek and the whole Renoise community."},
 
   vb:text{text = "Ideas provided by:", style = "strong", font = "bold"},
-  vb:multiline_textfield{width = textfield_width, height = 80, text = "tkna, Nate Schmold, Casiino, Royal Sexton, Bovaflux, Xerxes, ViZiON, Satoi, Kaneel, Ilkae, Subi, MigloJE, Ghostwerk, Michael Langer, Christopher Jooste, Zoey Samples, Avaruus, Pieter Koenekoop, Widgetphreak, Bálint Magyar, Mick Rippon, MMD (Mr. Mark Dollin), ne7, renoize-user, Dionysis, untilde, Greystar, Kaidiak, sousândrade, senseiprod, Brandon Hale, dmt, Diigitae, Dávid Halmi (Nagz), tEiS, Floppi J, Aleksi Eeben, fuzzy, Jalex, Mike Pehel and many others."},
+  vb:multiline_textfield{width = textfield_width, height = 80, text = "tkna, Nate Schmold, Casiino, Royal Sexton, Bovaflux, Xerxes, ViZiON, Satoi, Kaneel, Ilkae, Subi, MigloJE, Ghostwerk, Michael Langer, Christopher Jooste, Zoey Samples, Avaruus, Pieter Koenekoop, Widgetphreak, Bálint Magyar, Mick Rippon, MMD (Mr. Mark Dollin), ne7, renoize-user, Dionysis, untilde, Greystar, Kaidiak, sousândrade, senseiprod, Brandon Hale, dmt, Diigitae, Dávid Halmi (Nagz), tEiS, Floppi J, Aleksi Eeben, fuzzy, Jalex, Mike Pehel, grymmjack and many others."},
 
   vb:text{text = "Who made it possible:", style = "strong", font = "bold"},
   vb:multiline_textfield{width = textfield_width, height = 40, text = "Thanks to @lpn (Brothomstates) for suggesting that I could pick up and learn LUA, that it would not be beyond me. Really appreciate your (sometimes misplaced and ahead-of-time) faith in me. And thanks for the inspiration."},
@@ -39,10 +40,10 @@ local dialog_content = vb:column{
   vb:horizontal_aligner{mode = "distribute", vb:text{text = "Talk about Paketti", style = "strong", font = "bold"}},
   vb:horizontal_aligner{
     mode = "distribute",
-    vb:button{text = "Paketti GitHub", notifier = function() open_url("https://github.com/esaruoho/org.lackluster.Paketti.xrnx") end},
-    vb:button{text = "Paketti Discord", notifier = function() open_url("https://discord.gg/Qex7k5j4wG") end},
-    vb:button{text = "Paketti Renoise Forum Thread", notifier = function() open_url("https://forum.renoise.com/t/new-tool-3-1-pakettir3/35848/88") end},
-    vb:button{text = "Email", notifier = function() open_url("mailto:esaruoho@icloud.com") end}
+    vb:button{text = "Paketti GitHub", notifier = function() renoise.app():open_url("https://github.com/esaruoho/org.lackluster.Paketti.xrnx") end},
+    vb:button{text = "Paketti Discord", notifier = function() renoise.app():open_url("https://discord.gg/Qex7k5j4wG") end},
+    vb:button{text = "Paketti Renoise Forum Thread", notifier = function() renoise.app():open_url("https://forum.renoise.com/t/new-tool-3-1-pakettir3/35848/88") end},
+    vb:button{text = "Email", notifier = function() renoise.app():open_url("mailto:esaruoho@icloud.com") end}
   },
 
   -- Grouped donation section
@@ -64,9 +65,9 @@ vb:horizontal_aligner{mode="distribute",
       vb:text{text = donations[0+1][2], width = 100},
       vb:text{text = string.format("%.2f", donations[0+1][3]).."€", width = 50, font = "bold"},
       vb:horizontal_aligner{mode = "left",
-      vb:button{text = donations[0+1][4][1], notifier = function() open_url(donations[0+1][4][2]) end},
-      vb:button{text = donations[0+1][5][1], notifier = function() open_url(donations[0+1][5][2]) end},
-      vb:button{text = donations[0+1][6][1], notifier = function() open_url(donations[0+1][6][2]) end}
+      vb:button{text = donations[0+1][4][1], notifier = function() renoise.app():open_url(donations[0+1][4][2]) end},
+      vb:button{text = donations[0+1][5][1], notifier = function() renoise.app():open_url(donations[0+1][5][2]) end},
+      vb:button{text = donations[0+1][6][1], notifier = function() renoise.app():open_url(donations[0+1][6][2]) end}
       }
     },
     vb:row{
@@ -74,7 +75,7 @@ vb:horizontal_aligner{mode="distribute",
       vb:text{text = donations[1+1][2], width = 100},
       vb:text{text = string.format("%.2f", donations[1+1][3]).."€", width = 50, font = "bold"},
       vb:horizontal_aligner{mode = "left",
-      vb:button{text = donations[1+1][4][1], notifier = function() open_url(donations[1+1][4][2]) end}
+      vb:button{text = donations[1+1][4][1], notifier = function() renoise.app():open_url(donations[1+1][4][2]) end}
       }
     },
     vb:row{
@@ -82,7 +83,7 @@ vb:horizontal_aligner{mode="distribute",
       vb:text{text = donations[2+1][2], width = 100},
       vb:text{text = string.format("%.2f", donations[2+1][3]).."€", width = 50, font = "bold"},
       vb:horizontal_aligner{mode = "left",
-      vb:button{text = donations[2+1][4][1], notifier = function() open_url(donations[2+1][4][2]) end}
+      vb:button{text = donations[2+1][4][1], notifier = function() renoise.app():open_url(donations[2+1][4][2]) end}
       }
     },
     vb:row{
@@ -90,7 +91,7 @@ vb:horizontal_aligner{mode="distribute",
       vb:text{text = donations[3+1][2], width = 100},
       vb:text{text = string.format("%.2f", donations[3+1][3]).."€", width = 50, font = "bold"},
       vb:horizontal_aligner{mode = "left",
-      vb:button{text = donations[3+1][4][1], notifier = function() open_url(donations[3+1][4][2]) end}
+      vb:button{text = donations[3+1][4][1], notifier = function() renoise.app():open_url(donations[3+1][4][2]) end}
       }
     },
     vb:row{
@@ -98,7 +99,7 @@ vb:horizontal_aligner{mode="distribute",
       vb:text{text = donations[4+1][2], width = 100},
       vb:text{text = string.format("%.2f", donations[4+1][3]).."€", width = 50, font = "bold"},
       vb:horizontal_aligner{mode = "left",
-      vb:button{text = donations[4+1][4][1], notifier = function() open_url(donations[4+1][4][2]) end}
+      vb:button{text = donations[4+1][4][1], notifier = function() renoise.app():open_url(donations[4+1][4][2]) end}
       }
     },
     vb:row{
@@ -106,7 +107,7 @@ vb:horizontal_aligner{mode="distribute",
       vb:text{text = donations[5+1][2], width = 100},
       vb:text{text = string.format("%.2f", donations[5+1][3]).."€", width = 50, font = "bold"},
       vb:horizontal_aligner{mode = "left",
-      vb:button{text = donations[5+1][4][1], notifier = function() open_url(donations[5+1][4][2]) end}
+      vb:button{text = donations[5+1][4][1], notifier = function() renoise.app():open_url(donations[5+1][4][2]) end}
       }
     },
     vb:row{
@@ -119,15 +120,24 @@ vb:horizontal_aligner{mode="distribute",
       vb:text{text = donations[7+1][2], width = 100},
       vb:text{text = string.format("%.2f", donations[7+1][3]).."€", width = 50, font = "bold"},
       vb:horizontal_aligner{mode = "left",
-      vb:button{text = donations[7+1][4][1], notifier = function() open_url(donations[7+1][4][2]) end}}
+      vb:button{text = donations[7+1][4][1], notifier = function() renoise.app():open_url(donations[7+1][4][2]) end}}
     },
     vb:row{
       vb:text{text = donations[8+1][1], width = 70},
       vb:text{text = donations[8+1][2], width = 100},
       vb:text{text = string.format("%.2f", donations[8+1][3]).."€", width = 50, font = "bold"},
       vb:horizontal_aligner{mode = "left",
-      vb:button{text = donations[8+1][4][1], notifier = function() open_url(donations[8+1][4][2]) end}}
+      vb:button{text = donations[8+1][4][1], notifier = function() renoise.app():open_url(donations[8+1][4][2]) end}}
     },    
+    vb:row{
+      vb:text{text = donations[9+1][1], width = 70},
+      vb:text{text = donations[9+1][2], width = 100},
+      vb:text{text = string.format("%.2f", donations[9+1][3]).."€", width = 50, font = "bold"},
+      vb:horizontal_aligner{mode = "left",
+      vb:button{text = donations[9+1][4][1], notifier = function() renoise.app():open_url(donations[9+1][4][2]) end},
+      vb:button{text = donations[9+1][5][1], notifier = function() renoise.app():open_url(donations[9+1][5][2]) end},
+      vb:button{text = donations[9+1][6][1], notifier = function() renoise.app():open_url(donations[9+1][6][2]) end}}
+    },      
     vb:space{height = 5},
     vb:horizontal_aligner{mode="distribute",
     vb:text{text = "Total: " .. string.format("%.2f", total_amount) .. "€", font = "bold"}}
@@ -136,12 +146,12 @@ vb:horizontal_aligner{mode="distribute",
 
   vb:horizontal_aligner{
     mode = "distribute",
-    vb:button{text = "Purchase Paketti on Gumroad", notifier = function() open_url("https://lackluster.gumroad.com/l/paketti") end},
-    vb:button{text = "Send a donation via PayPal", notifier = function() open_url("https://www.paypal.com/donate/?hosted_button_id=PHZ9XDQZ46UR8") end},
-    vb:button{text = "Support via Ko-Fi", notifier = function() open_url("https://ko-fi.com/esaruoho") end},
-    vb:button{text = "Purchase Music via Bandcamp", notifier = function() open_url("http://lackluster.bandcamp.com/") end},
-    vb:button{text = "GitHub Sponsors", notifier = function() open_url("https://github.com/sponsors/esaruoho") end},
-    vb:button{text = "Linktr.ee", notifier = function() open_url("https://linktr.ee/esaruoho") end}
+    vb:button{text = "Purchase Paketti on Gumroad", notifier = function() renoise.app():open_url("https://lackluster.gumroad.com/l/paketti") end},
+    vb:button{text = "Send a donation via PayPal", notifier = function() renoise.app():open_url("https://www.paypal.com/donate/?hosted_button_id=PHZ9XDQZ46UR8") end},
+    vb:button{text = "Support via Ko-Fi", notifier = function() renoise.app():open_url("https://ko-fi.com/esaruoho") end},
+    vb:button{text = "Purchase Music via Bandcamp", notifier = function() renoise.app():open_url("http://lackluster.bandcamp.com/") end},
+    vb:button{text = "GitHub Sponsors", notifier = function() renoise.app():open_url("https://github.com/sponsors/esaruoho") end},
+    vb:button{text = "Linktr.ee", notifier = function() renoise.app():open_url("https://linktr.ee/esaruoho") end}
   },
 
   vb:space{height = 20},
@@ -171,10 +181,10 @@ function show_about_dialog()
 end
 
 renoise.tool():add_menu_entry{name = "--Main Menu:Tools:Paketti..:!!About..:About Paketti/Donations...", invoke = function() show_about_dialog() end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:!Preferences:Open Paketti Path",invoke=function() renoise.app():open_path(renoise.tool().bundle_path)end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Debug:Inspect Plugin",invoke=function() inspectPlugin() end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Debug:Inspect Device in Slot 2",invoke=function() inspectEffect() end}
-renoise.tool():add_menu_entry{name = "--Main Menu:Tools:Paketti..:Pattern Editor:Random BPM (60-180)",invoke = function()
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:!Preferences..:Open Paketti Path",invoke=function() renoise.app():open_path(renoise.tool().bundle_path)end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices..:Debug..:Inspect Plugin",invoke=function() inspectPlugin() end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices..:Debug..:Inspect Device in Slot 2",invoke=function() inspectEffect() end}
+renoise.tool():add_menu_entry{name = "--Main Menu:Tools:Paketti..:Pattern Editor..:Random BPM (60-180)",invoke = function()
         local bpmList = {80, 100, 115, 123, 128, 132, 135, 138, 160}
         local currentBPM = renoise.song().transport.bpm
         local newBpmList = {}
@@ -201,41 +211,35 @@ renoise.tool():add_menu_entry{name = "--Main Menu:Tools:Paketti..:Pattern Editor
 }
 
 --renoise.song().transport.bpm=math.random(60,180) end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Write Current BPM&LPB to Master column",invoke=function() write_bpm() end}
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor:Effect Column CheatSheet Dialog", invoke=function() CheatSheet() end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor..:Write Current BPM&LPB to Master column",invoke=function() write_bpm() end}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor..:Effect Column CheatSheet Dialog", invoke=function() CheatSheet() end}
 
 -------- Plugins/Devices
 -- Adding menu entries for listing available plugins by type
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Load Devices Dialog", invoke=function()
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices..:Load Devices Dialog", invoke=function()
 showDeviceListDialog()
 end}
 
---renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Load Native Devices Dialog",
---    invoke=function() PakettiShowDeviceListDialog() end}
---renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Load VST Devices Dialog",invoke=vstShowPluginListDialog}
---renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Load VST3/AU Devices Dialog",invoke=vst3ShowPluginListDialog}
---renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Load LADSPA/DSSI Devices Dialog",invoke=LADSPADSSIShowPluginListDialog}    
-    
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Debug:List Available VST Plugins",
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices..:Debug..:List Available VST Plugins",
     invoke=function() listByPluginType("VST") end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Debug:List Available AU Plugins",
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices..:Debug..:List Available AU Plugins",
     invoke=function() listByPluginType("AU") end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Debug:List Available VST3 Plugins",
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices..:Debug..:List Available VST3 Plugins",
     invoke=function() listByPluginType("VST3") end}
 -- Adding menu entries for listing available devices (effects) by type
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Debug:List Available VST Effects",
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices..:Debug..:List Available VST Effects",
     invoke=function() listDevicesByType("VST") end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Debug:List Available AU Effects",
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices..:Debug..:List Available AU Effects",
     invoke=function() listDevicesByType("AU") end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Debug:List Available VST3 Effects",
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices..:Debug..:List Available VST3 Effects",
     invoke=function() listDevicesByType("VST3") end}
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Debug:Dump VST/VST3/AU/Native Effects to Console", invoke=function() 
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices..:Debug..:Dump VST/VST3/AU/Native Effects to Console", invoke=function() 
 local devices=renoise.song().tracks[renoise.song().selected_track_index].available_devices
   for key, value in ipairs (devices) do 
     print(key, value)
   end
 end}
-renoise.tool():add_menu_entry{name="---Main Menu:Tools:Paketti..:Plugins/Devices:Debug:Available Routings for Track",invoke=function() showAvailableRoutings() end}
+renoise.tool():add_menu_entry{name="---Main Menu:Tools:Paketti..:Plugins/Devices..:Debug..:Available Routings for Track",invoke=function() showAvailableRoutings() end}
 
 -- Function to create and show the dialog with a text field.
 function squigglerdialog()
@@ -253,7 +257,7 @@ function squigglerdialog()
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:∿ Squiggly Sinewave to Clipboard (macOS)", invoke=function() squigglerdialog() end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices:Debug:∿ Squiggly Sinewave to Clipboard", invoke=function() squigglerdialog() end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Plugins/Devices..:Debug..:∿ Squiggly Sinewave to Clipboard", invoke=function() squigglerdialog() end}
 ----------
 
 local vb = renoise.ViewBuilder()
@@ -308,7 +312,13 @@ local function create_paketti_dialog()
       vb:button{text="Track Dater / Titler", width=50, notifier=function() PakettiTrackDaterTitlerDialog() end}}, vb:row{
       vb:button{text="Paketti Preferences", width=50, notifier=function()
        show_paketti_preferences() end},
-       vb:button{text="Squiggler", width=50, notifier=function() squigglerdialog() end}
+       vb:button{text="Squiggler", width=50, notifier=function() squigglerdialog() end},
+       vb:button{text="Paketti Groovebox 8120", width=50, notifier=function()   if dialog and dialog.visible then
+    dialog:close()
+    dialog = nil
+    rows = {}
+  else PakettiEightSlotsByOneTwentyDialog() end 
+  end}
       }}}
     
   
@@ -328,7 +338,7 @@ end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Toggle Paketti Dialog of Dialogs",invoke=function() toggle_paketti_dialog() end}
 
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Paketti Dialogs Dialog...",invoke=function() toggle_paketti_dialog() end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Paketti Dialog of Dialogs...",invoke=function() toggle_paketti_dialog() end}
 renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Paketti New Song Dialog...", invoke=function() show_new_song_dialog() end }
 renoise.tool():add_menu_entry{name = "Main Menu:Tools:Paketti..:Paketti Track Dater & Titler Dialog...", invoke = function() PakettiTrackDaterTitlerDialog() end}
 
@@ -346,8 +356,8 @@ renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Oblique Strategies
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Paketti Track Renamer Dialog...",invoke=function() PakettiTrackRenamerDialog() end}
 
 
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Paketti eSpeak Text-to-Speech Dialog...",invoke=function()pakettieSpeakToggleDialog()end}
-renoise.tool():add_menu_entry { name = "Main Menu:Tools:Paketti..:Paketti Coluga Downloader Dialog...", invoke = function() PakettiColugaShowDialog() end }
-renoise.tool():add_menu_entry {name = "Main Menu:Tools:Paketti..:Audio Processing Tools Dialog...", invoke = function() PakettiAudioProcessingToolsDialogShow() end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Paketti eSpeak Text-to-Speech Dialog...",invoke=function()PakettieSpeakToggleDialog()end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Xperimental/Work in Progress:Paketti Coluga Downloader Dialog...", invoke = function() PakettiColugaShowDialog() end }
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Xperimental/Work in Progress:Audio Processing Tools Dialog...", invoke = function() PakettiAudioProcessingToolsDialogShow() end}
 
 

@@ -34,7 +34,8 @@ rs.selected_instrument:copy_from(src_inst)
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Duplicate Instrument and Select Last Instrument",invoke=function() duplicateSelectInstrumentToLastInstrument() end}
-
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Duplicate Instrument and Select Last Instrument",invoke=function() duplicateSelectInstrumentToLastInstrument() end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Duplicate and Reverse Instrument", invoke=function() PakettiDuplicateAndReverseInstrument() end}
 
 -- auto-suspend plugin off:
 function autosuspendOFF()
@@ -42,7 +43,7 @@ renoise.song().instruments[renoise.song().selected_instrument_index].plugin_prop
 end
 
 renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Switch Plugin AutoSuspend Off",invoke=function() autosuspendOFF() end}
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices:Switch Plugin AutoSuspend Off",invoke=function() autosuspendOFF() end}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Plugins/Devices..:Switch Plugin AutoSuspend Off",invoke=function() autosuspendOFF() end}
 
 -------------------------
 function selectplay(number)
@@ -86,48 +87,76 @@ end
 
 ------------------------------------------------------------------------------------------------------
 --cortex.scripts.CaptureOctave v1.1 by cortex
+renoise.tool():add_keybinding{name="Global:Paketti:Capture Nearest Instrument and Octave", invoke=function(repeated) capture_ins_oct() end}
+
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Capture Nearest Instrument and Octave", invoke=function(repeated) capture_ins_oct() end}
 renoise.tool():add_keybinding{name="Mixer:Paketti:Capture Nearest Instrument and Octave", invoke=function(repeated) capture_ins_oct() end}
-
 function capture_ins_oct()
+renoise.app():show_status("YO!!!")
    local closest_note = {}  
    local current_track=renoise.song().selected_track_index
    local current_pattern=renoise.song().selected_pattern_index
    
    for pos,line in renoise.song().pattern_iterator:lines_in_pattern_track(current_pattern,current_track) do
       if (not line.is_empty) then
-   local t={}
-   if (renoise.song().selected_note_column_index==0) then
-      for i=1,renoise.song().tracks[current_track].visible_note_columns do
-         table.insert(t,i) end
-   else table.insert(t,renoise.song().selected_note_column_index)   end  
-   
-   for i,v in ipairs(t) do local notecol=line.note_columns[v]
-      
-      if ( (not notecol.is_empty) and (notecol.note_string~="OFF")) then
-         if (closest_note.oct==nil) then
-      closest_note.oct=math.min(math.floor(notecol.note_value/12),8)
-      closest_note.line=pos.line
-      closest_note.ins=notecol.instrument_value+1
-         elseif ( math.abs(pos.line-renoise.song().transport.edit_pos.line) < math.abs(closest_note.line-renoise.song().transport.edit_pos.line)  ) then
-      closest_note.oct=math.min(math.floor(notecol.note_value/12),8)
-      closest_note.line=pos.line
-      closest_note.ins=notecol.instrument_value+1
-         end         
-      end end end end      
+         local t={}
+         if (renoise.song().selected_note_column_index==0) then
+            for i=1,renoise.song().tracks[current_track].visible_note_columns do
+               table.insert(t,i)
+            end
+         else 
+            table.insert(t,renoise.song().selected_note_column_index)
+         end  
+         
+         for i,v in ipairs(t) do 
+            local notecol=line.note_columns[v]
+            
+            if ( (not notecol.is_empty) and (notecol.note_string~="OFF")) then
+               if (closest_note.oct==nil) then
+                  closest_note.oct=math.min(math.floor(notecol.note_value/12),8)
+                  closest_note.line=pos.line
+                  closest_note.ins=notecol.instrument_value+1
+               elseif ( math.abs(pos.line-renoise.song().transport.edit_pos.line) < math.abs(closest_note.line-renoise.song().transport.edit_pos.line) ) then
+                  closest_note.oct=math.min(math.floor(notecol.note_value/12),8)
+                  closest_note.line=pos.line
+                  closest_note.ins=notecol.instrument_value+1
+               end         
+            end 
+         end 
+      end 
+   end
+
+
+
+
    if (closest_note.oct~=nil) then 
-      renoise.song().selected_instrument_index=closest_note.ins
-      renoise.song().transport.octave=closest_note.oct end
-   
-local w = renoise.app().window
--- w.lower_frame_is_visible=true
-w.active_middle_frame=1
--- w.active_lower_frame=1 
--- w.upper_frame_is_visible=false
+      if renoise.song().selected_instrument_index == closest_note.ins then
+if renoise.app().window.active_middle_frame == 1 and renoise.app().window.active_lower_frame == 2 then
+renoise.app().window.active_lower_frame = 1 return end
+
+if renoise.app().window.active_middle_frame == renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
+then renoise.app().window.active_middle_frame = 1 
+renoise.app().window.active_lower_frame = 2 return end
+
+
+         renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
+         return
+--         renoise.app().window.active_middle_frame = 1
+      else
+         -- Set instrument and octave if not already selected
+         renoise.song().selected_instrument_index = closest_note.ins
+         renoise.song().transport.octave = closest_note.oct
+      end
+   end
+
+   -- Focus on the pattern editor in the middle frame
+   local w = renoise.app().window
+   w.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
 end
 
+
 -----------------------------------------------------------------------------------------------------------
-function emptyslices()
+--[[function emptyslices()
 local w=renoise.app().window
 local si=renoise.song().selected_instrument
 local ss=renoise.song().selected_sample
@@ -138,11 +167,12 @@ local ssi=renoise.song().selected_sample_index
    for i=1,64 do renoise.song().selected_instrument.samples[i].name="empty_sampleslot" .. i end
 
  renoise.song().selected_instrument.name=("Empty Sample Slices" .. renoise.song().selected_instrument_index)
- w.active_middle_frame= 2 end
+ w.active_middle_frame= 3 end
 
-renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Initialize..:Create Empty Sample Slices", invoke=function() emptyslices() end}
-renoise.tool():add_menu_entry{name="Sample List:Paketti..:Create Empty Sample Slices", invoke=function() emptyslices() end}
-renoise.tool():add_menu_entry{name="Sample Navigation:Paketti..:Create Empty Sample Slices", invoke=function() emptyslices() end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Initialize..:Create 64 Empty Sample Slots", invoke=function() emptyslices() end}
+renoise.tool():add_menu_entry{name="Sample List:Paketti..:Create 64 Empty Sample Slots", invoke=function() emptyslices() end}
+renoise.tool():add_menu_entry{name="Sample Navigator:Paketti..:Create 64 Empty Sample Slots", invoke=function() emptyslices() end}
+]]--
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 
 -- Helper function to ensure the required number of instruments exist, with a max limit of 255 (FE)

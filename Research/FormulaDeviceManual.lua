@@ -61,7 +61,7 @@ function show_manual(dialog_title, filename)
       id = "page_text",
       font = "mono",
       width = 506,
-      height = 500 -- Twice the original height
+      height = 760 -- Twice the original height
     }
   }
 
@@ -73,16 +73,10 @@ function show_manual(dialog_title, filename)
       margin = DIALOG_MARGIN,
       style = "group",
 
-      vb:text {
-        text = "Formula Documentation",
-        font = "mono",
-        width = 506,
-        align = "center"
-      },
       row_navigation,
       row_text,
       vb:horizontal_aligner {
-        margin = CONTROL_MARGIN,
+        margin = 5,
         mode = "distribute",
         vb:button {text = "Forum Link 1", notifier = function() renoise.app():open_url("http://forum.renoise.com") end},
         vb:button {text = "Forum Link 2", notifier = function() renoise.app():open_url("http://forum.renoise.com") end},
@@ -93,7 +87,7 @@ function show_manual(dialog_title, filename)
       vb:button {
         id = "close_button",
         text = "Close",
-        width = 506,
+        width = "100%",
         notifier = function()
           dialog_instance:close()
         end

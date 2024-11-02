@@ -83,6 +83,8 @@ function PakettiEightSlotsByOneTwentyCreateRow(row_index)
   local row_elements = {}
   local normal_color, highlight_color = nil, {0x22 / 255, 0xaa / 255, 0xff / 255}
 
+
+
   -- Create Number Buttons (1-16)
   local number_buttons = {}
   for i = 1, 16 do
@@ -134,7 +136,7 @@ function PakettiEightSlotsByOneTwentyCreateRow(row_index)
     style = "strong"
   }
 
-  -- Append valuebox and sample name label after checkboxes
+-- Append valuebox and sample name label after checkboxes
   table.insert(checkbox_row_elements, valuebox)
   table.insert(checkbox_row_elements, sample_name_label)
 
@@ -172,11 +174,57 @@ function PakettiEightSlotsByOneTwentyCreateRow(row_index)
       renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
     end
   }
+  
+  
 
   -- Append yxx_valuebox and label after yxx checkboxes
   table.insert(yxx_checkbox_row_elements, yxx_valuebox)
-  table.insert(yxx_checkbox_row_elements, vb:text {font="bold",style="strong",text = "Yxx probability"})
+  table.insert(yxx_checkbox_row_elements, vb:text {font="bold",style="strong",text = "Yxx"})
 
+-- Add Yxx Slider
+local yxx_slider = vb:slider {
+  min = 0,
+  max = 255,
+  value = 32, -- Default to 0x20
+  width = 300, -- Adjust width as needed
+  notifier = function(value)
+    yxx_valuebox.value = math.floor(value)
+    row_elements.print_to_pattern()
+  end
+}
+row_elements.yxx_slider = yxx_slider
+
+-- Randomize Button for Yxx Slider
+local yxx_randomize_button = vb:button {
+  text = "Randomize",
+  width = 70, -- Adjust width as needed
+  notifier = function()
+    local random_value = math.random(0, 255)
+    yxx_slider.value = random_value
+    yxx_valuebox.value = random_value
+    row_elements.print_to_pattern()
+  end
+}
+
+-- **Clear Button for Yxx Checkboxes**
+local yxx_clear_button = vb:button {
+  text = "Clear",
+  width = 40, -- Adjust width as needed
+  notifier = function()
+    for _, checkbox in ipairs(yxx_checkboxes) do
+      checkbox.value = false
+    end
+    row_elements.print_to_pattern()
+    renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
+  end
+}
+
+-- Add slider and buttons to yxx_checkbox_row_elements
+table.insert(yxx_checkbox_row_elements, yxx_slider)
+table.insert(yxx_checkbox_row_elements, yxx_randomize_button)
+table.insert(yxx_checkbox_row_elements, yxx_clear_button)
+  
+  -- === End of Yxx Value Buttons Addition ===
   -- Adjusted Track Popup
   local default_track_index = row_index
   if default_track_index > #track_names then
@@ -479,7 +527,7 @@ function PakettiEightSlotsByOneTwentyCreateRow(row_index)
     renoise.app().window.lower_frame_is_visible = true
     renoise.app().window.active_lower_frame = renoise.ApplicationWindow.LOWER_FRAME_TRACK_AUTOMATION
     renoise.song().selected_track_index = track_indices[track_popup.value]
-    renoise.song().selected_device_index = 2
+  --  renoise.song().selected_device_index = 2
     renoise.app():show_status("Showing Automation for Row " .. row_index)
   end
 
@@ -647,7 +695,7 @@ function create_global_controls()
   end}
 
   fill_empty_label = vb:text{ text="Fill Empty Steps: 0%", width=90 }
-  fill_empty_slider = vb:slider {min = 0, max = 100, value = 0, width = 150, notifier = function(value)
+  fill_empty_slider = vb:slider {min = 0, max = 20, value = 0, width = 150, midi_mapping="Paketti:Paketti Groovebox 8120:Fill Empty Steps Slider", notifier = function(value)
     if initializing then return end
     fill_empty_label.text = "Fill Empty Steps: " .. tostring(math.floor(value)) .. "%"
     if value == 0 then
@@ -659,7 +707,21 @@ function create_global_controls()
     end
   end}
 
-  local reverse_all_button = vb:button {text = "Reverse All", notifier = reverse_all}
+  local reverse_all_button = vb:button {text = "Reverse All", midi_mapping="Paketti:Paketti Groovebox 8120:Reverse All", notifier = reverse_all}
+
+
+local randomize_all_yxx_button = vb:button {
+  text = "Randomize all Yxx",
+  notifier = function()
+    for _, row_elements in ipairs(rows) do
+      local random_value = math.random(0, 255)
+      row_elements.yxx_slider.value = random_value
+      row_elements.yxx_valuebox.value = random_value
+      row_elements.print_to_pattern()
+    end
+    renoise.app():show_status("Randomized Yxx values for all rows.")
+  end
+}
 
   global_controls = vb:column {
     vb:row {
@@ -673,12 +735,13 @@ function create_global_controls()
       vb:button {text = "Clear All", notifier = clear_all},
       -- Removed Random Fill button
       random_gate_button,
-      vb:button {text = "Fetch", notifier = fetch_pattern},
+      vb:button {text = "Fetch", midi_mapping="Paketti:Paketti Groovebox 8120:Fetch Pattern", notifier = fetch_pattern},
       fill_empty_label,
       fill_empty_slider,
-      vb:button {text = "Random All", notifier = random_all},
-      vb:button {text = "Randomize All", notifier = randomize_all},
-      reverse_all_button
+      vb:button {text = "Random All", midi_mapping="Paketti:Paketti Groovebox 8120:Random All",notifier = random_all},
+      vb:button {text = "Randomize All",  midi_mapping="Paketti:Paketti Groovebox 8120:Randomize All", notifier = randomize_all},
+      reverse_all_button,
+      randomize_all_yxx_button
     }
   }
 
@@ -738,6 +801,7 @@ function create_global_controls()
     })
   end
 
+--global_controls:add_child(randomize_all_yxx_button)
   return global_controls, global_groove_controls, global_step_buttons
 end
 
@@ -784,7 +848,7 @@ function fetch_pattern()
       end
     end
     if not yxx_value_found then
-      row_elements.yxx_valuebox.value = 255  -- Initialize to FF if no Yxx content
+      row_elements.yxx_valuebox.value = 0x20 -- Initialize to FF if no Yxx content
     end
     if instrument_used then
       row_elements.instrument_popup.value = instrument_used + 1
@@ -1114,10 +1178,10 @@ function PakettiEightSlotsByOneTwentyDialog()
 
   initializing = false  -- Set initializing flag to false after initialization
 
-  dc:add_child(vb:button {text = "Run Debug", notifier = function()
+--[[  dc:add_child(vb:button {text = "Run Debug", notifier = function()
     debug_instruments_and_samples()
     renoise.app():show_status("Debug information printed to console.")
-  end})
+  end}) ]]--
   dc:add_child(vb:button {text = "Print to Pattern", notifier = function()
     for i, elements in ipairs(rows) do
       elements.print_to_pattern()
@@ -1298,21 +1362,21 @@ end
 
 assign_midi_mappings()
 
-renoise.tool():add_keybinding {name = "Global:Paketti:Paketti Groovebox 8120", invoke = function()
+renoise.tool():add_keybinding{name="Global:Paketti:Paketti Groovebox 8120",invoke=function()
   if dialog and dialog.visible then
     dialog:close()
     dialog = nil
     rows = {}
   else PakettiEightSlotsByOneTwentyDialog() end end}
 
-renoise.tool():add_menu_entry {name = "Main Menu:Tools:Paketti..:Paketti Groovebox 8120", invoke = function()
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Paketti Groovebox 8120...",invoke=function()
   if dialog and dialog.visible then
     dialog:close()
     dialog = nil
     rows = {}
   else PakettiEightSlotsByOneTwentyDialog() end end}
 
-renoise.tool():add_midi_mapping {name = "Paketti:Paketti Groovebox 8120", invoke = function(message)
+renoise.tool():add_midi_mapping{name="Paketti:Paketti Groovebox 8120",invoke=function(message)
   if message:is_trigger() then
     if dialog and dialog.visible then
       dialog:close()

@@ -772,10 +772,6 @@
           <Key>Option + Return</Key>
         </KeyBinding>
         <KeyBinding>
-          <Topic>Default Sample Settings</Topic>
-          <Binding>∿ Change Defaults...</Binding>
-        </KeyBinding>
-        <KeyBinding>
           <Topic>ChordLord</Topic>
           <Binding>∿ increment scale tonic note</Binding>
         </KeyBinding>
@@ -1051,7 +1047,6 @@
         <KeyBinding>
           <Topic>Paketti</Topic>
           <Binding>∿ Paketti eSpeak Generate Row 00</Binding>
-          <Key>Shift + Option + 1</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
@@ -1068,7 +1063,6 @@
         <KeyBinding>
           <Topic>Paketti</Topic>
           <Binding>∿ Paketti eSpeak Generate Row 04</Binding>
-          <Key>Shift + Option + 2</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
@@ -1655,6 +1649,10 @@
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
+          <Binding>∿ Create New Track&amp;Load Random Device Chain/Preset</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
           <Binding>∿ Load Device Chain SimpleSend</Binding>
           <Key>Shift + Control + S</Key>
         </KeyBinding>
@@ -1665,43 +1663,42 @@
         <KeyBinding>
           <Topic>Paketti</Topic>
           <Binding>∿ Load Device Chain ClippyClip</Binding>
-          <Key>Shift + Control + D</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
-          <Binding>∿ Cycle Paketti Dynamic View 1</Binding>
-          <Key>F3</Key>
-        </KeyBinding>
-        <KeyBinding>
-          <Topic>Paketti</Topic>
-          <Binding>∿ Cycle Paketti Dynamic View 2</Binding>
-          <Key>F11</Key>
-        </KeyBinding>
-        <KeyBinding>
-          <Topic>Paketti</Topic>
-          <Binding>∿ Cycle Paketti Dynamic View 3</Binding>
-          <Key>F4</Key>
-        </KeyBinding>
-        <KeyBinding>
-          <Topic>Paketti</Topic>
-          <Binding>∿ Cycle Paketti Dynamic View 4</Binding>
+          <Binding>∿ Cycle Paketti Dynamic View 01</Binding>
           <Key>F2</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
-          <Binding>∿ Cycle Paketti Dynamic View 5</Binding>
+          <Binding>∿ Cycle Paketti Dynamic View 02</Binding>
+          <Key>F3</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
-          <Binding>∿ Cycle Paketti Dynamic View 6</Binding>
+          <Binding>∿ Cycle Paketti Dynamic View 03</Binding>
+          <Key>F4</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
-          <Binding>∿ Cycle Paketti Dynamic View 7</Binding>
+          <Binding>∿ Cycle Paketti Dynamic View 04</Binding>
+          <Key>F11</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
-          <Binding>∿ Cycle Paketti Dynamic View 8</Binding>
+          <Binding>∿ Cycle Paketti Dynamic View 05</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Cycle Paketti Dynamic View 06</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Cycle Paketti Dynamic View 07</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Cycle Paketti Dynamic View 08</Binding>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
@@ -1711,6 +1708,11 @@
         <KeyBinding>
           <Topic>Paketti</Topic>
           <Binding>∿ Paketti Dynamic View Preferences Dialog 5-8</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Paketti Groovebox 8120</Binding>
+          <Key>Option + 8</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
@@ -1889,6 +1891,81 @@
         <KeyBinding>
           <Topic>Paketti</Topic>
           <Binding>∿ Numpad SelectPlay 9</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Select Next Chunk (00..F0)</Binding>
+          <Key>Shift + Option + Command + Right</Key>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Select Previous Chunk (00..F0)</Binding>
+          <Key>Shift + Option + Command + Left</Key>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Select Chunk 00</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Select Chunk 10</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Select Chunk 20</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Select Chunk 30</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Select Chunk 40</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Select Chunk 50</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Select Chunk 60</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Select Chunk 70</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Select Chunk 80</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Select Chunk 90</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Select Chunk A0</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Select Chunk B0</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Select Chunk C0</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Select Chunk D0</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Select Chunk E0</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Select Chunk F0</Binding>
+          <Key>Shift + Option + F</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
@@ -2085,6 +2162,7 @@
         <KeyBinding>
           <Topic>Track Devices</Topic>
           <Binding>∿ Load Renoise *Formula</Binding>
+          <Key>Shift + F</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Track Devices</Topic>
@@ -2226,6 +2304,7 @@
         <KeyBinding>
           <Topic>Track Devices</Topic>
           <Binding>∿ Load D16 Repeater</Binding>
+          <Key>Shift + Control + D</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Track Devices</Topic>
@@ -2584,6 +2663,22 @@
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
+          <Binding>∿ Bypass All Devices on Track</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Enable All Devices on Track</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Bypass All Devices on All Tracks</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Enable All Devices on All Tracks</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
           <Binding>∿ Insert Stereo -&gt; Mono device to Beginning of DSP Chain</Binding>
         </KeyBinding>
         <KeyBinding>
@@ -2701,6 +2796,11 @@
           <Topic>Paketti</Topic>
           <Binding>∿ Randomize Selected Device</Binding>
           <Key>Option + R</Key>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Clear All TrackDSPs from Current Track</Binding>
+          <Key>Shift + Option + T</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
@@ -3055,10 +3155,12 @@
         <KeyBinding>
           <Topic>Paketti</Topic>
           <Binding>∿ Expose and Select Next Column</Binding>
+          <Key>Shift + Command + Right</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
           <Binding>∿ Hide Current and Select Previous Column</Binding>
+          <Key>Shift + Command + Left</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Tools</Topic>
@@ -3309,6 +3411,11 @@
           <Topic>Paketti</Topic>
           <Binding>∿ Smart BeatSync from Selection</Binding>
           <Key>Shift + Command + S</Key>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Eight 120-fy</Binding>
+          <Key>Shift + Option + 8</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
@@ -5393,7 +5500,134 @@
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
+          <Binding>∿ Show/Hide Selected Track Device 1</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Show/Hide Selected Track Device 2</Binding>
+          <Key>Shift + Command + 1</Key>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Show/Hide Selected Track Device 3</Binding>
+          <Key>Shift + Command + 2</Key>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Show/Hide Selected Track Device 4</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Show/Hide Selected Track Device 5</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Show/Hide Selected Track Device 6</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Show/Hide Selected Track Device 7</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Show/Hide Selected Track Device 8</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Show/Hide Selected Track Device 9</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Show/Hide Selected Track Device 10</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Show/Hide Selected Track Device 11</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Show/Hide Selected Track Device 12</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Show/Hide Selected Track Device 13</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Show/Hide Selected Track Device 14</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Show/Hide Selected Track Device 15</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Show/Hide Selected Track Device 16</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Show/Hide Selected Track Device 17</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Show/Hide Selected Track Device 18</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Show/Hide Selected Track Device 19</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Show/Hide Selected Track Device 20</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Show/Hide Selected Track Device 21</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Show/Hide Selected Track Device 22</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Show/Hide Selected Track Device 23</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Show/Hide Selected Track Device 24</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Show/Hide Selected Track Device 25</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Show/Hide Selected Track Device 26</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Show/Hide Selected Track Device 27</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Show/Hide Selected Track Device 28</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Show/Hide Selected Track Device 29</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Show/Hide Selected Track Device 30</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Show/Hide Selected Track Device 31</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
           <Binding>∿ Insert Inverter Device to TrackDSP/SampleFX</Binding>
+          <Key>Option + I</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
@@ -7558,10 +7792,12 @@
         <KeyBinding>
           <Topic>Paketti</Topic>
           <Binding>∿ Set Selected Sample (+1) Velocity Range 7F others 00</Binding>
+          <Key>Shift + Option + 1</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
           <Binding>∿ Set Selected Sample (-1) Velocity Range 7F others 00</Binding>
+          <Key>Shift + Option + 2</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
@@ -7570,7 +7806,6 @@
         <KeyBinding>
           <Topic>Paketti</Topic>
           <Binding>∿ Set Selected Sample Velocity Range 7F</Binding>
-          <Key>Shift + Command + 2</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
@@ -7579,7 +7814,6 @@
         <KeyBinding>
           <Topic>Paketti</Topic>
           <Binding>∿ Set All Samples Velocity Range 7F</Binding>
-          <Key>Shift + Command + 1</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
@@ -7733,29 +7967,29 @@
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
-          <Binding>∿ Change Selected Track Volume by +0.01</Binding>
-        </KeyBinding>
-        <KeyBinding>
-          <Topic>Paketti</Topic>
-          <Binding>∿ Change Selected Track Volume by +0.05</Binding>
-        </KeyBinding>
-        <KeyBinding>
-          <Topic>Paketti</Topic>
-          <Binding>∿ Change Selected Track Volume by +0.1</Binding>
+          <Binding>∿ Change Selected Track Volume by +0.1dB</Binding>
           <Key>Shift + Control + Minus</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
-          <Binding>∿ Change Selected Track Volume by -0.01</Binding>
+          <Binding>∿ Change Selected Track Volume by +0.5dB</Binding>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
-          <Binding>∿ Change Selected Track Volume by -0.05</Binding>
+          <Binding>∿ Change Selected Track Volume by +1dB</Binding>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
-          <Binding>∿ Change Selected Track Volume by -0.1</Binding>
+          <Binding>∿ Change Selected Track Volume by -0.1dB</Binding>
           <Key>Shift + Control + Slash</Key>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Change Selected Track Volume by -0.5dB</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Change Selected Track Volume by -1dB</Binding>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
@@ -10298,6 +10532,7 @@
         <KeyBinding>
           <Topic>Paketti</Topic>
           <Binding>∿ Open VolDelayPan Slider Dialog...</Binding>
+          <Key>Shift + Control + W</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
@@ -10868,12 +11103,10 @@
         <KeyBinding>
           <Topic>Track Control</Topic>
           <Binding>Decrease Number of Columns</Binding>
-          <Key>Shift + Command + Left</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Track Control</Topic>
           <Binding>Increase Number of Columns</Binding>
-          <Key>Shift + Command + Right</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Track Control</Topic>
@@ -11650,6 +11883,10 @@
         <KeyBinding>
           <Topic>Paketti</Topic>
           <Binding>∿ Impulse Tracker ALT-D Double Select</Binding>
+        </KeyBinding>
+        <KeyBinding>
+          <Topic>Paketti</Topic>
+          <Binding>∿ Impulse Tracker ALT-D Double Select W/ Automation</Binding>
           <Key>Command + D</Key>
         </KeyBinding>
         <KeyBinding>
@@ -12513,7 +12750,6 @@
         <KeyBinding>
           <Topic>Paketti</Topic>
           <Binding>∿ Flood Fill Note and Instrument every 8 step</Binding>
-          <Key>Shift + Option + 8</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
@@ -12743,11 +12979,11 @@
         <KeyBinding>
           <Topic>Paketti</Topic>
           <Binding>∿ Paketti Track Renamer Dialog...</Binding>
+          <Key>Shift + Option + R</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
           <Binding>∿ Select Last Track</Binding>
-          <Key>Shift + Option + Command + Right</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
@@ -12757,6 +12993,7 @@
         <KeyBinding>
           <Topic>Paketti</Topic>
           <Binding>∿ Toggle Note Off on All Tracks on Current Row</Binding>
+          <Key>Shift + Control + Capital</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
@@ -13099,6 +13336,7 @@
         <KeyBinding>
           <Topic>Paketti</Topic>
           <Binding>∿ Toggle Note Off in Selected Tracks</Binding>
+          <Key>Shift + Option + Capital</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
@@ -13870,14 +14108,6 @@
           <Topic>Playback</Topic>
           <Binding>Toggle Play Selection Enabled</Binding>
           <Key>Command + Q</Key>
-        </KeyBinding>
-        <KeyBinding>
-          <Topic>Default Sample Settings</Topic>
-          <Binding>∿ Apply to Current Sample</Binding>
-        </KeyBinding>
-        <KeyBinding>
-          <Topic>Default Sample Settings</Topic>
-          <Binding>∿ Apply to Selected Instrument</Binding>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
@@ -15163,12 +15393,10 @@
         <KeyBinding>
           <Topic>Paketti</Topic>
           <Binding>∿ Move Slice End Left by 100</Binding>
-          <Key>Shift + Command + Left</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
           <Binding>∿ Move Slice End Right by 100</Binding>
-          <Key>Shift + Command + Right</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Paketti</Topic>
@@ -15433,12 +15661,10 @@
         <KeyBinding>
           <Topic>Track Control</Topic>
           <Binding>Increase Panning</Binding>
-          <Key>Shift + Command + Right</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Track Control</Topic>
           <Binding>Decrease Panning</Binding>
-          <Key>Shift + Command + Left</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Track Control</Topic>
@@ -15980,7 +16206,6 @@
         <KeyBinding>
           <Topic>Selection</Topic>
           <Binding>Select Whole Pattern</Binding>
-          <Key>Shift + Command + Right</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Selection</Topic>
@@ -16601,12 +16826,10 @@
         <KeyBinding>
           <Topic>Columns</Topic>
           <Binding>Decrease Number of Columns</Binding>
-          <Key>Shift + Command + Left</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Columns</Topic>
           <Binding>Increase Number of Columns</Binding>
-          <Key>Shift + Command + Right</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Columns</Topic>
@@ -17769,12 +17992,10 @@
         <KeyBinding>
           <Topic>Navigation</Topic>
           <Binding>Move to Start and Select</Binding>
-          <Key>Shift + Command + Left</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Navigation</Topic>
           <Binding>Move to End and Select</Binding>
-          <Key>Shift + Command + Right</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Modify Points</Topic>
@@ -17916,6 +18137,7 @@
         <KeyBinding>
           <Topic>Generate</Topic>
           <Binding>Create Random Points</Binding>
+          <Key>Shift + Option + R</Key>
         </KeyBinding>
         <KeyBinding>
           <Topic>Generate</Topic>

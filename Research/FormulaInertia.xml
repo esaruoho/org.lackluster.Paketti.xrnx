@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<filterdeviceclipboard doc_version="0"><br>
+  <deviceslot type="FormulaMetaDevice"><br>
+    <isactive>true</isactive><br>
+    <isselected>true</isselected><br>
+    <selectedpresetname>Init</selectedpresetname><br>
+    <selectedpresetismodified>true</selectedpresetismodified><br>
+    <ismaximized>true</ismaximized><br>
+    <customdevicename>Inertial Slider</customdevicename><br>
+    <formulaparagraphs><br>
+      <formulaparagraph>OUTPUT - (OUTPUT - A) * power_inertia(B, 0.025, 0.5)</formulaparagraph><br>
+    </formulaparagraphs><br>
+    <functionsparagraphs><br>
+      <functionsparagraph>function power_inertia(inertia, min, max)</functionsparagraph><br>
+      <functionsparagraph> inertia = 1.0 - inertia</functionsparagraph><br>
+      <functionsparagraph> inertia = inertia * inertia * inertia</functionsparagraph><br>
+      <functionsparagraph> return min + inertia * (max - min)</functionsparagraph><br>
+      <functionsparagraph>end</functionsparagraph><br>
+      <functionsparagraph></functionsparagraph><br>
+    </functionsparagraphs><br>
+    <inputnamea>Input</inputnamea><br>
+    <inputnameb>Inertia</inputnameb><br>
+    <inputnamec>_</inputnamec><br>
+    <editorvisible>false</editorvisible><br>
+    <panelvisible>0</panelvisible><br>
+    <inputa><br>
+      <value>0.0</value><br>
+      <visualization>Device only</visualization><br>
+    </inputa><br>
+    <inputb><br>
+      <value>0.599999905</value><br>
+      <visualization>Device only</visualization><br>
+    </inputb><br>
+    <inputc><br>
+      <value>0.0</value><br>
+      <visualization>Device only</visualization><br>
+    </inputc><br>
+    <desttrack><br>
+      <value>0.0</value><br>
+      <visualization>Device only</visualization><br>
+    </desttrack><br>
+    <desteffect><br>
+      <value>0.0</value><br>
+      <visualization>Device only</visualization><br>
+    </desteffect><br>
+    <destparameter><br>
+      <value>1.0</value><br>
+      <visualization>Device only</visualization><br>
+    </destparameter><br>
+  </deviceslot><br>
+</filterdeviceclipboard>

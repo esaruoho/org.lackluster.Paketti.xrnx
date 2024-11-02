@@ -28,7 +28,7 @@
     <pakettiRandomizeSelectedPluginPercentageUserPreference4>40</pakettiRandomizeSelectedPluginPercentageUserPreference4>
     <pakettiRandomizeAllPluginsPercentageUserPreference2>20</pakettiRandomizeAllPluginsPercentageUserPreference2>
     <pakettiRandomizeSelectedDevicePercentage>5.161290322580645</pakettiRandomizeSelectedDevicePercentage>
-    <pakettiRandomizeSelectedPluginPercentage>50</pakettiRandomizeSelectedPluginPercentage>
+    <pakettiRandomizeSelectedPluginPercentage>74.000000000000014</pakettiRandomizeSelectedPluginPercentage>
     <pakettiRandomizeSelectedDevicePercentageUserPreference2>15.20000000000006</pakettiRandomizeSelectedDevicePercentageUserPreference2>
     <pakettiRandomizeAllDevicesPercentageUserPreference4>65.600000000000009</pakettiRandomizeAllDevicesPercentageUserPreference4>
     <pakettiRandomizeAllDevicesPercentageUserPreference2>25</pakettiRandomizeAllDevicesPercentageUserPreference2>
@@ -42,7 +42,7 @@
     <WipeSlicesLoopRelease>false</WipeSlicesLoopRelease>
     <WipeSlicesMuteGroup>1.0</WipeSlicesMuteGroup>
     <WipeSlicesBeatSyncGlobal>false</WipeSlicesBeatSyncGlobal>
-    <WipeSlicesAutofade>false</WipeSlicesAutofade>
+    <WipeSlicesAutofade>true</WipeSlicesAutofade>
     <slicePreviousDirection>1.0</slicePreviousDirection>
     <WipeSlicesLoopMode>2</WipeSlicesLoopMode>
     <WipeSlicesAutoseek>false</WipeSlicesAutoseek>
@@ -50,13 +50,13 @@
     <WipeSlicesNNA>1.0</WipeSlicesNNA>
   </WipeSlices>
   <pakettiCheatSheet>
-    <pakettiCheatSheetRandomizeMax>51.713286713286706</pakettiCheatSheetRandomizeMax>
-    <pakettiCheatSheetRandomizeMin>10.6993006993007</pakettiCheatSheetRandomizeMin>
+    <pakettiCheatSheetRandomizeMax>125.71678321678321</pakettiCheatSheetRandomizeMax>
+    <pakettiCheatSheetRandomizeMin>6.2412587412587488</pakettiCheatSheetRandomizeMin>
     <pakettiCheatSheetRandomizeDontOverwrite>false</pakettiCheatSheetRandomizeDontOverwrite>
     <pakettiCheatSheetRandomizeWholeTrack>true</pakettiCheatSheetRandomizeWholeTrack>
     <pakettiCheatSheetRandomizeSwitch>false</pakettiCheatSheetRandomizeSwitch>
     <pakettiCheatSheetRandomize>true</pakettiCheatSheetRandomize>
-    <pakettiCheatSheetFillAll>81</pakettiCheatSheetFillAll>
+    <pakettiCheatSheetFillAll>100</pakettiCheatSheetFillAll>
   </pakettiCheatSheet>
   <pakettiDialogClose>esc</pakettiDialogClose>
   <pakettiLoaderFilterType>LP Moog</pakettiLoaderFilterType>
@@ -111,28 +111,24 @@
   <OctaMEDPickPutSlots>
     <Slot10>--- .. .. 40 .. ....||</Slot10>
     <RandomizeEnabled>false</RandomizeEnabled>
-    <UseEditStep>true</UseEditStep>
-    <RandomizePercentage>29.333333333333332</RandomizePercentage>
+    <UseEditStep>false</UseEditStep>
+    <RandomizePercentage>9.466666666666665</RandomizePercentage>
     <SetSelectedInstrument>false</SetSelectedInstrument>
     <Slot09>||0B32</Slot09>
-    <Slot01>C-6 08 7F 20 30 ....||0B00|0D00</Slot01>
-    <Slot03>--- .. .. .. 55 ....||</Slot03>
+    <Slot01>C-4 03 .. .. .. .... | D-4 03 .. .. 14 .... | G-4 03 .. .. 1E .... | C-5 03 .. .. 28 ....||</Slot01>
+    <Slot03>C-5 02 .. .. .. .... | D-5 02 .. .. .. .... | E-4 04 .. .. .. .... | F-7 06 .. .. .. ....||0R03|0000|0A0A</Slot03>
     <Slot05>OFF .. .. .. .. .... | --- .. .. .. .. .... | --- .. .. .. .. .... | --- .. .. .. .. ....||</Slot05>
     <Slot04>--- .. .. .. AA .... | --- .. .. .. 55 .... | --- .. .. .. AA .... | --- .. .. .. AA ....||</Slot04>
     <Slot08>--- .. .. .. .. 0B00||0D30</Slot08>
     <Slot07>C-1 00 30 50 30 0AF0 | F-4 00 .. .. .. ....||0B00|0S00|0E00|0F00</Slot07>
     <Slot06>OFF .. .. .. .. .... | --- .. .. .. .. .... | --- .. .. .. .. .... | --- .. .. .. .. ....||</Slot06>
-    <Slot02>C-2 01 .. .. .. .... | --- .. .. .. .. ....||</Slot02>
+    <Slot02>C-4 09 .. .. .. .... | D-4 09 .. .. 14 .... | G-4 09 .. .. 1E .... | C-5 09 .. 55 28 ....||0R03|0D0A|0UA0|0OA0</Slot02>
   </OctaMEDPickPutSlots>
   <pakettieSpeak>
     <pitch>67</pitch>
     <capitals>69</capitals>
     <add_render_to_current_instrument>false</add_render_to_current_instrument>
-    <text>Hello, I am Macintosh. It sure is great to get out of that bag!
-
-Unaccustomed as I am to public speaking, I'd like to share with you a maxim I thought of the first time I met an IBM mainframe: Never trust a computer that you can't lift!
-
-Obviously, I can talk, but right now I'd like to sit back and listen. So it is with considerable pride that I introduce a man who has been like a father to me... Steve Jobs!</text>
+    <text>this is how you slide really slowly</text>
     <voice>81</voice>
     <executable>/opt/homebrew/bin/espeak-ng</executable>
     <render_on_change>false</render_on_change>
@@ -155,11 +151,9 @@ Obviously, I can talk, but right now I'd like to sit back and listen. So it is w
       <Favorited>gruvbox</Favorited>
       <Favorited>Shockbroker v9c</Favorited>
       <Favorited>Polyplex (beatslaughter) v1</Favorited>
-      <Favorited>Space Latte Metal</Favorited>
       <Favorited>redark</Favorited>
       <Favorited>Osi-Cyberpunk1</Favorited>
       <Favorited>Graphite RC1</Favorited>
-      <Favorited>sQeetz_Emerald</Favorited>
       <Favorited>Osi-BladeRunner</Favorited>
       <Favorited>Osi-TheBlueBrandy</Favorited>
       <Favorited>Osi-TrackerHacker</Favorited>
@@ -167,13 +161,15 @@ Obviously, I can talk, but right now I'd like to sit back and listen. So it is w
       <Favorited>Textured</Favorited>
       <Favorited>Zero-G-Inverted</Favorited>
       <Favorited>Breed</Favorited>
-      <Favorited>sea dragon</Favorited>
       <Favorited>Brown #12</Favorited>
       <Favorited>Willingly (Jr‚tion)</Favorited>
       <Favorited>Black and Pink</Favorited>
       <Favorited>Sononoise-Dark</Favorited>
       <Favorited>Orange biology</Favorited>
       <Favorited>Mineral-Hills-Mod-of-dracula-redux-theme-1.0-LightBlueButtons</Favorited>
+      <Favorited>OneiricSnorkel</Favorited>
+      <Favorited>Emerald (sQeetz)</Favorited>
+      <Favorited>GJ-Space Ship</Favorited>
     </FavoritedList>
     <RenoiseLaunchFavoritesLoad>true</RenoiseLaunchFavoritesLoad>
     <RenoiseLaunchRandomLoad>false</RenoiseLaunchRandomLoad>

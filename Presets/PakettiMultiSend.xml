@@ -24,7 +24,7 @@
     </Out3DestSendTrack>
     <Out3MuteSource>false</Out3MuteSource>
     <SmoothParameterChanges>true</SmoothParameterChanges>
-    <ApplyPostVolume>true</ApplyPostVolume>
+    <ApplyPostVolume>false</ApplyPostVolume>
     <GraphVisible>true</GraphVisible>
     <LowFrequency>
       <Value>0.330993116</Value>

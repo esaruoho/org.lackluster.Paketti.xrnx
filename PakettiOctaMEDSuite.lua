@@ -590,18 +590,18 @@ end
 
 -- Register shortcuts, keybindings, and MIDI mappings
 for i = 1, 9 do
-  renoise.tool():add_keybinding{name="Pattern Editor:Paketti..:OctaMED Pick Slot 0"..i, invoke=function() pick_note_instrument(i) end}
-  renoise.tool():add_keybinding{name="Pattern Editor:Paketti..:OctaMED Put Slot 0"..i, invoke=function() put_from_preferences(i) end}
+  renoise.tool():add_keybinding{name="Pattern Editor:Paketti:OctaMED Pick Slot 0"..i, invoke=function() pick_note_instrument(i) end}
+  renoise.tool():add_keybinding{name="Pattern Editor:Paketti:OctaMED Put Slot 0"..i, invoke=function() put_from_preferences(i) end}
   renoise.tool():add_midi_mapping{name="Paketti:OctaMED Pick Slot 0"..i, invoke=function() pick_note_instrument(i) end}
   renoise.tool():add_midi_mapping{name="Paketti:OctaMED Put Slot 0"..i, invoke=function() put_from_preferences(i) end}
 end
 
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti..:OctaMED Pick Slot 10", invoke=function() pick_note_instrument(10) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti..:OctaMED Put Slot 10", invoke=function() put_from_preferences(10) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:OctaMED Pick Slot 10", invoke=function() pick_note_instrument(10) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:OctaMED Put Slot 10", invoke=function() put_from_preferences(10) end}
 renoise.tool():add_midi_mapping{name="Paketti:OctaMED Pick Slot 10", invoke=function() pick_note_instrument(10) end}
 renoise.tool():add_midi_mapping{name="Paketti:OctaMED Put Slot 10", invoke=function() put_from_preferences(10) end}
 
 -- Register the main keyboard shortcut and menu entry for the dialog
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti..:OctaMED Pick/Put Dialog",invoke=function() toggle_paketti_pick_dialog() end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:OctaMED Pick/Put Dialog",invoke=function() toggle_paketti_pick_dialog() end}
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Other Trackers..:OctaMED Pick/Put Dialog",invoke=function() toggle_paketti_pick_dialog() end}
 

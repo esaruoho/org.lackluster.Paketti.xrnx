@@ -13,6 +13,6 @@
     </DestSendTrack>
     <MuteSource>false</MuteSource>
     <SmoothParameterChanges>true</SmoothParameterChanges>
-    <ApplyPostVolume>true</ApplyPostVolume>
+    <ApplyPostVolume>false</ApplyPostVolume>
   </DeviceSlot>
 </FilterDevicePreset>

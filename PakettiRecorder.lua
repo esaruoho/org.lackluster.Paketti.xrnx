@@ -211,9 +211,9 @@ function finalrecord()
   end
 
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:WIP:Record to Current Track", invoke=function() recordtocurrenttrack() end}
-renoise.tool():add_menu_entry{name="Mixer:Paketti..:WIP:Record to Current Track", invoke=function() recordtocurrenttrack() end}
-renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:WIP:Record to Current Track", invoke=function() recordtocurrenttrack() end}
-renoise.tool():add_menu_entry{name="--Sample Mappings:Paketti..:WIP:Record to Current Track", invoke=function() recordtocurrenttrack() end}
+--renoise.tool():add_menu_entry{name="Mixer:Paketti..:WIP:Record to Current Track", invoke=function() recordtocurrenttrack() end}
+--renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:WIP:Record to Current Track", invoke=function() recordtocurrenttrack() end}
+--renoise.tool():add_menu_entry{name="--Sample Mappings:Paketti..:WIP:Record to Current Track", invoke=function() recordtocurrenttrack() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Record to Current Track", invoke=function() 
   local s=renoise.song()
   local t=s.transport
@@ -228,7 +228,7 @@ renoise.tool():add_keybinding{name="Global:Paketti:Record to Current Track", inv
   renoise.app().window.active_lower_frame=2
 end}
 
- renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Instruments:WIP:Start Sampling (Record)", invoke=function()
+ renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Xperimental/Work in Progress:Start Sampling (Record)", invoke=function()
 local s=renoise.song()
 local t=s.transport
 if not t.playing then t.playing=true end
@@ -268,9 +268,8 @@ s.selected_instrument_index = search_empty_instrument()
  renoise.app().window.lower_frame_is_visible=true
  renoise.app().window.active_lower_frame=2 end}
  
-renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:WIP:Record to Current Track", invoke=function() recordtocurrenttrack() end}
-renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:WIP:Start Sampling (Record)", invoke=function() sample_and_to_sample_editor()
-renoise.app().window.sample_record_dialog_is_visible=true end}  
+--renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:WIP:Record to Current Track", invoke=function() recordtocurrenttrack() end}
+--renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:WIP:Start Sampling (Record)", invoke=function() sample_and_to_sample_editor() renoise.app().window.sample_record_dialog_is_visible=true end}  
 -------------
 function recordfollow()
 local w=renoise.app().window

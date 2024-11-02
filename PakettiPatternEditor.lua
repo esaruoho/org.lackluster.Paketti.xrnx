@@ -171,8 +171,8 @@ local s=renoise.song()
    s.tracks[i].collapsed=true end
 end
 
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor:Collapse All Tracks",invoke=function() Collapser() end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Uncollapse All Tracks",invoke=function() Uncollapser() end}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor..:Collapse All Tracks",invoke=function() Collapser() end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor..:Uncollapse All Tracks",invoke=function() Uncollapser() end}
 --Global keyboard shortcuts
 renoise.tool():add_keybinding{name="Global:Paketti:Uncollapse All Tracks",invoke=function() Uncollapser() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Collapse All Tracks",invoke=function() Collapser() end}
@@ -368,10 +368,10 @@ for glpb=1,16 do
     renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Global LPB to " .. glpb,invoke=function() GlobalLPB(glpb) end}
 end
 
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Global LPB to 24",invoke=function() GlobalLPB(24) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Global LPB to 32",invoke=function() GlobalLPB(32) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Global LPB to 48",invoke=function() GlobalLPB(48) end}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Global LPB to 64",invoke=function() GlobalLPB(64) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Global LPB to 024",invoke=function() GlobalLPB(24) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Global LPB to 032",invoke=function() GlobalLPB(32) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Global LPB to 048",invoke=function() GlobalLPB(48) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Global LPB to 064",invoke=function() GlobalLPB(64) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Global LPB to 128",invoke=function() GlobalLPB(128) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Global LPB to 256",invoke=function() GlobalLPB(256) end}
 
@@ -382,10 +382,10 @@ for plpb=1,16 do
 renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase LPB to " .. plpb,invoke=function() PhraseLPB(plpb) end}
 end
 
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase LPB to 24",invoke=function() PhraseLPB(24) end}
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase LPB to 32",invoke=function() PhraseLPB(32) end}
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase LPB to 48",invoke=function() PhraseLPB(48) end}
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase LPB to 64",invoke=function() PhraseLPB(64) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase LPB to 024",invoke=function() PhraseLPB(24) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase LPB to 032",invoke=function() PhraseLPB(32) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase LPB to 048",invoke=function() PhraseLPB(48) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase LPB to 064",invoke=function() PhraseLPB(64) end}
 renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase LPB to 128",invoke=function() PhraseLPB(128) end}
 renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase LPB to 256",invoke=function() PhraseLPB(256) end}
 ----------------------------------------------------------------------------------------------------
@@ -542,14 +542,14 @@ end
 
 
 -- Add menu entries and keybindings for the tool
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor:Paketti Pattern Doubler", invoke=pakettiPatternDoubler}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor..:Paketti Pattern Doubler", invoke=pakettiPatternDoubler}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Paketti Pattern Doubler", invoke=pakettiPatternDoubler}
 renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Paketti Pattern Doubler", invoke=pakettiPatternDoubler}
 
 renoise.tool():add_keybinding{name="Mixer:Paketti:Paketti Pattern Doubler", invoke=pakettiPatternDoubler}
 
 -- The function can be bound to a menu item or a keybinding within Renoise to make it easily accessible
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Paketti Pattern Halver", invoke = pakettiPatternHalver}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor..:Paketti Pattern Halver", invoke = pakettiPatternHalver}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Paketti Pattern Halver", invoke = pakettiPatternHalver}
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Paketti Pattern Halver", invoke = pakettiPatternHalver}
 renoise.tool():add_keybinding{name="Mixer:Paketti:Paketti Pattern Halver", invoke = pakettiPatternHalver}
@@ -1872,10 +1872,10 @@ function pakettiEditModeSignalerOnEditModeDisabled()
 
   if lastTrackIndex and pakettiEditMode~=1 then
     pakettiEditModeSignalerSetTrackColorBlend(lastTrackIndex,lastTrackColor)
+    pakettiEditModeSignalerSetAllTracksColorBlend(0)
   end
 
   -- Set all tracks' color blend to 0
-  pakettiEditModeSignalerSetAllTracksColorBlend(0)
 
   -- Remove selected track index notifier if it was added
   if trackNotifierAdded then
@@ -1976,7 +1976,7 @@ function pakettiDuplicateEffectColumnToPatternOrSelection()
 end
 
 -- Add a menu entry to trigger the function
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Duplicate Effect Column Content to Pattern or Selection",invoke=pakettiDuplicateEffectColumnToPatternOrSelection}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor..:Duplicate Effect Column Content to Pattern or Selection",invoke=pakettiDuplicateEffectColumnToPatternOrSelection}
 renoise.tool():add_keybinding{name="Global:Paketti:Duplicate Effect Column Content to Pattern or Selection",invoke=pakettiDuplicateEffectColumnToPatternOrSelection}
 renoise.tool():add_midi_mapping{name="Paketti:Duplicate Effect Column Content to Pattern or Selection",invoke=pakettiDuplicateEffectColumnToPatternOrSelection}
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Effect Columns..:Duplicate Effect Column Content to Pattern or Selection",invoke=pakettiDuplicateEffectColumnToPatternOrSelection}
@@ -2022,7 +2022,7 @@ function pakettiRandomizeEffectColumnParameters()
   renoise.app():show_status("Effect column parameters randomized.")
 end
 
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Randomize Effect Column Parameters",invoke=pakettiRandomizeEffectColumnParameters}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor..:Randomize Effect Column Parameters",invoke=pakettiRandomizeEffectColumnParameters}
 renoise.tool():add_keybinding{name="Global:Paketti:Randomize Effect Column Parameters",invoke=pakettiRandomizeEffectColumnParameters}
 renoise.tool():add_midi_mapping{name="Paketti:Randomize Effect Column Parameters",invoke=pakettiRandomizeEffectColumnParameters}
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Effect Columns..:Randomize Effect Column Parameters",invoke=pakettiRandomizeEffectColumnParameters}
@@ -2073,7 +2073,7 @@ function pakettiInterpolateEffectColumnParameters()
   renoise.app():show_status("Effect column parameters interpolated.")
 end
 
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Interpolate Effect Column Parameters",invoke=pakettiInterpolateEffectColumnParameters}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor..:Interpolate Effect Column Parameters",invoke=pakettiInterpolateEffectColumnParameters}
 renoise.tool():add_keybinding{name="Global:Paketti:Interpolate Effect Column Parameters",invoke=pakettiInterpolateEffectColumnParameters}
 renoise.tool():add_midi_mapping{name="Paketti:Interpolate Effect Column Parameters",invoke=pakettiInterpolateEffectColumnParameters}
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Effect Columns..:Interpolate Effect Column Parameters",invoke=pakettiInterpolateEffectColumnParameters}
@@ -2127,7 +2127,7 @@ local instrument_value = song:pattern(pattern_index):track(track_index):line(lin
   renoise.app():show_status("Track or Selection filled with the Current Note and Instrument.")
 end
 
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Flood Fill Note and Instrument",invoke=pakettiFloodFill}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor..:Flood Fill Note and Instrument",invoke=pakettiFloodFill}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Flood Fill Note and Instrument",invoke=pakettiFloodFill}
 renoise.tool():add_midi_mapping{name="Paketti:Flood Fill Note and Instrument",invoke=pakettiFloodFill}
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Flood Fill Note and Instrument",invoke=pakettiFloodFill}
@@ -2273,7 +2273,7 @@ function pakettiFloodFillWithEditStep()
   renoise.app():show_status("Track / Selection filled with the Current Note and Instrument with EditStep.")
 end
 
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor:Flood Fill Note and Instrument with EditStep",invoke=pakettiFloodFillWithEditStep}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor..:Flood Fill Note and Instrument with EditStep",invoke=pakettiFloodFillWithEditStep}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Flood Fill Note and Instrument with EditStep",invoke=pakettiFloodFillWithEditStep}
 renoise.tool():add_midi_mapping{name="Paketti:Flood Fill Note and Instrument with EditStep",invoke=pakettiFloodFillWithEditStep}
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Flood Fill Note and Instrument with EditStep",invoke=pakettiFloodFillWithEditStep}
@@ -3451,7 +3451,7 @@ function toggle_match_editstep()
   end
 end
 
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Match Effect Column EditStep with Note Placement",invoke=function() toggle_match_editstep() end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Xperimental/Work in Progress:Match Effect Column EditStep with Note Placement",invoke=function() toggle_match_editstep() end}
 renoise.tool():add_keybinding{name="Global:Tools:Toggle Match EditStep with Note Placement",invoke=function() toggle_match_editstep() end}
 
 

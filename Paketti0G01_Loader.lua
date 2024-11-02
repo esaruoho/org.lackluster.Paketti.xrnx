@@ -23,6 +23,11 @@ local filter_types = {
   "AM Sine", "AM Triangle", "AM Saw", "AM Pulse"
 }
 
+function loadPlaidZap()
+    renoise.app():load_instrument("Gifts/plaidzap.xrni")
+end
+
+
 local filter_type_map = {}
 for i, v in ipairs(filter_types) do
   filter_type_map[v] = i
@@ -318,22 +323,12 @@ function horizontal_rule()
 end
 
 -- Function to create vertical space
-function vertical_space(height)
-    return vb:row{height = height}
-end
+function vertical_space(height) return vb:row{height = height} end
 
 -- Functions to update preferences
-function update_interpolation_mode(value)
-    preferences.pakettiLoaderInterpolation.value = value
-end
-
-function update_autofade_mode(value)
-    preferences.pakettiLoaderAutoFade.value = value
-end
-
-function update_oversampling_mode(value)
-    preferences.pakettiLoaderOverSampling.value=value
-end    
+function update_interpolation_mode(value) preferences.pakettiLoaderInterpolation.value = value end
+function update_autofade_mode(value) preferences.pakettiLoaderAutoFade.value = value end
+function update_oversampling_mode(value) preferences.pakettiLoaderOverSampling.value=value end
 
 function update_loop_mode(loop_mode_pref, value)
   loop_mode_pref.value = value
@@ -755,8 +750,8 @@ function manage_sample_count_observer(attach)
 end
 
 function update_dynamic_menu_entries()
-    local enableMenuEntryName = "Main Menu:Tools:Paketti..:!Preferences:0G01 Loader Enable"
-    local disableMenuEntryName = "Main Menu:Tools:Paketti..:!Preferences:0G01 Loader Disable"
+    local enableMenuEntryName = "Main Menu:Tools:Paketti..:!Preferences..:0G01 Loader Enable"
+    local disableMenuEntryName = "Main Menu:Tools:Paketti..:!Preferences..:0G01 Loader Disable"
 
     if preferences._0G01_Loader.value then
         if renoise.tool():has_menu_entry(enableMenuEntryName) then
@@ -814,8 +809,11 @@ function load_Pakettipreferences()
     end
 end
 
+function update_loadPaleGreenTheme_preferences() renoise.app():load_theme("Themes/Lackluster - Pale Green Renoise Theme.xrnc") end
+
+
 safe_initialize()
 
-renoise.tool():add_menu_entry{name = "Main Menu:Tools:Paketti..:!Preferences:Paketti Preferences...", invoke = show_paketti_preferences}
+renoise.tool():add_menu_entry{name = "Main Menu:Tools:Paketti..:!Preferences..:Paketti Preferences...", invoke = show_paketti_preferences}
 renoise.tool():add_keybinding{name = "Global:Paketti:Show Paketti Preferences...", invoke = show_paketti_preferences}
 

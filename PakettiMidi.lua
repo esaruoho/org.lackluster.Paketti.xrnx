@@ -1908,6 +1908,7 @@ local target_devices = {
   {path="Audio/Effects/Native/Compressor", params={"Threshold", "Ratio", "Release", "Makeup"}},
   {path="Audio/Effects/Native/Comb Filter 2", params={"Note", "Transpose", "Feedback", "Dry/Wet"}},
   {path="Audio/Effects/Native/RingMod 2", params={"Note", "Transpose", "Dry/Wet"}},
+  {path="Audio/Effects/Native/mpReverb 2", params={"Duration", "Color", "Wet Mix"}},
   {path="Audio/Effects/Native/EQ 10", params={}} -- EQ 10 now explicitly handled
 }
 
