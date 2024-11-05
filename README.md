@@ -6,7 +6,7 @@ https://github.com/esaruoho/org.lackluster.Paketti.xrnx/releases
 
 ## Discord
 
-Discord for discussion about issues, requests and seeing current updates is at: https://discord.gg/Qex7k5j4wG
+Discord for discussion about issues, requests and seeing current updates is at: https://discord.gg/xNT6eH7W
 
 ## Renoise Forum
 The thread for Paketti is at http://forum.renoise.com/index.php/topic/34661-new-tool-31-pakettir3/ (note, this is severely outdated, Discord is faster)
