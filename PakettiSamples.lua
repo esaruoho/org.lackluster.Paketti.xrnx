@@ -1216,11 +1216,8 @@ renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Paketti Save Selecte
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Paketti Save Selected Sample Range .WAV",invoke=function() pakettiSaveSampleRange("WAV") end}
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Paketti Save Selected Sample Range .FLAC",invoke=function() pakettiSaveSampleRange("FLAC") end}
 
-
 renoise.tool():add_menu_entry{name="--Sample Navigator:Paketti..:Paketti Save Selected Sample .WAV",invoke=function() pakettiSaveSample("WAV") end}
 renoise.tool():add_menu_entry{name="Sample Navigator:Paketti..:Paketti Save Selected Sample .FLAC",invoke=function() pakettiSaveSample("FLAC") end}
-
-
 
 renoise.tool():add_midi_mapping{name="Paketti:Midi Paketti Save Selected Sample .WAV", invoke=function(message) if message:is_trigger() then pakettiSaveSample("WAV") end end}
 renoise.tool():add_midi_mapping{name="Paketti:Midi Paketti Save Selected Sample .FLAC", invoke=function(message) if message:is_trigger() then pakettiSaveSample("FLAC") end end}
@@ -2056,7 +2053,6 @@ function CopySampleSettings(from_sample, to_sample)
   to_sample.name = from_sample.name
 end
 
--- Function to copy slice settings (excluding loop start and loop end)
 function CopySliceSettings(from_sample, to_sample)
   to_sample.volume = from_sample.volume
   to_sample.panning = from_sample.panning
@@ -2068,10 +2064,13 @@ function CopySliceSettings(from_sample, to_sample)
   to_sample.oneshot = from_sample.oneshot
   to_sample.loop_release = from_sample.loop_release
   to_sample.loop_mode = from_sample.loop_mode
+  to_sample.loop_start = from_sample.loop_start
+  to_sample.loop_end = from_sample.loop_end
   to_sample.mute_group = from_sample.mute_group
   to_sample.new_note_action = from_sample.new_note_action
   to_sample.autoseek = from_sample.autoseek
   to_sample.autofade = from_sample.autofade
+  
   to_sample.oversample_enabled = from_sample.oversample_enabled
   to_sample.interpolation_mode = from_sample.interpolation_mode
   to_sample.name = from_sample.name
@@ -2754,6 +2753,7 @@ renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Duplicate and Rev
 
 ---------
 function PakettiInjectDefaultXRNI()
+local instVol = renoise.song().selected_instrument.volume
   local song = renoise.song()
   local selected_instrument_index = song.selected_instrument_index
   local original_instrument = song.selected_instrument
@@ -2830,6 +2830,7 @@ function PakettiInjectDefaultXRNI()
   -- Return focus to the Instrument Sample Editor
   renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
   new_instrument.sample_modulation_sets[1].name = "Pitchbend"
+new_instrument.volume = instVol
 end
 
 -- Add keybinding and menu entry to invoke the PakettiInjectDefaultXRNI function

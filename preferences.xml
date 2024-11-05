@@ -40,7 +40,7 @@
     <sliceCounter>23</sliceCounter>
     <WipeSlicesBeatSyncMode>2</WipeSlicesBeatSyncMode>
     <WipeSlicesLoopRelease>false</WipeSlicesLoopRelease>
-    <WipeSlicesMuteGroup>1.0</WipeSlicesMuteGroup>
+    <WipeSlicesMuteGroup>0.0</WipeSlicesMuteGroup>
     <WipeSlicesBeatSyncGlobal>false</WipeSlicesBeatSyncGlobal>
     <WipeSlicesAutofade>true</WipeSlicesAutofade>
     <slicePreviousDirection>1.0</slicePreviousDirection>
@@ -146,24 +146,19 @@
       <Favorited>ulneiz_graycream</Favorited>
       <Favorited>phase_plant</Favorited>
       <Favorited>Default</Favorited>
-      <Favorited>Pico-8 Dusty Chocolate</Favorited>
       <Favorited>Academic</Favorited>
       <Favorited>gruvbox</Favorited>
       <Favorited>Shockbroker v9c</Favorited>
       <Favorited>Polyplex (beatslaughter) v1</Favorited>
       <Favorited>redark</Favorited>
-      <Favorited>Osi-Cyberpunk1</Favorited>
       <Favorited>Graphite RC1</Favorited>
-      <Favorited>Osi-BladeRunner</Favorited>
       <Favorited>Osi-TheBlueBrandy</Favorited>
-      <Favorited>Osi-TrackerHacker</Favorited>
       <Favorited>mango-theme</Favorited>
       <Favorited>Textured</Favorited>
       <Favorited>Zero-G-Inverted</Favorited>
       <Favorited>Breed</Favorited>
       <Favorited>Brown #12</Favorited>
       <Favorited>Willingly (Jr‚tion)</Favorited>
-      <Favorited>Black and Pink</Favorited>
       <Favorited>Sononoise-Dark</Favorited>
       <Favorited>Orange biology</Favorited>
       <Favorited>Mineral-Hills-Mod-of-dracula-redux-theme-1.0-LightBlueButtons</Favorited>

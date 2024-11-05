@@ -1234,8 +1234,10 @@ renoise.tool():add_menu_entry{name="Track Automation:Paketti..:Show/Hide Externa
 
 -- 
 function showAutomationHard()
-if renoise.app().window.active_middle_frame == 5
-then renoise.app().window.active_middle_frame = 1
+
+if renoise.app().window.active_middle_frame == 5 then renoise.app().window.active_middle_frame = 1
+renoise.app().window.active_lower_frame = renoise.ApplicationWindow.LOWER_FRAME_TRACK_AUTOMATION
+return
 end
 
 if renoise.app().window.active_lower_frame == renoise.ApplicationWindow.LOWER_FRAME_TRACK_AUTOMATION
@@ -1250,6 +1252,7 @@ then renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE
 else end
 renoise.app().window.active_lower_frame = renoise.ApplicationWindow.LOWER_FRAME_TRACK_AUTOMATION
 end
+
 renoise.tool():add_keybinding{name="Global:Paketti:Switch to Automation",invoke=function() showAutomationHard() end}
 
 -- Show automation (via Pattern Matrix/Pattern Editor)
@@ -1644,5 +1647,98 @@ renoise.tool():add_keybinding { name = "Global:Paketti..:Automation Bottom to Ce
 
 
 
+local function randomize_envelope()
+  local song = renoise.song()
+  local automation_parameter = song.selected_automation_parameter
+  
+  if not automation_parameter or not automation_parameter.is_automatable then
+    renoise.app():show_status("Please select an automatable parameter.")
+    print("No automatable parameter selected.")
+    return
+  end
 
+  local track_automation = song:pattern(song.selected_pattern_index):track(song.selected_track_index)
+  local envelope = track_automation:find_automation(automation_parameter)
+  local pattern_length = song:pattern(song.selected_pattern_index).number_of_lines
+  local selection = envelope and envelope.selection_range
+
+  if not envelope then
+    envelope = track_automation:create_automation(automation_parameter)
+    print("Created new automation envelope for parameter: " .. automation_parameter.name)
+    for line=1, pattern_length do envelope:add_point_at(line, math.random()) end
+    renoise.app():show_status("Filled new envelope across entire pattern with random values.")
+    print("Randomized entire pattern with random values.")
+    return
+  end
+
+  if selection then
+    local start_line, end_line = selection[1], selection[2]
+    for line=start_line, end_line do envelope:add_point_at(line, math.random()) end
+    renoise.app():show_status("Randomized automation points within selected range.")
+    print("Randomized selection range from line " .. start_line .. " to line " .. end_line)
+    return
+  end
+
+  envelope:clear()
+  for line=1, pattern_length do envelope:add_point_at(line, math.random()) end
+  renoise.app():show_status("Randomized entire existing envelope across pattern.")
+  print("Randomized entire existing envelope across the pattern.")
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Randomize Automation Envelope",invoke=randomize_envelope}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Randomize Automation Envelope",invoke=randomize_envelope}
+renoise.tool():add_menu_entry{name="--Track Automation:Paketti..:Randomize Automation Envelope",invoke=randomize_envelope}
+renoise.tool():add_midi_mapping{name="Paketti:Randomize Automation Envelope",invoke=randomize_envelope}
+
+---
+local function randomize_device_envelopes(start_param)
+  local song = renoise.song()
+  local selected_device = song.selected_track.devices[song.selected_device_index]
+
+  if not selected_device then
+    renoise.app():show_status("Please select a device.")
+    print("No device selected.")
+    return
+  end
+
+  start_param = start_param or 1
+  local pattern_length = song:pattern(song.selected_pattern_index).number_of_lines
+  local track_automation = song:pattern(song.selected_pattern_index):track(song.selected_track_index)
+
+  for i = start_param, #selected_device.parameters do
+    local parameter = selected_device.parameters[i]
+    
+    if parameter.is_automatable then
+      local envelope = track_automation:find_automation(parameter)
+      
+      -- Create or clear the envelope
+      if not envelope then
+        envelope = track_automation:create_automation(parameter)
+        print("Created new automation envelope for parameter: " .. parameter.name)
+      else
+        envelope:clear()
+      end
+      
+      -- Fill the envelope with random values across the pattern length
+      for line = 1, pattern_length do
+        envelope:add_point_at(line, math.random())
+      end
+      
+      print("Randomized entire envelope for parameter: " .. parameter.name)
+    else
+      print("Parameter " .. parameter.name .. " is not automatable, skipping.")
+    end
+  end
+
+  renoise.app():show_status("Randomized Automation Envelopes for Each Parameter of Selected Device.")
+end
+
+-- Keybinding, menu, and MIDI mapping entries for the tool
+renoise.tool():add_keybinding{name="Global:Paketti:Randomize Automation Envelopes for Device",invoke=function() randomize_device_envelopes(1) end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Randomize Automation Envelopes for Device",invoke=function() randomize_device_envelopes(1) end}
+renoise.tool():add_menu_entry{name="DSP Device:Paketti..:Randomize Automation Envelopes for Device",invoke=function() randomize_device_envelopes(1) end}
+renoise.tool():add_menu_entry{name="Mixer:Paketti..:Randomize Automation Envelopes for Device",invoke=function() randomize_device_envelopes(1) end}
+renoise.tool():add_menu_entry{name="Track Automation:Paketti..:Randomize Automation Envelopes for Device",invoke=function() randomize_device_envelopes(1) end}
+
+renoise.tool():add_midi_mapping{name="Paketti:Randomize Automation Envelopes for Device",invoke=function() randomize_device_envelopes(1) end}
 

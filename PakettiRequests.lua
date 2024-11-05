@@ -1382,7 +1382,7 @@ end
 -- Add a menu entry and key binding for toggling Catch Octave
 renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor..:Catch Octave",invoke = toggle_catch_octave}
 
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Clone Current Sequence",invoke=clone_current_sequence}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Clone Current Sequence",invoke=clone_current_sequence}
 
 
 renoise.tool():add_keybinding{name="Global:Paketti:Catch Octave",invoke=toggle_catch_octave}

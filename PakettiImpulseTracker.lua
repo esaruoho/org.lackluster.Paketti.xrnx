@@ -480,7 +480,7 @@ function selectPatternRangeInAutomation()
   -- Get the selection in the pattern editor
   local pattern_selection = song.selection_in_pattern
   if pattern_selection == nil then
-    renoise.app():show_status("No selection in pattern editor.")
+    renoise.app():show_status("No selection in Pattern Editor.")
     return
   end
 
@@ -551,10 +551,7 @@ function DoubleSelectAutomation()
   selectPatternRangeInAutomation()
 end
 
-renoise.tool():add_keybinding{
-  name = "Pattern Editor:Paketti:Impulse Tracker ALT-D Double Select W/ Automation",
-  invoke = function() DoubleSelectAutomation() end
-}
+renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Impulse Tracker ALT-D Double Select W/ Automation",invoke=function() DoubleSelectAutomation() end}
 
 
 
@@ -745,6 +742,9 @@ else
         end_track = s.selected_track_index,
         start_line = 1, 
         end_line = sp.number_of_lines} end
+
+  selectPatternRangeInAutomation()
+
 end
 
 renoise.tool():add_keybinding{name="Pattern Editor:Selection:Impulse Tracker ALT-L Mark Track/Mark Pattern", invoke=function() MarkTrackMarkPattern() end}  
@@ -1430,11 +1430,12 @@ function Deselect_All()
 end
 function Deselect_Phr() renoise.song().selection_in_phrase =nil end
 
-renoise.tool():add_keybinding{name="Pattern Editor:Selection:Impulse Tracker ALT-U Unmark Selection",invoke=function() Deselect_All() end}
-renoise.tool():add_keybinding{name="Pattern Editor:Selection:Impulse Tracker ALT-U Unmark Selection (2nd)",invoke=function() Deselect_All() end}
-
-renoise.tool():add_keybinding{name="Phrase Editor:Selection:Impulse Tracker ALT-U Unmark Selection",invoke=function() Deselect_Phr() end}
-renoise.tool():add_keybinding{name="Phrase Editor:Selection:Impulse Tracker ALT-U Unmark Selection (2nd)",invoke=function() Deselect_Phr() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker ALT-U Unmark Selection",invoke=function() Deselect_All() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker ALT-U Unmark Selection (2nd)",invoke=function() Deselect_All() end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Impulse Tracker ALT-U Unmark Selection",invoke=function() Deselect_All() end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Impulse Tracker ALT-U Unmark Selection (2nd)",invoke=function() Deselect_All() end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Impulse Tracker ALT-U Unmark Selection",invoke=function() Deselect_Phr() end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Impulse Tracker ALT-U Unmark Selection (2nd)",invoke=function() Deselect_Phr() end}
 
 ----------
 --[[

@@ -1,3 +1,585 @@
+function PakettiFillPitchStepperRandom()
+    local device = renoise.song().selected_instrument.sample_modulation_sets[1].devices[1]
+    if device == nil then renoise.app():show_status("There is no Pitch Stepper modulation device in this instrument, doing nothing.") return end
+
+    -- Check if the device is "Pitch Stepper"
+    if device.name == "Pitch Stepper" then
+        -- Clear existing points
+        device:clear_points()
+        
+        -- Define points data with random values
+        local points_data = {}
+        for i = 1, 17 do
+            table.insert(points_data, {
+                scaling=0,
+                time=i,
+                value=math.random()
+            })
+        end
+
+        -- Assign the random points data directly
+        device.points = points_data
+
+        renoise.app():show_status("Pitch Stepper random points filled successfully.")
+    else
+        renoise.app():show_status("Selected device is not a Pitch Stepper.")
+    end
+end
+
+function PakettiFillPitchStepperTwoOctaves()
+    local device = renoise.song().selected_instrument.sample_modulation_sets[1].devices[1]
+    if device == nil then renoise.app():show_status("There is no Pitch Stepper modulation device in this instrument, doing nothing.") return end
+
+    if device.name == "Pitch Stepper" then
+        device.length=17
+        device:clear_points()  
+        renoise.song().selected_instrument.sample_modulation_sets[1].pitch_range=24  
+        local points_data = {
+            {scaling=0, time=1, value=0.5},
+            {scaling=0, time=2, value=0.25},
+            {scaling=0, time=3, value=0},
+            {scaling=0, time=4, value=0.25},
+            {scaling=0, time=5, value=0.5},
+            {scaling=0, time=6, value=0.75},
+            {scaling=0, time=7, value=1},
+            {scaling=0, time=8, value=0.75},
+            {scaling=0, time=9, value=0.5},
+            {scaling=0, time=10, value=0.25},
+            {scaling=0, time=11, value=0},
+            {scaling=0, time=12, value=0.25},
+            {scaling=0, time=13, value=0.5},
+            {scaling=0, time=14, value=0.75},
+            {scaling=0, time=15, value=1},
+            {scaling=0, time=16, value=0.75},
+            {scaling=0, time=17, value=0.5},
+        }
+
+            device.points=points_data
+ 
+        renoise.app():show_status("Pitch Stepper points filled successfully.")
+    else renoise.app():show_status("Selected device is not a Pitch Stepper.") end
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Modify PitchStep Steps (Octave Up+2, Octave Down-2)",invoke=function()
+PakettiFillPitchStepperTwoOctaves() end}
+
+function PakettiFillPitchStepper()
+    local device = renoise.song().selected_instrument.sample_modulation_sets[1].devices[1]
+    if device == nil then renoise.app():show_status("There is no Pitch Stepper modulation device in this instrument, doing nothing.") return end
+
+    if device.name == "Pitch Stepper" then
+        device.length=17
+        device:clear_points()    
+        local points_data = {
+            {scaling=0, time=1, value=0.5},
+            {scaling=0, time=2, value=0},
+            {scaling=0, time=3, value=1},
+            {scaling=0, time=4, value=0},
+            {scaling=0, time=5, value=1},
+            {scaling=0, time=6, value=0},
+            {scaling=0, time=7, value=1},
+            {scaling=0, time=8, value=0},
+            {scaling=0, time=9, value=1},
+            {scaling=0, time=10, value=0},
+            {scaling=0, time=11, value=1},
+            {scaling=0, time=12, value=0},
+            {scaling=0, time=13, value=1},
+            {scaling=0, time=14, value=0},
+            {scaling=0, time=15, value=1},
+            {scaling=0, time=16, value=0},
+        }
+
+            device.points=points_data
+ 
+        renoise.app():show_status("Pitch Stepper points filled successfully.")
+    else renoise.app():show_status("Selected device is not a Pitch Stepper.") end
+end
+
+function PakettiClearPitchStepper()
+    local device = renoise.song().selected_instrument.sample_modulation_sets[1].devices[1]
+
+    if device == nil then renoise.app():show_status("There is no Pitch Stepper modulation device in this instrument, doing nothing.") return end
+
+if renoise.song().selected_instrument.sample_modulation_sets[1].devices[1].name == "Pitch Stepper"
+then renoise.song().selected_instrument.sample_modulation_sets[1].devices[1]:clear_points()
+else end
+
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Modify PitchStep Steps (Random)",invoke=function() PakettiFillPitchStepperRandom() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Modify PitchStep Steps (Octave Up, Octave Down)",invoke=function() PakettiFillPitchStepper() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Clear PitchStep Steps", invoke=function() PakettiClearPitchStepper() end}
+renoise.tool():add_menu_entry{name="--Sample Modulation Matrix:Paketti..:Show/Hide PitchStep on Selected Instrument",invoke=function() PakettiShowPitchStepper() end}
+renoise.tool():add_menu_entry{name="Sample Modulation Matrix:Paketti..:Modify PitchStep Steps (Random)",invoke=function() PakettiFillPitchStepperRandom() end}
+renoise.tool():add_menu_entry{name="Sample Modulation Matrix:Paketti..:Modify PitchStep Steps (Octave Up, Octave Down)",invoke=function() PakettiFillPitchStepper() end}
+renoise.tool():add_menu_entry{name="Sample Modulation Matrix:Paketti..:Clear PitchStep Steps", invoke=function() PakettiClearPitchStepper() end}
+
+
+function PakettiOffsetSampleBuffer(operation, number)
+  local sample = renoise.song().selected_sample
+  local buffer = sample.sample_buffer
+
+  if buffer.has_sample_data then
+    buffer:prepare_sample_data_changes()
+    
+    for ch = 1, buffer.number_of_channels do
+      for i = 1, buffer.number_of_frames do
+        local current_sample = buffer:sample_data(ch, i)
+        local modified_sample
+
+        if operation == "subtract" then
+          modified_sample = math.max(-1.0, math.min(1.0, current_sample - number))
+        elseif operation == "multiply" then
+          modified_sample = math.max(-1.0, math.min(1.0, current_sample * number))
+        else
+          renoise.app():show_status("Invalid operation. Use 'subtract' or 'multiply'.")
+          return
+        end
+
+        buffer:set_sample_data(ch, i, modified_sample)
+      end
+    end
+    
+    buffer:finalize_sample_data_changes()
+    renoise.app():show_status(operation .. " operation applied with value " .. number .. " to the sample buffer.")
+  else
+    renoise.app():show_status("No sample data available in the selected sample.")
+  end
+end
+
+-- Keybinding example for subtraction
+renoise.tool():add_keybinding{name="Sample Editor:Paketti:Offset Sample Buffer by -0.5", invoke=function() PakettiOffsetSampleBuffer("subtract", 0.5) end}
+
+-- Keybinding example for multiplication
+renoise.tool():add_keybinding{name="Sample Editor:Paketti:Multiply Sample Buffer by 0.5", invoke=function() PakettiOffsetSampleBuffer("multiply", 0.5) end}
+
+
+
+-- Function to invert specified content in the selection or entire track
+function invert_content(column_type)
+  local song=renoise.song()
+  local pattern=song.selected_pattern
+  local selection=song.selection_in_pattern
+
+  -- Determine the range based on the selection or entire track if no selection
+  local start_line, end_line, start_track, end_track, start_column, end_column
+
+  if selection then
+    start_line=selection.start_line
+    end_line=selection.end_line
+    start_track=selection.start_track
+    end_track=selection.end_track
+    start_column=selection.start_column
+    end_column=selection.end_column
+  else
+    start_line=1
+    end_line=pattern.number_of_lines
+    start_track=song.selected_track_index
+    end_track=start_track
+    start_column=1
+    end_column=song:track(start_track).visible_note_columns + song:track(start_track).visible_effect_columns
+  end
+
+  -- Iterate over the specified lines and tracks
+  for line_index=start_line, end_line do
+    for track_index=start_track, end_track do
+      local track=pattern:track(track_index)
+      local track_vis=song:track(track_index)
+      local note_columns_visible=track_vis.visible_note_columns
+      local effect_columns_visible=track_vis.visible_effect_columns
+      local total_columns_visible=note_columns_visible + effect_columns_visible
+
+      -- Calculate column boundaries for this track
+      local current_start_column = (selection and track_index == start_track) and start_column or 1
+      local current_end_column = (selection and track_index == end_track) and end_column or total_columns_visible
+
+      -- Iterate over the columns based on calculated boundaries
+      for col=current_start_column, current_end_column do
+        if col <= note_columns_visible and (column_type == "notecolumns" or column_type == "all") then
+          -- Note column inversion
+          local note_col=track:line(line_index).note_columns[col]
+
+          -- Invert volume if within 0x00-0x80 range
+          if note_col.volume_value >= 0 and note_col.volume_value <= 0x80 then
+            note_col.volume_value=0x80 - note_col.volume_value
+          end
+
+          -- Invert panning if within 0x00-0x80 range
+          if note_col.panning_value >= 0 and note_col.panning_value <= 0x80 then
+            note_col.panning_value=0x80 - note_col.panning_value
+          end
+
+          -- Invert delay if present (range 0x00-0xFF)
+          if note_col.delay_value > 0 then
+            note_col.delay_value=0xFF - note_col.delay_value
+          end
+
+          -- Invert effect amount if present (range 0x00-0xFF)
+          if note_col.effect_amount_value > 0 then
+            note_col.effect_amount_value=0xFF - note_col.effect_amount_value
+          end
+
+        elseif col > note_columns_visible and (column_type == "effectcolumns" or column_type == "all") then
+          -- Effect column inversion
+          local effect_col=track:line(line_index).effect_columns[col - note_columns_visible]
+
+          -- Invert amount if present (range 0x00-0xFF) only if number_value is not zero
+          if effect_col.number_value ~= 0 then
+            effect_col.amount_value = (effect_col.amount_value == 0x00) and 0xFF or (0xFF - effect_col.amount_value)
+          end
+        end
+      end
+    end
+  end
+
+  renoise.app():show_status("Inverted values in selected range: " .. column_type)
+end
+
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Invert Note Column Subcolumns", invoke=function() invert_content("notecolumns") end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Invert Effect Column Subcolumns", invoke=function() invert_content("effectcolumns") end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Invert All Subcolumns", invoke=function() invert_content("all") end}
+renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Invert Note Column Subcolumns", invoke=function() invert_content("notecolumns") end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Invert Effect Column Subcolumns", invoke=function() invert_content("effectcolumns") end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Invert All Subcolumns", invoke=function() invert_content("all") end}
+
+
+
+
+
+
+
+
+
+local function duplicate_sample_with_transpose(transpose_amount)
+  local song = renoise.song()
+  local instrument = song.selected_instrument
+  local selected_sample_index = song.selected_sample_index
+
+  if not instrument then
+    renoise.app():show_status("No instrument selected.")
+    return
+  end
+
+  if not selected_sample_index or selected_sample_index < 1 or selected_sample_index > #instrument.samples then
+    renoise.app():show_status("No valid sample selected.")
+    return
+  end
+
+  -- Get the selected sample
+  local original_sample = instrument.samples[selected_sample_index]
+
+  -- Create a new sample slot
+  local new_sample_index = selected_sample_index + 1
+  instrument:insert_sample_at(new_sample_index)
+  local new_sample = instrument.samples[new_sample_index]
+
+  -- Copy data from original sample to new sample
+  new_sample:copy_from(original_sample)
+
+  -- Set the transpose and rename the sample
+  new_sample.transpose = original_sample.transpose + transpose_amount
+  new_sample.name = original_sample.name .. " " .. (transpose_amount >= 0 and "+" or "") .. transpose_amount
+
+  -- Confirm the duplication
+  renoise.app():show_status("Sample duplicated and transposed by " .. transpose_amount .. ".")
+end
+
+-- Keybindings, Menu Entries, and MIDI Mappings for each transpose amount
+renoise.tool():add_keybinding{name="Global:Paketti:Duplicate Selected Sample at -12 transpose",invoke=function() duplicate_sample_with_transpose(-12) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Duplicate Selected Sample at -24 transpose",invoke=function() duplicate_sample_with_transpose(-24) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Duplicate Selected Sample at +12 transpose",invoke=function() duplicate_sample_with_transpose(12) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Duplicate Selected Sample at +24 transpose",invoke=function() duplicate_sample_with_transpose(24) end}
+
+renoise.tool():add_menu_entry{name="--Sample Navigator:Paketti..:Duplicate Selected Sample at -12 transpose",invoke=function() duplicate_sample_with_transpose(-12) end}
+renoise.tool():add_menu_entry{name="Sample Navigator:Paketti..:Duplicate Selected Sample at -24 transpose",invoke=function() duplicate_sample_with_transpose(-24) end}
+renoise.tool():add_menu_entry{name="Sample Navigator:Paketti..:Duplicate Selected Sample at +12 transpose",invoke=function() duplicate_sample_with_transpose(12) end}
+renoise.tool():add_menu_entry{name="Sample Navigator:Paketti..:Duplicate Selected Sample at +24 transpose",invoke=function() duplicate_sample_with_transpose(24) end}
+
+renoise.tool():add_menu_entry{name="--Sample Editor:Paketti..:Duplicate Selected Sample at -12 transpose",invoke=function() duplicate_sample_with_transpose(-12) end}
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Duplicate Selected Sample at -24 transpose",invoke=function() duplicate_sample_with_transpose(-24) end}
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Duplicate Selected Sample at +12 transpose",invoke=function() duplicate_sample_with_transpose(12) end}
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Duplicate Selected Sample at +24 transpose",invoke=function() duplicate_sample_with_transpose(24) end}
+
+
+renoise.tool():add_midi_mapping{name="Paketti:Duplicate Selected Sample at -12 transpose",invoke=function(message) if message:is_trigger() then duplicate_sample_with_transpose(-12) end end}
+renoise.tool():add_midi_mapping{name="Paketti:Duplicate Selected Sample at -24 transpose",invoke=function(message) if message:is_trigger() then duplicate_sample_with_transpose(-24) end end}
+renoise.tool():add_midi_mapping{name="Paketti:Duplicate Selected Sample at +12 transpose",invoke=function(message) if message:is_trigger() then duplicate_sample_with_transpose(12) end end}
+renoise.tool():add_midi_mapping{name="Paketti:Duplicate Selected Sample at +24 transpose",invoke=function(message) if message:is_trigger() then duplicate_sample_with_transpose(24) end end}
+
+
+
+
+
+local function duplicate_pattern_and_clear_muted_above()
+  local song=renoise.song()
+  local current_pattern_index=song.selected_pattern_index
+  local current_sequence_index=song.selected_sequence_index
+
+  -- Insert a new, unreferenced pattern above the current sequence index
+  local new_sequence_index = current_sequence_index
+  local new_pattern_index = song.sequencer:insert_new_pattern_at(new_sequence_index)
+
+  -- Copy the current pattern into the newly created pattern
+  song.patterns[new_pattern_index]:copy_from(song.patterns[current_pattern_index])
+
+  -- Set the name of the new pattern based on the original name or default to "Pattern <number> (mutes cleared)"
+  local original_name = song.patterns[current_pattern_index].name
+  if original_name == "" then
+    original_name = "Pattern " .. tostring(current_pattern_index)
+  end
+  song.patterns[new_pattern_index].name = original_name .. " (mutes cleared)"
+
+  -- Select the new sequence index
+  song.selected_sequence_index = new_sequence_index
+
+  -- Apply mute states from the original pattern to the new pattern in the sequencer
+  for track_index = 1, #song.tracks do
+    local is_muted = song.sequencer:track_sequence_slot_is_muted(track_index, current_sequence_index)
+    song.sequencer:set_track_sequence_slot_is_muted(track_index, new_sequence_index, is_muted)
+    if is_muted then
+      print("Track " .. track_index .. " was muted in the original sequence; muting in new sequence.")
+    end
+  end
+
+  -- Copy all automation data from the original pattern to the new pattern
+  for track_index = 1, #song.tracks do
+    local original_track = song.patterns[current_pattern_index].tracks[track_index]
+    local new_track = song.patterns[new_pattern_index].tracks[track_index]
+
+    for _, automation in ipairs(original_track.automation) do
+      local parameter = automation.dest_parameter
+
+      -- Find or create the corresponding automation in the new track
+      local new_automation = new_track:find_automation(parameter)
+      if not new_automation then
+        new_automation = new_track:create_automation(parameter)
+      end
+
+      -- Copy the entire automation data using copy_from
+      new_automation:copy_from(automation)
+      print("Copied complete automation for parameter in track " .. track_index)
+    end
+  end
+
+  -- Identify tracks that are muted or off, then clear them in the new pattern
+  local muted_tracks = {}
+  for i, track in ipairs(song.tracks) do
+    if track.mute_state == renoise.Track.MUTE_STATE_MUTED or track.mute_state == renoise.Track.MUTE_STATE_OFF then
+      table.insert(muted_tracks, i)
+      print("Track " .. i .. " is muted or off. Preparing to clear it.")
+    end
+  end
+
+  for _, track_index in ipairs(muted_tracks) do
+    song.patterns[new_pattern_index].tracks[track_index]:clear()
+    print("Cleared track " .. track_index .. " in duplicated pattern.")
+  end
+
+  renoise.app():show_status("Duplicated pattern above current sequence with mute states, complete automation, and cleared muted tracks.")
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Duplicate Pattern Above & Clear Muted Tracks", invoke=duplicate_pattern_and_clear_muted_above}
+renoise.tool():add_midi_mapping{name="Paketti:Duplicate Pattern Above & Clear Muted", invoke=duplicate_pattern_and_clear_muted_above}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor..:Duplicate Pattern Above & Clear Muted", invoke=duplicate_pattern_and_clear_muted_above}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Duplicate Pattern Above & Clear Muted", invoke=duplicate_pattern_and_clear_muted_above}
+renoise.tool():add_menu_entry{name="Pattern Matrix:Paketti..:Duplicate Pattern Above & Clear Muted", invoke=duplicate_pattern_and_clear_muted_above}
+renoise.tool():add_menu_entry{name="Mixer:Paketti..:Duplicate Pattern Above & Clear Muted", invoke=duplicate_pattern_and_clear_muted_above}
+
+
+local function duplicate_pattern_and_clear_muted()
+  local song=renoise.song()
+  local current_pattern_index=song.selected_pattern_index
+  local current_sequence_index=song.selected_sequence_index
+
+  -- Insert a new, unreferenced pattern below the current sequence index
+  local new_sequence_index = current_sequence_index + 1
+  local new_pattern_index = song.sequencer:insert_new_pattern_at(new_sequence_index)
+
+  -- Copy the current pattern into the newly created pattern
+  song.patterns[new_pattern_index]:copy_from(song.patterns[current_pattern_index])
+
+  -- Set the name of the new pattern based on the original name or default to "Pattern <number> (mutes cleared)"
+  local original_name = song.patterns[current_pattern_index].name
+  if original_name == "" then
+    original_name = "Pattern " .. tostring(current_pattern_index)
+  end
+  song.patterns[new_pattern_index].name = original_name .. " (mutes cleared)"
+
+  -- Select the new sequence index
+  song.selected_sequence_index = new_sequence_index
+
+  -- Apply mute states from the original pattern to the new pattern in the sequencer
+  for track_index = 1, #song.tracks do
+    local is_muted = song.sequencer:track_sequence_slot_is_muted(track_index, current_sequence_index)
+    song.sequencer:set_track_sequence_slot_is_muted(track_index, new_sequence_index, is_muted)
+    if is_muted then
+    end
+  end
+
+  -- Copy all automation data from the original pattern to the new pattern
+  for track_index = 1, #song.tracks do
+    local original_track = song.patterns[current_pattern_index].tracks[track_index]
+    local new_track = song.patterns[new_pattern_index].tracks[track_index]
+
+    for _, automation in ipairs(original_track.automation) do
+      local parameter = automation.dest_parameter
+
+      -- Find or create the corresponding automation in the new track
+      local new_automation = new_track:find_automation(parameter)
+      if not new_automation then
+        new_automation = new_track:create_automation(parameter)
+      end
+
+      -- Copy the entire automation data using copy_from
+      new_automation:copy_from(automation)
+    end
+  end
+
+  -- Identify tracks that are muted or off, then clear them in the new pattern
+  local muted_tracks = {}
+  for i, track in ipairs(song.tracks) do
+    if track.mute_state == renoise.Track.MUTE_STATE_MUTED or track.mute_state == renoise.Track.MUTE_STATE_OFF then
+      table.insert(muted_tracks, i)
+    end
+  end
+
+  for _, track_index in ipairs(muted_tracks) do
+    song.patterns[new_pattern_index].tracks[track_index]:clear()
+  end
+
+  renoise.app():show_status("Duplicated pattern below current sequence with mute states, complete automation, and cleared muted tracks.")
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Duplicate Pattern Below & Clear Muted Tracks", invoke=duplicate_pattern_and_clear_muted}
+renoise.tool():add_midi_mapping{name="Paketti:Duplicate Pattern Below & Clear Muted", invoke=duplicate_pattern_and_clear_muted}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor..:Duplicate Pattern Below & Clear Muted", invoke=duplicate_pattern_and_clear_muted}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Duplicate Pattern Below & Clear Muted", invoke=duplicate_pattern_and_clear_muted}
+renoise.tool():add_menu_entry{name="Pattern Matrix:Paketti..:Duplicate Pattern Below & Clear Muted", invoke=duplicate_pattern_and_clear_muted}
+renoise.tool():add_menu_entry{name="Mixer:Paketti..:Duplicate Pattern Below & Clear Muted", invoke=duplicate_pattern_and_clear_muted}
+
+
+
+
+
+
+
+
+
+
+
+
+
+local function NudgeAndPasteSelection(deselect)
+    local song = renoise.song()
+    local selection = song.selection_in_pattern
+
+    -- Check if there's a selection
+    if not selection then
+        renoise.app():show_status("Nothing was selected, doing nothing.")
+        return
+    end
+
+    local pattern = song.selected_pattern
+    local pattern_lines = pattern.number_of_lines
+    local selected_track_index = song.selected_track_index
+
+    -- Determine selection start and end lines
+    local start_line = selection.start_line
+    local end_line = selection.end_line
+    local selection_length = end_line - start_line + 1
+
+    -- Reference to the track for modifying lines
+    local track = pattern:track(selected_track_index)
+
+    -- Step 1: Copy the selected lines into a table
+    local content_copy = {}
+    for line = start_line, end_line do
+        local line_data = track:line(line)
+        content_copy[#content_copy + 1] = {
+            note_columns = {},
+            effect_columns = {}
+        }
+        -- Copy each note column
+        for nc = 1, #line_data.note_columns do
+            local note_column = line_data:note_column(nc)
+            content_copy[#content_copy].note_columns[nc] = {
+                note_value = note_column.note_value,
+                instrument_value = note_column.instrument_value,
+                volume_value = note_column.volume_value,
+                panning_value = note_column.panning_value,
+                delay_value = note_column.delay_value,
+                effect_number_value = note_column.effect_number_value,
+                effect_amount_value = note_column.effect_amount_value
+            }
+        end
+        -- Copy each effect column
+        for ec = 1, #line_data.effect_columns do
+            local effect_column = line_data:effect_column(ec)
+            content_copy[#content_copy].effect_columns[ec] = {
+                number_value = effect_column.number_value,
+                amount_value = effect_column.amount_value
+            }
+        end
+    end
+
+    -- Step 2: Nudge existing content down by the selection length
+    for line = pattern_lines - selection_length, start_line, -1 do
+        local target_line = line + selection_length
+        if target_line <= pattern_lines then
+            track:line(target_line):copy_from(track:line(line))
+        end
+    end
+
+    -- Step 3: Clear the original selection range to prepare for pasting
+    for line = start_line, end_line do
+        track:line(line):clear()
+    end
+
+    -- Step 4: Paste the copied content into the original selection position
+    for i, line_content in ipairs(content_copy) do
+        local target_line = track:line(start_line + i - 1)
+        -- Paste note columns
+        for nc, note_data in ipairs(line_content.note_columns) do
+            local note_column = target_line:note_column(nc)
+            note_column.note_value = note_data.note_value
+            note_column.instrument_value = note_data.instrument_value
+            note_column.volume_value = note_data.volume_value
+            note_column.panning_value = note_data.panning_value
+            note_column.delay_value = note_data.delay_value
+            note_column.effect_number_value = note_data.effect_number_value
+            note_column.effect_amount_value = note_data.effect_amount_value
+        end
+        -- Paste effect columns
+        for ec, effect_data in ipairs(line_content.effect_columns) do
+            local effect_column = target_line:effect_column(ec)
+            effect_column.number_value = effect_data.number_value
+            effect_column.amount_value = effect_data.amount_value
+        end
+    end
+
+    -- Set selection in pattern to the newly pasted content
+if deselect ~= false then
+
+    song.selection_in_pattern = {
+        start_line = start_line,
+        end_line = end_line,
+        start_track = selection.start_track,
+        end_track = selection.end_track
+    }
+else renoise.song().selection_in_pattern = nil
+end
+end
+
+-- Example usage:
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Nudge and Paste Selection", invoke=function() NudgeAndPasteSelection(true) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Nudge and Paste Selection + Deselect", invoke=function() NudgeAndPasteSelection(false) end}
+
+
+
+
+
+
+
 -- Function with an option to retain or clear silence rows
 local function DuplicateSelectionWithPaddingMoveCursor(retain_silence_content)
     local song = renoise.song()
@@ -136,23 +718,26 @@ renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Duplicate Selection w
 
 
 
-
-
 function loadNewWithCurrentSliceMarkers()
   local song=renoise.song()
-  local selected_sample=song.selected_sample
+  if song.selected_sample  == nil then
+  renoise.app():show_status("There is no sample in this instrument, doing nothing.")
+  return else  
+local originalSample = renoise.song().instruments[renoise.song().selected_instrument_index]
+local selected_sample =  song.selected_instrument.samples[1]
 
   -- Check if the selected sample has slice markers
-  if #selected_sample.slice_markers==0 then
+if #selected_sample.slice_markers == 0 then
     renoise.app():show_status("Please select an instrument with slice markers, doing nothing for now.")
   else
-    -- Retain slice markers
+    -- Retain slice markers and sample settings
     local saved_markers=selected_sample.slice_markers
+    local saved_sample=selected_sample
 
     -- Trigger the file loader to load a new sample
     pitchBendMultipleSampleLoader()
 
-    -- Wait for the sample to load and then apply markers
+    -- Wait for the sample to load and then apply markers and settings
     local new_sample=song.selected_sample -- Assumes the loaded sample replaces selected_sample
 
     if new_sample then
@@ -166,19 +751,27 @@ function loadNewWithCurrentSliceMarkers()
         end
       end
 
-      -- Apply the valid slice markers to the new sample
+      -- Apply the valid slice markers and copy general sample settings
       new_sample.slice_markers=valid_markers
-      renoise.app():show_status("Slice markers applied to the newly loaded sample.")
+      CopySampleSettings(originalSample.samples[1],renoise.song().selected_instrument.samples[1])
+
+      -- Copy slice settings for each individual slice sample
+      for i=2, #originalSample.samples do  -- Slices start at index 2
+        CopySliceSettings(originalSample.samples[i],renoise.song().selected_instrument.samples[i])
+      end
+
+      renoise.app():show_status("Slice markers and all sample & slice settings applied to the newly loaded sample.")
     else
-      renoise.app():show_status("No new sample loaded; slice markers not applied.")
+      renoise.app():show_status("No new sample loaded; settings not applied.")
     end
   end
 end
+end
 
+-- Register menu entries and keybindings
 renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Load New Instrument with Current Slice Markers",invoke=function() loadNewWithCurrentSliceMarkers() end}
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Load New Instrument with Current Slice Markers",invoke=function() loadNewWithCurrentSliceMarkers() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Load New Instrument with Current Slice Markers",invoke=function() loadNewWithCurrentSliceMarkers() end}
-
 
 
 

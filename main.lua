@@ -34,7 +34,7 @@ require "PakettiPlayerProSuite"
 require "PakettiSamples"
 require "PakettiTkna"
 require "PakettiRecorder" 
-require "Coluga/PakettiColuga"
+require "PakettiColuga"
 require "PakettiRequests"
 require "PakettiExperimental_Verify"
 

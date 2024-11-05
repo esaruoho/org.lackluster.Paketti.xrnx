@@ -377,9 +377,9 @@ renoise.song().selected_instrument_index=renoise.song().selected_instrument_inde
     song.transport:start_stop_sample_recording()
     local sample=renoise.song().selected_sample
   end
-    renoise.song().selected_sample_index=1
+ --   renoise.song().selected_sample_index=1
     local sample=renoise.song().selected_sample
-    sample.mute_group = 1
+--    sample.mute_group = 1
   sample.interpolation_mode=preferences.pakettiLoaderInterpolation.value
     sample.beat_sync_enabled = false
     sample.beat_sync_mode = 2
