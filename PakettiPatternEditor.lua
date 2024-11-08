@@ -365,7 +365,7 @@ function GlobalLPB(number)
 renoise.song().transport.lpb=number end
 
 for glpb=1,16 do
-    renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Global LPB to " .. glpb,invoke=function() GlobalLPB(glpb) end}
+    renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Global LPB to " .. formatDigits(3,glpb),invoke=function() GlobalLPB(glpb) end}
 end
 
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Global LPB to 024",invoke=function() GlobalLPB(24) end}
@@ -379,7 +379,7 @@ function PhraseLPB(number)
 renoise.song().instruments[renoise.song().selected_instrument_index].phrases[renoise.song().selected_phrase_index].lpb=number end
 
 for plpb=1,16 do
-renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase LPB to " .. plpb,invoke=function() PhraseLPB(plpb) end}
+renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase LPB to " .. formatDigits(3,plpb),invoke=function() PhraseLPB(plpb) end}
 end
 
 renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Set Phrase LPB to 024",invoke=function() PhraseLPB(24) end}
@@ -1248,7 +1248,7 @@ function select_specific_track(number)
 end
 
 for st=1,16 do
-  renoise.tool():add_keybinding{name="Global:Paketti:Select Specific Track " .. st, 
+  renoise.tool():add_keybinding{name="Global:Paketti:Select Specific Track " .. formatDigits(2,st), 
     invoke=function() select_specific_track(st) end}
 end
 
@@ -1392,7 +1392,7 @@ end
 function displayNoteColumn(number) local rs=renoise.song() if rs.tracks[rs.selected_track_index].visible_note_columns == 0 then return else rs.tracks[rs.selected_track_index].visible_note_columns=number end end
 
 for dnc=1,12 do
-  renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Display Note Column " .. dnc,invoke=function() displayNoteColumn(dnc) end}
+  renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Display Note Column " .. formatDigits(2,dnc),invoke=function() displayNoteColumn(dnc) end}
 end
 ---------
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Reset Panning in Current Column & Row",invoke=function()

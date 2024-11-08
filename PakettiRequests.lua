@@ -348,15 +348,9 @@ renoise.song().selected_sample.mute_group = number end
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mute Group to 0 (Off)",invoke=function() selectedSampleMuteGroup(0) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mute Group to 1",invoke=function() selectedSampleMuteGroup(1) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mute Group to 2",invoke=function() selectedSampleMuteGroup(2) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mute Group to 3",invoke=function() selectedSampleMuteGroup(3) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mute Group to 4",invoke=function() selectedSampleMuteGroup(4) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mute Group to 5",invoke=function() selectedSampleMuteGroup(5) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mute Group to 6",invoke=function() selectedSampleMuteGroup(6) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mute Group to 7",invoke=function() selectedSampleMuteGroup(7) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mute Group to 8",invoke=function() selectedSampleMuteGroup(8) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mute Group to 9",invoke=function() selectedSampleMuteGroup(9) end}
+for i=1,9 do
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mute Group to ".. i,invoke=function() selectedSampleMuteGroup(i) end}
+end
 renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mute Group to A",invoke=function() selectedSampleMuteGroup(10) end}
 renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mute Group to B",invoke=function() selectedSampleMuteGroup(11) end}
 renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mute Group to C",invoke=function() selectedSampleMuteGroup(12) end}
@@ -1106,7 +1100,7 @@ end
 
 
 for i = 0, 32 do 
-renoise.tool():add_keybinding{name="Global:Paketti:Select Instrument " .. i,invoke=function() selectInstrumentShortcut(i) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Select Instrument " .. formatDigits(2,i),invoke=function() selectInstrumentShortcut(i) end}
 end
 ------
 function selectNextGroupTrack()
@@ -1440,7 +1434,7 @@ local deltas = {["+1"] = 1, ["-1"] = -1, ["+10"] = 10, ["-10"] = -10, ["+16"] = 
 -- Create key bindings for each slice and each delta
 for i = 1, 32 do
     for name, delta in pairs(deltas) do
-        renoise.tool():add_keybinding{name="Sample Editor:Paketti:Nudge Slice " .. i .. " by (" .. name .. ")",invoke=function() adjustSliceKeyshortcut(i, delta) end}
+        renoise.tool():add_keybinding{name="Sample Editor:Paketti:Nudge Slice " .. formatDigits(2,i) .. " by (" .. name .. ")",invoke=function() adjustSliceKeyshortcut(i, delta) end}
     end
 end
 -----------

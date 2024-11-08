@@ -3099,3 +3099,226 @@ renoise.tool():add_keybinding{name="Global:Paketti:Eight 120-fy",invoke=function
       sample.sample_mapping.note_range={0,119}
     end
     renoise.app():show_status("Base notes set to C-4 and key mapping adjusted for all samples.") end}
+    
+    
+    
+    
+    -----
+    
+    
+    
+    
+ function PakettiFillPitchStepperRandom()
+    local device = renoise.song().selected_instrument.sample_modulation_sets[1].devices[1]
+    if device == nil then renoise.app():show_status("There is no Pitch Stepper modulation device in this instrument, doing nothing.") return end
+
+    -- Check if the device is "Pitch Stepper"
+    if device.name == "Pitch Stepper" then
+        -- Clear existing points
+        device:clear_points()
+        
+        -- Define points data with random values
+        local points_data = {}
+        for i = 1, 17 do
+            table.insert(points_data, {
+                scaling=0,
+                time=i,
+                value=math.random()
+            })
+        end
+
+        -- Assign the random points data directly
+        device.points = points_data
+
+        renoise.app():show_status("Pitch Stepper random points filled successfully.")
+    else
+        renoise.app():show_status("Selected device is not a Pitch Stepper.")
+    end
+end
+
+function PakettiFillPitchStepperTwoOctaves()
+    local device = renoise.song().selected_instrument.sample_modulation_sets[1].devices[1]
+    if device == nil then renoise.app():show_status("There is no Pitch Stepper modulation device in this instrument, doing nothing.") return end
+
+    if device.name == "Pitch Stepper" then
+        device.length=17
+        device:clear_points()  
+        renoise.song().selected_instrument.sample_modulation_sets[1].pitch_range=24  
+        local points_data = {
+            {scaling=0, time=1, value=0.5},
+            {scaling=0, time=2, value=0.25},
+            {scaling=0, time=3, value=0},
+            {scaling=0, time=4, value=0.25},
+            {scaling=0, time=5, value=0.5},
+            {scaling=0, time=6, value=0.75},
+            {scaling=0, time=7, value=1},
+            {scaling=0, time=8, value=0.75},
+            {scaling=0, time=9, value=0.5},
+            {scaling=0, time=10, value=0.25},
+            {scaling=0, time=11, value=0},
+            {scaling=0, time=12, value=0.25},
+            {scaling=0, time=13, value=0.5},
+            {scaling=0, time=14, value=0.75},
+            {scaling=0, time=15, value=1},
+            {scaling=0, time=16, value=0.75},
+            {scaling=0, time=17, value=0.5},
+        }
+
+            device.points=points_data
+ 
+        renoise.app():show_status("Pitch Stepper points filled successfully.")
+    else renoise.app():show_status("Selected device is not a Pitch Stepper.") end
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Modify PitchStep Steps (Octave Up+2, Octave Down-2)",invoke=function()
+PakettiFillPitchStepperTwoOctaves() end}
+
+function PakettiFillPitchStepper()
+    local device = renoise.song().selected_instrument.sample_modulation_sets[1].devices[1]
+    if device == nil then renoise.app():show_status("There is no Pitch Stepper modulation device in this instrument, doing nothing.") return end
+
+    if device.name == "Pitch Stepper" then
+        device.length=17
+        device:clear_points()    
+        local points_data = {
+            {scaling=0, time=1, value=0.5},
+            {scaling=0, time=2, value=0},
+            {scaling=0, time=3, value=1},
+            {scaling=0, time=4, value=0},
+            {scaling=0, time=5, value=1},
+            {scaling=0, time=6, value=0},
+            {scaling=0, time=7, value=1},
+            {scaling=0, time=8, value=0},
+            {scaling=0, time=9, value=1},
+            {scaling=0, time=10, value=0},
+            {scaling=0, time=11, value=1},
+            {scaling=0, time=12, value=0},
+            {scaling=0, time=13, value=1},
+            {scaling=0, time=14, value=0},
+            {scaling=0, time=15, value=1},
+            {scaling=0, time=16, value=0},
+        }
+
+            device.points=points_data
+ 
+        renoise.app():show_status("Pitch Stepper points filled successfully.")
+    else renoise.app():show_status("Selected device is not a Pitch Stepper.") end
+end
+
+function PakettiClearPitchStepper()
+    local device = renoise.song().selected_instrument.sample_modulation_sets[1].devices[1]
+
+    if device == nil then renoise.app():show_status("There is no Pitch Stepper modulation device in this instrument, doing nothing.") return end
+
+if renoise.song().selected_instrument.sample_modulation_sets[1].devices[1].name == "Pitch Stepper"
+then renoise.song().selected_instrument.sample_modulation_sets[1].devices[1]:clear_points()
+else end
+
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Modify PitchStep Steps (Random)",invoke=function() PakettiFillPitchStepperRandom() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Modify PitchStep Steps (Octave Up, Octave Down)",invoke=function() PakettiFillPitchStepper() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Clear PitchStep Steps", invoke=function() PakettiClearPitchStepper() end}
+renoise.tool():add_menu_entry{name="--Sample Modulation Matrix:Paketti..:Show/Hide PitchStep on Selected Instrument",invoke=function() PakettiShowPitchStepper() end}
+renoise.tool():add_menu_entry{name="Sample Modulation Matrix:Paketti..:Modify PitchStep Steps (Random)",invoke=function() PakettiFillPitchStepperRandom() end}
+renoise.tool():add_menu_entry{name="Sample Modulation Matrix:Paketti..:Modify PitchStep Steps (Octave Up, Octave Down)",invoke=function() PakettiFillPitchStepper() end}
+renoise.tool():add_menu_entry{name="Sample Modulation Matrix:Paketti..:Clear PitchStep Steps", invoke=function() PakettiClearPitchStepper() end}
+-----
+local function load_random_akwf_sample(amount)
+  local tool_folder = renoise.tool().bundle_path .. "AKWF/"
+  local wav_files = {}
+
+  -- List all files and directories in the AKWF folder
+  for file in io.popen('ls "'..tool_folder..'"'):lines() do
+    local subfolder = tool_folder .. file
+
+    -- Check if each entry is a directory and list its contents
+    for subfile in io.popen('ls "'..subfolder..'"'):lines() do
+      if subfile:match("%.wav$") then
+        table.insert(wav_files, subfolder .. "/" .. subfile)
+      end
+    end
+  end
+
+  -- Determine the number of samples to load
+  local num_samples
+  if amount == "random" then
+    num_samples = math.random(1, 12)
+  else
+    num_samples = math.min(amount, #wav_files)
+  end
+
+  -- Ensure there are enough .wav files to choose from
+  if #wav_files > 0 then
+      renoise.song():insert_instrument_at(renoise.song().selected_instrument_index+1)
+      renoise.song().selected_instrument_index = renoise.song().selected_instrument_index+1
+      pakettiPreferencesDefaultInstrumentLoader()
+      local instrument = renoise.song().selected_instrument
+      renoise.song().selected_instrument:delete_sample_at(1)
+      
+      -- Calculate volume reduction factor based on the number of samples
+      local volume_reduction_factor = math.min(1.0, 1 / math.sqrt(num_samples))
+
+    -- Load the specified number of samples
+    for i = 1, num_samples do
+      local random_index = math.random(1, #wav_files)
+      local selected_file = wav_files[random_index]
+
+      -- Create a new sample slot for each loaded file
+      local sample = instrument:insert_sample_at(instrument.samples[1] and #instrument.samples + 1 or 1)
+
+      sample.sample_buffer:load_from(selected_file)
+      sample.loop_mode = renoise.Sample.LOOP_MODE_FORWARD
+
+      -- Set the volume of each sample to the calculated reduction factor
+      sample.volume = volume_reduction_factor
+
+      -- Extract filename for setting sample name
+      local filename = selected_file:match("([^/]+)%.wav$") or "Sample"
+      sample.name = filename
+      sample.transpose = -2
+     -- sample.fine_tune = -35
+      -- Update instrument name for clarity, using the last loaded file
+      instrument.name = "AKWF - " .. filename
+    end
+
+    -- Display a message with the number of loaded samples
+    renoise.app():show_status("Loaded " .. num_samples .. " samples into instrument with volume scaling.")
+  else
+    renoise.app():show_status("No .wav files found in AKWF folder.")
+  end
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Load Random AKWF Sample",invoke=function() load_random_akwf_sample(1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Random amount (1...12) of AKWF Samples",invoke=function() load_random_akwf_sample("random") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load 05 AKWF Samples",invoke=function() load_random_akwf_sample(5) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load 12 AKWF Samples",invoke=function() load_random_akwf_sample(12) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load 02 AKWF Samples",invoke=function() load_random_akwf_sample(2) end}
+   
+   ------
+   
+ local function select_loop_range_in_sample_editor()
+  local song=renoise.song()
+  local sample=song.selected_sample
+  
+  if not sample or not sample.sample_buffer then
+    renoise.app():show_status("No Loop exists, doing nothing.")
+    return
+  end
+
+  local buffer=sample.sample_buffer
+  local loop_start, loop_end=sample.loop_start, sample.loop_end
+  
+  if not sample.loop_mode or loop_start <= 0 or loop_end <= 0 or loop_start >= loop_end then
+    renoise.app():show_status("No Loop exists, doing nothing.")
+    return
+  end
+
+  buffer.selection_start=loop_start
+  buffer.selection_end=loop_end
+  renoise.app():show_status("Loop range selected in sample editor.")
+end
+
+renoise.tool():add_keybinding{name="Sample Editor:Paketti:Select Loop Range",invoke=function()
+select_loop_range_in_sample_editor() end}
+

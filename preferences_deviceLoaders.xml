@@ -221,3 +221,9 @@
 <MIDIMapping name="Track Devices:Paketti:Load Device (Native) (Hidden) Flanger">
   <Path>Audio/Effects/Native/Flanger</Path>
 </MIDIMapping>
+<KeyBinding name="Global:Track Devices:Load Device (AudioUnit) Absynth 5 MFX">
+  <Path>Audio/Effects/AU/aumf:Clm5:-NI-</Path>
+</KeyBinding>
+<MIDIMapping name="Track Devices:Paketti:Load Device (AudioUnit) Absynth 5 MFX">
+  <Path>Audio/Effects/AU/aumf:Clm5:-NI-</Path>
+</MIDIMapping>

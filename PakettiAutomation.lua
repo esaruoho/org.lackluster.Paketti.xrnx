@@ -1255,6 +1255,10 @@ end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Switch to Automation",invoke=function() showAutomationHard() end}
 
+
+
+
+
 -- Show automation (via Pattern Matrix/Pattern Editor)
 function showAutomation()
   local w=renoise.app().window
@@ -1741,4 +1745,43 @@ renoise.tool():add_menu_entry{name="Mixer:Paketti..:Randomize Automation Envelop
 renoise.tool():add_menu_entry{name="Track Automation:Paketti..:Randomize Automation Envelopes for Device",invoke=function() randomize_device_envelopes(1) end}
 
 renoise.tool():add_midi_mapping{name="Paketti:Randomize Automation Envelopes for Device",invoke=function() randomize_device_envelopes(1) end}
+-------
+
+
+-- To keep track of the last selected automation parameter index
+local last_automation_index = 0
+
+function showAutomationHardDynamic()
+  local app_window = renoise.app().window
+  local song = renoise.song()
+  local track = song.selected_track
+
+  -- Set active_middle_frame to 1 if not 1 or 2
+  if app_window.active_middle_frame ~= 1 and app_window.active_middle_frame ~= 2 then
+    app_window.active_middle_frame = 1
+  end
+
+  -- Switch to Automation view if not already active
+  if app_window.active_lower_frame ~= renoise.ApplicationWindow.LOWER_FRAME_TRACK_AUTOMATION then
+    app_window.active_lower_frame = renoise.ApplicationWindow.LOWER_FRAME_TRACK_AUTOMATION
+    return
+  end
+
+  -- Gather all automated parameters in the current track
+  local automated_parameters = {}
+  local selected_track_index = song.selected_track_index
+
+  for _, automation in ipairs(song.selected_pattern.tracks[selected_track_index].automation) do
+    table.insert(automated_parameters, automation.dest_parameter)
+  end
+
+  -- Cycle to the next automated parameter if multiple are available
+  if #automated_parameters > 0 then
+    -- Increment and wrap around the index
+    last_automation_index = (last_automation_index % #automated_parameters) + 1
+    song.selected_automation_parameter = automated_parameters[last_automation_index]
+  end
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Switch to Automation Dynamic",invoke=function() showAutomationHardDynamic() end}
 

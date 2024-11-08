@@ -1,120 +1,162 @@
-function PakettiFillPitchStepperRandom()
-    local device = renoise.song().selected_instrument.sample_modulation_sets[1].devices[1]
-    if device == nil then renoise.app():show_status("There is no Pitch Stepper modulation device in this instrument, doing nothing.") return end
+function PakettiJumpRows(jump_amount)
+  local song = renoise.song()
+  local current_pattern = song.selected_pattern
+  local num_lines = current_pattern.number_of_lines
+  local new_index = (song.selected_line_index + jump_amount - 1) % num_lines + 1
+  song.selected_line_index = new_index
+  renoise.app():show_status("Jumped " .. jump_amount .. " rows to line " .. new_index)
+end
 
-    -- Check if the device is "Pitch Stepper"
-    if device.name == "Pitch Stepper" then
-        -- Clear existing points
-        device:clear_points()
-        
-        -- Define points data with random values
-        local points_data = {}
-        for i = 1, 17 do
-            table.insert(points_data, {
-                scaling=0,
-                time=i,
-                value=math.random()
-            })
-        end
+function PakettiJumpRowsRandom()
+  local song = renoise.song()
+  local current_pattern = song.selected_pattern
+  local num_lines = current_pattern.number_of_lines
+  local random_index = math.random(1, num_lines)
+  song.selected_line_index = random_index
+  renoise.app():show_status("Randomly jumped to line " .. random_index)
+end
 
-        -- Assign the random points data directly
-        device.points = points_data
+for i=1,128 do 
+renoise.tool():add_keybinding{name="Global:Paketti:Jump Within Pattern (Forwards by " .. formatDigits(3,i) .. ")", invoke=function() PakettiJumpRows(i) end}
+renoise.tool():add_midi_mapping{name="Paketti:Jump Within Pattern (Forwards by " .. formatDigits(3,i) .. ")", invoke=function(message) if message:is_trigger() then PakettiJumpRows(i) end end}
+end
 
-        renoise.app():show_status("Pitch Stepper random points filled successfully.")
-    else
-        renoise.app():show_status("Selected device is not a Pitch Stepper.")
+renoise.tool():add_keybinding{name="Global:Paketti:Jump Within Pattern (Forwards by Random)", invoke=function() PakettiJumpRowsRandom() end}
+renoise.tool():add_midi_mapping{name="Paketti:Jump Within Pattern (Forwards by Random)", invoke=function(message) if message:is_trigger() then PakettiJumpRowsRandom() end end}
+
+
+
+
+
+
+
+function crossfade_loop(crossfade_length)
+  -- Check for an active instrument
+  local instrument = renoise.song().selected_instrument
+  if not instrument then
+    renoise.app():show_status("No instrument selected.")
+    return
+  end
+
+  -- Check for an active sample
+  local sample = instrument:sample(1)
+  if not sample then
+    renoise.app():show_status("No sample available.")
+    return
+  end
+
+  -- Check if looping is enabled
+  if not sample.sample_buffer.has_sample_data or sample.loop_mode == renoise.Sample.LOOP_MODE_OFF then
+    renoise.app():show_status("No loop enabled in sample.")
+    return
+  end
+
+  -- Prepare sample buffer and loop parameters
+  local sample_buffer = sample.sample_buffer
+  local loop_start = sample.loop_start
+  local loop_end = sample.loop_end
+  local num_frames = sample_buffer.number_of_frames
+
+  -- Validate frame range for safe crossfade
+  if loop_start <= crossfade_length or loop_end + crossfade_length > num_frames then
+    renoise.app():show_status("Insufficient frames for crossfade range.")
+    return
+  end
+
+  -- Define primary crossfade regions
+  local start_fade_in_start = loop_end - crossfade_length
+  local start_fade_in_end = loop_end
+  local end_fade_out_start = loop_start
+  local end_fade_out_end = loop_start + crossfade_length
+
+  -- Additional 15-frame fade-out settings
+  local extra_fade_length = 15
+
+  -- Prepare to modify sample data
+  sample_buffer:prepare_sample_data_changes()
+
+  -- Primary Crossfade: Apply crossfade between loop start and loop end
+  for i = 0, crossfade_length - 1 do
+    local start_fade_in_pos = start_fade_in_start + i
+    local end_fade_out_pos = end_fade_out_start + i
+
+    -- Calculate fade ratios
+    local fade_in_ratio = i / crossfade_length   -- Ramps from 0 to 1
+    local fade_out_ratio = 1 - fade_in_ratio     -- Ramps from 1 to 0
+
+    -- Apply crossfade to both segments in each channel
+    for c = 1, sample_buffer.number_of_channels do
+      -- Get sample values from loop start and loop end segments
+      local start_val = sample_buffer:sample_data(c, start_fade_in_pos)
+      local end_val = sample_buffer:sample_data(c, end_fade_out_pos)
+
+      -- Primary crossfade for both segments
+      local blended_start_val = (start_val * fade_in_ratio) + (end_val * fade_out_ratio)
+      local blended_end_val = (end_val * fade_in_ratio) + (start_val * fade_out_ratio)
+
+      -- Set crossfaded values back into sample buffer
+      sample_buffer:set_sample_data(c, start_fade_in_pos, blended_start_val)
+      sample_buffer:set_sample_data(c, end_fade_out_pos, blended_end_val)
     end
+  end
+
+  -- Apply the additional 15-frame fade-out at loop boundaries
+  for i = 0, extra_fade_length - 1 do
+    local fade_ratio = (extra_fade_length - i) / extra_fade_length  -- Ramps down from 1 to 0
+
+    -- Apply final fade-out near loop start
+    for c = 1, sample_buffer.number_of_channels do
+      local start_val = sample_buffer:sample_data(c, loop_start + i)
+      local faded_start_val = start_val * fade_ratio
+      sample_buffer:set_sample_data(c, loop_start + i, faded_start_val)
+
+      -- Apply final fade-out near loop end
+      local end_val = sample_buffer:sample_data(c, loop_end - i)
+      local faded_end_val = end_val * fade_ratio
+      sample_buffer:set_sample_data(c, loop_end - i, faded_end_val)
+    end
+  end
+
+  -- Finalize changes to the sample buffer
+  sample_buffer:finalize_sample_data_changes()
+  renoise.app():show_status("Complex crossfade applied for dynamic loop matching.")
 end
 
-function PakettiFillPitchStepperTwoOctaves()
-    local device = renoise.song().selected_instrument.sample_modulation_sets[1].devices[1]
-    if device == nil then renoise.app():show_status("There is no Pitch Stepper modulation device in this instrument, doing nothing.") return end
-
-    if device.name == "Pitch Stepper" then
-        device.length=17
-        device:clear_points()  
-        renoise.song().selected_instrument.sample_modulation_sets[1].pitch_range=24  
-        local points_data = {
-            {scaling=0, time=1, value=0.5},
-            {scaling=0, time=2, value=0.25},
-            {scaling=0, time=3, value=0},
-            {scaling=0, time=4, value=0.25},
-            {scaling=0, time=5, value=0.5},
-            {scaling=0, time=6, value=0.75},
-            {scaling=0, time=7, value=1},
-            {scaling=0, time=8, value=0.75},
-            {scaling=0, time=9, value=0.5},
-            {scaling=0, time=10, value=0.25},
-            {scaling=0, time=11, value=0},
-            {scaling=0, time=12, value=0.25},
-            {scaling=0, time=13, value=0.5},
-            {scaling=0, time=14, value=0.75},
-            {scaling=0, time=15, value=1},
-            {scaling=0, time=16, value=0.75},
-            {scaling=0, time=17, value=0.5},
-        }
-
-            device.points=points_data
- 
-        renoise.app():show_status("Pitch Stepper points filled successfully.")
-    else renoise.app():show_status("Selected device is not a Pitch Stepper.") end
-end
-
-renoise.tool():add_keybinding{name="Global:Paketti:Modify PitchStep Steps (Octave Up+2, Octave Down-2)",invoke=function()
-PakettiFillPitchStepperTwoOctaves() end}
-
-function PakettiFillPitchStepper()
-    local device = renoise.song().selected_instrument.sample_modulation_sets[1].devices[1]
-    if device == nil then renoise.app():show_status("There is no Pitch Stepper modulation device in this instrument, doing nothing.") return end
-
-    if device.name == "Pitch Stepper" then
-        device.length=17
-        device:clear_points()    
-        local points_data = {
-            {scaling=0, time=1, value=0.5},
-            {scaling=0, time=2, value=0},
-            {scaling=0, time=3, value=1},
-            {scaling=0, time=4, value=0},
-            {scaling=0, time=5, value=1},
-            {scaling=0, time=6, value=0},
-            {scaling=0, time=7, value=1},
-            {scaling=0, time=8, value=0},
-            {scaling=0, time=9, value=1},
-            {scaling=0, time=10, value=0},
-            {scaling=0, time=11, value=1},
-            {scaling=0, time=12, value=0},
-            {scaling=0, time=13, value=1},
-            {scaling=0, time=14, value=0},
-            {scaling=0, time=15, value=1},
-            {scaling=0, time=16, value=0},
-        }
-
-            device.points=points_data
- 
-        renoise.app():show_status("Pitch Stepper points filled successfully.")
-    else renoise.app():show_status("Selected device is not a Pitch Stepper.") end
-end
-
-function PakettiClearPitchStepper()
-    local device = renoise.song().selected_instrument.sample_modulation_sets[1].devices[1]
-
-    if device == nil then renoise.app():show_status("There is no Pitch Stepper modulation device in this instrument, doing nothing.") return end
-
-if renoise.song().selected_instrument.sample_modulation_sets[1].devices[1].name == "Pitch Stepper"
-then renoise.song().selected_instrument.sample_modulation_sets[1].devices[1]:clear_points()
-else end
-
-end
-
-renoise.tool():add_keybinding{name="Global:Paketti:Modify PitchStep Steps (Random)",invoke=function() PakettiFillPitchStepperRandom() end}
-renoise.tool():add_keybinding{name="Global:Paketti:Modify PitchStep Steps (Octave Up, Octave Down)",invoke=function() PakettiFillPitchStepper() end}
-renoise.tool():add_keybinding{name="Global:Paketti:Clear PitchStep Steps", invoke=function() PakettiClearPitchStepper() end}
-renoise.tool():add_menu_entry{name="--Sample Modulation Matrix:Paketti..:Show/Hide PitchStep on Selected Instrument",invoke=function() PakettiShowPitchStepper() end}
-renoise.tool():add_menu_entry{name="Sample Modulation Matrix:Paketti..:Modify PitchStep Steps (Random)",invoke=function() PakettiFillPitchStepperRandom() end}
-renoise.tool():add_menu_entry{name="Sample Modulation Matrix:Paketti..:Modify PitchStep Steps (Octave Up, Octave Down)",invoke=function() PakettiFillPitchStepper() end}
-renoise.tool():add_menu_entry{name="Sample Modulation Matrix:Paketti..:Clear PitchStep Steps", invoke=function() PakettiClearPitchStepper() end}
+-- Keybinding setup with crossfade length parameter
+renoise.tool():add_keybinding{
+  name="Global:Paketti:Crossfade Loop",
+  invoke=function() 
+    crossfade_loop(50000)  -- You can change this value to adjust the crossfade length
+  end
+}
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+------
+local dialog -- Variable to track dialog visibility
+
+-- Function to modify the SampleBuffer based on operation and value
 function PakettiOffsetSampleBuffer(operation, number)
   local sample = renoise.song().selected_sample
   local buffer = sample.sample_buffer
@@ -128,9 +170,9 @@ function PakettiOffsetSampleBuffer(operation, number)
         local modified_sample
 
         if operation == "subtract" then
-          modified_sample = math.max(-1.0, math.min(1.0, current_sample - number))
+          modified_sample = math.max(-1.0, math.min(1.0, current_sample + number)) -- Shift down with negative value
         elseif operation == "multiply" then
-          modified_sample = math.max(-1.0, math.min(1.0, current_sample * number))
+          modified_sample = math.max(-1.0, math.min(1.0, current_sample * (1 + number))) -- Apply scaling factor
         else
           renoise.app():show_status("Invalid operation. Use 'subtract' or 'multiply'.")
           return
@@ -147,11 +189,80 @@ function PakettiOffsetSampleBuffer(operation, number)
   end
 end
 
--- Keybinding example for subtraction
-renoise.tool():add_keybinding{name="Sample Editor:Paketti:Offset Sample Buffer by -0.5", invoke=function() PakettiOffsetSampleBuffer("subtract", 0.5) end}
+-- Key handler function as per your specification
+local function PakettiOffsetDialogKeyHandlerFunc(dialog, key)
+  local closer = preferences.pakettiDialogClose.value
+  if key.modifiers == "" and key.name == closer then
+    dialog:close()
+    return
+  end
 
--- Keybinding example for multiplication
-renoise.tool():add_keybinding{name="Sample Editor:Paketti:Multiply Sample Buffer by 0.5", invoke=function() PakettiOffsetSampleBuffer("multiply", 0.5) end}
+  if key.name == "!" then
+    dialog:close()
+    renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
+  else
+    return key
+  end
+end
+
+-- Function to show the offset dialog with slider, switch, and button
+function show_offset_dialog()
+  if dialog and dialog.visible then
+    dialog:close() -- Close if already open
+    return
+  end
+
+  local vb = renoise.ViewBuilder()
+  local slider_value = vb:text { text="0.0", width=40 } -- Initial display text for slider value
+  
+  local slider = vb:slider {
+    min=-1.0,
+    max=1.0,
+    value=0,
+    width=120,
+    notifier=function(value)
+      slider_value.text = string.format("%.2f", value) -- Update text to reflect slider position
+    end
+  }
+
+  local operation_switch = vb:switch { items={ "-", "*" }, value=1, width=40 }
+  
+  local function apply_offset()
+    local value = slider.value
+    local operation = (operation_switch.value == 1) and "subtract" or "multiply"
+    
+    -- Adjust operation logic based on slider value
+    PakettiOffsetSampleBuffer(operation, value)
+
+    renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
+  end
+
+  local content = vb:column {
+    vb:horizontal_aligner {
+      vb:text { text="Offset/Multiplier:" },
+      slider,
+      slider_value -- Display text next to the slider
+    },
+    vb:horizontal_aligner {
+      vb:text { text="Operation:" },
+      operation_switch
+    },
+    vb:button { text="Change Sample Buffer", width=160, notifier=apply_offset }
+  }
+
+  dialog = renoise.app():show_custom_dialog("Offset Sample Buffer", content, PakettiOffsetDialogKeyHandlerFunc)
+      renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
+
+end
+
+-- Keybindings for both operations and dialog
+renoise.tool():add_keybinding { name="Sample Editor:Paketti:Offset Sample Buffer by -0.5", invoke=function() PakettiOffsetSampleBuffer("subtract", 0.5) end }
+renoise.tool():add_keybinding { name="Sample Editor:Paketti:Multiply Sample Buffer by 0.5", invoke=function() PakettiOffsetSampleBuffer("multiply", 0.5) end }
+renoise.tool():add_keybinding { name="Global:Paketti:Offset Dialog...", invoke=show_offset_dialog }
+
+-- Menu entries for Sample Editor and Main Menu
+renoise.tool():add_menu_entry { name="Sample Editor:Paketti..:Offset Dialog...", invoke=show_offset_dialog }
+renoise.tool():add_menu_entry { name="Main Menu:Tools:Paketti..:Offset Dialog...", invoke=show_offset_dialog }
 
 
 
@@ -3941,7 +4052,7 @@ else s.patterns[s.selected_pattern_index]:add_line_notifier(pattern_line_notifie
 end
 
 for cck=1,12 do
-renoise.tool():add_keybinding{name="Global:Paketti:Column Cycle Keyjazz " .. cck,invoke=function() displayNoteColumn(cck) startcolumncycling(cck) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Column Cycle Keyjazz " .. formatDigits(2,cck),invoke=function() displayNoteColumn(cck) startcolumncycling(cck) end}
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Start/Stop Column Cycling",invoke=function() startcolumncycling() 
@@ -4044,7 +4155,7 @@ function PakettiCreateUnisonSamples()
   end
 
   -- Set the volume to -14 dB for each sample in the new instrument
-  local volume = math.db2lin(-14)
+  local volume = math.db2lin(-18)
   for i = 1, #renoise.song().selected_instrument.samples do
     renoise.song().selected_instrument.samples[i].volume = volume
   end
@@ -4057,7 +4168,7 @@ function PakettiCreateUnisonSamples()
   end
 
   -- Set the instrument volume
-  renoise.song().selected_instrument.volume = 0.3
+--  renoise.song().selected_instrument.volume = 0.3
 
   renoise.app():show_status("Unison samples created successfully.")
 end

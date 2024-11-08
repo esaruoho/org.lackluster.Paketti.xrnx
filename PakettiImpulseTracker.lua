@@ -552,6 +552,7 @@ function DoubleSelectAutomation()
 end
 
 renoise.tool():add_keybinding{name = "Pattern Editor:Paketti:Impulse Tracker ALT-D Double Select W/ Automation",invoke=function() DoubleSelectAutomation() end}
+renoise.tool():add_keybinding{name = "Automation:Paketti:Impulse Tracker ALT-D Double Select W/ Automation",invoke=function() DoubleSelectAutomation() end}
 
 
 

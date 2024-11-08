@@ -41,7 +41,6 @@ function PakettiLoadDevicePreset(chainName)
 renoise.app():load_track_device_preset(chainName) 
 end
 
-
 renoise.tool():add_keybinding{name="Global:Paketti:Load Device Chain SimpleSend",invoke=function()
 PakettiLoadDeviceChain("DeviceChains/SimpleSendMidi.xrnt")
 end}
@@ -49,7 +48,6 @@ end}
 renoise.tool():add_keybinding{name="Global:Paketti:Load Device Chain Paketti Doofer Rudiments",invoke=function()
 PakettiLoadDeviceChain("DeviceChains/PakettiDooferRudiments.xrnt")
 end}
-
 
 renoise.tool():add_keybinding{name="Global:Paketti:Load Device Chain ClippyClip",invoke=function()
 PakettiLoadDevicePreset("DeviceChains/ClippyClip.xrdp")
@@ -63,4 +61,25 @@ then renoise.song().selected_track.devices[i].display_name="ClippyClip"
 end
 end
 end}
+
+function PakettiLoadDeviceChain(chainName)
+renoise.app():load_track_device_chain(chainName) 
+end
+
+function PakettiLoadDevicePreset(chainName)
+renoise.app():load_track_device_preset(chainName) 
+end
+
+
+renoise.tool():add_keybinding{name="Global:Paketti:Load Device Chain Track Compressor (NPC1)",invoke=function()
+PakettiLoadDevicePreset("DeviceChains/Track Compressor (NPC1).xrdp") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Device Chain Low - High Cut (steep) (NPC1)",invoke=function()
+PakettiLoadDevicePreset("DeviceChains/Low - High Cut (steep) (NPC1).xrdp") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Device Chain Low - High Cut (halfsteep) (NPC1)",invoke=function()
+PakettiLoadDevicePreset("DeviceChains/Low - High Cut (halfsteep) (NPC1).xrdp") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Device Chain Low - High Cut (flat) (NPC1)",invoke=function()
+PakettiLoadDevicePreset("DeviceChains/Low - High Cut (flat) (NPC1).xrdp") end}
+
+
+
 
