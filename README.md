@@ -2,7 +2,7 @@
 
 ## Releases
 
-https://github.com/esaruoho/org.lackluster.Paketti.xrnx/releases
+https://github.com/esaruoho/paketti/releases
 
 ## Discord
 
