@@ -1,32 +1,12 @@
---[[
-  Paketti Preferences Optimization
-  - Eliminates repeated filter type searches
-  - Implements a lookup table for filter types
-  - Caches the filter index
-  - Removes unnecessary print statements
-]]--
-
 local dialog
 local vb = renoise.ViewBuilder()
 local initial_value = nil
 local dialog = nil
 local pakettiDeviceChainPathDisplayId
 
--- Define a debug flag
 local DEBUG = false
 
--- Lookup table for filter types
-local filter_types = {
-  "None", "LP Clean", "LP K35", "LP Moog", "LP Diode", "HP Clean",
-  "HP K35", "HP Moog", "BP Clean", "BP K35", "BP Moog", "BandPass",
-  "BandStop", "Vowel", "Comb", "Decimator", "Dist Shape", "Dist Fold",
-  "AM Sine", "AM Triangle", "AM Saw", "AM Pulse"
-}
-
-function loadPlaidZap()
-    renoise.app():load_instrument("Gifts/plaidzap.xrni")
-end
-
+local filter_types = {"None", "LP Clean", "LP K35", "LP Moog", "LP Diode", "HP Clean","HP K35", "HP Moog", "BP Clean", "BP K35", "BP Moog", "BandPass","BandStop", "Vowel", "Comb", "Decimator", "Dist Shape", "Dist Fold","AM Sine", "AM Triangle", "AM Saw", "AM Pulse"}
 
 local filter_type_map = {}
 for i, v in ipairs(filter_types) do
@@ -84,15 +64,10 @@ end
 
 local os_name=os.platform()
 local default_executable
-if os_name=="WINDOWS"then
-  default_executable="C:\\Program Files\\espeak\\espeak.exe"
-elseif os_name=="MACINTOSH"then
-  default_executable="/opt/homebrew/bin/espeak-ng"
-else
-  default_executable="/usr/bin/espeak-ng"
-end
+if os_name=="WINDOWS"then default_executable="C:\\Program Files\\espeak\\espeak.exe"
+elseif os_name=="MACINTOSH"then default_executable="/opt/homebrew/bin/espeak-ng"
+else default_executable="/usr/bin/espeak-ng" end
 
--- Main Preferences Document with Segments
 preferences = renoise.Document.create("ScriptingToolPreferences") {
   pakettiDialogClose="esc",
   PakettiDeviceChainPath = "DeviceChains/",
@@ -105,6 +80,23 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
   renderSampleRate=88200,
   renderBitDepth=32,
   renderBypass=false,
+      pakettiTitler = {
+      textfile_path = "External/wordlist.txt",
+      notes_file_path = "External/notes.txt",
+      trackTitlerDateFormat = "YYYY_MM_DD",
+      },
+      pakettiMidiPopulator = {
+      volumeColumn = false,
+      panningColumn = false,
+      delayColumn = false,
+      sampleEffectsColumn = false,
+      noteColumns = 1.0,
+      effectColumns = 1.0,
+      collapsed = false,
+      incomingAudio = false,
+      populateSends = true
+      },
+
   pakettiEditMode=1,
   pakettiLoaderInterpolation=1,
   pakettiLoaderFilterType="LP Clean",
@@ -124,7 +116,6 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
   pakettiSlideContentAutomationToo=true,
   pakettiDefaultXRNI="Presets/12st_Pitchbend.xrni",
   pakettiDefaultDrumkitXRNI="Presets/12st_Pitchbend_Drumkit_C0.xrni",
-
   UserPreferences = {
     userPreferredDevice01 = "<None>",
     userPreferredDevice02 = "<None>",
@@ -152,8 +143,6 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
     sliceCounter=1,
     slicePreviousDirection=1
   },
--- changes made
-  -- AppSelection and SmartFolders Segment
   AppSelection = {
     AppSelection1="",
     AppSelection2="",
@@ -167,13 +156,10 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
   },
   pakettiThemeSelector = {
     PreviousSelectedTheme = "",
-    FavoritedList = { "<No Theme Selected>" }, -- Initialize as a simple table
+    FavoritedList = { "<No Theme Selected>" }, 
     RenoiseLaunchFavoritesLoad = false,
     RenoiseLaunchRandomLoad = false
   },
-  
--- changes made
-  -- Paketti eSpeak Segment
   pakettieSpeak = {
     word_gap=3,
     capitals=5,
@@ -188,7 +174,6 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
     add_render_to_current_instrument=false,
     render_on_change=false
   },
-
   OctaMEDPickPutSlots = {
     SetSelectedInstrument=false,
     UseEditStep=false,
@@ -205,7 +190,6 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
     RandomizeEnabled=false,
     RandomizePercentage=10,
   },
-
   RandomizeSettings = {
     pakettiRandomizeSelectedDevicePercentage=50,
     pakettiRandomizeSelectedDevicePercentageUserPreference1=10,
@@ -242,8 +226,7 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
     pakettiColugaPathToSave="<No path set>",
     pakettiColugaNewInstrumentOrSameInstrument=true,
     pakettiColugaYT_DLPLocation="<No path set>"  
-  },
-  
+  },  
   pakettiCheatSheet = {
     pakettiCheatSheetRandomize=false,
     pakettiCheatSheetRandomizeMin=0,
@@ -252,8 +235,7 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
     pakettiCheatSheetRandomizeWholeTrack=false,
     pakettiCheatSheetRandomizeSwitch=false,
     pakettiCheatSheetRandomizeDontOverwrite=false
-}, 
-
+  }, 
   pakettiPhraseInitDialog = {
     Autoseek = false,
     VolumeColumnVisible = false,
@@ -268,13 +250,8 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
     Length = 64,
     SetName = false,
     Name = ""
-    },
-  pakettiDynamicViews = {
-  bla ="ble"
-  }
-}
-
--- Assigning Preferences to renoise.tool
+    }}
+    
 renoise.tool().preferences = preferences
 
 -- Accessing Segments
@@ -284,6 +261,7 @@ WipeSlices = renoise.tool().preferences.WipeSlices
 AppSelection = renoise.tool().preferences.AppSelection
 RandomizeSettings = renoise.tool().preferences.RandomizeSettings
 pakettiColuga = renoise.tool().preferences.pakettiColuga
+DynamicViewPrefs = renoise.tool().preferences.PakettiDynamicViews
 
 -- Function to initialize the filter index
 local function initialize_filter_index()
@@ -295,14 +273,12 @@ local function initialize_filter_index()
   end
 end
 
--- Call the initialization function once
 initialize_filter_index()
 
 local function pakettiGetXRNIDefaultPresetFiles()
     local presetsFolder = "Presets/"
     local files = os.filenames(presetsFolder, "*.xrni")
     
-    -- Check if any presets were found
     if not files or #files == 0 then
         renoise.app():show_status("No .xrni preset files found in: " .. presetsFolder)
         return { "<No Preset Selected>" }
@@ -443,8 +419,9 @@ function show_paketti_preferences()
                 notifier=function(value) preferences.RandomBPM.value=(value==2) update_random_bpm_preferences() end}
             },
             vb:row { vb:text{text="Pale Green Theme",width=150},vb:button{text="Load",width=100,notifier=function() update_loadPaleGreenTheme_preferences() end} },
-            vb:row { vb:text{text="Gifts: Plaid Zap .XRNI",width=150},vb:button{text="Load",width=100,notifier=function() loadPlaidZap() end} }
-          },
+            vb:row { vb:text{text="Gifts: Plaid Zap .XRNI",width=150},vb:button{text="Load",width=100,notifier=function() renoise.app():load_instrument("Gifts/plaidzap.xrni") end} },
+            vb:row{vb:text{text="200 Drum Machines (.zip)", width=150},vb:button{text="Open URL",width=100,notifier=function() 
+            renoise.app():open_url("http://www.hexawe.net/mess/200.Drum.Machines/") end}}},
     horizontal_rule(),
             vb:column{style = "group", margin = 10, width="100%",
                 vb:row{vb:text{text = "Create New Instrument & Loop from Selection", font="bold",style = "strong"}},
@@ -613,14 +590,11 @@ function show_paketti_preferences()
           end
         end
       }
-    },
-              
-              
-              
-            vb:row { vb:text{text="Preset Files:",width=150},vb:popup{items=presetFiles,width=300,notifier=function(value)
+    },    
+              vb:row { vb:text{text="Preset Files:",width=150},vb:popup{items=presetFiles,width=300,notifier=function(value)
               local selectedFile=presetFiles[value] 
               preferences.pakettiDefaultXRNI.value="Presets/"..selectedFile 
-              vb.views[pakettiDefaultXRNIDisplayId].text=selectedFile 
+              vb.views[pakettiDefaultXRNIDisplayId].text="Presets/"..selectedFile 
             end} },
          
             vb:row { vb:text{text="Default Drumkit XRNI to use:",width=150},vb:textfield{text=preferences.pakettiDefaultDrumkitXRNI.value:match("[^/\\]+$"),width=300,id=pakettiDefaultDrumkitXRNIDisplayId,notifier=function(value) preferences.pakettiDefaultDrumkitXRNI.value=value end},vb:button{text="Browse",width=100,notifier=function()
@@ -629,7 +603,7 @@ function show_paketti_preferences()
             vb:row { vb:text{text="Preset Files:",width=150},vb:popup{items=presetFiles,width=300,notifier=function(value)
               local selectedFile=presetFiles[value] 
               preferences.pakettiDefaultDrumkitXRNI.value="Presets/"..selectedFile 
-              vb.views[pakettiDefaultDrumkitXRNIDisplayId].text=selectedFile 
+              vb.views[pakettiDefaultDrumkitXRNIDisplayId].text="Presets/"..selectedFile 
             end} }
           },
 

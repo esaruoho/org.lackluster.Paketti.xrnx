@@ -1,229 +1,247 @@
 
-<KeyBinding name="Global:Track Devices:Load Device (Native) *XY Pad">
+<KeyBinding name="Global:Paketti:Load Device (Native) *XY Pad">
   <Path>Audio/Effects/Native/*XY Pad</Path>
 </KeyBinding>
 <MIDIMapping name="Track Devices:Paketti:Load Device (Native) *XY Pad">
   <Path>Audio/Effects/Native/*XY Pad</Path>
 </MIDIMapping>
-<KeyBinding name="Global:Track Devices:Load Device (Native) Repeater">
+<KeyBinding name="Global:Paketti:Load Device (Native) Repeater">
   <Path>Audio/Effects/Native/Repeater</Path>
 </KeyBinding>
 <MIDIMapping name="Track Devices:Paketti:Load Device (Native) Repeater">
   <Path>Audio/Effects/Native/Repeater</Path>
 </MIDIMapping>
-<KeyBinding name="Global:Track Devices:Load Device (VST) Frontier">
+<KeyBinding name="Global:Paketti:Load Device (VST) Frontier">
   <Path>Audio/Effects/VST/Frontier</Path>
 </KeyBinding>
 <MIDIMapping name="Track Devices:Paketti:Load Device (VST) Frontier">
   <Path>Audio/Effects/VST/Frontier</Path>
 </MIDIMapping>
-<KeyBinding name="Global:Track Devices:Load Device (VST) Zebrify">
+<KeyBinding name="Global:Paketti:Load Device (VST) Zebrify">
   <Path>Audio/Effects/VST/Zebrify</Path>
 </KeyBinding>
 <MIDIMapping name="Track Devices:Paketti:Load Device (VST) Zebrify">
   <Path>Audio/Effects/VST/Zebrify</Path>
 </MIDIMapping>
-<KeyBinding name="Global:Track Devices:Load Device (VST3/AU) AUSampleDelay">
+<KeyBinding name="Global:Paketti:Load Device (AudioUnit) AUSampleDelay">
   <Path>Audio/Effects/AU/aufx:sdly:appl</Path>
 </KeyBinding>
-<MIDIMapping name="Track Devices:Paketti:Load Device (VST3/AU) AUSampleDelay">
+<MIDIMapping name="Track Devices:Paketti:Load Device (AudioUnit) AUSampleDelay">
   <Path>Audio/Effects/AU/aufx:sdly:appl</Path>
 </MIDIMapping>
-<KeyBinding name="Global:Track Devices:Load Device (VST3/AU) Supercharger">
+<KeyBinding name="Global:Paketti:Load Device (VST3) Supercharger">
   <Path>Audio/Effects/VST3/5653544E692440737570657263686172</Path>
 </KeyBinding>
-<MIDIMapping name="Track Devices:Paketti:Load Device (VST3/AU) Supercharger">
+<MIDIMapping name="Track Devices:Paketti:Load Device (VST3) Supercharger">
   <Path>Audio/Effects/VST3/5653544E692440737570657263686172</Path>
 </MIDIMapping>
-<KeyBinding name="Global:Track Devices:Load Device (Native) Gainer">
+<KeyBinding name="Global:Paketti:Load Device (Native) Gainer">
   <Path>Audio/Effects/Native/Gainer</Path>
 </KeyBinding>
 <MIDIMapping name="Track Devices:Paketti:Load Device (Native) Gainer">
   <Path>Audio/Effects/Native/Gainer</Path>
 </MIDIMapping>
-<KeyBinding name="Global:Track Devices:Load Device (Native) Mixer EQ">
+<KeyBinding name="Global:Paketti:Load Device (Native) Mixer EQ">
   <Path>Audio/Effects/Native/Mixer EQ</Path>
 </KeyBinding>
 <MIDIMapping name="Track Devices:Paketti:Load Device (Native) Mixer EQ">
   <Path>Audio/Effects/Native/Mixer EQ</Path>
 </MIDIMapping>
-<KeyBinding name="Global:Track Devices:Load Device (Native) RingMod 2">
+<KeyBinding name="Global:Paketti:Load Device (Native) RingMod 2">
   <Path>Audio/Effects/Native/RingMod 2</Path>
 </KeyBinding>
 <MIDIMapping name="Track Devices:Paketti:Load Device (Native) RingMod 2">
   <Path>Audio/Effects/Native/RingMod 2</Path>
 </MIDIMapping>
-<KeyBinding name="Global:Track Devices:Load Device (VST) FabFilter Micro">
+<KeyBinding name="Global:Paketti:Load Device (VST) FabFilter Micro">
   <Path>Audio/Effects/VST/FabFilter Micro</Path>
 </KeyBinding>
 <MIDIMapping name="Track Devices:Paketti:Load Device (VST) FabFilter Micro">
   <Path>Audio/Effects/VST/FabFilter Micro</Path>
 </MIDIMapping>
-<KeyBinding name="Global:Track Devices:Load Device (VST3/AU) Zebrify">
+<KeyBinding name="Global:Paketti:Load Device (AudioUnit) Zebrify">
   <Path>Audio/Effects/AU/aumf:SMY2:UHfX</Path>
 </KeyBinding>
-<MIDIMapping name="Track Devices:Paketti:Load Device (VST3/AU) Zebrify">
+<MIDIMapping name="Track Devices:Paketti:Load Device (AudioUnit) Zebrify">
   <Path>Audio/Effects/AU/aumf:SMY2:UHfX</Path>
 </MIDIMapping>
-<KeyBinding name="Global:Track Devices:Load Device (VST3/AU) ZRev">
+<KeyBinding name="Global:Paketti:Load Device (VST3) ZRev">
   <Path>Audio/Effects/VST3/D39D5B69D6AF42FA1234567872655630</Path>
 </KeyBinding>
-<MIDIMapping name="Track Devices:Paketti:Load Device (VST3/AU) ZRev">
+<MIDIMapping name="Track Devices:Paketti:Load Device (VST3) ZRev">
   <Path>Audio/Effects/VST3/D39D5B69D6AF42FA1234567872655630</Path>
 </MIDIMapping>
-<KeyBinding name="Global:Track Devices:Load Device (Native) #Multiband Send">
+<KeyBinding name="Global:Paketti:Load Device (Native) #Multiband Send">
   <Path>Audio/Effects/Native/#Multiband Send</Path>
 </KeyBinding>
 <MIDIMapping name="Track Devices:Paketti:Load Device (Native) #Multiband Send">
   <Path>Audio/Effects/Native/#Multiband Send</Path>
 </MIDIMapping>
-<KeyBinding name="Global:Track Devices:Load Device (Native) #Send">
+<KeyBinding name="Global:Paketti:Load Device (Native) #Send">
   <Path>Audio/Effects/Native/#Send</Path>
 </KeyBinding>
 <MIDIMapping name="Track Devices:Paketti:Load Device (Native) #Send">
   <Path>Audio/Effects/Native/#Send</Path>
 </MIDIMapping>
-<KeyBinding name="Global:Track Devices:Load Device (Native) *Instr. Automation">
+<KeyBinding name="Global:Paketti:Load Device (Native) *Instr. Automation">
   <Path>Audio/Effects/Native/*Instr. Automation</Path>
 </KeyBinding>
 <MIDIMapping name="Track Devices:Paketti:Load Device (Native) *Instr. Automation">
   <Path>Audio/Effects/Native/*Instr. Automation</Path>
 </MIDIMapping>
-<KeyBinding name="Global:Track Devices:Load Device (Native) *Instr. MIDI Control">
+<KeyBinding name="Global:Paketti:Load Device (Native) *Instr. MIDI Control">
   <Path>Audio/Effects/Native/*Instr. MIDI Control</Path>
 </KeyBinding>
 <MIDIMapping name="Track Devices:Paketti:Load Device (Native) *Instr. MIDI Control">
   <Path>Audio/Effects/Native/*Instr. MIDI Control</Path>
 </MIDIMapping>
-<KeyBinding name="Global:Track Devices:Load Device (Native) *Instr. Macros">
+<KeyBinding name="Global:Paketti:Load Device (Native) *Instr. Macros">
   <Path>Audio/Effects/Native/*Instr. Macros</Path>
 </KeyBinding>
 <MIDIMapping name="Track Devices:Paketti:Load Device (Native) *Instr. Macros">
   <Path>Audio/Effects/Native/*Instr. Macros</Path>
 </MIDIMapping>
-<KeyBinding name="Global:Track Devices:Load Device (Native) *Key Tracker">
+<KeyBinding name="Global:Paketti:Load Device (Native) *Key Tracker">
   <Path>Audio/Effects/Native/*Key Tracker</Path>
 </KeyBinding>
 <MIDIMapping name="Track Devices:Paketti:Load Device (Native) *Key Tracker">
   <Path>Audio/Effects/Native/*Key Tracker</Path>
 </MIDIMapping>
-<KeyBinding name="Global:Track Devices:Load Device (Native) #Sidechain">
+<KeyBinding name="Global:Paketti:Load Device (Native) #Sidechain">
   <Path>Audio/Effects/Native/#Sidechain</Path>
 </KeyBinding>
 <MIDIMapping name="Track Devices:Paketti:Load Device (Native) #Sidechain">
   <Path>Audio/Effects/Native/#Sidechain</Path>
 </MIDIMapping>
-<KeyBinding name="Global:Track Devices:Load Device (VST3/AU) AUDelay">
+<KeyBinding name="Global:Paketti:Load Device (AudioUnit) AUDelay">
   <Path>Audio/Effects/AU/aufx:dely:appl</Path>
 </KeyBinding>
-<MIDIMapping name="Track Devices:Paketti:Load Device (VST3/AU) AUDelay">
+<MIDIMapping name="Track Devices:Paketti:Load Device (AudioUnit) AUDelay">
   <Path>Audio/Effects/AU/aufx:dely:appl</Path>
 </MIDIMapping>
-<KeyBinding name="Global:Track Devices:Load Device (VST3/AU) AUDynamicsProcessor">
+<KeyBinding name="Global:Paketti:Load Device (AudioUnit) AUDynamicsProcessor">
   <Path>Audio/Effects/AU/aufx:dcmp:appl</Path>
 </KeyBinding>
-<MIDIMapping name="Track Devices:Paketti:Load Device (VST3/AU) AUDynamicsProcessor">
+<MIDIMapping name="Track Devices:Paketti:Load Device (AudioUnit) AUDynamicsProcessor">
   <Path>Audio/Effects/AU/aufx:dcmp:appl</Path>
 </MIDIMapping>
-<KeyBinding name="Global:Track Devices:Load Device (VST3/AU) AUHipass">
+<KeyBinding name="Global:Paketti:Load Device (AudioUnit) AUHipass">
   <Path>Audio/Effects/AU/aufx:hpas:appl</Path>
 </KeyBinding>
-<MIDIMapping name="Track Devices:Paketti:Load Device (VST3/AU) AUHipass">
+<MIDIMapping name="Track Devices:Paketti:Load Device (AudioUnit) AUHipass">
   <Path>Audio/Effects/AU/aufx:hpas:appl</Path>
 </MIDIMapping>
-<KeyBinding name="Global:Track Devices:Load Device (VST3/AU) AURogerBeep">
+<KeyBinding name="Global:Paketti:Load Device (AudioUnit) AURogerBeep">
   <Path>Audio/Effects/AU/aufx:rogr:appl</Path>
 </KeyBinding>
-<MIDIMapping name="Track Devices:Paketti:Load Device (VST3/AU) AURogerBeep">
+<MIDIMapping name="Track Devices:Paketti:Load Device (AudioUnit) AURogerBeep">
   <Path>Audio/Effects/AU/aufx:rogr:appl</Path>
 </MIDIMapping>
-<KeyBinding name="Global:Track Devices:Load Device (VST3/AU) Repeater">
+<KeyBinding name="Global:Paketti:Load Device (AudioUnit) Repeater">
   <Path>Audio/Effects/AU/aumf:RP78:d16g</Path>
 </KeyBinding>
-<MIDIMapping name="Track Devices:Paketti:Load Device (VST3/AU) Repeater">
+<MIDIMapping name="Track Devices:Paketti:Load Device (AudioUnit) Repeater">
   <Path>Audio/Effects/AU/aumf:RP78:d16g</Path>
 </MIDIMapping>
-<KeyBinding name="Global:Track Devices:Load Device (Native) (Hidden) Stutter">
+<KeyBinding name="Global:Paketti:Load Device (Native) (Hidden) Stutter">
   <Path>Audio/Effects/Native/Stutter</Path>
 </KeyBinding>
 <MIDIMapping name="Track Devices:Paketti:Load Device (Native) (Hidden) Stutter">
   <Path>Audio/Effects/Native/Stutter</Path>
 </MIDIMapping>
-<KeyBinding name="Global:Track Devices:Load Device (VST) George Yohng's W1 Limiter">
+<KeyBinding name="Global:Paketti:Load Device (VST) George Yohng's W1 Limiter">
   <Path>Audio/Effects/VST/George Yohng's W1 Limiter</Path>
 </KeyBinding>
 <MIDIMapping name="Track Devices:Paketti:Load Device (VST) George Yohng's W1 Limiter">
   <Path>Audio/Effects/VST/George Yohng's W1 Limiter</Path>
 </MIDIMapping>
-<KeyBinding name="Global:Track Devices:Load Device (VST) Spacer">
+<KeyBinding name="Global:Paketti:Load Device (VST) Spacer">
   <Path>Audio/Effects/VST/Spacer</Path>
 </KeyBinding>
 <MIDIMapping name="Track Devices:Paketti:Load Device (VST) Spacer">
   <Path>Audio/Effects/VST/Spacer</Path>
 </MIDIMapping>
-<KeyBinding name="Global:Track Devices:Load Device (VST) Uhbik-S">
+<KeyBinding name="Global:Paketti:Load Device (VST) Uhbik-S">
   <Path>Audio/Effects/VST/Uhbik-S</Path>
 </KeyBinding>
 <MIDIMapping name="Track Devices:Paketti:Load Device (VST) Uhbik-S">
   <Path>Audio/Effects/VST/Uhbik-S</Path>
 </MIDIMapping>
-<KeyBinding name="Global:Track Devices:Load Device (Native) *Meta Mixer">
+<KeyBinding name="Global:Paketti:Load Device (Native) *Meta Mixer">
   <Path>Audio/Effects/Native/*Meta Mixer</Path>
 </KeyBinding>
 <MIDIMapping name="Track Devices:Paketti:Load Device (Native) *Meta Mixer">
   <Path>Audio/Effects/Native/*Meta Mixer</Path>
 </MIDIMapping>
-<KeyBinding name="Global:Track Devices:Load Device (Native) Cabinet Simulator">
+<KeyBinding name="Global:Paketti:Load Device (Native) Cabinet Simulator">
   <Path>Audio/Effects/Native/Cabinet Simulator</Path>
 </KeyBinding>
 <MIDIMapping name="Track Devices:Paketti:Load Device (Native) Cabinet Simulator">
   <Path>Audio/Effects/Native/Cabinet Simulator</Path>
 </MIDIMapping>
-<KeyBinding name="Global:Track Devices:Load Device (Native) Comb Filter 2">
+<KeyBinding name="Global:Paketti:Load Device (Native) Comb Filter 2">
   <Path>Audio/Effects/Native/Comb Filter 2</Path>
 </KeyBinding>
 <MIDIMapping name="Track Devices:Paketti:Load Device (Native) Comb Filter 2">
   <Path>Audio/Effects/Native/Comb Filter 2</Path>
 </MIDIMapping>
-<KeyBinding name="Global:Track Devices:Load Device (Native) DC Offset">
+<KeyBinding name="Global:Paketti:Load Device (Native) DC Offset">
   <Path>Audio/Effects/Native/DC Offset</Path>
 </KeyBinding>
 <MIDIMapping name="Track Devices:Paketti:Load Device (Native) DC Offset">
   <Path>Audio/Effects/Native/DC Offset</Path>
 </MIDIMapping>
-<KeyBinding name="Global:Track Devices:Load Device (Native) *Velocity Tracker">
+<KeyBinding name="Global:Paketti:Load Device (Native) *Velocity Tracker">
   <Path>Audio/Effects/Native/*Velocity Tracker</Path>
 </KeyBinding>
 <MIDIMapping name="Track Devices:Paketti:Load Device (Native) *Velocity Tracker">
   <Path>Audio/Effects/Native/*Velocity Tracker</Path>
 </MIDIMapping>
-<KeyBinding name="Global:Track Devices:Load Device (Native) Bus Compressor">
+<KeyBinding name="Global:Paketti:Load Device (Native) Bus Compressor">
   <Path>Audio/Effects/Native/Bus Compressor</Path>
 </KeyBinding>
 <MIDIMapping name="Track Devices:Paketti:Load Device (Native) Bus Compressor">
   <Path>Audio/Effects/Native/Bus Compressor</Path>
 </MIDIMapping>
-<KeyBinding name="Global:Track Devices:Load Device (VST3/AU) TDR Kotelnikov">
+<KeyBinding name="Global:Paketti:Load Device (AudioUnit) TDR Kotelnikov">
   <Path>Audio/Effects/AU/aufx:Td96:Tdrl</Path>
 </KeyBinding>
-<MIDIMapping name="Track Devices:Paketti:Load Device (VST3/AU) TDR Kotelnikov">
+<MIDIMapping name="Track Devices:Paketti:Load Device (AudioUnit) TDR Kotelnikov">
   <Path>Audio/Effects/AU/aufx:Td96:Tdrl</Path>
 </MIDIMapping>
-<KeyBinding name="Global:Track Devices:Load Device (Native) (Hidden) Scream Filter">
+<KeyBinding name="Global:Paketti:Load Device (Native) (Hidden) Scream Filter">
   <Path>Audio/Effects/Native/Scream Filter</Path>
 </KeyBinding>
 <MIDIMapping name="Track Devices:Paketti:Load Device (Native) (Hidden) Scream Filter">
   <Path>Audio/Effects/Native/Scream Filter</Path>
 </MIDIMapping>
-<KeyBinding name="Global:Track Devices:Load Device (Native) (Hidden) Flanger">
+<KeyBinding name="Global:Paketti:Load Device (Native) (Hidden) Flanger">
   <Path>Audio/Effects/Native/Flanger</Path>
 </KeyBinding>
 <MIDIMapping name="Track Devices:Paketti:Load Device (Native) (Hidden) Flanger">
   <Path>Audio/Effects/Native/Flanger</Path>
 </MIDIMapping>
-<KeyBinding name="Global:Track Devices:Load Device (AudioUnit) Absynth 5 MFX">
+<KeyBinding name="Global:Paketti:Load Device (AudioUnit) Absynth 5 MFX">
   <Path>Audio/Effects/AU/aumf:Clm5:-NI-</Path>
 </KeyBinding>
 <MIDIMapping name="Track Devices:Paketti:Load Device (AudioUnit) Absynth 5 MFX">
   <Path>Audio/Effects/AU/aumf:Clm5:-NI-</Path>
+</MIDIMapping>
+<KeyBinding name="Global:Paketti:Load Device (Native) (Hidden) Filter">
+  <Path>Audio/Effects/Native/Filter</Path>
+</KeyBinding>
+<MIDIMapping name="Track Devices:Paketti:Load Device (Native) (Hidden) Filter">
+  <Path>Audio/Effects/Native/Filter</Path>
+</MIDIMapping>
+<KeyBinding name="Global:Paketti:Load Device (Native) (Hidden) Filter 2">
+  <Path>Audio/Effects/Native/Filter 2</Path>
+</KeyBinding>
+<MIDIMapping name="Track Devices:Paketti:Load Device (Native) (Hidden) Filter 2">
+  <Path>Audio/Effects/Native/Filter 2</Path>
+</MIDIMapping>
+<KeyBinding name="Global:Paketti:Load Device (Native) (Hidden) Filter 3">
+  <Path>Audio/Effects/Native/Filter 3</Path>
+</KeyBinding>
+<MIDIMapping name="Track Devices:Paketti:Load Device (Native) (Hidden) Filter 3">
+  <Path>Audio/Effects/Native/Filter 3</Path>
 </MIDIMapping>

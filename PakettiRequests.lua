@@ -4819,7 +4819,7 @@ end}
 -- Add keybinding for shuffling cards without opening the dialog
 renoise.tool():add_keybinding{name="Global:Paketti:Shuffle Oblique Strategies Cards",invoke=shuffle_oblique_strategies}
 -------
-
+-- Paketti Track Titler
 
 local dialog
 local vb = renoise.ViewBuilder()
@@ -4840,7 +4840,7 @@ local date_formats = { -- list of possible date formats
   "MM-DD-YY",
   "MM-DD-YYYY"
 }
-local prefs_path = renoise.tool().bundle_path .. "preferencesSave.xml"
+--local prefs_path = renoise.tool().bundle_path .. "preferencesSave.xml"
 
 -- Function to apply the selected text format
 local function PakettiTitlerApplyTextFormat(text)
@@ -4967,25 +4967,16 @@ end
 
 -- Function to load preferences from XML
 local function PakettiTitlerPreferencesLoad()
-  local prefs = renoise.Document.create("preferences") {
-    textfile_path = default_file_path,
-    notes_file_path = default_notes_file_path,
-    trackTitlerDateFormat = date_format_option
-  }
-  prefs:load_from(prefs_path)
-  selected_file_path = prefs.textfile_path.value
-  notes_file_path = prefs.notes_file_path.value
-  date_format_option = prefs.trackTitlerDateFormat.value
+  selected_file_path = renoise.tool().preferences.pakettiTitler.textfile_path.value
+  notes_file_path = renoise.tool().preferences.pakettiTitler.notes_file_path.value
+  date_format_option = renoise.tool().preferences.pakettiTitler.trackTitlerDateFormat.value
 end
 
 -- Function to save preferences to XML
 local function PakettiTitlerPreferencesSave()
-  local prefs = renoise.Document.create("preferences") {
-    textfile_path = selected_file_path,
-    notes_file_path = notes_file_path,
-    trackTitlerDateFormat = date_format_option
-  }
-  prefs:save_as(prefs_path)
+renoise.tool().preferences.pakettiTitler.textfile_path.value= selected_file_path
+renoise.tool().preferences.pakettiTitler.notes_file_path.value = notes_file_path
+renoise.tool().preferences.pakettiTitler.trackTitlerDateFormat.value = date_format_option
 end
 
 -- Function to get the index of the current date format
@@ -5006,6 +4997,7 @@ function PakettiTitlerDialog()
 
   local function PakettiTitlerCloseDialog()
     if dialog and dialog.visible then
+      PakettiTitlerPreferencesSave()
       dialog:close()
     end
   end
@@ -5199,7 +5191,7 @@ function PakettiTitlerDialog()
       vb:text{text = "No Date"}
     },
     vb:row{
-      vb:text{text = "Separator:"},
+      vb:text{text = "Separator", width=70},
       vb:switch{
         id = "date_separator_switch",
         items = {"_", "-"},
@@ -5209,9 +5201,9 @@ function PakettiTitlerDialog()
       }
     },
     vb:row{
-      vb:text{text = "Date Format:"},
+      vb:text{text = "Date Format", width=70},
       vb:popup{
-        width= 300,
+        width= 150,
         id = "date_format_popup",
         items = date_formats,
         value = PakettiTitlerGetDateFormatIndex(),
@@ -5219,7 +5211,7 @@ function PakettiTitlerDialog()
       }
     },
     vb:row{
-      vb:text{text = "Text Format:"},
+      vb:text{text = "Text Format", width=70},
       vb:switch{
         id = "text_format_switch",
         items = {"Off", "lowercase", "Capital", "UPPERCASE", "eLiTe"},
@@ -5229,7 +5221,7 @@ function PakettiTitlerDialog()
       }
     },
     vb:row{
-      vb:text{text = "Save notes:"},
+      vb:text{text = "Save notes:", width=70},
       vb:textfield{
         id = "notes_file_field",
         text = notes_file_path,
@@ -5239,19 +5231,9 @@ function PakettiTitlerDialog()
           PakettiTitlerPreferencesSave()
         end
       },
-      vb:button{
-        text = "Browse",
-        notifier = PakettiTitlerBrowseNotesFile
-      },
-      vb:button{
-        text = "Save",
-        notifier = PakettiTitlerSaveTitleToNotes
-      },
-      vb:button{
-        text = "Open Path",
-        notifier = PakettiTitlerOpenNotesPath
-      }
-    }
+      vb:button{text = "Browse",notifier = PakettiTitlerBrowseNotesFile},
+      vb:button{text = "Save",notifier = PakettiTitlerSaveTitleToNotes},
+      vb:button{text = "Open Path",notifier = PakettiTitlerOpenNotesPath}}
   }
 
   -- Initialize filename display
@@ -5264,7 +5246,6 @@ end
 renoise.tool():add_menu_entry{name = "Main Menu:File:Paketti..:Paketti Track Dater & Titler...", invoke = PakettiTitlerDialog}
 renoise.tool():add_keybinding{name = "Global:Paketti:Paketti Track Dater & Titler", invoke = PakettiTitlerDialog}
 renoise.tool():add_menu_entry{name = "Main Menu:File:Save (Paketti Track Dater & Titler)...", invoke = PakettiTitlerDialog}
-
 ------
 renoise.tool():add_keybinding{
   name="Global:Paketti:Set Selected Sample Volume to -INF dB",
@@ -5437,12 +5418,8 @@ renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample (Random) 
 renoise.tool():add_midi_mapping{name="Paketti:Set Selected Sample (+1) Velocity Range 7F others 00", invoke=function(message) if message:is_trigger() then sample_one_down() end end}
 renoise.tool():add_midi_mapping{name="Paketti:Set Selected Sample (-1) Velocity Range 7F others 00", invoke=function(message) if message:is_trigger() then sample_one_up() end end}
 renoise.tool():add_midi_mapping{name="Paketti:Set Selected Sample (Random) Velocity Range 7F others 00", invoke=function(message) if message:is_trigger() then sample_random() end end}
-renoise.tool():add_midi_mapping{name="Paketti:Set Selected Sample Velocity Range 7F",
-invoke=function(message)  if message:is_trigger() then SelectedSampleVelocityRange(0,127)
-end end}
-renoise.tool():add_midi_mapping{name="Paketti:Set Selected Sample Velocity Range 00",
-invoke=function(message)  if message:is_trigger() then SelectedSampleVelocityRange(0,0)
-end end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Selected Sample Velocity Range 7F",invoke=function(message) if message:is_trigger() then SelectedSampleVelocityRange(0,127) end end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Selected Sample Velocity Range 00",invoke=function(message) if message:is_trigger() then SelectedSampleVelocityRange(0,0) end end}
 
 
 renoise.tool():add_menu_entry{name="--Sample Mappings:Paketti..:Set Selected Sample (+1) Velocity Range 7F others 00", invoke=function() sample_one_down() end}
@@ -5467,12 +5444,104 @@ function SelectedSampleVelocityRange(number1,number2)
 end
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Velocity Range 7F",
-invoke=function() SelectedSampleVelocityRange(0,127)
-end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Velocity Range 00",
-invoke=function() SelectedSampleVelocityRange(0,0)
-end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Velocity Range 7F",invoke=function() SelectedSampleVelocityRange(0,127) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Velocity Range 00",invoke=function() SelectedSampleVelocityRange(0,0) end}
+
+--[[ 
+  Renoise Tool: Paketti - Set Sample Slot Velocity Range
+  Description: Allows setting the velocity range for individual sample slots (01 to 32) via keybindings and MIDI mappings.
+--]]
+
+
+
+-- Function to set the velocity range for a specific sample slot
+local function SetSampleSlotVelocity(sample_slot_number, velocity)
+  local song = renoise.song()
+  local instrument = song.selected_instrument
+
+  -- Edge case: no instrument selected or no samples
+  if not instrument or #instrument.samples == 0 then
+    renoise.app():show_status("No instrument or samples available.")
+    return
+  end
+
+  -- Validate sample slot number
+  if sample_slot_number < 1 or sample_slot_number > 32 then
+    renoise.app():show_status(string.format("Sample slot %02d is out of range (01-32).", sample_slot_number))
+    return
+  end
+
+  -- Check if the sample slot exists
+  if not instrument.samples[sample_slot_number] then
+    renoise.app():show_status(string.format("Sample slot %02d does not exist.", sample_slot_number))
+    return
+  end
+
+  -- Access the sample mapping for the given sample slot
+  local mapping_group = 1 -- Assuming group 1; adjust if necessary
+  if not instrument.sample_mappings[mapping_group] then
+    renoise.app():show_status("Sample mapping group does not exist.")
+    return
+  end
+
+  local mapping = instrument.sample_mappings[mapping_group][sample_slot_number]
+
+  if not mapping then
+    renoise.app():show_status(string.format("Sample mapping for slot %02d not found.", sample_slot_number))
+    return
+  end
+
+  -- Set the velocity range based on the velocity argument
+  if velocity == 0 then
+    mapping.velocity_range = {0, 0}
+  elseif velocity == 127 then
+    mapping.velocity_range = {0, 127}
+  else
+    renoise.app():show_status("Invalid velocity value. Use 0 or 127.")
+    return
+  end
+
+  renoise.app():show_status(string.format("Set velocity range of Sample Slot %02d to {%d, %d}", 
+                                         sample_slot_number, 
+                                         mapping.velocity_range[1], 
+                                         mapping.velocity_range[2]))
+end
+
+  for i = 1, 32 do
+      local sample_slot_name = formatDigits(2, i)
+
+      -- Keybinding for setting velocity to 00
+      renoise.tool():add_keybinding{
+        name = "Global:Paketti:Set Sample Slot " .. sample_slot_name .. " Velocity to 00",
+        invoke = function() SetSampleSlotVelocity(i, 0) end
+      }
+
+      -- Keybinding for setting velocity to 7F
+      renoise.tool():add_keybinding{
+        name = "Global:Paketti:Set Sample Slot " .. sample_slot_name .. " Velocity to 7F",
+        invoke = function() SetSampleSlotVelocity(i, 127) end
+      }
+
+      -- MIDI Mapping for setting velocity to 00
+      renoise.tool():add_midi_mapping{
+        name = "Paketti:Set Sample Slot " .. sample_slot_name .. " Velocity to 00",
+        invoke = function(message) if message:is_trigger() then SetSampleSlotVelocity(i, 0) end end
+      }
+
+      -- MIDI Mapping for setting velocity to 7F
+      renoise.tool():add_midi_mapping{
+        name = "Paketti:Set Sample Slot " .. sample_slot_name .. " Velocity to 7F",
+        invoke = function(message) if message:is_trigger() then SetSampleSlotVelocity(i, 127) end end
+      }
+  end
+
+
+
+
+
+
+
+
 
 function SelectedAllSamplesVelocityRange(number1,number2)
   local song = renoise.song()
@@ -5499,15 +5568,15 @@ end}
 
 
 -----
--- Resize all non-empty patterns to 96 lines
-function resize_all_non_empty_patterns_to_96()
+-- Resize all non-empty patterns to <rowvalue> lines
+function resize_all_non_empty_patterns_to(rowvalue)
   local song = renoise.song()
   for i = 1, #song.patterns do
     if not song.patterns[i].is_empty then
-      song.patterns[i].number_of_lines = 96
+      song.patterns[i].number_of_lines = rowvalue
     end
   end
-  renoise.app():show_status("Resized all non-empty patterns to 96 lines.")
+  renoise.app():show_status("Resized all non-empty patterns to " .. rowvalue .. " lines.")
 end
 
 -- Resize all non-empty patterns to the current pattern's length
@@ -5523,12 +5592,47 @@ function resize_all_non_empty_patterns_to_current_pattern_length()
 end
 
 -- Add the menu entries to the Global:Paketti section
-renoise.tool():add_keybinding{name="Global:Paketti:Resize all non-empty Patterns to 96",invoke = resize_all_non_empty_patterns_to_96}
 renoise.tool():add_keybinding{name="Global:Paketti:Resize all non-empty Patterns to current Pattern length",invoke = resize_all_non_empty_patterns_to_current_pattern_length}
-renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Resize all non-empty Patterns to 96",invoke = resize_all_non_empty_patterns_to_96}
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Resize all non-empty Patterns to current Pattern length",invoke = resize_all_non_empty_patterns_to_current_pattern_length}
-renoise.tool():add_menu_entry{name="Pattern Sequencer:Paketti..:Resize all non-empty Patterns to 96",invoke = resize_all_non_empty_patterns_to_96}
 renoise.tool():add_menu_entry{name="Pattern Sequencer:Paketti..:Resize all non-empty Patterns to current Pattern length",invoke = resize_all_non_empty_patterns_to_current_pattern_length}
+
+renoise.tool():add_menu_entry{name="Pattern Sequencer:Paketti..:Resize all non-empty Patterns to 064",invoke=function() resize_all_non_empty_patterns_to(064) end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Resize all non-empty Patterns to 064",invoke=function() resize_all_non_empty_patterns_to(064) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Resize all non-empty Patterns to 064",invoke=function() resize_all_non_empty_patterns_to(064) end}
+renoise.tool():add_menu_entry{name="Pattern Sequencer:Paketti..:Resize all non-empty Patterns to 048",invoke=function() resize_all_non_empty_patterns_to(048) end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Resize all non-empty Patterns to 048",invoke=function() resize_all_non_empty_patterns_to(048) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Resize all non-empty Patterns to 048",invoke=function() resize_all_non_empty_patterns_to(048) end}
+renoise.tool():add_menu_entry{name="Pattern Sequencer:Paketti..:Resize all non-empty Patterns to 032",invoke=function() resize_all_non_empty_patterns_to(032) end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Resize all non-empty Patterns to 032",invoke=function() resize_all_non_empty_patterns_to(032) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Resize all non-empty Patterns to 032",invoke=function() resize_all_non_empty_patterns_to(032) end}
+renoise.tool():add_menu_entry{name="Pattern Sequencer:Paketti..:Resize all non-empty Patterns to 016",invoke=function() resize_all_non_empty_patterns_to(016) end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Resize all non-empty Patterns to 016",invoke=function() resize_all_non_empty_patterns_to(016) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Resize all non-empty Patterns to 016",invoke=function() resize_all_non_empty_patterns_to(016) end}
+renoise.tool():add_menu_entry{name="Pattern Sequencer:Paketti..:Resize all non-empty Patterns to 012",invoke=function() resize_all_non_empty_patterns_to(012) end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Resize all non-empty Patterns to 012",invoke=function() resize_all_non_empty_patterns_to(12) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Resize all non-empty Patterns to 012",invoke=function() resize_all_non_empty_patterns_to(12) end}
+renoise.tool():add_menu_entry{name="Pattern Sequencer:Paketti..:Resize all non-empty Patterns to 024",invoke=function() resize_all_non_empty_patterns_to(024) end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Resize all non-empty Patterns to 024",invoke=function() resize_all_non_empty_patterns_to(024) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Resize all non-empty Patterns to 024",invoke=function() resize_all_non_empty_patterns_to(024) end}
+renoise.tool():add_menu_entry{name="Pattern Sequencer:Paketti..:Resize all non-empty Patterns to 096",invoke=function() resize_all_non_empty_patterns_to(96) end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Resize all non-empty Patterns to 096",invoke=function() resize_all_non_empty_patterns_to(96) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Resize all non-empty Patterns to 096",invoke=function() resize_all_non_empty_patterns_to(96) end}
+renoise.tool():add_menu_entry{name="Pattern Sequencer:Paketti..:Resize all non-empty Patterns to 128",invoke=function() resize_all_non_empty_patterns_to(128) end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Resize all non-empty Patterns to 128",invoke=function() resize_all_non_empty_patterns_to(128) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Resize all non-empty Patterns to 128",invoke=function() resize_all_non_empty_patterns_to(128) end}
+renoise.tool():add_menu_entry{name="Pattern Sequencer:Paketti..:Resize all non-empty Patterns to 192",invoke=function() resize_all_non_empty_patterns_to(192) end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Resize all non-empty Patterns to 192",invoke=function() resize_all_non_empty_patterns_to(192) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Resize all non-empty Patterns to 192",invoke=function() resize_all_non_empty_patterns_to(192) end}
+renoise.tool():add_menu_entry{name="Pattern Sequencer:Paketti..:Resize all non-empty Patterns to 256",invoke=function() resize_all_non_empty_patterns_to(256) end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Resize all non-empty Patterns to 256",invoke=function() resize_all_non_empty_patterns_to(256) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Resize all non-empty Patterns to 256",invoke=function() resize_all_non_empty_patterns_to(256) end}
+renoise.tool():add_menu_entry{name="Pattern Sequencer:Paketti..:Resize all non-empty Patterns to 384",invoke=function() resize_all_non_empty_patterns_to(384) end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Resize all non-empty Patterns to 384",invoke=function() resize_all_non_empty_patterns_to(384) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Resize all non-empty Patterns to 384",invoke=function() resize_all_non_empty_patterns_to(384) end}
+renoise.tool():add_menu_entry{name="Pattern Sequencer:Paketti..:Resize all non-empty Patterns to 512",invoke=function() resize_all_non_empty_patterns_to(512) end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Resize all non-empty Patterns to 512",invoke=function() resize_all_non_empty_patterns_to(512) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Resize all non-empty Patterns to 512",invoke=function() resize_all_non_empty_patterns_to(512) end}
+
 
 -------
 -- Function to copy sample settings from one sample to another
@@ -7616,4 +7720,298 @@ function ShowHideSelectedTrack(slot)
   end
 end
 
+--
+function PakettiJumpRowsForward(jump_amount)
+  local song = renoise.song()
+  local current_pattern = song.selected_pattern
+  local num_lines = current_pattern.number_of_lines
+  local new_index = (song.selected_line_index + jump_amount - 1) % num_lines + 1
+  song.selected_line_index = new_index
+  renoise.app():show_status("Jumped forward " .. jump_amount .. " rows to line " .. new_index)
+end
+
+function PakettiJumpRowsBackward(jump_amount)
+  local song = renoise.song()
+  local current_pattern = song.selected_pattern
+  local num_lines = current_pattern.number_of_lines
+  local new_index = (song.selected_line_index - jump_amount - 1) % num_lines + 1
+  song.selected_line_index = new_index
+  renoise.app():show_status("Jumped backward " .. jump_amount .. " rows to line " .. new_index)
+end
+
+function PakettiJumpRowsRandomForward()
+  local song = renoise.song()
+  local current_pattern = song.selected_pattern
+  local num_lines = current_pattern.number_of_lines
+  local random_index = math.random(1, num_lines)
+  song.selected_line_index = random_index
+  renoise.app():show_status("Randomly jumped to line " .. random_index)
+end
+
+function PakettiJumpRowsRandomBackward()
+  local song = renoise.song()
+  local current_pattern = song.selected_pattern
+  local num_lines = current_pattern.number_of_lines
+  local random_index = (song.selected_line_index - math.random(1, num_lines) - 1) % num_lines + 1
+  song.selected_line_index = random_index
+  renoise.app():show_status("Randomly jumped backward to line " .. random_index)
+end
+
+for i = 1, 128 do
+  renoise.tool():add_keybinding{name="Global:Paketti:Jump Forward Within Pattern by " .. formatDigits(3, i), invoke=function() PakettiJumpRowsForward(i) end}
+  renoise.tool():add_midi_mapping{name="Paketti:Jump Forward Within Pattern by " .. formatDigits(3, i), invoke=function(message) if message:is_trigger() then PakettiJumpRowsForward(i) end end}
+  renoise.tool():add_keybinding{name="Global:Paketti:Jump Backward Within Pattern by " .. formatDigits(3, i), invoke=function() PakettiJumpRowsBackward(i) end}
+  renoise.tool():add_midi_mapping{name="Paketti:Jump Backward Within Pattern by " .. formatDigits(3, i), invoke=function(message) if message:is_trigger() then PakettiJumpRowsBackward(i) end end}
+end
+renoise.tool():add_keybinding{name="Global:Paketti:Jump Forward Within Pattern by Random", invoke=function() PakettiJumpRowsRandomForward() end}
+renoise.tool():add_midi_mapping{name="Paketti:Jump Forward Within Pattern by Random", invoke=function(message) if message:is_trigger() then PakettiJumpRowsRandomForward() end end}
+renoise.tool():add_keybinding{name="Global:Paketti:Jump Backward Within Pattern by Random", invoke=function() PakettiJumpRowsRandomBackward() end}
+renoise.tool():add_midi_mapping{name="Paketti:Jump Backward Within Pattern by Random", invoke=function(message) if message:is_trigger() then PakettiJumpRowsRandomBackward() end end}
+
+local function get_total_song_rows()
+  local song = renoise.song()
+  local total_rows = 0
+  for _, pattern_index in ipairs(song.sequencer.pattern_sequence) do
+    total_rows = total_rows + song.patterns[pattern_index].number_of_lines
+  end
+  return total_rows
+end
+
+local function get_pattern_and_row_from_cumulative_position(position)
+  local song = renoise.song()
+  local cumulative_rows = 0
+
+  for sequence_index, pattern_index in ipairs(song.sequencer.pattern_sequence) do
+    local pattern_length = song.patterns[pattern_index].number_of_lines
+    if position <= cumulative_rows + pattern_length then
+      return sequence_index, position - cumulative_rows
+    end
+    cumulative_rows = cumulative_rows + pattern_length
+  end
+
+  return #song.sequencer.pattern_sequence, song.patterns[song.sequencer.pattern_sequence[#song.sequencer.pattern_sequence]].number_of_lines
+end
+
+local function get_current_cumulative_position()
+  local song = renoise.song()
+  local sequence_index = song.selected_sequence_index
+  local line_index = song.selected_line_index
+  local cumulative_rows = 0
+
+  for i = 1, sequence_index - 1 do
+    cumulative_rows = cumulative_rows + song.patterns[song.sequencer.pattern_sequence[i]].number_of_lines
+  end
+
+  return cumulative_rows + line_index
+end
+
+-- Forward jump across patterns in the song
+function PakettiJumpRowsForwardInSong(jump_amount)
+  local song = renoise.song()
+  local current_position = get_current_cumulative_position()
+  local total_rows = get_total_song_rows()
+  local target_position = math.min(current_position + jump_amount, total_rows)
+
+  local target_sequence, target_row = get_pattern_and_row_from_cumulative_position(target_position)
+  song.selected_sequence_index = target_sequence
+  song.selected_line_index = target_row
+  renoise.app():show_status("Jumped forward within song by " .. jump_amount .. " rows to sequence " .. target_sequence .. ", row " .. target_row)
+end
+
+-- Backward jump across patterns in the song
+function PakettiJumpRowsBackwardInSong(jump_amount)
+  local song = renoise.song()
+  local current_position = get_current_cumulative_position()
+  local target_position = math.max(current_position - jump_amount, 1)
+
+  local target_sequence, target_row = get_pattern_and_row_from_cumulative_position(target_position)
+  song.selected_sequence_index = target_sequence
+  song.selected_line_index = target_row
+  renoise.app():show_status("Jumped backward within song by " .. jump_amount .. " rows to sequence " .. target_sequence .. ", row " .. target_row)
+end
+
+-- Random forward jump within song
+function PakettiJumpRowsRandomForwardInSong()
+  local total_rows = get_total_song_rows()
+  local random_position = math.random(1, total_rows)
+  local target_sequence, target_row = get_pattern_and_row_from_cumulative_position(random_position)
+  renoise.song().selected_sequence_index = target_sequence
+  renoise.song().selected_line_index = target_row
+  renoise.app():show_status("Randomly jumped forward within song to sequence " .. target_sequence .. ", row " .. target_row)
+end
+
+-- Random backward jump within song
+function PakettiJumpRowsRandomBackwardInSong()
+  local total_rows = get_total_song_rows()
+  local random_position = math.random(1, total_rows)
+  local target_sequence, target_row = get_pattern_and_row_from_cumulative_position(total_rows - random_position)
+  renoise.song().selected_sequence_index = target_sequence
+  renoise.song().selected_line_index = target_row
+  renoise.app():show_status("Randomly jumped backward within song to sequence " .. target_sequence .. ", row " .. target_row)
+end
+
+for i = 1, 128 do
+  renoise.tool():add_keybinding{name="Global:Paketti:Jump Forward Within Song by " .. formatDigits(3, i), invoke=function() PakettiJumpRowsForwardInSong(i) end}
+  renoise.tool():add_midi_mapping{name="Paketti:Jump Forward Within Song by " .. formatDigits(3, i), invoke=function(message) if message:is_trigger() then PakettiJumpRowsForwardInSong(i) end end}
+
+  renoise.tool():add_keybinding{name="Global:Paketti:Jump Backward Within Song by " .. formatDigits(3, i), invoke=function() PakettiJumpRowsBackwardInSong(i) end}
+  renoise.tool():add_midi_mapping{name="Paketti:Jump Backward Within Song by " .. formatDigits(3, i), invoke=function(message) if message:is_trigger() then PakettiJumpRowsBackwardInSong(i) end end}
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Jump Forward Within Song by Random", invoke=function() PakettiJumpRowsRandomForwardInSong() end}
+renoise.tool():add_midi_mapping{name="Paketti:Jump Forward Within Song by Random", invoke=function(message) if message:is_trigger() then PakettiJumpRowsRandomForwardInSong() end end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Jump Backward Within Song by Random", invoke=function() PakettiJumpRowsRandomBackwardInSong() end}
+renoise.tool():add_midi_mapping{name="Paketti:Jump Backward Within Song by Random", invoke=function(message) if message:is_trigger() then PakettiJumpRowsRandomBackwardInSong() end end}
+
+
+function PopulateGainersOnEachTrack(placement)
+  local song = renoise.song()
+  for i = 1, song.sequencer_track_count do
+    local track = song:track(i)
+    local has_gainer = false
+
+    -- Check for "GlobalGainer" in the current track's devices
+    for j = 2, #track.devices do
+      if track.devices[j].display_name == "GlobalGainer" then
+        has_gainer = true
+        break
+      end
+    end
+
+    -- Add "Gainer" if not found
+    if not has_gainer then
+      local position = #track.devices + 1 -- Default to end
+      if placement == "start" then
+        position = 2 -- Beginning (position 2)
+      end
+      track:insert_device_at("Audio/Effects/Native/Gainer", position).display_name = "GlobalGainer"
+    end
+  end
+end
+
+function map_knob_to_gainer(knob_value, placement)
+  local song = renoise.song()
+  
+  -- Ensure each track has a GlobalGainer, adding one if missing
+  PopulateGainersOnEachTrack(placement)
+  
+  -- Scale knob_value (0...127) to parameter range (0...4)
+  local scaled_value = (knob_value / 127) * 4
+  
+  -- Loop through each track to find and adjust the GlobalGainer based on placement
+  -- Loop through each track to find GlobalGainer and set its parameter
+  for i = 1, song.sequencer_track_count do
+    local track = song:track(i)
+    
+    for j = 2, #track.devices do
+      local device = track.devices[j]
+      if device.display_name == "GlobalGainer" then
+        -- Set parameter 1 to the scaled value
+        device.parameters[1].value = scaled_value
+        break
+      end
+    end
+  end
+end
+
+
+renoise.tool():add_keybinding{name="Global:Paketti:Populate GlobalGainers on Each Track (start chain)",invoke=function() PopulateGainersOnEachTrack("start") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Populate GlobalGainers on Each Track (end chain)",invoke=function() PopulateGainersOnEachTrack("end") end}
+
+renoise.tool():add_midi_mapping{
+  name = "Paketti:GlobalGainer Knob Control (start chain)",
+  invoke = function(midi_message) map_knob_to_gainer(midi_message.int_value, "start") end
+}
+
+renoise.tool():add_midi_mapping{
+  name = "Paketti:GlobalGainer Knob Control (end chain)",
+  invoke = function(midi_message) map_knob_to_gainer(midi_message.int_value, "end") end
+}
+
+
+
+--------
+function AddGainerCrossfadeSelectedTrack(name)
+  local song = renoise.song()
+  local track = song.selected_track
+  local gainer_name = "Gainer " .. name
+  local has_gainer_a, has_gainer_b = false, false
+  
+  -- Check if "Gainer A" or "Gainer B" already exists
+  for i = 2, #track.devices do
+    local device_name = track.devices[i].display_name
+    if device_name == "Gainer A" then has_gainer_a = true end
+    if device_name == "Gainer B" then has_gainer_b = true end
+  end
+  
+  -- Add the specified gainer only if the other is not present
+  if name == "A" and not has_gainer_a and not has_gainer_b then
+    track:insert_device_at("Audio/Effects/Native/Gainer", #track.devices + 1).display_name = "Gainer A"
+    renoise.app():show_status("Gainer A added to selected track")
+  elseif name == "B" and not has_gainer_b and not has_gainer_a then
+    track:insert_device_at("Audio/Effects/Native/Gainer", #track.devices + 1).display_name = "Gainer B"
+    renoise.app():show_status("Gainer B added to selected track")
+  else
+    renoise.app():show_status("Gainer " .. name .. " could not be added as the other gainer already exists")
+  end
+end
+
+function map_crossfade_to_ab(crossfade_value)
+  local song = renoise.song()
+  local scaled_a = crossfade_value / 127
+  local scaled_b = (127 - crossfade_value) / 127
+  
+  -- Loop through each track to adjust all Gainer A and Gainer B parameters
+  for i = 1, song.sequencer_track_count do
+    local track = song:track(i)
+    for j = 2, #track.devices do
+      local device = track.devices[j]
+      if device.display_name == "Gainer A" then device.parameters[1].value = scaled_a * 4 end
+      if device.display_name == "Gainer B" then device.parameters[1].value = scaled_b * 4 end
+    end
+  end
+end
+
+-- Keybindings, menu entries, and MIDI mappings in a single line format
+renoise.tool():add_keybinding{name="Global:Paketti:Add Gainer A to Selected Track",invoke=function() AddGainerCrossfadeSelectedTrack("A") end}
+renoise.tool():add_menu_entry{name="Mixer:Paketti:Add Gainer A to Selected Track",invoke=function() AddGainerCrossfadeSelectedTrack("A") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Add Gainer B to Selected Track",invoke=function() AddGainerCrossfadeSelectedTrack("B") end}
+renoise.tool():add_menu_entry{name="Mixer:Paketti:Add Gainer B to Selected Track",invoke=function() AddGainerCrossfadeSelectedTrack("B") end}
+renoise.tool():add_midi_mapping{name="Paketti:Gainer Crossfade A/B",invoke=function(midi_message) map_crossfade_to_ab(midi_message.int_value) end}
+
+------
+-- Create a timestamp in the format YYYYMMDD-HHMMSS
+local function generate_timestamp()
+  local time=os.date("*t")
+  return string.format("%04d%02d%02d-%02d%02d%02d", time.year, time.month, time.day, time.hour, time.min, time.sec)
+end
+
+-- Main function to handle saving logic
+local function save_with_new_timestamp()
+  local timestamp=generate_timestamp()
+
+  -- Prompt for folder every time
+  local folder=renoise.app():prompt_for_path("Choose a folder to save the file:")
+  if not folder then
+    renoise.app():show_status("Folder selection canceled. Exiting process.")
+    return
+  end
+
+  -- Generate the full filename with timestamp
+  local filename=folder.."/"..timestamp..".xrns"
+
+  -- Save the song
+  local success=renoise.app():save_song_as(filename)
+  if success then
+    renoise.app():show_status("Song successfully saved as: "..filename)
+  else
+    renoise.app():show_status("Failed to save song. Check the folder permissions or disk space.")
+  end
+end
+
+
+-- Call the main function
+renoise.tool():add_keybinding{name="Global:Paketti:Save Song with Timestamp",invoke=function() save_with_new_timestamp() end}
+renoise.tool():add_menu_entry{name="Main Menu:File:Save Song with Timestamp",invoke=function() save_with_new_timestamp() end}
 

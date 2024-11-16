@@ -1143,12 +1143,15 @@ function pakettiMaxAmplitudeDCOffsetKickCreator()
       remove_dc_offset_recursive()
     end
   end
+    renoise.song().selected_sample.name="Max Amp DC Offset Kick"
+    renoise.song().selected_instrument.name="Max Amp DC Offset Kick"
+renoise.app().window.active_middle_frame=5
   
   renoise.app():show_status("Max Amp DC Offset Kick Generated!")
 end
 
 -- Adding keybinding and menu entry on single lines
-renoise.tool():add_keybinding { name="Sample Editor:Paketti:Max Amp DC Offset Kick Generator", invoke=function() pakettiMaxAmplitudeDCOffsetKickCreator() end }
+renoise.tool():add_keybinding { name="Global:Paketti:Max Amp DC Offset Kick Generator", invoke=function() pakettiMaxAmplitudeDCOffsetKickCreator() end }
 renoise.tool():add_menu_entry { name="Sample Editor:Paketti..:Max Amp DC Offset Kick Generator", invoke=function() pakettiMaxAmplitudeDCOffsetKickCreator() end }
 
 -- Function to apply the recursive DC offset correction algorithm
@@ -1258,7 +1261,7 @@ function normalize_selected_sample()
   end
   
   if highest_detected == 0 then
-    renoise.app():show_status("Normalization failed: highest detected peak is 0.")
+    renoise.app():show_status("Sample is absolute silence, nothing to normalize.")
     return
   end
   

@@ -24,6 +24,7 @@ require "PakettiLoadDevices"
 require "PakettiLoadPlugins"
 require "PakettiMainMenuEntries"
 require "PakettiMidi"
+require "PakettiMidiPopulator"
 require "PakettiPatternEditor"
 require "PakettiPatternEditorCheatSheet"
 require "PakettiPatternMatrix"
@@ -31,15 +32,13 @@ require "PakettiPatternSequencer"
 require "PakettiPhraseEditor"
 require "PakettiOctaMEDSuite"
 require "PakettiPlayerProSuite"
+require "PakettiSampleLoader"
 require "PakettiSamples"
 require "PakettiTkna"
 require "PakettiRecorder" 
 require "PakettiColuga"
 require "PakettiRequests"
 require "PakettiExperimental_Verify"
-
-
-
 
 ------------------------------------------------
 local themes_path = renoise.tool().bundle_path .. "Themes/"

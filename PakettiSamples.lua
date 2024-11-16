@@ -450,9 +450,7 @@ end
 
 
 -------------
-
 function pakettiPreferencesDefaultInstrumentLoader()
-print (preferences.pakettiDefaultXRNI.value)
   local defaultInstrument = preferences.pakettiDefaultXRNI.value
   local fallbackInstrument = "Presets/12st_Pitchbend.xrni"
 
@@ -506,7 +504,9 @@ function pitchBendDrumkitLoader()
   current_instrument = song:instrument(current_instrument_index)
 
   -- Load the preset instrument
-  renoise.app():load_instrument("Presets/" .. preferences.pakettiDefaultDrumkitXRNI.value)
+  print (preferences.pakettiDefaultDrumkitXRNI.value)  
+  renoise.app():load_instrument(preferences.pakettiDefaultDrumkitXRNI.value)
+
 --  renoise.app():load_instrument("Presets/12st_Pitchbend_Drumkit_C0.xrni")
 
   -- Ensure the new instrument is selected
@@ -609,10 +609,154 @@ end
 
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments..:Paketti PitchBend Drumkit Sample Loader", invoke=function() pitchBendDrumkitLoader() end}
 renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Paketti PitchBend Drumkit Sample Loader", invoke=function() pitchBendDrumkitLoader() end}
-renoise.tool():add_menu_entry{name="--Disk Browser Files:Paketti..:Paketti PitchBend Drumkit Sample Loader", invoke=function() pitchBendMultipleSampleLoader() end}
+renoise.tool():add_menu_entry{name="--Disk Browser Files:Paketti..:Paketti PitchBend Drumkit Sample Loader", invoke=function() pitchBendDrumkitLoader() end}
 
 renoise.tool():add_keybinding{name="Global:Paketti:Paketti PitchBend Drumkit Sample Loader", invoke=function() pitchBendDrumkitLoader() end}
 renoise.tool():add_midi_mapping{name="Paketti:Midi Paketti PitchBend Drumkit Sample Loader", invoke=function(message) if message:is_trigger() then pitchBendDrumkitLoader() end end}
+
+local function loadRandomDrumkitSamples(num_samples)
+    -- Define valid audio file extensions
+    local valid_extensions = { ".wav", ".flac", ".mp3", ".aiff" }
+    
+    -- Function to check if a file has a valid extension
+    local function is_valid_audio_file(filename)
+        for _, ext in ipairs(valid_extensions) do
+            if filename:lower():match(ext .. "$") then
+                return true
+            end
+        end
+        return false
+    end
+    
+    -- Function to list files using OS-specific directory listing commands
+    local function get_files_in_directory(dir)
+        local files = {}
+        
+        -- Use OS-specific commands to list all files recursively
+        local command
+        if package.config:sub(1,1) == "\\" then  -- Windows
+            command = 'dir "' .. dir .. '" /b /s'
+        else  -- macOS and Linux
+            command = 'find "' .. dir .. '" -type f'
+        end
+        
+        -- Execute the command and process the output
+        local handle = io.popen(command)
+        for line in handle:lines() do
+            if is_valid_audio_file(line) then
+                table.insert(files, line)
+            end
+        end
+        handle:close()
+        
+        return files
+    end
+
+    -- Prompt the user to select a folder
+    local folder_path = renoise.app():prompt_for_path("Select Folder to Randomize DrumKit Loading From")
+    if not folder_path then
+        renoise.app():show_status("No folder selected.")
+        return nil
+    end
+
+    -- Get all valid audio files in the selected directory and subdirectories
+    local sample_files = get_files_in_directory(folder_path)
+    
+    -- Check if there are enough files to choose from
+    if #sample_files == 0 then
+        renoise.app():show_status("No audio files found in the selected folder.")
+        return nil
+    end
+
+    -- Check if the selected instrument slot is empty or contains a plugin
+    local song = renoise.song()
+    local instrument = song.selected_instrument
+    if #instrument.samples > 0 or instrument.plugin_properties.plugin_loaded then
+        song:insert_instrument_at(song.selected_instrument_index + 1)
+        song.selected_instrument_index = song.selected_instrument_index + 1
+        instrument = song.selected_instrument
+    end
+
+  renoise.app():load_instrument(preferences.pakettiDefaultDrumkitXRNI.value)
+
+    -- Update the instrument reference after loading the instrument
+    instrument = song.selected_instrument
+
+    -- Set the instrument name based on slot
+    local instrument_slot_hex = string.format("%02X", song.selected_instrument_index - 1)
+    instrument.name = instrument_slot_hex .. "_Drumkit"
+
+    -- Limit the number of samples to load to 120
+    local max_samples = 120
+    local num_samples_to_load = math.min(#sample_files, max_samples)
+
+    -- Load each sample as a new drum zone with specified properties
+    for i = 1, num_samples_to_load do
+        -- Select a random file from the list and remove it
+        local random_index = math.random(1, #sample_files)
+        local selected_file = sample_files[random_index]
+        table.remove(sample_files, random_index)
+
+        -- Extract the file name without the extension for naming
+        local file_name = selected_file:match("([^/\\]+)%.%w+$")
+
+        -- Insert a new sample slot if necessary
+        if #instrument.samples < i then
+            instrument:insert_sample_at(i)
+        end
+
+        local sample = instrument.samples[i]
+        local sample_buffer = sample.sample_buffer
+
+        -- Load the sample file into the sample buffer
+        if sample_buffer:load_from(selected_file) then
+            renoise.app():show_status("Loaded sample: " .. selected_file)
+        else
+            renoise.app():show_status("Failed to load sample: " .. selected_file)
+            break
+        end
+
+        -- Set sample name and properties
+        sample.name = "12st_" .. file_name
+        sample.interpolation_mode = preferences.pakettiLoaderInterpolation.value
+        sample.oversample_enabled = preferences.pakettiLoaderOverSampling.value
+        sample.oneshot = preferences.pakettiLoaderOneshot.value
+        sample.autofade = preferences.pakettiLoaderAutoFade.value
+        sample.autoseek = preferences.pakettiLoaderAutoseek.value
+        sample.loop_mode = preferences.pakettiLoaderLoopMode.value
+        sample.new_note_action = preferences.pakettiLoaderNNA.value
+        sample.loop_release = preferences.pakettiLoaderLoopExit.value
+    end
+
+    -- Inform the user if any files were left unprocessed
+    if #sample_files > max_samples then
+        renoise.app():show_status("Maximum Drumkit Zones is 120 - Additional files were not loaded.")
+    end
+
+    -- Load the Instr. Macros device and rename it based on the drumkit slot name
+    if song.selected_track.type ~= renoise.Track.TRACK_TYPE_MASTER then
+        loadnative("Audio/Effects/Native/*Instr. Macros")
+        local macro_device = song.selected_track:device(2)
+        macro_device.display_name = instrument.name
+        song.selected_track.devices[2].is_maximized = false
+    end
+
+    -- Call additional actions to update sample count or display automation, if needed
+    on_sample_count_change()
+end
+
+
+
+
+-- Shortcut usage example
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments..:Paketti PitchBend Drumkit Sample Loader (Random)", invoke=function() loadRandomDrumkitSamples(120)  end}
+renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Paketti PitchBend Drumkit Sample Loader (Random)", invoke=function() loadRandomDrumkitSamples(120)  end}
+renoise.tool():add_menu_entry{name="--Disk Browser Files:Paketti..:Paketti PitchBend Drumkit Sample Loader (Random)", invoke=function() loadRandomDrumkitSamples(120)  end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Paketti PitchBend Drumkit Sample Loader (Random)", invoke=function() loadRandomDrumkitSamples(120)  end}
+renoise.tool():add_midi_mapping{name="Paketti:Midi Paketti PitchBend Drumkit Sample Loader (Random)", invoke=function(message) if message:is_trigger() then loadRandomDrumkitSamples(120)  end end}
+
+
 
 
 
@@ -1323,6 +1467,9 @@ function start_rendering()
         start_pos = renoise.SongPos(renoise.song().selected_sequence_index, 1),
         end_pos = renoise.SongPos(renoise.song().selected_sequence_index, renoise.song().patterns[renoise.song().selected_pattern_index].number_of_lines),
     }
+
+    renoise.song().tracks[renoise.song().selected_track_index]:solo()
+
 
     -- Set render context
     render_context.source_track = renoise.song().selected_track_index
@@ -3226,18 +3373,19 @@ renoise.tool():add_menu_entry{name="Sample Modulation Matrix:Paketti..:Clear Pit
 -----
 local function load_random_akwf_sample(amount)
   local tool_folder = renoise.tool().bundle_path .. "AKWF/"
+  local file_path = tool_folder .. "akwf.txt"
   local wav_files = {}
 
-  -- List all files and directories in the AKWF folder
-  for file in io.popen('ls "'..tool_folder..'"'):lines() do
-    local subfolder = tool_folder .. file
-
-    -- Check if each entry is a directory and list its contents
-    for subfile in io.popen('ls "'..subfolder..'"'):lines() do
-      if subfile:match("%.wav$") then
-        table.insert(wav_files, subfolder .. "/" .. subfile)
-      end
+  -- Load .wav file paths from akwf.txt
+  local file = io.open(file_path, "r")
+  if file then
+    for line in file:lines() do
+      table.insert(wav_files, tool_folder .. line)  -- Combine relative path with tool_folder
     end
+    file:close()
+  else
+    renoise.app():show_status("akwf.txt not found in " .. tool_folder)
+    return
   end
 
   -- Determine the number of samples to load
@@ -3250,14 +3398,14 @@ local function load_random_akwf_sample(amount)
 
   -- Ensure there are enough .wav files to choose from
   if #wav_files > 0 then
-      renoise.song():insert_instrument_at(renoise.song().selected_instrument_index+1)
-      renoise.song().selected_instrument_index = renoise.song().selected_instrument_index+1
-      pakettiPreferencesDefaultInstrumentLoader()
-      local instrument = renoise.song().selected_instrument
-      renoise.song().selected_instrument:delete_sample_at(1)
-      
-      -- Calculate volume reduction factor based on the number of samples
-      local volume_reduction_factor = math.min(1.0, 1 / math.sqrt(num_samples))
+    renoise.song():insert_instrument_at(renoise.song().selected_instrument_index + 1)
+    renoise.song().selected_instrument_index = renoise.song().selected_instrument_index + 1
+    pakettiPreferencesDefaultInstrumentLoader()
+    local instrument = renoise.song().selected_instrument
+    renoise.song().selected_instrument:delete_sample_at(1)
+    
+    -- Calculate volume reduction factor based on the number of samples
+    local volume_reduction_factor = math.min(1.0, 1 / math.sqrt(num_samples))
 
     -- Load the specified number of samples
     for i = 1, num_samples do
@@ -3277,7 +3425,7 @@ local function load_random_akwf_sample(amount)
       local filename = selected_file:match("([^/]+)%.wav$") or "Sample"
       sample.name = filename
       sample.transpose = -2
-     -- sample.fine_tune = -35
+
       -- Update instrument name for clarity, using the last loaded file
       instrument.name = "AKWF - " .. filename
     end
@@ -3289,14 +3437,52 @@ local function load_random_akwf_sample(amount)
   end
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Load Random AKWF Sample",invoke=function() load_random_akwf_sample(1) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Load Random amount (1...12) of AKWF Samples",invoke=function() load_random_akwf_sample("random") end}
-renoise.tool():add_keybinding{name="Global:Paketti:Load 05 AKWF Samples",invoke=function() load_random_akwf_sample(5) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Load 12 AKWF Samples",invoke=function() load_random_akwf_sample(12) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Load 02 AKWF Samples",invoke=function() load_random_akwf_sample(2) end}
-   
-   ------
-   
+-- Keybindings to load different numbers of samples
+renoise.tool():add_keybinding{name="Global:Paketti:Load Random AKWF Sample", invoke=function() load_random_akwf_sample(1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Random amount (1...12) of AKWF Samples", invoke=function() load_random_akwf_sample("random") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load 05 AKWF Samples", invoke=function() load_random_akwf_sample(5) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load 12 AKWF Samples", invoke=function() load_random_akwf_sample(12) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load 02 AKWF Samples", invoke=function() load_random_akwf_sample(2) end}
+
+
+--[[local function generate_akwf_txt()
+  local tool_folder = renoise.tool().bundle_path .. "AKWF/"
+  local output_file = tool_folder .. "akwf.txt"
+  local file = io.open(output_file, "w")
+
+  local function scan_folder(path, relative_path)
+    for entry in io.popen('ls "' .. path .. '"'):lines() do
+      local full_entry_path = path .. entry
+      local relative_entry_path = relative_path .. entry
+
+      if entry:match("%.wav$") then
+        file:write(relative_entry_path .. "\n")
+      elseif io.popen('ls -d "' .. full_entry_path .. '"'):lines()() then
+        scan_folder(full_entry_path .. "/", relative_entry_path .. "/")
+      end
+    end
+  end
+
+  scan_folder(tool_folder, "")
+  file:close()
+  renoise.app():show_status("akwf.txt generated successfully in " .. tool_folder)
+end
+
+generate_akwf_txt()
+
+]]--
+
+
+
+
+
+
+
+
+
+
+
+------------   
  local function select_loop_range_in_sample_editor()
   local song=renoise.song()
   local sample=song.selected_sample
@@ -3321,4 +3507,180 @@ end
 
 renoise.tool():add_keybinding{name="Sample Editor:Paketti:Select Loop Range",invoke=function()
 select_loop_range_in_sample_editor() end}
+----
+local function loadRandomSample(num_samples)
+    -- Define valid audio file extensions
+    local valid_extensions = { ".wav", ".flac", ".mp3", ".aiff" }
+    
+    -- Function to check if a file has a valid extension
+    local function is_valid_audio_file(filename)
+        for _, ext in ipairs(valid_extensions) do
+            if filename:lower():match(ext .. "$") then
+                return true
+            end
+        end
+        return false
+    end
+    
+    -- Function to list files using OS-specific directory listing commands
+    local function get_files_in_directory(dir)
+        local files = {}
+        
+        -- Use OS-specific commands to list all files recursively
+        local command
+        if package.config:sub(1, 1) == "\\" then  -- Windows
+            command = 'dir "' .. dir .. '" /b /s'
+        else  -- macOS and Linux
+            command = 'find "' .. dir .. '" -type f'
+        end
+        
+        -- Execute the command and process the output
+        local handle = io.popen(command)
+        for line in handle:lines() do
+            if is_valid_audio_file(line) then
+                table.insert(files, line)
+            end
+        end
+        handle:close()
+        
+        return files
+    end
+
+    -- Prompt the user to select a folder
+    local folder_path = renoise.app():prompt_for_path("Select Folder Containing Audio Files")
+    if not folder_path then
+        renoise.app():show_status("No folder selected.")
+        return nil
+    end
+
+    -- Get all valid audio files in the selected directory and subdirectories
+    local wav_files = get_files_in_directory(folder_path)
+    
+    -- Check if there are enough files to choose from
+    if #wav_files == 0 then
+        renoise.app():show_status("No audio files found in the selected folder.")
+        return nil
+    end
+
+    -- Load the specified number of samples into separate instruments
+    for i = 1, num_samples do
+        -- Select a random file from the list
+        local random_index = math.random(1, #wav_files)
+        local selected_file = wav_files[random_index]
+
+        -- Extract the file name without the extension for naming
+        local file_name = selected_file:match("([^/\\]+)%.%w+$")
+
+        -- Insert a new instrument and set it as selected
+        renoise.song():insert_instrument_at(renoise.song().selected_instrument_index + 1)
+        renoise.song().selected_instrument_index = renoise.song().selected_instrument_index + 1
+        pakettiPreferencesDefaultInstrumentLoader()  -- Assuming this is a custom function you have defined
+
+        local instrument = renoise.song().selected_instrument
+        instrument:delete_sample_at(1)  -- Remove any default sample slot
+
+        -- Load the selected file into the new instrument
+        local sample = instrument:insert_sample_at(1)
+        sample.sample_buffer:load_from(selected_file)
+
+        -- Set both the sample name and instrument name to the file name
+        sample.name = file_name
+        instrument.name = file_name
+        
+        renoise.app():show_status("Loaded file into new instrument: " .. selected_file)
+    end
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Load Random Samples (32) from Path",invoke=function() loadRandomSample(32) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load Random Samples (01) from Path",invoke=function() loadRandomSample(1) end}
+
+
+local function loadRandomSamplesIntoSingleInstrument(num_samples)
+    -- Define valid audio file extensions
+    local valid_extensions = { ".wav", ".flac", ".mp3", ".aiff" }
+    
+    -- Function to check if a file has a valid extension
+    local function is_valid_audio_file(filename)
+        for _, ext in ipairs(valid_extensions) do
+            if filename:lower():match(ext .. "$") then
+                return true
+            end
+        end
+        return false
+    end
+    
+    -- Function to list files using OS-specific directory listing commands
+    local function get_files_in_directory(dir)
+        local files = {}
+        
+        -- Use OS-specific commands to list all files recursively
+        local command
+        if package.config:sub(1, 1) == "\\" then  -- Windows
+            command = 'dir "' .. dir .. '" /b /s'
+        else  -- macOS and Linux
+            command = 'find "' .. dir .. '" -type f'
+        end
+        
+        -- Execute the command and process the output
+        local handle = io.popen(command)
+        for line in handle:lines() do
+            if is_valid_audio_file(line) then
+                table.insert(files, line)
+            end
+        end
+        handle:close()
+        
+        return files
+    end
+
+    -- Prompt the user to select a folder
+    local folder_path = renoise.app():prompt_for_path("Select Folder Containing Audio Files")
+    if not folder_path then
+        renoise.app():show_status("No folder selected.")
+        return nil
+    end
+
+    -- Get all valid audio files in the selected directory and subdirectories
+    local wav_files = get_files_in_directory(folder_path)
+    
+    -- Check if there are enough files to choose from
+    if #wav_files == 0 then
+        renoise.app():show_status("No audio files found in the selected folder.")
+        return nil
+    end
+
+    renoise.song():insert_instrument_at(renoise.song().selected_instrument_index + 1)
+        renoise.song().selected_instrument_index = renoise.song().selected_instrument_index + 1
+    -- Run the Paketti default instrument setup function
+    pakettiPreferencesDefaultInstrumentLoader()  -- Assuming this is a custom function you have defined
+
+    -- Get the selected instrument to load all samples into
+    local instrument = renoise.song().selected_instrument
+    instrument:delete_sample_at(1)  -- Clear any default sample slot
+
+    -- Load the specified number of samples into new slots within the same instrument
+    for i = 1, num_samples do
+        -- Select a random file from the list
+        local random_index = math.random(1, #wav_files)
+        local selected_file = wav_files[random_index]
+
+        -- Extract the file name without the extension for naming
+        local file_name = selected_file:match("([^/\\]+)%.%w+$")
+
+        -- Insert a new sample slot and load the file
+        local sample = instrument:insert_sample_at(#instrument.samples + 1)
+        sample.sample_buffer:load_from(selected_file)
+
+        -- Set the sample name to the file name
+        sample.name = file_name
+        
+        renoise.app():show_status("Loaded file into sample slot: " .. selected_file)
+    end
+end
+
+-- Shortcut usage example
+renoise.tool():add_keybinding{name="Global:Paketti:Load Random Samples (12) into Single Instrument",invoke=function()
+loadRandomSamplesIntoSingleInstrument(12)  -- Loads 12 random samples into the selected instrument
+end}
+
 

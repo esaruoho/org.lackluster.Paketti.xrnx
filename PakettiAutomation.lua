@@ -1784,4 +1784,137 @@ function showAutomationHardDynamic()
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Switch to Automation Dynamic",invoke=function() showAutomationHardDynamic() end}
+-----------
+local dialog = nil
+
+local function apply_textfield_value(value)
+  local song = renoise.song()
+  local track = song.selected_track
+  local parameter = song.selected_automation_parameter
+  local line_index = song.selected_line_index
+  local pattern_index = song.selected_pattern_index
+
+  if not parameter then
+    renoise.app():show_status("Please select a parameter to automate.")
+    print("No automation parameter selected.")
+    return
+  end
+
+  local pattern = song:pattern(pattern_index)
+  local pattern_length = pattern.number_of_lines
+
+  if line_index <= 0 or line_index > pattern_length then
+    renoise.app():show_status("Invalid line index: must be between 1 and " .. pattern_length)
+    print("Line index out of range.")
+    return
+  end
+
+  -- Clamp the value to the range [0, 1]
+  local automation_value = math.min(math.max(tonumber(value) or 0, 0), 1)
+
+  -- Access the current pattern and automation for the parameter
+  local track_automation = pattern:track(song.selected_track_index)
+  local envelope = track_automation:find_automation(parameter)
+  
+  -- Create the envelope if it doesn’t exist
+  if not envelope then
+    envelope = track_automation:create_automation(parameter)
+    print("Created new automation envelope for parameter: " .. parameter.name)
+  end
+
+  -- Set the automation point at the selected line with the specified value
+  envelope:add_point_at(line_index, automation_value)
+
+  -- Update status
+  renoise.app():show_status("Set automation point at line " .. line_index .. " with value " .. automation_value)
+end
+
+local function apply_textfield_value_and_close(value)
+  -- Print the new value
+  print("New Automation Value: " .. value)
+  
+  -- Close the dialog if it's open
+  if dialog and dialog.visible then
+    dialog:close()
+    dialog = nil
+  end
+  
+  -- Set the automation point in the Renoise pattern editor
+  apply_textfield_value(value)
+end
+
+local function show_value_dialog()
+  if dialog and dialog.visible then
+    dialog:close()
+    dialog = nil
+    return
+  end
+
+  local vb = renoise.ViewBuilder()
+  local initial_value = "0.93524"
+  local textfield = vb:textfield{
+    width = 60,
+    id = "value_textfield",
+    value = initial_value,
+    edit_mode = true,
+    notifier = function(new_value)
+      local clamped_value = math.min(math.max(tonumber(new_value) or 0, 0), 1)
+      if tostring(clamped_value) ~= initial_value then
+        apply_textfield_value_and_close(clamped_value) end end}
+  
+  local apply_button=vb:button{text="Write Automation to Current Line",width=180,notifier=function() apply_textfield_value_and_close(vb.views.value_textfield.value) end}
+
+  dialog = renoise.app():show_custom_dialog("Set Automation Value", vb:column{ margin=10, vb:row{ textfield, apply_button } })
+  renoise.app().window.active_lower_frame = 2
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Show Automation Value Dialog...",invoke=function() show_value_dialog() end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Show Automation Value Dialog...",invoke=function() show_value_dialog() end}
+
+
+
+local function write_automation_value(value)
+  local song = renoise.song()
+  local track = song.selected_track
+  local parameter = song.selected_automation_parameter
+  local line_index = song.selected_line_index
+  local pattern_index = song.selected_pattern_index
+
+  if not parameter then
+    renoise.app():show_status("Please select a parameter to automate.")
+    print("No automation parameter selected.")
+    return
+  end
+
+  local pattern = song:pattern(pattern_index)
+  local pattern_length = pattern.number_of_lines
+
+  if line_index <= 0 or line_index > pattern_length then
+    renoise.app():show_status("Invalid line index: must be between 1 and " .. pattern_length)
+    print("Line index out of range.")
+    return
+  end
+
+  -- Access the current pattern and automation for the parameter
+  local track_automation = pattern:track(song.selected_track_index)
+  local envelope = track_automation:find_automation(parameter)
+  
+  -- Create the envelope if it doesn’t exist
+  if not envelope then
+    envelope = track_automation:create_automation(parameter)
+    print("Created new automation envelope for parameter: " .. parameter.name)
+  end
+
+  -- Set the automation point at the selected line with the specified value
+  envelope:add_point_at(line_index, value or 0.5)
+
+  -- Update status
+  renoise.app():show_status("Set automation point at line " .. line_index .. " with value " .. (value or 0.5))
+end
+
+for i = 0, 1, 0.1 do
+  local formatted_value = string.format("%.1f", i)
+renoise.tool():add_keybinding{name = "Global:Paketti:Write Automation Value " .. formatted_value,invoke = function() write_automation_value(tonumber(formatted_value)) end}
+renoise.tool():add_menu_entry{name = "Main Menu:Tools:Paketti..:Write Automation Value " .. formatted_value,invoke = function() write_automation_value(tonumber(formatted_value)) end}
+end
 

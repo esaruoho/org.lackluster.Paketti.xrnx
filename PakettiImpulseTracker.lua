@@ -1432,19 +1432,13 @@ end
 function Deselect_Phr() renoise.song().selection_in_phrase =nil end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker ALT-U Unmark Selection",invoke=function() Deselect_All() end}
+renoise.tool():add_keybinding{name="Automation:Paketti:Impulse Tracker ALT-U Unmark Selection",invoke=function() Deselect_All() end}
+
 renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker ALT-U Unmark Selection (2nd)",invoke=function() Deselect_All() end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Impulse Tracker ALT-U Unmark Selection",invoke=function() Deselect_All() end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Impulse Tracker ALT-U Unmark Selection (2nd)",invoke=function() Deselect_All() end}
 renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Impulse Tracker ALT-U Unmark Selection",invoke=function() Deselect_Phr() end}
 renoise.tool():add_keybinding{name="Phrase Editor:Paketti:Impulse Tracker ALT-U Unmark Selection (2nd)",invoke=function() Deselect_Phr() end}
-
-----------
---[[
-  Renoise Tool: Paketti Impulse Tracker Swap Block
-  Description: Swaps selected note columns between tracks, including volume, panning, delay, sample effects, and effect columns.
-  Author: [Your Name]
-  Date: [Date]
-]]
 
 -- Function to swap blocks between note columns and effect columns
 function PakettiImpulseTrackerSwapBlock()

@@ -30,9 +30,6 @@ local playback_buttons = {}
 
 -- Paketti Gater Device Script
 
-
-
-
 local function initialize_checkboxes(count)
   checkboxes = {}
   retrig_checkboxes = {}
@@ -919,13 +916,15 @@ function PakettiReplicateAtCursorGater(transpose, tracks_option, row_option)
       local source_line = pattern:track(track_index):line(source_row)
       local dest_line = pattern:track(track_index):line(row)
 
-      -- Copy note columns
+      -- Copy note columns subcolumns only (volume, panning, delay)
       for col = 1, #source_line.note_columns do
         local source_note = source_line.note_columns[col]
         local dest_note = dest_line.note_columns[col]
 
-        dest_note:copy_from(source_note)
-        dest_note.note_value = transpose_note(source_note.note_value, transpose)
+        -- Leave note and instrument values untouched
+        dest_note.volume_value = source_note.volume_value
+        dest_note.panning_value = source_note.panning_value
+        dest_note.delay_value = source_note.delay_value
       end
 
       -- Copy effect columns
@@ -952,7 +951,6 @@ function PakettiReplicateAtCursorGater(transpose, tracks_option, row_option)
 
   renoise.app():show_status("Replicated content with transpose: " .. transpose)
 end
-
 
 -- Preset functionality
 local function apply_preset(preset, is_retrig, is_playback)

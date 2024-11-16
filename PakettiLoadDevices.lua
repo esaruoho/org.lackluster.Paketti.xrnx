@@ -64,6 +64,84 @@ function saveToPreferencesFile(keyBindingName, midiMappingName, path)
   file:close()
 end
 
+-- Load from Preferences File
+function loadFromPreferencesFile()
+  local file, err = io.open(preferencesFile, "r")
+  if not file then
+    print("Error opening preferences file: " .. err)
+    return
+  end
+
+  local entries = {}
+  local current_entry = nil
+  for line in file:lines() do
+    local keybinding_start = line:match('<KeyBinding name="(.-)">')
+    if keybinding_start then
+      current_entry = {type = "KeyBinding", name = keybinding_start}
+    end
+
+    local midimapping_start = line:match('<MIDIMapping name="(.-)">')
+    if midimapping_start then
+      current_entry = {type = "MIDIMapping", name = midimapping_start}
+    end
+
+    local path_line = line:match('<Path>(.-)</Path>')
+    if path_line and current_entry then
+      current_entry.path = path_line
+      table.insert(entries, current_entry)
+      current_entry = nil
+    end
+  end
+  file:close()
+
+  for _, entry in ipairs(entries) do
+    local device_type = entry.name:match("Load Device %((.-)%)")
+    local path = entry.path
+
+    if entry.type == "KeyBinding" then
+      -- Re-add keybinding
+      local success, err = pcall(function()
+        local device_type_copy = device_type
+        local path_copy = path
+        renoise.tool():add_keybinding{
+          name = entry.name,
+          invoke = function()
+            if device_type_copy == "Native" then
+              loadnative(path_copy)
+            else
+              loadvst(path_copy)
+            end
+          end
+        }
+      end)
+      if not success then
+        print("Could not add keybinding for " .. entry.name .. ": " .. err)
+      end
+    elseif entry.type == "MIDIMapping" then
+      -- Re-add midi mapping
+      local success, err = pcall(function()
+        local device_type_copy = device_type
+        local path_copy = path
+        renoise.tool():add_midi_mapping{
+          name = entry.name,
+          invoke = function(message)
+            if message:is_trigger() then
+              if device_type_copy == "Native" then
+                loadnative(path_copy)
+              else
+                loadvst(path_copy)
+              end
+            end
+          end
+        }
+      end)
+      if not success then
+        print("Could not add midi mapping for " .. entry.name .. ": " .. err)
+      end
+    end
+  end
+end
+
 function isAnyDeviceSelected()
   for _, cb_info in ipairs(checkboxes) do
     if cb_info.checkbox.value then
@@ -102,8 +180,11 @@ function addAsShortcut()
 
   for _, cb_info in ipairs(checkboxes) do
     if cb_info.checkbox.value then
-      local keyBindingName = "Global:Track Devices:Load Device (" .. current_device_type .. ") " .. cb_info.name
+      local keyBindingName = "Global:Paketti:Load Device (" .. current_device_type .. ") " .. cb_info.name
       local midiMappingName = "Track Devices:Paketti:Load Device (" .. current_device_type .. ") " .. cb_info.name
+
+      local device_type = current_device_type
+      local path = cb_info.path
 
       if not addedKeyBindings[keyBindingName] then
         print("Adding shortcut for: " .. cb_info.name)
@@ -112,10 +193,10 @@ function addAsShortcut()
           renoise.tool():add_keybinding{
             name = keyBindingName,
             invoke = function()
-              if current_device_type == "Native" then
-                loadnative(cb_info.path)
+              if device_type == "Native" then
+                loadnative(path)
               else
-                loadvst(cb_info.path)
+                loadvst(path)
               end
             end
           }
@@ -123,10 +204,10 @@ function addAsShortcut()
             name = midiMappingName,
             invoke = function(message)
               if message:is_trigger() then
-                if current_device_type == "Native" then
-                  loadnative(cb_info.path)
+                if device_type == "Native" then
+                  loadnative(path)
                 else
-                  loadvst(cb_info.path)
+                  loadvst(path)
                 end
               end
             end
@@ -327,19 +408,13 @@ function updateDeviceList()
 
     device_list_content = createDeviceList(au_devices, "AudioUnit Devices")
 
-elseif current_device_type == "LADSPA" then
+  elseif current_device_type == "LADSPA" then
     local ladspa_devices = {}
     for i, device_path in ipairs(available_devices) do
       if device_path:find("LADSPA") then
-        -- Step 1: Extract after the last '/'
         local device_name = pluginReadableNames[device_path] or device_path:match("([^/]+)$")
-        
-        -- Step 2: Extract after the last ':'
-        device_name = device_name:match("([^:]+)$")  -- Extract after the last colon
-        
-        -- Step 3: Extract after the last '/' within the previously extracted substring
-        device_name = device_name:match("([^/]+)$")  -- Extract after the last '/'
-        
+        device_name = device_name:match("([^:]+)$")
+        device_name = device_name:match("([^/]+)$")
         table.insert(ladspa_devices, {name = device_name, path = device_path})
       end
     end
@@ -377,7 +452,7 @@ elseif current_device_type == "LADSPA" then
 end
 
 function showDeviceListDialog()
-current_device_list_content = nil
+  current_device_list_content = nil
 
   vb = renoise.ViewBuilder()
   checkboxes = {}
@@ -405,34 +480,34 @@ current_device_list_content = nil
       end},
     vb:text{id="random_percentage_text",text="None",width=40,
       align="center"},
-          vb:button{text="All",width=20,
-        notifier = function()
-          for _, cb_info in ipairs(checkboxes) do
-            cb_info.checkbox.value = true
-          end
-          vb.views["random_select_slider"].value = 100
-          vb.views["random_percentage_text"].text = "All"
-        end},
-           vb:button{text="None",width=20,
-        notifier = function()
-          resetSelection()
-          vb.views["random_select_slider"].value = 0
-          vb.views["random_percentage_text"].text = "None"
-        end}}
+    vb:button{text="All",width=20,
+      notifier = function()
+        for _, cb_info in ipairs(checkboxes) do
+          cb_info.checkbox.value = true
+        end
+        vb.views["random_select_slider"].value = 100
+        vb.views["random_percentage_text"].text = "All"
+      end},
+    vb:button{text="None",width=20,
+      notifier = function()
+        resetSelection()
+        vb.views["random_select_slider"].value = 0
+        vb.views["random_percentage_text"].text = "None"
+      end}}
 
   local button_height = renoise.ViewBuilder.DEFAULT_DIALOG_BUTTON_HEIGHT
   local action_buttons = vb:column{
-       vb:horizontal_aligner{width="100%",
-         vb:button{text="Load Device(s)",width=60,
+    vb:horizontal_aligner{width="100%",
+      vb:button{text="Load Device(s)",width=60,
         notifier = function()
           if loadSelectedDevices() then
             renoise.app():show_status("Devices loaded.")
           end
         end
       },
-    vb:button{text="Add Device(s) as Shortcut(s) & MidiMappings",width=140,
-      notifier = addAsShortcut},
-        vb:button{text="Cancel",width=30,
+      vb:button{text="Add Device(s) as Shortcut(s) & MidiMappings",width=140,
+        notifier = addAsShortcut},
+      vb:button{text="Cancel",width=30,
         notifier = function() custom_dialog:close() end}}}
   device_list_view = vb:column{}
   dialog_content_view = vb:column{margin = 10,spacing = 5,device_list_view,}
@@ -449,13 +524,15 @@ current_device_list_content = nil
 end
 
 function my_Devicekeyhandler_func(custom_dialog, key)
-local closer = preferences.pakettiDialogClose.value
+  local closer = preferences.pakettiDialogClose.value
   if key.modifiers == "" and key.name == closer then
     custom_dialog:close()
     custom_dialog = nil
     return nil
-else
+  else
     return key
   end
 end
+
+loadFromPreferencesFile()
 

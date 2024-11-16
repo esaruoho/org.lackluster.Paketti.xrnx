@@ -87,12 +87,14 @@ end
 
 ------------------------------------------------------------------------------------------------------
 --cortex.scripts.CaptureOctave v1.1 by cortex
-renoise.tool():add_keybinding{name="Global:Paketti:Capture Nearest Instrument and Octave", invoke=function(repeated) capture_ins_oct() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Capture Nearest Instrument and Octave (nojump)", invoke=function(repeated) capture_ins_oct("no") end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Capture Nearest Instrument and Octave (nojump)", invoke=function(repeated) capture_ins_oct("no") end}
+renoise.tool():add_keybinding{name="Mixer:Paketti:Capture Nearest Instrument and Octave (nojump)", invoke=function(repeated) capture_ins_oct("no") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Capture Nearest Instrument and Octave (jump)", invoke=function(repeated) capture_ins_oct("yes") end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Capture Nearest Instrument and Octave (jump)", invoke=function(repeated) capture_ins_oct("yes") end}
+renoise.tool():add_keybinding{name="Mixer:Paketti:Capture Nearest Instrument and Octave (jump)", invoke=function(repeated) capture_ins_oct("yes") end}
 
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Capture Nearest Instrument and Octave", invoke=function(repeated) capture_ins_oct() end}
-renoise.tool():add_keybinding{name="Mixer:Paketti:Capture Nearest Instrument and Octave", invoke=function(repeated) capture_ins_oct() end}
-function capture_ins_oct()
-renoise.app():show_status("YO!!!")
+function capture_ins_oct(state)
    local closest_note = {}  
    local current_track=renoise.song().selected_track_index
    local current_pattern=renoise.song().selected_pattern_index
@@ -126,20 +128,26 @@ renoise.app():show_status("YO!!!")
       end 
    end
 
+renoise.song().selected_instrument_index = closest_note.ins
 
-
-
+if state == "no" then return else
    if (closest_note.oct~=nil) then 
       if renoise.song().selected_instrument_index == closest_note.ins then
 if renoise.app().window.active_middle_frame == 1 and renoise.app().window.active_lower_frame == 2 then
-renoise.app().window.active_lower_frame = 1 return end
+renoise.app().window.active_lower_frame = 1 
+renoise.app():show_status("Instrument already captured, jumping back from Automation to Track DSP Device Lower Frame.")
+return end
 
 if renoise.app().window.active_middle_frame == renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
 then renoise.app().window.active_middle_frame = 1 
-renoise.app().window.active_lower_frame = 2 return end
+renoise.app().window.active_lower_frame = 2 
+renoise.app():show_status("Instrument already captured, jumping from Sample Editor to Pattern Editor with Track Automation Lower Frame.")
+
+return end
 
 
          renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
+         renoise.app():show_status("Instrument already captured, jumping to Sample Editor.")
          return
 --         renoise.app().window.active_middle_frame = 1
       else
@@ -152,6 +160,7 @@ renoise.app().window.active_lower_frame = 2 return end
    -- Focus on the pattern editor in the middle frame
    local w = renoise.app().window
    w.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
+end
 end
 
 

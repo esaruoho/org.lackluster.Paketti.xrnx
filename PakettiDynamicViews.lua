@@ -700,3 +700,4 @@ renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:!Preferences..:Pak
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:!Preferences..:Paketti Save Dynamic Views as a textfile", invoke=function() save_dynamic_views_to_txt() end}
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:!Preferences..:Paketti Load Dynamic Views from a textfile", invoke=function() load_dynamic_views_from_txt() end}
 
+

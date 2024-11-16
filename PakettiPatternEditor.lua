@@ -403,6 +403,29 @@ renoise.tool():add_keybinding{name="Global:Paketti:Computer Keyboard Velocity (+
 renoise.tool():add_keybinding{name="Global:Paketti:Computer Keyboard Velocity (-10)",invoke=function() computerKeyboardVolChange(-10) end}
 renoise.tool():add_keybinding{name="Global:Paketti:Computer Keyboard Velocity (+10)",invoke=function() computerKeyboardVolChange(10) end}
 
+
+local start_velocity = 10
+local end_velocity = 70
+local step = 10
+
+for velocity = start_velocity, end_velocity, step do
+  local velocity_hex = formatDigits(2,velocity)
+  renoise.tool():add_keybinding {name="Global:Paketti:Set Keyboard Velocity to " .. velocity_hex, invoke=function() renoise.song().transport.keyboard_velocity=velocity renoise.app():show_status("Keyboard Velocity set to: " .. velocity_hex) end}
+  renoise.tool():add_midi_mapping {name="Paketti:Set Keyboard Velocity to " .. velocity_hex, invoke=function(message) if message:is_trigger() then renoise.song().transport.keyboard_velocity=velocity renoise.app():show_status("Keyboard Velocity set to: " .. velocity_hex) end end}
+end
+
+
+
+renoise.tool():add_keybinding {name="Global:Paketti:Toggle Keyboard Velocity", invoke=function() renoise.song().transport.keyboard_velocity_enabled=not renoise.song().transport.keyboard_velocity_enabled renoise.app():show_status("Keyboard Velocity " .. (renoise.song().transport.keyboard_velocity_enabled and "Enabled" or "Disabled")) end}
+renoise.tool():add_midi_mapping {name="Paketti:Toggle Keyboard Velocity", invoke=function(message) if message:is_trigger() then renoise.song().transport.keyboard_velocity_enabled=not renoise.song().transport.keyboard_velocity_enabled renoise.app():show_status("Keyboard Velocity " .. (renoise.song().transport.keyboard_velocity_enabled and "Enabled" or "Disabled")) end end}
+
+renoise.tool():add_keybinding {name="Global:Paketti:Set Keyboard Velocity to 7F (Max)", invoke=function() renoise.song().transport.keyboard_velocity=127 renoise.app():show_status("Keyboard Velocity set to: 7F.") end}
+renoise.tool():add_midi_mapping {name="Paketti:Set Keyboard Velocity to 7F (Max)", invoke=function(message) if message:is_trigger() then renoise.song().transport.keyboard_velocity=127 renoise.app():show_status("Keyboard Velocity set to: 7F") end end}
+
+renoise.tool():add_keybinding {name="Global:Paketti:Set Keyboard Velocity to 00 (Min)", invoke=function() renoise.song().transport.keyboard_velocity=0 renoise.app():show_status("Keyboard Velocity set to: 0.") end}
+renoise.tool():add_midi_mapping {name="Paketti:Set Keyboard Velocity to 00 (Min)", invoke=function(message) if message:is_trigger() then renoise.song().transport.keyboard_velocity=0 renoise.app():show_status("Keyboard Velocity set to: 0") end end}
+
+
 --BPM +1 / -1 / +0.1 / -0.1 (2024 update)
 function adjust_bpm(bpm_delta)
   local t = renoise.song().transport
@@ -3454,4 +3477,11 @@ end
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Xperimental/Work in Progress:Match Effect Column EditStep with Note Placement",invoke=function() toggle_match_editstep() end}
 renoise.tool():add_keybinding{name="Global:Tools:Toggle Match EditStep with Note Placement",invoke=function() toggle_match_editstep() end}
 
+--
+function PakettiRandomEditStep(startNumber)
+renoise.song().transport.edit_step = math.random(startNumber,64)
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Set Random EditStep 0-64",invoke=function() PakettiRandomEditStep(0) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Random EditStep 1-64",invoke=function() PakettiRandomEditStep(1) end}
 

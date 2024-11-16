@@ -237,7 +237,8 @@ s.selected_instrument.active_tab=2
 end
 renoise.tool():add_keybinding{name="Global:Paketti:Load Waldorf Attack (VST)",invoke=function() LoadAttack() end}
 -----------------------------------------------------------------------------------------------------
-function loadnative(effect)
+function loadnative(effect,name)
+
   local checkline=nil
   local s=renoise.song()
   local w=renoise.app().window
@@ -312,10 +313,17 @@ function loadnative(effect)
           device.active_preset_data = read_file("Presets/PakettiSend.xml")
         end
         renoise.song().selected_sample_device_index = checkline
+                    if name ~= nil then
+  sample_devices[checkline].display_name = name else end
+
       end
     else
       renoise.app():show_status("No sample selected.")
+      
+      
     end
+
+    
   else
     local sdevices = s.selected_track.devices
     checkline = (table.count(sdevices)) < 2 and 2 or (sdevices[2] and sdevices[2].name == "#Line Input" and 3 or 2)
@@ -362,8 +370,12 @@ function loadnative(effect)
         device.parameters[2].show_in_mixer = false
         device.active_preset_data = read_file("Presets/PakettiSend.xml")
       end
+        if name ~= nil then
+  sdevices[checkline].display_name = name else end
+
     end
   end
+  
 end
 
 
@@ -405,7 +417,7 @@ invoke=function() loadnative("Audio/Effects/Native/Exciter") end}
 renoise.tool():add_keybinding{name="Global:Track Devices:Load Renoise Flanger 2",
 invoke=function() loadnative("Audio/Effects/Native/Flanger 2") end}
 renoise.tool():add_keybinding{name="Global:Track Devices:Load Renoise Gainer",
-invoke=function() loadnative("Audio/Effects/Native/Gainer") end}
+invoke=function() loadnative("Audio/Effects/Native/Gainer","BLA") end}
 renoise.tool():add_keybinding{name="Global:Track Devices:Load Renoise Gate 2",
 invoke=function() loadnative("Audio/Effects/Native/Gate 2") end}
 renoise.tool():add_keybinding{name="Global:Track Devices:Load Renoise LofiMat 2",

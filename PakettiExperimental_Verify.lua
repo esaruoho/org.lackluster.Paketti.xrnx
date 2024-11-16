@@ -1,35 +1,3 @@
-function PakettiJumpRows(jump_amount)
-  local song = renoise.song()
-  local current_pattern = song.selected_pattern
-  local num_lines = current_pattern.number_of_lines
-  local new_index = (song.selected_line_index + jump_amount - 1) % num_lines + 1
-  song.selected_line_index = new_index
-  renoise.app():show_status("Jumped " .. jump_amount .. " rows to line " .. new_index)
-end
-
-function PakettiJumpRowsRandom()
-  local song = renoise.song()
-  local current_pattern = song.selected_pattern
-  local num_lines = current_pattern.number_of_lines
-  local random_index = math.random(1, num_lines)
-  song.selected_line_index = random_index
-  renoise.app():show_status("Randomly jumped to line " .. random_index)
-end
-
-for i=1,128 do 
-renoise.tool():add_keybinding{name="Global:Paketti:Jump Within Pattern (Forwards by " .. formatDigits(3,i) .. ")", invoke=function() PakettiJumpRows(i) end}
-renoise.tool():add_midi_mapping{name="Paketti:Jump Within Pattern (Forwards by " .. formatDigits(3,i) .. ")", invoke=function(message) if message:is_trigger() then PakettiJumpRows(i) end end}
-end
-
-renoise.tool():add_keybinding{name="Global:Paketti:Jump Within Pattern (Forwards by Random)", invoke=function() PakettiJumpRowsRandom() end}
-renoise.tool():add_midi_mapping{name="Paketti:Jump Within Pattern (Forwards by Random)", invoke=function(message) if message:is_trigger() then PakettiJumpRowsRandom() end end}
-
-
-
-
-
-
-
 function crossfade_loop(crossfade_length)
   -- Check for an active instrument
   local instrument = renoise.song().selected_instrument
@@ -45,90 +13,143 @@ function crossfade_loop(crossfade_length)
     return
   end
 
-  -- Check if looping is enabled
-  if not sample.sample_buffer.has_sample_data or sample.loop_mode == renoise.Sample.LOOP_MODE_OFF then
-    renoise.app():show_status("No loop enabled in sample.")
+  -- Check if the sample has sample data and looping is enabled
+  local sample_buffer = sample.sample_buffer
+  if not sample_buffer or not sample_buffer.has_sample_data then
+    renoise.app():show_status("Sample has no data.")
     return
   end
 
-  -- Prepare sample buffer and loop parameters
-  local sample_buffer = sample.sample_buffer
+  if sample.loop_mode == renoise.Sample.LOOP_MODE_OFF then
+    renoise.app():show_status("Sample loop mode is off.")
+    return
+  end
+
+  -- Get loop points and validate
   local loop_start = sample.loop_start
   local loop_end = sample.loop_end
   local num_frames = sample_buffer.number_of_frames
 
-  -- Validate frame range for safe crossfade
-  if loop_start <= crossfade_length or loop_end + crossfade_length > num_frames then
-    renoise.app():show_status("Insufficient frames for crossfade range.")
+  -- Define fade lengths
+  local fade_length = 2500  -- Number of frames for fade-in/out at loop points
+
+  -- Validate frame ranges
+  if loop_start <= crossfade_length + fade_length then
+    renoise.app():show_status("Insufficient frames before loop_start for crossfade and fades.")
     return
   end
 
-  -- Define primary crossfade regions
-  local start_fade_in_start = loop_end - crossfade_length
-  local start_fade_in_end = loop_end
-  local end_fade_out_start = loop_start
-  local end_fade_out_end = loop_start + crossfade_length
+  if loop_end <= crossfade_length + fade_length then
+    renoise.app():show_status("Insufficient frames before loop_end for crossfade and fades.")
+    return
+  end
 
-  -- Additional 15-frame fade-out settings
-  local extra_fade_length = 15
+  if loop_start + fade_length - 1 > num_frames then
+    renoise.app():show_status("Insufficient frames after loop_start for fade-in.")
+    return
+  end
 
-  -- Prepare to modify sample data
+  if loop_end - fade_length < 1 then
+    renoise.app():show_status("Insufficient frames before loop_end for fade-out.")
+    return
+  end
+
+  -- Define crossfade regions
+  local fade_in_start = loop_start - crossfade_length
+  local fade_in_end = loop_start - 1
+  local fade_out_start = loop_end - crossfade_length
+  local fade_out_end = loop_end - 1
+
+  -- Prepare for sample data changes
   sample_buffer:prepare_sample_data_changes()
 
-  -- Primary Crossfade: Apply crossfade between loop start and loop end
+  -- Perform crossfade between regions before loop_start and before loop_end
   for i = 0, crossfade_length - 1 do
-    local start_fade_in_pos = start_fade_in_start + i
-    local end_fade_out_pos = end_fade_out_start + i
+    local fade_in_pos = fade_in_start + i
+    local fade_out_pos = fade_out_start + i
 
     -- Calculate fade ratios
-    local fade_in_ratio = i / crossfade_length   -- Ramps from 0 to 1
-    local fade_out_ratio = 1 - fade_in_ratio     -- Ramps from 1 to 0
+    local fade_in_ratio = i / (crossfade_length - 1)    -- Ramps from 0 to 1
+    local fade_out_ratio = 1 - fade_in_ratio            -- Ramps from 1 to 0
 
-    -- Apply crossfade to both segments in each channel
+    -- Apply crossfade to each channel
     for c = 1, sample_buffer.number_of_channels do
-      -- Get sample values from loop start and loop end segments
-      local start_val = sample_buffer:sample_data(c, start_fade_in_pos)
-      local end_val = sample_buffer:sample_data(c, end_fade_out_pos)
+      local fade_in_val = sample_buffer:sample_data(c, fade_in_pos)
+      local fade_out_val = sample_buffer:sample_data(c, fade_out_pos)
 
-      -- Primary crossfade for both segments
-      local blended_start_val = (start_val * fade_in_ratio) + (end_val * fade_out_ratio)
-      local blended_end_val = (end_val * fade_in_ratio) + (start_val * fade_out_ratio)
+      -- Crossfade the samples
+      local blended_val = (fade_in_val * fade_in_ratio) + (fade_out_val * fade_out_ratio)
 
-      -- Set crossfaded values back into sample buffer
-      sample_buffer:set_sample_data(c, start_fade_in_pos, blended_start_val)
-      sample_buffer:set_sample_data(c, end_fade_out_pos, blended_end_val)
+      -- Write the blended value back to the fade-out position
+      sample_buffer:set_sample_data(c, fade_out_pos, blended_val)
     end
   end
 
-  -- Apply the additional 15-frame fade-out at loop boundaries
-  for i = 0, extra_fade_length - 1 do
-    local fade_ratio = (extra_fade_length - i) / extra_fade_length  -- Ramps down from 1 to 0
+  -- Apply 20-frame fade-out at loop_end
+  for i = 0, fade_length - 1 do
+    local pos = loop_end - fade_length + i
 
-    -- Apply final fade-out near loop start
+    -- Calculate fade-out ratio (from 1 to 0)
+    local fade_ratio = 1 - (i / (fade_length - 1))
+
+    -- Apply fade-out to each channel
     for c = 1, sample_buffer.number_of_channels do
-      local start_val = sample_buffer:sample_data(c, loop_start + i)
-      local faded_start_val = start_val * fade_ratio
-      sample_buffer:set_sample_data(c, loop_start + i, faded_start_val)
-
-      -- Apply final fade-out near loop end
-      local end_val = sample_buffer:sample_data(c, loop_end - i)
-      local faded_end_val = end_val * fade_ratio
-      sample_buffer:set_sample_data(c, loop_end - i, faded_end_val)
+      local sample_val = sample_buffer:sample_data(c, pos)
+      local faded_val = sample_val * fade_ratio
+      sample_buffer:set_sample_data(c, pos, faded_val)
     end
   end
 
-  -- Finalize changes to the sample buffer
+  -- Apply 20-frame fade-in at loop_start
+  for i = 0, fade_length - 1 do
+    local pos = loop_start + i
+
+    -- Calculate fade-in ratio (from 0 to 1)
+    local fade_ratio = i / (fade_length - 1)
+
+    -- Apply fade-in to each channel
+    for c = 1, sample_buffer.number_of_channels do
+      local sample_val = sample_buffer:sample_data(c, pos)
+      local faded_val = sample_val * fade_ratio
+      sample_buffer:set_sample_data(c, pos, faded_val)
+    end
+  end
+
+  -- Apply 20-frame fade-out before loop_start
+  for i = 0, fade_length - 1 do
+    local pos = loop_start - fade_length + i
+
+    -- Check if position is within valid range
+    if pos >= 1 and pos <= num_frames then
+      -- Calculate fade-out ratio (from 1 to 0)
+      local fade_ratio = 1 - (i / (fade_length - 1))
+
+      -- Apply fade-out to each channel
+      for c = 1, sample_buffer.number_of_channels do
+        local sample_val = sample_buffer:sample_data(c, pos)
+        local faded_val = sample_val * fade_ratio
+        sample_buffer:set_sample_data(c, pos, faded_val)
+      end
+    end
+  end
+
+  -- Finalize sample data changes
   sample_buffer:finalize_sample_data_changes()
-  renoise.app():show_status("Complex crossfade applied for dynamic loop matching.")
+
+  -- Show status message
+  renoise.app():show_status("Crossfade and fades applied to create a smooth loop.")
 end
 
 -- Keybinding setup with crossfade length parameter
 renoise.tool():add_keybinding{
   name="Global:Paketti:Crossfade Loop",
-  invoke=function() 
-    crossfade_loop(50000)  -- You can change this value to adjust the crossfade length
+  invoke=function()
+    crossfade_loop(50000)  -- Adjust this value as needed
   end
 }
+
+
+
 
 
 
@@ -405,6 +426,12 @@ renoise.tool():add_menu_entry{name="--Sample Navigator:Paketti..:Duplicate Selec
 renoise.tool():add_menu_entry{name="Sample Navigator:Paketti..:Duplicate Selected Sample at -24 transpose",invoke=function() duplicate_sample_with_transpose(-24) end}
 renoise.tool():add_menu_entry{name="Sample Navigator:Paketti..:Duplicate Selected Sample at +12 transpose",invoke=function() duplicate_sample_with_transpose(12) end}
 renoise.tool():add_menu_entry{name="Sample Navigator:Paketti..:Duplicate Selected Sample at +24 transpose",invoke=function() duplicate_sample_with_transpose(24) end}
+
+renoise.tool():add_menu_entry{name="--Sample Mappings:Paketti..:Duplicate Selected Sample at -12 transpose",invoke=function() duplicate_sample_with_transpose(-12) end}
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Duplicate Selected Sample at -24 transpose",invoke=function() duplicate_sample_with_transpose(-24) end}
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Duplicate Selected Sample at +12 transpose",invoke=function() duplicate_sample_with_transpose(12) end}
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Duplicate Selected Sample at +24 transpose",invoke=function() duplicate_sample_with_transpose(24) end}
+
 
 renoise.tool():add_menu_entry{name="--Sample Editor:Paketti..:Duplicate Selected Sample at -12 transpose",invoke=function() duplicate_sample_with_transpose(-12) end}
 renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Duplicate Selected Sample at -24 transpose",invoke=function() duplicate_sample_with_transpose(-24) end}

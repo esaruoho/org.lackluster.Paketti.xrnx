@@ -61,7 +61,7 @@ function randomizeSmatterEffectColumnCustom(effect_command, fill_percentage, min
   local selection = song.selection_in_pattern
   local randomize_switch = preferences.pakettiCheatSheet.pakettiCheatSheetRandomizeSwitch.value
   local dont_overwrite = preferences.pakettiCheatSheet.pakettiCheatSheetRandomizeDontOverwrite.value
-  local randomize_whole_track_cb = preferences.pakettiCheatSheet.pakettiCheatSheetRandomizeWholeTrack.value  -- Read the preference
+  local randomize_whole_track_cb = preferences.pakettiCheatSheet.pakettiCheatSheetRandomizeWholeTrack.value
 
   if min_value > max_value then
     min_value, max_value = max_value, min_value
