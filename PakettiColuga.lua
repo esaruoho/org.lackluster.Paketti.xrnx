@@ -1,11 +1,5 @@
---[[
-  Paketti Coluga Downloader - Complete Script with Dialog Reopen Fix
-  - Creates a new ViewBuilder instance each time the dialog is opened
-  - Resets global variables when the dialog is closed
-  - Ensures no duplicate view IDs are registered
-  - Includes all helper functions and main functionalities
---]]
-
+-- TODO YT-DLP make it output to GUI Console
+-- TODO YT-DLP make sure it finishes downloading
 local yt_dlp_path = ""
 local ffmpeg_path = ""
 local RUNTIME = tostring(os.time())

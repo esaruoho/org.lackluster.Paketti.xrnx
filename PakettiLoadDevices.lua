@@ -2,7 +2,6 @@ local vb
 local checkboxes = {}
 local deviceReadableNames = {}
 local addedKeyBindings = {}
-local preferencesFile = renoise.tool().bundle_path .. "preferences_deviceLoaders.xml"
 local current_device_type = "Native"
 local device_types = {"Native", "VST", "VST3", "AudioUnit", "LADSPA", "DSSI"}
 local custom_dialog
@@ -12,24 +11,6 @@ local current_device_list_content = nil
 
 local DEVICES_PER_COLUMN = 39
 local random_select_percentage = 0
-
--- Initialize Preferences File
-function initializePreferencesFile()
-  local file, err = io.open(preferencesFile, "r")
-  if not file then
-    file, err = io.open(preferencesFile, "w")
-    if not file then
-      print("Error creating preferences file: " .. err)
-      return
-    end
-    file:write("<preferences_deviceLoaders>\n</preferences_deviceLoaders>\n")
-    file:close()
-  else
-    file:close()
-  end
-end
-
-initializePreferencesFile()
 
 -- Function to check if a keybinding exists
 function doesKeybindingExist(keyBindingName)
@@ -41,103 +22,79 @@ function doesKeybindingExist(keyBindingName)
   return false
 end
 
--- Save to Preferences File
-function saveToPreferencesFile(keyBindingName, midiMappingName, path)
-  local file, err = io.open(preferencesFile, "a")
-  if not file then
-    print("Error opening preferences file: " .. err)
+function saveDeviceToPreferences(entryName, path, device_type)
+  if not entryName or not path or not device_type then
+    print("Error: Cannot save to preferences. Missing data.")
     return
   end
 
-  local keybindingEntry = string.format(
-    '<KeyBinding name="%s">\n  <Path>%s</Path>\n</KeyBinding>\n',
-    keyBindingName, path
-  )
+  local loaders = preferences.PakettiDeviceLoaders
 
-  local midiMappingEntry = string.format(
-    '<MIDIMapping name="%s">\n  <Path>%s</Path>\n</MIDIMapping>\n',
-    midiMappingName, path
-  )
+  -- Check for duplicates
+  for i = 1, #loaders do
+    local device = loaders:property(i)
+    if device.name.value == entryName and device.device_type.value == device_type then
+      print("Device entry already exists. Skipping addition for:", entryName)
+      return
+    end
+  end
 
-  file:write(keybindingEntry)
-  file:write(midiMappingEntry)
-  file:close()
+  -- Add new device entry
+  local newDevice = create_device_entry(entryName, path, device_type)
+  loaders:insert(#loaders + 1, newDevice)
+
+  print(string.format("Saved Device '%s' to preferences.", entryName))
 end
 
--- Load from Preferences File
-function loadFromPreferencesFile()
-  local file, err = io.open(preferencesFile, "r")
-  if not file then
-    print("Error opening preferences file: " .. err)
+-- Load from Preferences
+function loadDeviceFromPreferences()
+  if not preferences.PakettiDeviceLoaders then
+    print("No PakettiDeviceLoaders found in preferences.")
     return
   end
 
-  local entries = {}
-  local current_entry = nil
-  for line in file:lines() do
-    local keybinding_start = line:match('<KeyBinding name="(.-)">')
-    if keybinding_start then
-      current_entry = {type = "KeyBinding", name = keybinding_start}
-    end
+  local loaders = preferences.PakettiDeviceLoaders
+  print("Loading devices from preferences.PakettiDeviceLoaders:")
+  for i = 1, #loaders do
+    local device = loaders:property(i)
+    local device_name = device.name.value
+    local path = device.path.value
+    local device_type = device.device_type.value
 
-    local midimapping_start = line:match('<MIDIMapping name="(.-)">')
-    if midimapping_start then
-      current_entry = {type = "MIDIMapping", name = midimapping_start}
-    end
+    -- Generate keybinding and midi mapping names
+    local entryName = device_name
+    local keyBindingName = "Global:Paketti:Load Device (" .. device_type .. ") " .. entryName
+    local midiMappingName = "Paketti:Load Device (" .. device_type .. ") " .. entryName
 
-    local path_line = line:match('<Path>(.-)</Path>')
-    if path_line and current_entry then
-      current_entry.path = path_line
-      table.insert(entries, current_entry)
-      current_entry = nil
-    end
-  end
-  file:close()
-
-  for _, entry in ipairs(entries) do
-    local device_type = entry.name:match("Load Device %((.-)%)")
-    local path = entry.path
-
-    if entry.type == "KeyBinding" then
-      -- Re-add keybinding
-      local success, err = pcall(function()
-        local device_type_copy = device_type
-        local path_copy = path
-        renoise.tool():add_keybinding{
-          name = entry.name,
-          invoke = function()
-            if device_type_copy == "Native" then
-              loadnative(path_copy)
+    -- Re-add keybinding and midi mapping
+    local success, err = pcall(function()
+      renoise.tool():add_keybinding{
+        name = keyBindingName,
+        invoke = function()
+          if device_type == "Native" then
+            loadnative(path)
+          else
+            loadvst(path)
+          end
+        end
+      }
+      renoise.tool():add_midi_mapping{
+        name = midiMappingName,
+        invoke = function(message)
+          if message:is_trigger() then
+            if device_type == "Native" then
+              loadnative(path)
             else
-              loadvst(path_copy)
+              loadvst(path)
             end
           end
-        }
-      end)
-      if not success then
-        print("Could not add keybinding for " .. entry.name .. ": " .. err)
-      end
-    elseif entry.type == "MIDIMapping" then
-      -- Re-add midi mapping
-      local success, err = pcall(function()
-        local device_type_copy = device_type
-        local path_copy = path
-        renoise.tool():add_midi_mapping{
-          name = entry.name,
-          invoke = function(message)
-            if message:is_trigger() then
-              if device_type_copy == "Native" then
-                loadnative(path_copy)
-              else
-                loadvst(path_copy)
-              end
-            end
-          end
-        }
-      end)
-      if not success then
-        print("Could not add midi mapping for " .. entry.name .. ": " .. err)
-      end
+        end
+      }
+    end)
+    if not success then
+      print("Could not add keybinding or midi mapping for " .. device_name .. ": " .. err)
+    else
+      addedKeyBindings[keyBindingName] = true
     end
   end
 end
@@ -172,7 +129,7 @@ function loadSelectedDevices()
   return true
 end
 
-function addAsShortcut()
+function addDeviceAsShortcut()
   if not isAnyDeviceSelected() then
     renoise.app():show_status("Nothing was selected, doing nothing.")
     return
@@ -180,14 +137,17 @@ function addAsShortcut()
 
   for _, cb_info in ipairs(checkboxes) do
     if cb_info.checkbox.value then
-      local keyBindingName = "Global:Paketti:Load Device (" .. current_device_type .. ") " .. cb_info.name
-      local midiMappingName = "Track Devices:Paketti:Load Device (" .. current_device_type .. ") " .. cb_info.name
-
       local device_type = current_device_type
       local path = cb_info.path
+      local device_name = cb_info.name
+
+      local entryName = device_name
+
+      local keyBindingName = "Global:Paketti:Load Device (" .. device_type .. ") " .. entryName
+      local midiMappingName = "Paketti:Load Device (" .. device_type .. ") " .. entryName
 
       if not addedKeyBindings[keyBindingName] then
-        print("Adding shortcut for: " .. cb_info.name)
+        print("Adding shortcut for: " .. device_name)
 
         local success, err = pcall(function()
           renoise.tool():add_keybinding{
@@ -216,16 +176,16 @@ function addAsShortcut()
 
         if success then
           addedKeyBindings[keyBindingName] = true
-          saveToPreferencesFile(keyBindingName, midiMappingName, cb_info.path)
+          saveDeviceToPreferences(entryName, path, device_type)
         else
-          print("Could not add keybinding for " .. cb_info.name .. ". It might already exist.")
+          print("Could not add keybinding for " .. device_name .. ". It might already exist.")
         end
       else
-        print("Keybinding for " .. cb_info.name .. " already added.")
+        print("Keybinding for " .. device_name .. " already added.")
       end
     end
   end
-  renoise.app():show_status("Devices added. Open Settings -> Keys, search for 'Load Device' or Midi Mappings and search for 'Load Device'")
+  renoise.app():show_status("Devices added. Open Settings -> Keys, search for 'Load Device' or MIDI Mappings and search for 'Load Device'")
 end
 
 function resetSelection()
@@ -506,7 +466,7 @@ function showDeviceListDialog()
         end
       },
       vb:button{text="Add Device(s) as Shortcut(s) & MidiMappings",width=140,
-        notifier = addAsShortcut},
+        notifier = addDeviceAsShortcut},
       vb:button{text="Cancel",width=30,
         notifier = function() custom_dialog:close() end}}}
   device_list_view = vb:column{}
@@ -534,5 +494,5 @@ function my_Devicekeyhandler_func(custom_dialog, key)
   end
 end
 
-loadFromPreferencesFile()
+loadDeviceFromPreferences()
 

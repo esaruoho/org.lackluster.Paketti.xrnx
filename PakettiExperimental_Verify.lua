@@ -1,3 +1,627 @@
+local function add_automation_points_for_notes()
+  local song = renoise.song()
+
+  -- Ensure there's a selected track and automation parameter
+  local track = song.selected_track
+  local parameter = song.selected_automation_parameter
+  local pattern_index = song.selected_pattern_index
+  local track_index = song.selected_track_index
+  local line_index = song.selected_line_index
+
+  if not parameter then
+    renoise.app():show_status("Please select a parameter to automate.")
+    print("No automation parameter selected.")
+    return
+  end
+
+  -- Access the current pattern and the selected track's pattern track
+  local pattern = song:pattern(pattern_index)
+  local pattern_track = pattern:track(track_index)
+
+  -- Find or create automation envelope for the parameter
+  local envelope = pattern_track:find_automation(parameter)
+  if not envelope then
+    envelope = pattern_track:create_automation(parameter)
+    print("Created new automation envelope for parameter: " .. parameter.name)
+  end
+
+  -- Iterate through the lines in the pattern track to find notes
+  for line_index = 1, pattern.number_of_lines do
+    local line = pattern_track:line(line_index)
+
+    if line and line.note_columns then
+      -- Check for valid notes in the note columns
+      for _, note_column in ipairs(line.note_columns) do
+        if note_column.note_value < 120 then -- Valid MIDI note
+          -- Set the automation point at the line's position
+          local value = 0.5 -- Default automation value (you can adjust this logic as needed)
+          envelope:add_point_at(line_index, value)
+
+          renoise.app():show_status(
+            "Added automation point at line " .. line_index .. " with value " .. value
+          )
+          print("Added automation point at line " .. line_index .. " with value " .. value)
+        end
+      end
+    end
+  end
+
+  renoise.app():show_status("Finished adding automation points for notes.")
+end
+
+-- Execute the function
+renoise.tool():add_menu_entry{name="Track Automation:Paketti..:Generate Automation Points from Notes in Selected Track",invoke=function()
+add_automation_points_for_notes() end}
+renoise.tool():add_menu_entry{name="Track Automation List:Paketti..:Generate Automation Points from Notes in Selected Track",invoke=function()
+add_automation_points_for_notes() end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Generate Automation Points from Notes in Selected Track",invoke=function()
+add_automation_points_for_notes()
+renoise.app().window.active_middle_frame = 1
+renoise.app().window.active_lower_frame = 2
+ end}
+
+
+
+
+
+
+
+
+
+
+
+
+local vb = renoise.ViewBuilder()
+local dialog = nil
+local dialog_content = nil
+
+local function my_keyhandler_func(dialog, key)
+local closer = preferences.pakettiDialogClose.value
+  if key.modifiers == "" and key.name == closer then
+   dialog:close()
+   return end
+   
+    if key.name == "!" then
+      dialog:close()
+      renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
+    else
+      return key
+    end
+end
+
+local function update_sample_volumes(x, y)
+  local instrument = renoise.song().selected_instrument
+  if #instrument.samples < 4 then
+    renoise.app():show_status("Selected instrument must have at least 4 samples.")
+    return
+  end
+
+  -- Calculate volumes based on the x, y position of the xypad
+  local volumes = {
+    (1 - x) * y, -- Top-left (Sample 1)
+    x * y,       -- Top-right (Sample 2)
+    (1 - x) * (1 - y), -- Bottom-left (Sample 3)
+    x * (1 - y)  -- Bottom-right (Sample 4)
+  }
+
+  -- Normalize volumes to range 0.0 - 1.0
+  for i, volume in ipairs(volumes) do
+    instrument.samples[i].volume = math.min(1.0, math.max(0.0, volume))
+  end
+
+  renoise.app():show_status(
+    ("Sample volumes updated: S1=%.2f, S2=%.2f, S3=%.2f, S4=%.2f"):
+    format(volumes[1], volumes[2], volumes[3], volumes[4])
+  )
+end
+
+dialog_content = vb:column {
+  vb:xypad {
+    width = 200,
+    height = 200,
+    value = {x=0.5, y=0.5},
+    notifier = function(value)
+      update_sample_volumes(value.x, value.y)
+    end
+  }
+}
+
+function showXyPaddialog()
+  if dialog and dialog.visible then
+    dialog:close()
+  else
+    dialog = renoise.app():show_custom_dialog("XY Pad Sound Mixer", dialog_content, my_keyhandler_func)
+  end
+end
+
+renoise.tool():add_menu_entry {name = "Main Menu:Tools:XY Pad Sound Mixer",invoke = function() showXyPaddialog() end}
+
+
+
+
+--[[
+
+
+
+
+
+local vb = renoise.ViewBuilder()
+local dialog = nil
+local monitoring_enabled = false -- Tracks the monitoring state
+local active = false
+
+-- Tracks all SB0/SBX pairs in the Master Track
+local loop_pairs = {}
+
+-- Scan the Master Track for all SB0/SBX pairs
+local function analyze_loops()
+  local song = renoise.song()
+  local master_track_index = renoise.song().sequencer_track_count + 1
+  local master_track = song.selected_pattern.tracks[master_track_index]
+
+  loop_pairs = {}
+
+  for line_idx, line in ipairs(master_track.lines) do
+    if #line.effect_columns > 0 then
+      local col = line.effect_columns[1]
+      if col.number_string == "0S" then
+        local parameter = col.amount_value - 176 -- Decode by subtracting `B0`
+
+        if parameter == 0 then
+          -- Found SB0 (start)
+          table.insert(loop_pairs, {start_line = line_idx, end_line = nil, repeat_count = 0, max_repeats = 0})
+        elseif parameter >= 1 and parameter <= 15 then
+          -- Found SBX (end) for the last SB0
+          local last_pair = loop_pairs[#loop_pairs]
+          if last_pair and not last_pair.end_line then
+            last_pair.end_line = line_idx
+            last_pair.max_repeats = parameter
+          end
+        end
+      end
+    end
+  end
+
+  if #loop_pairs == 0 then
+    print("Error: No valid SB0/SBX pairs found in the Master Track.")
+    return false
+  end
+
+  print("Detected SB0/SBX pairs in Master Track:")
+  for i, pair in ipairs(loop_pairs) do
+    print("Pair " .. i .. ": Start=" .. pair.start_line .. ", End=" .. pair.end_line .. ", Max Repeats=" .. pair.max_repeats)
+  end
+
+  return true
+end
+
+-- Playback Monitoring Function
+local function monitor_playback()
+  local song = renoise.song()
+  local play_pos = song.transport.playback_pos
+  local current_line = play_pos.line
+  local max_row = renoise.song().selected_pattern.number_of_lines - 1 -- Last row in the pattern
+
+  -- Reset all repeat counts at the end of the pattern
+  if current_line == max_row then
+    for _, pair in ipairs(loop_pairs) do
+      pair.repeat_count = 0
+    end
+    print("Resetting all repeat counts at the end of the pattern.")
+    return
+  end
+
+  -- Handle looping logic for each pair
+  for i, pair in ipairs(loop_pairs) do
+    if current_line == pair.end_line then
+      if pair.repeat_count < pair.max_repeats then
+        pair.repeat_count = pair.repeat_count + 1
+        print("Pair " .. i .. ": Looping back to SB0 (line " .. pair.start_line .. "). Repeat count: " .. pair.repeat_count)
+        song.transport.playback_pos = renoise.SongPos(play_pos.sequence, pair.start_line)
+        return
+      else
+        print("Pair " .. i .. ": Completed all repeats for this iteration.")
+      end
+    end
+  end
+end
+
+-- Global Reset Function
+function reset_repeat_counts()
+  if not monitoring_enabled then
+    print("Monitoring is disabled. Reset operation skipped.")
+    return
+  end
+
+  print("Checking Master Track for SB0/SBX pairs...")
+  if not analyze_loops() then
+    print("No valid SB0/SBX pairs found in the Master Track. Reset operation aborted.")
+    return
+  end
+
+  for i, pair in ipairs(loop_pairs) do
+    pair.repeat_count = 0
+    print("Reset Pair " .. i .. ": Start=" .. pair.start_line .. ", End=" .. pair.end_line .. ", Max Repeats=" .. pair.max_repeats)
+  end
+
+  print("All repeat counts reset to 0. Monitoring restarted.")
+  InitSBx() -- Reinitialize SBX monitoring
+end
+
+-- Initialize SBX Monitoring
+function InitSBx()
+  if monitoring_enabled then
+    print("Monitoring is enabled. Checking Master Track for SBX...")
+    if not analyze_loops() then
+      print("No valid SBX commands found in the Master Track. Monitoring will not start.")
+      return
+    end
+    if not active then
+      renoise.tool().app_idle_observable:add_notifier(monitor_playback)
+      print("SBX Monitoring started.")
+      active = true
+    end
+  else
+    print("Monitoring is disabled. SBX initialization skipped.")
+  end
+end
+
+-- Enable Monitoring
+local function enable_monitoring()
+  monitoring_enabled = true
+  InitSBx()
+end
+
+-- Disable Monitoring
+local function disable_monitoring()
+  monitoring_enabled = false
+  if active and renoise.tool().app_idle_observable:has_notifier(monitor_playback) then
+    renoise.tool().app_idle_observable:remove_notifier(monitor_playback)
+    print("SBX Monitoring stopped.")
+    active = false
+  end
+end
+
+-- GUI for Triggering the Script
+local function show_dialog()
+  if dialog and dialog.visible then dialog:close() return end
+  local content = vb:column {
+    margin = 10,
+    vb:text { text = "Trigger SBX Loop Handler" },
+    vb:button {
+      text = "Enable Monitoring",
+      released = function()
+        enable_monitoring()
+      end
+    },
+    vb:button {
+      text = "Disable Monitoring",
+      released = function()
+        disable_monitoring()
+      end
+    }
+  }
+  dialog = renoise.app():show_custom_dialog("SBX Playback Handler", content)
+end
+
+-- Add Menu Entry
+renoise.tool():add_menu_entry {
+  name = "Main Menu:Tools:SBX Loop Playback",
+  invoke = show_dialog
+}
+
+-- Add Shortcut for Reset and Playback
+renoise.tool():add_keybinding {
+  name = "Global:Transport:Reset SBX and Start Playback",
+  invoke = function()
+    reset_repeat_counts()
+    renoise.song().transport:start() -- Start playback
+  end
+}
+
+-- Tool Initialization
+  monitoring_enabled = true
+InitSBx()
+
+
+
+
+]]--
+
+
+
+
+
+
+
+
+
+
+
+
+--[[
+
+
+local key_hold_start = nil
+local held_note = nil
+local is_filling = false
+local mode_active = false
+local dialog = nil
+
+-- Timer function to handle note filling
+local function check_key_hold()
+  if not key_hold_start or not held_note then
+    print("DEBUG: Timer running, but no key is being held.")
+    return
+  end
+
+  local hold_duration = os.clock() - key_hold_start
+  if hold_duration >= 1 and not is_filling then
+    print("DEBUG: Hold detected. Filling column...")
+
+    is_filling = true
+    local song = renoise.song()
+    local track_idx = song.selected_track_index
+    local line_idx = song.selected_line_index
+    local column_idx = song.selected_note_column_index
+
+    if track_idx and line_idx and column_idx then
+      local track = song:track(track_idx)
+      local note_column = track:line(line_idx):note_column(column_idx)
+
+      if not note_column.is_empty then
+        local note_value = note_column.note_value
+        local instrument_value = note_column.instrument_value
+        local volume_value = note_column.volume_value
+        local panning_value = note_column.panning_value
+        local delay_value = note_column.delay_value
+
+        print("DEBUG: Filling column with Note Value:", note_value)
+
+        -- Fill the rest of the column
+        local pattern = song.selected_pattern
+        local num_lines = pattern.number_of_lines
+        for i = line_idx + 1, num_lines do
+          local target_line = track:line(i)
+          local target_column = target_line:note_column(column_idx)
+          if target_column then
+            target_column.note_value = note_value
+            target_column.instrument_value = instrument_value
+            target_column.volume_value = volume_value
+            target_column.panning_value = panning_value
+            target_column.delay_value = delay_value
+          end
+        end
+        print("DEBUG: Filling complete.")
+      else
+        print("DEBUG: Note column is empty.")
+      end
+    else
+      print("DEBUG: Invalid pattern editor position.")
+    end
+
+    -- Reset state
+    is_filling = false
+    key_hold_start = nil
+    held_note = nil
+  end
+end
+
+-- Key handler for dialog
+local function key_handler(dialog, key)
+  if key.note then
+    if key.state == "pressed" then
+      key_hold_start = os.clock()
+      held_note = key.note
+      print("DEBUG: Key pressed. Note:", key.note, "Start Time:", key_hold_start)
+    elseif key.state == "released" then
+      key_hold_start = nil
+      held_note = nil
+      print("DEBUG: Key released.")
+    end
+  elseif key.name == "esc" then
+    dialog:close()
+    renoise.tool():remove_timer(check_key_hold)
+    print("DEBUG: Dialog closed. Timer stopped.")
+  end
+end
+
+-- Show dialog to enable key capture
+local function show_dialog()
+  if dialog and dialog.visible then
+    dialog:close()
+    renoise.tool():remove_timer(check_key_hold)
+    print("DEBUG: Dialog already open. Closing.")
+  else
+    local vb = renoise.ViewBuilder()
+    dialog = renoise.app():show_custom_dialog(
+      "Hold-to-Fill Mode",
+      vb:text{text="Hold a note to fill the column"},
+      key_handler
+    )
+    renoise.tool():add_timer(check_key_hold, 50)
+    print("DEBUG: Dialog opened. Timer started.")
+  end
+end
+
+-- Add menu entry to toggle the tool
+renoise.tool():add_menu_entry {
+  name = "Main Menu:Tools:Toggle Hold-to-Fill Mode",
+  invoke = show_dialog
+}
+
+
+
+]]--
+
+
+
+
+
+
+
+
+
+
+function selection_in_pattern_pro()
+  local song = renoise.song()
+
+  -- Get the selection in pattern
+  local selection = song.selection_in_pattern
+  if not selection then
+    print("No selection in pattern!")
+    return nil
+  end
+
+  -- Debug: Print selection details
+  print("Selection in Pattern:")
+  print("Start Track:", selection.start_track)
+  print("End Track:", selection.end_track)
+  print("Start Column:", selection.start_column)
+  print("End Column:", selection.end_column)
+  print("Start Line:", selection.start_line)
+  print("End Line:", selection.end_line)
+
+  local result = {}
+
+  -- Iterate over the selected tracks
+  for track_index = selection.start_track, selection.end_track do
+    local track = song.tracks[track_index]
+    local track_info = {
+      track_index = track_index,
+      track_type = track.type, -- Track type (e.g., "track", "group", "send", "master")
+      note_columns = {},
+      effect_columns = {}
+    }
+
+    -- Fetch visible note and effect columns
+    local visible_note_columns = track.visible_note_columns
+    local visible_effect_columns = track.visible_effect_columns
+    local total_columns = visible_note_columns + visible_effect_columns
+
+    -- Debugging visibility
+    print("Track Index:", track_index)
+    print("Visible Note Columns:", visible_note_columns)
+    print("Visible Effect Columns:", visible_effect_columns)
+    print("Total Columns:", total_columns)
+
+    -- Determine the range of selected columns for this track
+    local track_start_column = (track_index == selection.start_track) and selection.start_column or 1
+    local track_end_column = (track_index == selection.end_track) and selection.end_column or total_columns
+
+    -- Ensure valid column ranges
+    track_start_column = math.max(track_start_column, 1)
+    track_end_column = math.min(track_end_column, total_columns)
+
+    -- Process Note Columns
+    if visible_note_columns > 0 and track_start_column <= visible_note_columns then
+      for col = track_start_column, math.min(track_end_column, visible_note_columns) do
+        table.insert(track_info.note_columns, col)
+      end
+    end
+
+    -- Process Effect Columns
+    if visible_effect_columns > 0 and track_end_column > visible_note_columns then
+      local effect_start = math.max(track_start_column - visible_note_columns, 1)
+      local effect_end = track_end_column - visible_note_columns
+      for col = effect_start, math.min(effect_end, visible_effect_columns) do
+        table.insert(track_info.effect_columns, col)
+      end
+    end
+
+    -- Debugging output
+    print("Selected Note Columns:", #track_info.note_columns > 0 and table.concat(track_info.note_columns, ", ") or "None")
+    print("Selected Effect Columns:", #track_info.effect_columns > 0 and table.concat(track_info.effect_columns, ", ") or "None")
+
+    -- Add track information to the result
+    table.insert(result, track_info)
+  end
+
+  return result
+end
+
+
+function wipe_random_notes_with_note_offs()
+  local song = renoise.song()
+  local random = math.random
+
+  -- Get the selection in pattern
+  local selection_data = selection_in_pattern_pro()
+  if not selection_data then
+    renoise.app():show_status("No valid selection in pattern!")
+    return
+  end
+
+  local pattern_index = song.selected_pattern_index
+  local pattern = song.patterns[pattern_index]
+
+  -- Randomize the number of notes to replace (1–12)
+  local notes_to_replace = random(1, 12)
+  local replaced_count = 0
+
+  print("Random notes to replace:", notes_to_replace)
+
+  -- Iterate through the tracks in the selection
+  for _, track_info in ipairs(selection_data) do
+    local track_index = track_info.track_index
+    local track = song.tracks[track_index]
+
+    print("Processing Track:", track_index)
+
+    -- Skip tracks with no selected note columns
+    if #track_info.note_columns > 0 then
+      for _, column_index in ipairs(track_info.note_columns) do
+        print("Processing Column:", column_index)
+
+        -- Access the lines within the selected range
+        for line_index = song.selection_in_pattern.start_line, song.selection_in_pattern.end_line do
+          local line = pattern.tracks[track_index]:line(line_index)
+          local note_column = line:note_column(column_index)
+
+          -- Debug: Print note details
+          if note_column then
+            print("Line:", line_index, "Column:", column_index, "Note String:", note_column.note_string or "Empty", "Is Empty:", note_column.is_empty)
+          end
+
+          -- Replace random notes with NOTE_OFF, skipping NOTE_OFF columns
+          if note_column and not note_column.is_empty and note_column.note_string ~= "OFF" then
+            if replaced_count < notes_to_replace and random(0, 1) == 1 then -- Random decision for replacement
+              print("Replacing Note with NOTE_OFF at Line:", line_index, "Column:", column_index)
+              note_column.note_string = "OFF" -- Set the note to OFF
+              note_column.instrument_value = 255 -- Clear the instrument value
+              replaced_count = replaced_count + 1
+            end
+          end
+        end
+      end
+    else
+      print("No selected note columns in Track:", track_index)
+    end
+  end
+
+  -- Show appropriate status message
+  if replaced_count > 0 then
+    renoise.app():show_status("Removed " .. replaced_count .. " notes and replaced them with note-offs.")
+  else
+    renoise.app():show_status("No notes left to be wiped, doing nothing.")
+  end
+
+  -- Return focus to the pattern editor
+  renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
+end
+
+
+
+renoise.tool():add_keybinding{name="Global:Paketti:Wipe Random Notes",invoke=function() wipe_random_notes_with_note_offs() end}
+
+
+
+
+
+
+
+
 function crossfade_loop(crossfade_length)
   -- Check for an active instrument
   local instrument = renoise.song().selected_instrument
@@ -1009,10 +1633,10 @@ renoise.tool():add_midi_mapping {name="Paketti:Select Automation Playmode 03 Cur
 
 
 
+renoise.app():show_status("YOOOOOOOOO")
+print ("YOOO")
 
-
-
-
+renoise.tool():add_keybinding{name="Global:Paketti:YOOOOO",invoke=function() print("hello") end}
 
 
 

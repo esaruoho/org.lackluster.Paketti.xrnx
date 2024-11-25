@@ -53,8 +53,6 @@ raw.active_lower_frame=1
 raw.lower_frame_is_visible=true
     loadnative("Audio/Effects/Native/Filter")
     loadnative("Audio/Effects/Native/*LFO")
--- TODO: but you see, if you have anything before it, it's just not gonna work. you need to make sure those are the ones that
--- were added.
   ss.devices[2].parameters[2].value=2
   ss.devices[2].parameters[3].value=1
 end

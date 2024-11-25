@@ -1,3 +1,5 @@
+-- TODO Finish BeatDetect
+
 vb = renoise.ViewBuilder()
 vbs = vb.views
 dialog = nil

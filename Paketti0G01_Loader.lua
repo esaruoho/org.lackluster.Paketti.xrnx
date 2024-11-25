@@ -68,6 +68,67 @@ if os_name=="WINDOWS"then default_executable="C:\\Program Files\\espeak\\espeak.
 elseif os_name=="MACINTOSH"then default_executable="/opt/homebrew/bin/espeak-ng"
 else default_executable="/usr/bin/espeak-ng" end
 
+-- Define the PakettiPluginEntry class
+renoise.Document.create("PakettiPluginEntry") {
+  name = renoise.Document.ObservableString(),
+  path = renoise.Document.ObservableString(),
+}
+-- Function to create a new PakettiPluginEntry
+function create_plugin_entry(name, path)
+  local entry = renoise.Document.instantiate("PakettiPluginEntry")
+  entry.name.value = name
+  entry.path.value = path
+  return entry
+end
+
+renoise.Document.create("PakettiDeviceEntry") {
+  name = renoise.Document.ObservableString(),
+  path = renoise.Document.ObservableString(),
+  device_type = renoise.Document.ObservableString(),
+}
+
+-- Function to create a new PakettiDeviceEntry
+function create_device_entry(name, path, device_type)
+  local entry = renoise.Document.instantiate("PakettiDeviceEntry")
+  entry.name.value = name
+  entry.path.value = path
+  entry.device_type.value = device_type
+  return entry
+end
+
+-- Define the PakettiDynamicViewStepEntry class
+local PakettiDynamicViewStepEntry = renoise.Document.create("PakettiDynamicViewStepEntry") {
+  upper_frame_index = 1,
+  middle_frame_index = 1,
+  lower_frame_index = 1,
+  sample_record_visible = false,
+  disk_browser_visible = false,
+  instrument_box_visible = false,
+  pattern_matrix_visible = false,
+  pattern_advanced_edit_visible = false,
+}
+function create_dynamic_view_step_entry()
+  local entry = PakettiDynamicViewStepEntry()
+  return entry
+end
+
+-- Define the PakettiDynamicViewEntry class
+local PakettiDynamicViewEntry = renoise.Document.create("PakettiDynamicViewEntry") {
+  steps = renoise.Document.DocumentList(),
+}
+
+-- Function to create a new PakettiDynamicViewEntry
+function create_dynamic_view_entry()
+  local entry = PakettiDynamicViewEntry()
+  -- Initialize steps
+  for step = 1, steps_per_view do
+    local step_entry = create_dynamic_view_step_entry()
+    entry.steps:insert(step, step_entry)
+  end
+  return entry
+end
+
+
 preferences = renoise.Document.create("ScriptingToolPreferences") {
   pakettiDialogClose="esc",
   PakettiDeviceChainPath = "DeviceChains/",
@@ -80,23 +141,6 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
   renderSampleRate=88200,
   renderBitDepth=32,
   renderBypass=false,
-      pakettiTitler = {
-      textfile_path = "External/wordlist.txt",
-      notes_file_path = "External/notes.txt",
-      trackTitlerDateFormat = "YYYY_MM_DD",
-      },
-      pakettiMidiPopulator = {
-      volumeColumn = false,
-      panningColumn = false,
-      delayColumn = false,
-      sampleEffectsColumn = false,
-      noteColumns = 1.0,
-      effectColumns = 1.0,
-      collapsed = false,
-      incomingAudio = false,
-      populateSends = true
-      },
-
   pakettiEditMode=1,
   pakettiLoaderInterpolation=1,
   pakettiLoaderFilterType="LP Clean",
@@ -129,7 +173,6 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
     userPreferredDevice10 = "<None>",
     userPreferredDeviceLoad = true
   },
-  -- WipeSlices Segment
   WipeSlices = {
     WipeSlicesLoopMode=2,
     WipeSlicesLoopRelease=false,
@@ -160,6 +203,17 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
     RenoiseLaunchFavoritesLoad = false,
     RenoiseLaunchRandomLoad = false
   },
+  UserDefinedSampleFolders01="",
+  UserDefinedSampleFolders02="",
+  UserDefinedSampleFolders03="",
+  UserDefinedSampleFolders04="",
+  UserDefinedSampleFolders05="",
+  UserDefinedSampleFolders06="",
+  UserDefinedSampleFolders07="",
+  UserDefinedSampleFolders08="",
+  UserDefinedSampleFolders09="",
+  UserDefinedSampleFolders10="",
+
   pakettieSpeak = {
     word_gap=3,
     capitals=5,
@@ -250,9 +304,30 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
     Length = 64,
     SetName = false,
     Name = ""
-    }}
-    
+    },
+    pakettiTitler = {
+    textfile_path = "External/wordlist.txt",
+    notes_file_path = "External/notes.txt",
+    trackTitlerDateFormat = "YYYY_MM_DD",
+    },
+    pakettiMidiPopulator = {
+    volumeColumn = false,
+    panningColumn = false,
+    delayColumn = false,
+    sampleEffectsColumn = false,
+    noteColumns = 1.0,
+    effectColumns = 1.0,
+    collapsed = false,
+    incomingAudio = false,
+    populateSends = true
+    },    
+  PakettiPluginLoaders = renoise.Document.DocumentList(),
+  PakettiDeviceLoaders = renoise.Document.DocumentList(), 
+  PakettiDynamicViews = renoise.Document.DocumentList(),
+  }
+
 renoise.tool().preferences = preferences
+
 
 -- Accessing Segments
 eSpeak = renoise.tool().preferences.pakettieSpeak
@@ -262,6 +337,12 @@ AppSelection = renoise.tool().preferences.AppSelection
 RandomizeSettings = renoise.tool().preferences.RandomizeSettings
 pakettiColuga = renoise.tool().preferences.pakettiColuga
 DynamicViewPrefs = renoise.tool().preferences.PakettiDynamicViews
+
+-- Ensure PakettiDynamicViews exists within preferences
+if not preferences:property("PakettiDynamicViews") then
+  preferences:add_property("PakettiDynamicViews", renoise.Document.create("PakettiDynamicViewsPreferences") {})
+end
+
 
 -- Function to initialize the filter index
 local function initialize_filter_index()
@@ -778,13 +859,10 @@ function safe_initialize()
 end
 
 function load_Pakettipreferences()
-    if io.exists("preferences.xml") then
-        preferences:load_from("preferences.xml")
-    end
+    if io.exists("preferences.xml") then preferences:load_from("preferences.xml") end
 end
 
 function update_loadPaleGreenTheme_preferences() renoise.app():load_theme("Themes/Lackluster - Pale Green Renoise Theme.xrnc") end
-
 
 safe_initialize()
 

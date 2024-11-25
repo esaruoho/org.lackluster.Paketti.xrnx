@@ -127,15 +127,6 @@ renoise.tool():add_keybinding{
   end
 }
 
-
-
-
-
-
-
-
--- From Jenoki
-
 function jenokiSystem(bpl,lpb,rowcount)
 -- Set Transport LPB and Metronome LPB to x (lpb)
 renoise.song().transport.lpb = lpb
@@ -150,373 +141,6 @@ end
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Time Signature 3/4 and 48 rows @ LPB 4",invoke=function() jenokiSystem(3,4,48) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Time Signature 7/8 and 56 rows @ LPB 8",invoke=function() jenokiSystem(7,8,56) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Set Time Signature 6/8 and 48 rows @ LPB 8",invoke=function() jenokiSystem(6,8,48) end}
-
--- All of these have been requested by tkna91 via 
--- https://github.com/esaruoho/org.lackluster.Paketti.xrnx/issues/
--- Please send requests if you're interested in obscure stuff that Renoise does not support (but really, should)
-
-function loopReleaseToggle()
-if renoise.song().selected_sample.loop_release
-then renoise.song().selected_sample.loop_release=false 
-else renoise.song().selected_sample.loop_release=true end
-end
-
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Loop Release On/Off",invoke=function() loopReleaseToggle() end}
-
-function oneShotToggle()
-if renoise.song().selected_sample.oneshot 
-then renoise.song().selected_sample.oneshot=false 
-else renoise.song().selected_sample.oneshot=true end
-end
-
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample One-Shot On/Off",invoke=function() oneShotToggle() end}
-
-function selectedSampleLoopSet(number)
-renoise.song().selected_sample.oneshot=false
-local loop_modet = renoise.song().selected_sample.loop_mode
-  if renoise.song().selected_sample.loop_mode==number then renoise.song().selected_sample.loop_mode=1 else loop_modet = number
-  renoise.song().selected_sample.loop_mode=loop_modet
-  end
-end
-
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Loop 1 (Off)",invoke=function() selectedSampleLoopSet(1) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Loop 2 (Forward)",invoke=function() selectedSampleLoopSet(2) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Loop 3 (Backward)",invoke=function() selectedSampleLoopSet(3) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Loop 4 (PingPong)",invoke=function() selectedSampleLoopSet(4) end}
-
-function selectedSampleTranspose(amount)
-local currentSampleTranspose = renoise.song().selected_sample.transpose
-local changedSampleTranspose = currentSampleTranspose + amount
-if changedSampleTranspose > 120 then changedSampleTranspose = 120
-else if changedSampleTranspose < -120 then changedSampleTranspose = -120 end end
-renoise.song().selected_sample.transpose=changedSampleTranspose
-end
-
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Transpose (-1)",invoke=function() selectedSampleTranspose(-1) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Transpose (+1)",invoke=function() selectedSampleTranspose(1) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Transpose (-12)",invoke=function() selectedSampleTranspose(-12) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Transpose (+12)",invoke=function() selectedSampleTranspose(12) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Selected Sample Transpose (0)",invoke=function() renoise.song().selected_sample.transpose=0 end}
-
-function selectedSampleFinetune(amount)
-local currentSampleFinetune = renoise.song().selected_sample.fine_tune
-local changedSampleFinetune = currentSampleFinetune + amount
-if changedSampleFinetune > 127 then changedSampleFinetune = 127
-else if changedSampleFinetune < -127 then changedSampleFinetune = -127 end end
-renoise.song().selected_sample.fine_tune=changedSampleFinetune
-end
-
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Finetune (-1)",invoke=function() selectedSampleFinetune(-1) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Finetune (+1)",invoke=function() selectedSampleFinetune(1) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Finetune (-10)",invoke=function() selectedSampleFinetune(-10) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Finetune (+10)",invoke=function() selectedSampleFinetune(10) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Finetune (0)",invoke=function() renoise.song().selected_sample.fine_tune=0 end}
-
-function selectedSamplePanning(amount)
-local currentSamplePanning = renoise.song().selected_sample.panning
-local changedSamplePanning = currentSamplePanning + amount
-if changedSamplePanning > 1.0 then changedSamplePanning = 1.0
-else if changedSamplePanning < 0.0 then changedSamplePanning = 0.0 end end
-renoise.song().selected_sample.panning=changedSamplePanning
-end
-
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Panning 0.5 (Center)",invoke=function() renoise.song().selected_sample.panning=0.5 end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Panning 0.0 (Left)",invoke=function() renoise.song().selected_sample.panning=0.0 end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Panning 1.0 (Right)",invoke=function() renoise.song().selected_sample.panning=1.0 end}
- 
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Panning (+0.01)",invoke=function() selectedSamplePanning(0.01) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Panning (-0.01)",invoke=function() selectedSamplePanning(-0.01) end}
-
-function selectedSampleVolume(amount)
-local currentSampleVolume = renoise.song().selected_sample.volume
-local changedSampleVolume = currentSampleVolume + amount
-if changedSampleVolume > 4.0 then changedSampleVolume = 4.0
-else if changedSampleVolume < 0.0 then changedSampleVolume = 0.0 end end
-renoise.song().selected_sample.volume=changedSampleVolume
-end
- 
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Volume (+0.01)",invoke=function() selectedSampleVolume(0.01) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Volume (-0.01)",invoke=function() selectedSampleVolume(-0.01) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Volume Reset (0.0dB)",invoke=function() renoise.song().selected_sample.volume=1 end }
-
-function selectedSampleInterpolation(amount)
-renoise.song().selected_sample.interpolation_mode=amount
-end
-
-function selectedSampleOversampleOn()
-renoise.song().selected_sample.oversample_enabled=true
-end
-
-function selectedSampleOversampleOff()
-renoise.song().selected_sample.oversample_enabled=false
-end
-
-function selectedSampleOversampleToggle()
-if renoise.song().selected_sample.oversample_enabled then
- renoise.song().selected_sample.oversample_enabled = false else
- renoise.song().selected_sample.oversample_enabled = true
-end end
-
-function selectedSampleAutoseekToggle()
-if renoise.song().selected_sample.autoseek then
- renoise.song().selected_sample.autoseek = false else
- renoise.song().selected_sample.autoseek = true
-end end
-
-function selectedSampleAutofadeToggle()
-if renoise.song().selected_sample.autofade then
- renoise.song().selected_sample.autofade = false else
- renoise.song().selected_sample.autofade = true
-end end
-
-function selectedSampleNNA(number)
-renoise.song().selected_sample.new_note_action = number
-end
-
-
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Interpolation to 1 (None)",invoke=function() selectedSampleInterpolation(1) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Interpolation to 2 (Linear)",invoke=function() selectedSampleInterpolation(2) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Interpolation to 3 (Cubic)",invoke=function() selectedSampleInterpolation(3) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Interpolation to 4 (Sinc)",invoke=function() selectedSampleInterpolation(4) end}
-
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Oversample On",invoke=function() selectedSampleOversampleOn() end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Oversample Off",invoke=function() selectedSampleOversampleOff() end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Oversample On/Off",invoke=function() selectedSampleOversampleToggle() end}
-
-function selectedSampleBeatsync(number)
-renoise.song().selected_sample.beat_sync_mode = number
-end
-
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Beatsync 1 (Repitch)",invoke=function() selectedSampleBeatsync(1) end }
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Beatsync 2 (Time-Stretch Percussion)",invoke=function() selectedSampleBeatsync(2) end }
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Beatsync 3 (Time-Stretch Texture)",invoke=function() selectedSampleBeatsync(3) end }
-
-function selectedSampleBeatsyncAndToggleOn(number)
-if renoise.song().selected_sample == nil then return else
-
-if renoise.song().selected_sample.beat_sync_enabled and renoise.song().selected_sample.beat_sync_mode ~= number then
-renoise.song().selected_sample.beat_sync_mode = number
-return end
-renoise.song().selected_sample.beat_sync_mode = number
-
-
-if renoise.song().selected_sample.beat_sync_enabled == false then
-renoise.song().selected_sample.beat_sync_enabled = true
-renoise.song().selected_sample.beat_sync_mode = number
-else 
-renoise.song().selected_sample.beat_sync_enabled = false
-end
-end
-end
-
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Beatsync On/Off 1 (Repitch)",invoke=function() selectedSampleBeatsyncAndToggleOn(1) end }
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Beatsync On/Off 2 (Time-Stretch Percussion)",invoke=function() selectedSampleBeatsyncAndToggleOn(2) end }
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Beatsync On/Off 3 (Time-Stretch Texture)",invoke=function() selectedSampleBeatsyncAndToggleOn(3) end }
-
-
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Beatsync On/Off",invoke=function()
-if renoise.song().selected_sample == nil then return else
-
-if renoise.song().selected_sample.beat_sync_enabled then
- renoise.song().selected_sample.beat_sync_enabled = false else
- renoise.song().selected_sample.beat_sync_enabled = true
-end end end}
-
-function selectedSampleBeatsyncLine(number)
-local currentBeatsyncLine = renoise.song().selected_sample.beat_sync_lines
-local changedBeatsyncLine = currentBeatsyncLine + number
-if changedBeatsyncLine > 512 then changedBeatsyncLine = 512
-else if changedBeatsyncLine < 1 then -- renoise.song().selected_sample.beat_sync_enabled = false 
-return end end
-renoise.song().selected_sample.beat_sync_lines=changedBeatsyncLine
-renoise.song().selected_sample.beat_sync_enabled = true
-end
-
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Beatsync Line (+1)",invoke=function() selectedSampleBeatsyncLine(1) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Beatsync Line (-1)",invoke=function() selectedSampleBeatsyncLine(-1) end}
-
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Autofade On/Off",invoke=function() selectedSampleAutofadeToggle() end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Autoseek On/Off",invoke=function() selectedSampleAutoseekToggle() end}
-
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample NNA to 1 (Cut)",invoke=function() selectedSampleNNA(1) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample NNA to 2 (Note-Off)",invoke=function() selectedSampleNNA(2) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample NNA to 3 (Continue)",invoke=function() selectedSampleNNA(3) end}
-
-function selectedSampleMuteGroup(number)
-if renoise.song().selected_sample == nil then return else 
-renoise.song().selected_sample.mute_group = number end
-end
-
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mute Group to 0 (Off)",invoke=function() selectedSampleMuteGroup(0) end}
-for i=1,9 do
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mute Group to ".. i,invoke=function() selectedSampleMuteGroup(i) end}
-end
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mute Group to A",invoke=function() selectedSampleMuteGroup(10) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mute Group to B",invoke=function() selectedSampleMuteGroup(11) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mute Group to C",invoke=function() selectedSampleMuteGroup(12) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mute Group to D",invoke=function() selectedSampleMuteGroup(13) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mute Group to E",invoke=function() selectedSampleMuteGroup(14) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Mute Group to F",invoke=function() selectedSampleMuteGroup(15) end}
-
--- Change Output Routing per Selected Track
-function set_output_routing_by_index(number)
-    local available_output_routings = renoise.song().tracks[renoise.song().selected_track_index].available_output_routings
-
-    if number >= 1 and number <= #available_output_routings then
-        renoise.song().tracks[renoise.song().selected_track_index].output_routing = available_output_routings[number]
-    else
-        print("Index out of range. Please use an index between 1 and " .. #available_output_routings)
-    end
-end
-
-function find_current_routing_index(available_routings, current_routing)
-    for index, routing in ipairs(available_routings) do
-        if routing == current_routing then
-            return index
-        end
-    end
-    return nil -- Return nil if the current routing is not found
-end
-
-function apply_selected_routing(selected_index)
-    local selected_track_index = renoise.song().selected_track_index
-    local available_output_routings = renoise.song().tracks[selected_track_index].available_output_routings
-
-    if selected_index and selected_index >= 1 and selected_index <= #available_output_routings then
-        renoise.song().tracks[selected_track_index].output_routing = available_output_routings[selected_index]
-    else
-        print("Index out of range. Please use an index between 1 and " .. #available_output_routings)
-    end
-end
-
--- Function to open a dialog with the list of available output routings using a popup
-function showAvailableRoutings()
-    local selected_track_index = renoise.song().selected_track_index
-    local available_output_routings = renoise.song().tracks[selected_track_index].available_output_routings
-    local current_routing = renoise.song().tracks[selected_track_index].output_routing
-    local selected_routing_index = find_current_routing_index(available_output_routings, current_routing)
-
-    -- Create a ViewBuilder object
-    local vb = renoise.ViewBuilder()
-
-    local dialog -- Pre-declare the dialog variable so it can be referenced inside button callbacks
-
-    -- Define the content of the dialog
-    local dialog_content = vb:column {
-        margin = 10,
-        spacing = 5,
-        vb:text {
-            text = "Select Output Routing:"
-        },
-        vb:popup {
-            id = "popup_output_routings",
-            items = available_output_routings,
-            value = selected_routing_index or 1, -- Set the popup to the current routing, or default to the first item
-            width = 300,
-            notifier = function(index)
-                -- Update the selected index when a new item is selected
-                selected_routing_index = index
-            end
-        },
-        vb:row {
-            spacing = 10,
-            vb:button {
-                text = "OK",
-                notifier = function()
-                    apply_selected_routing(selected_routing_index)
-                    dialog:close()
-                end
-            },
-            vb:button {
-                text = "Cancel",
-                notifier = function()
-                    dialog:close()
-                end
-            }
-        }
-    }
-
-    -- Show the dialog
-    dialog = renoise.app():show_custom_dialog("Output Routings", dialog_content, my_keyhandler_func)
-end
-
-function simpleOutputRoute(output)
-  -- Get the selected track from the current song
-  local track = renoise.song().tracks[renoise.song().selected_track_index]
-  
-  -- Check if the desired output index is within the range of available output routings
-  if output <= #track.available_output_routings then
-    -- If the index is valid, set the output routing
-    track.output_routing = track.available_output_routings[output]
-  else
-    -- If the index is invalid (i.e., the output doesn't exist), do nothing.
-  end
-end
-
-
-for i=0,63 do
-  renoise.tool():add_keybinding{
-    name="Global:Paketti:Set Selected Track Output Routing "..string.format("%02d",i),
-    invoke=function() simpleOutputRoute(i+1) end
-  }
-end
---------
-
-function pakettiMasterOutputRoutings(output)
-  local song=renoise.song()
-  local masterTrack=song:track(song.sequencer_track_count+1)
-  if output<=#masterTrack.available_output_routings then
-    masterTrack.output_routing=masterTrack.available_output_routings[output]
-  else
-    renoise.app():show_status("This Master Output Routing Channel is not available on the selected sound device.")
-  end
-end
-
-for i=0,63 do
-  renoise.tool():add_keybinding{
-    name="Global:Paketti:Set Master Track Output Routing "..string.format("%02d",i),
-    invoke=function() pakettiMasterOutputRoutings(i+1) end
-  }
-end
-
-
-
-
-
-
-
------
-function setBeatsyncLineAbove()
-    local currentBeatsyncLine = renoise.song().selected_sample.beat_sync_lines
-    -- Calculate the next higher power of 2
-    local power = math.ceil(math.log(currentBeatsyncLine) / math.log(2))
-    local nextPowerOfTwo = 2 ^ power
-    if nextPowerOfTwo <= currentBeatsyncLine then -- Ensure we actually move up
-        nextPowerOfTwo = nextPowerOfTwo * 2
-    end
-    -- Clamp to maximum allowed value
-    if nextPowerOfTwo > 512 then nextPowerOfTwo = 512 end
-    renoise.song().selected_sample.beat_sync_lines = nextPowerOfTwo
-    renoise.song().selected_sample.beat_sync_enabled = true
-end
-
-function setBeatsyncLineBelow()
-    local currentBeatsyncLine = renoise.song().selected_sample.beat_sync_lines
-    if currentBeatsyncLine <= 1 then -- Prevent going below 1
-        return
-    end
-    local power = math.floor(math.log(currentBeatsyncLine) / math.log(2))
-    local prevPowerOfTwo = 2 ^ power
-    if prevPowerOfTwo >= currentBeatsyncLine then -- Ensure we actually move down
-        prevPowerOfTwo = prevPowerOfTwo / 2
-    end
-    renoise.song().selected_sample.beat_sync_lines = prevPowerOfTwo
-    renoise.song().selected_sample.beat_sync_enabled = true
-end
-
-
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Beatsync Line (Power of Two Above)",invoke=function() setBeatsyncLineAbove() end}
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Sample Beatsync Line (Power of Two Below)",invoke=function() setBeatsyncLineBelow() end}
 
 -- Shortcuts as requested by Casiino
 -- 
@@ -912,10 +536,6 @@ renoise.tool():add_keybinding{name="Global:Paketti:Halve Halve Beatsync Lines (S
 renoise.tool():add_keybinding{name="Global:Paketti:Double Double Beatsync Lines (All)", invoke=function() doubleBeatsyncLinesAll() doubleBeatsyncLinesAll() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Double Double Beatsync Lines (Selected Sample)", invoke=function() doubleBeatsyncLinesSelected() doubleBeatsyncLinesSelected()  end}
 
-
-
-
-
 function pitchedInstrument(st)
 renoise.app():load_instrument("Presets/" .. st .. "st_Pitchbend.xrni")
 renoise.song().selected_instrument.name=(st .. "st_Pitchbend Instrument")
@@ -928,8 +548,6 @@ renoise.app():load_instrument("Presets/12st_Pitchbend_Drumkit_C0.xrni")
 renoise.song().selected_instrument.name="Pitchbend Drumkit"
 renoise.song().instruments[renoise.song().selected_instrument_index].macros_visible = true
 renoise.song().instruments[renoise.song().selected_instrument_index].sample_modulation_sets[1].name=("Pitchbend Drumkit")
-
-
 end
 
 renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Instruments..:Initialize..:12st PitchBend Instrument Init",invoke=function() pitchedInstrument(12) end}
@@ -954,8 +572,8 @@ renoise.tool():add_keybinding{name="Global:Paketti:36st PitchBend Instrument Ini
 renoise.tool():add_keybinding{name="Global:Paketti:48st PitchBend Instrument Init", invoke=function() pitchedInstrument(48) end}
 renoise.tool():add_keybinding{name="Global:Paketti:64st PitchBend Instrument Init", invoke=function() pitchedInstrument(64) end}
 renoise.tool():add_keybinding{name="Global:Paketti:96st PitchBend Instrument Init", invoke=function() pitchedInstrument(96) end}
-renoise.tool():add_keybinding{name="Global:Paketti:PitchBend Drumkit Instrument Init", invoke=function() pitchedDrumkit() end}
 
+renoise.tool():add_keybinding{name="Global:Paketti:PitchBend Drumkit Instrument Init", invoke=function() pitchedDrumkit() end}
 
 function transposeAllSamplesInInstrument(amount)
     -- Access the currently selected instrument in Renoise
@@ -976,24 +594,14 @@ function transposeAllSamplesInInstrument(amount)
     end
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Transpose (-1)",
-    invoke = function() transposeAllSamplesInInstrument(-1) end}
-
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Transpose (+1)",
-    invoke = function() transposeAllSamplesInInstrument(1) end}
-
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Transpose (-12)",
-    invoke = function() transposeAllSamplesInInstrument(-12) end}
-
-renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Transpose (+12)",
-    invoke = function() transposeAllSamplesInInstrument(12) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Transpose (-1)",invoke = function() transposeAllSamplesInInstrument(-1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Transpose (+1)",invoke = function() transposeAllSamplesInInstrument(1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Transpose (-12)",invoke = function() transposeAllSamplesInInstrument(-12) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Selected Instrument Transpose (+12)",invoke = function() transposeAllSamplesInInstrument(12) end}
 
 function resetInstrumentTranspose(amount)
-    -- Access the currently selected instrument in Renoise
     local instrument = renoise.song().selected_instrument
-    -- Iterate through all samples in the instrument
     for i = 1, #instrument.samples do
-        -- Apply the new transpose value to the sample
         instrument.samples[i].transpose = 0
     end
 end
@@ -3378,78 +2986,69 @@ renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Reverse Notes in Sele
 -------
 
 
-
--- Define the function to lower the base note
-function PakettiOctaveBaseNoteUp()
-  -- Get the current instrument
-  local instrument = renoise.song().selected_instrument
+function PakettiOctaveBaseNote(direction, scope)
+  local song = renoise.song()
+  local octave_shift = 12 -- Define the octave shift in semitones
+  local is_up = direction == "up"
   
-  -- Check if there is no instrument or no samples in the instrument
-  if not instrument or #instrument.samples == 0 then
-    renoise.app():show_status("There was no sample")
-    return
-  end
-
-  -- Iterate over each sample in the instrument
-  for i, sample in ipairs(instrument.samples) do
+  -- Helper function to adjust the base note
+  local function adjust_base_note(sample, instrument_index, sample_index)
     if sample.sample_mapping ~= nil then
-      -- Get the current base note
       local base_note = sample.sample_mapping.base_note
-      
-      -- Check if the base note is already at C-0
-      if base_note <= 0 then
-        renoise.app():show_status("Base note is at C-0, cannot go lower")
-        return
+
+      if is_up then
+        if base_note >= 108 then
+          renoise.app():show_status("Base note is already at C-9, cannot go higher (Instrument "..instrument_index..", Sample "..sample_index..")")
+        else
+          sample.sample_mapping.base_note = math.min(108, base_note + octave_shift)
+        end
+      else -- direction is "down"
+        if base_note <= 0 then
+          renoise.app():show_status("Base note is already at C-0, cannot go lower (Instrument "..instrument_index..", Sample "..sample_index..")")
+        else
+          sample.sample_mapping.base_note = math.max(0, base_note - octave_shift)
+        end
       end
-      
-      -- Lower the base note by 12 semitones (1 octave)
-      sample.sample_mapping.base_note = math.max(0, base_note - 12)
     end
   end
-  renoise.app():show_status("Base note lowered by one octave for all samples")
-end
 
--- Define the function to raise the base note
-function PakettiOctaveBaseNoteDown()
-  -- Get the current instrument
-  local instrument = renoise.song().selected_instrument
-  
-  -- Check if there is no instrument or no samples in the instrument
-  if not instrument or #instrument.samples == 0 then
-    renoise.app():show_status("There was no sample")
-    return
-  end
-
-  -- Iterate over each sample in the instrument
-  for i, sample in ipairs(instrument.samples) do
-    if sample.sample_mapping ~= nil then
-      -- Get the current base note
-      local base_note = sample.sample_mapping.base_note
-      
-      -- Check if the base note is already at C-9
-      if base_note >= 108 then -- C-9 is MIDI note number 108
-        renoise.app():show_status("Base note is at C-9, cannot go higher")
-        return
+  -- Process all instruments or only the selected instrument
+  if scope == "all" then
+    for i, instrument in ipairs(song.instruments) do
+      for j, sample in ipairs(instrument.samples) do
+        adjust_base_note(sample, i, j)
       end
-      
-      -- Raise the base note by 12 semitones (1 octave)
-      sample.sample_mapping.base_note = math.min(108, base_note + 12)
     end
+    renoise.app():show_status("Base note adjusted by one octave for all instruments ("..direction..")")
+  elseif scope == "current" then
+    local instrument = song.selected_instrument
+    if not instrument or #instrument.samples == 0 then
+      renoise.app():show_status("No selected instrument or no samples in the current instrument")
+      return
+    end
+    for j, sample in ipairs(instrument.samples) do
+      adjust_base_note(sample, "current", j)
+    end
+    renoise.app():show_status("Base note adjusted by one octave for the current instrument ("..direction..")")
+  else
+    renoise.app():show_status("Invalid scope parameter: use 'all' or 'current'")
   end
-  renoise.app():show_status("Base note raised by one octave for all samples")
 end
 
--- Add the functions to the menu entries
-renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Pattern Editor..:Octave Basenote Up",invoke=PakettiOctaveBaseNoteUp}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor..:Octave Basenote Down",invoke=PakettiOctaveBaseNoteDown}
+-- Menu entries for calling the function with specific parameters
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor..:Octave Basenote Up (All Instruments)", invoke=function() PakettiOctaveBaseNote("up", "all") end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor..:Octave Basenote Down (All Instruments)", invoke=function() PakettiOctaveBaseNote("down", "all") end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor..:Octave Basenote Up (Selected Instrument)", invoke=function() PakettiOctaveBaseNote("up", "current") end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor..:Octave Basenote Down (Selected Instrument)", invoke=function() PakettiOctaveBaseNote("down", "current") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Octave Basenote Up (All Instruments)", invoke=function() PakettiOctaveBaseNote("up", "all") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Octave Basenote Down (All Instruments)", invoke=function() PakettiOctaveBaseNote("down", "all") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Octave Basenote Up (Selected Instrument)", invoke=function() PakettiOctaveBaseNote("up", "current") end}
+renoise.tool():add_keybinding{name="Global:Paketti:Octave Basenote Down (Selected Instrument)", invoke=function() PakettiOctaveBaseNote("down", "current") end}
+renoise.tool():add_midi_mapping{name="Paketti:Octave Basenote Up (All Instruments)", invoke=function() PakettiOctaveBaseNote("up", "all") end}
+renoise.tool():add_midi_mapping{name="Paketti:Octave Basenote Down (All Instruments)", invoke=function() PakettiOctaveBaseNote("down", "all") end}
+renoise.tool():add_midi_mapping{name="Paketti:Octave Basenote Up (Selected Instrument)", invoke=function() PakettiOctaveBaseNote("up", "current") end}
+renoise.tool():add_midi_mapping{name="Paketti:Octave Basenote Down (Selected Instrument)", invoke=function() PakettiOctaveBaseNote("down", "current") end}
 
--- Add keybindings for the functions
-renoise.tool():add_keybinding{name="Global:Paketti:Octave Basenote Up",invoke=PakettiOctaveBaseNoteUp}
-renoise.tool():add_keybinding{name="Global:Paketti:Octave Basenote Down",invoke=PakettiOctaveBaseNoteDown}
-
--- Add MIDI mappings for the functions
-renoise.tool():add_midi_mapping{name="Paketti:Octave Basenote Up",invoke=PakettiOctaveBaseNoteUp}
-renoise.tool():add_midi_mapping{name="Paketti:Octave Basenote Down",invoke=PakettiOctaveBaseNoteDown}
 ---------
 
 -- Utility function to read file contents
@@ -7302,30 +6901,8 @@ renoise.tool():add_keybinding{name="Global:Paketti:Play at Row " .. formatnumber
 playAtRow(i+1) end}
 renoise.tool():add_midi_mapping{name="Paketti:Play at Row " .. formatnumber .. " (" .. hexnumber .. ")",invoke=function()
 playAtRow(i+1) end}
-
 end
-
-
-
-
-
-
-
-
 ---------
-
-
-
-
-
-
-
-
-
-
-
-
-
 local dialog = nil
 local vb = renoise.ViewBuilder()
 local global_slider_width = 20
@@ -7427,6 +7004,7 @@ function reset_row(slider_set)
 end
 
 -- Randomize slider values for a given row and print afterward
+-- Randomize slider values for a given row considering loop_values and print afterward
 function randomize_row(slider_set)
   local range_max = {
     volume = 128,  -- 00-80 hex range for volume
@@ -7434,11 +7012,22 @@ function randomize_row(slider_set)
     panning = 128  -- 00-80 hex range for panning, centered at 64
   }
   
-  for _, slider in ipairs(sliders[slider_set]) do
-    slider.value = math.random(0, range_max[slider_set]) / range_max[slider_set] -- Normalize to 0-1 range
+  local steps = loop_values[slider_set]
+  if steps < 1 then steps = 1 end  -- Ensure at least one step
+  
+  local step_values = {}
+  
+  -- Generate random values for each unique step
+  for i = 1, steps do
+    step_values[i] = math.random(0, range_max[slider_set]) / range_max[slider_set] -- Normalize to 0-1 range
+  end
+  
+  -- Assign the step values cyclically to all sliders
+  for i = 1, #sliders[slider_set] do
+    local step_index = ((i - 1) % steps) + 1
+    sliders[slider_set][i].value = step_values[step_index]
   end
 
-  -- Print after randomizing
   print_row(slider_set, slider_set)
 end
 
@@ -7529,7 +7118,7 @@ end
 function create_sliders(row, initial_value, range)
   local slider_row = {}
   for i = 1, 16 do
-    local slider = vb:slider {
+    local slider = vb:minislider {
       width = global_slider_width,
       height = global_slider_height,
       min = 0,
@@ -7551,7 +7140,10 @@ function create_row_controls(slider_set, initial_value, range, loop_default)
     min = 1,
     max = 16,
     value = loop_default,
-    notifier = function(value) loop_values[slider_set] = value end
+    notifier = function(value) loop_values[slider_set] = value 
+          print_row(slider_set, slider_set)  -- Trigger print_row when valuebox changes
+
+    end
   })
 
   row:add_child(vb:button {
@@ -7651,6 +7243,8 @@ end
 
 -- Trigger the dialog to show
 renoise.tool():add_keybinding{name="Global:Paketti:Open VolDelayPan Slider Dialog...",invoke=function() show_VDPdialog() end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Open VolDelayPan Slider Dialog...",invoke=function() show_VDPdialog() end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor..:Open VolDelayPan Slider Dialog...",invoke=function() show_VDPdialog() end}
 
 renoise.tool():add_midi_mapping{name="Paketti:Open VolDelayPan Slider Dialog...",invoke=function(message)  if message:is_trigger() then show_VDPdialog() end end}
 -----
@@ -7864,7 +7458,6 @@ renoise.tool():add_midi_mapping{name="Paketti:Jump Forward Within Song by Random
 renoise.tool():add_keybinding{name="Global:Paketti:Jump Backward Within Song by Random", invoke=function() PakettiJumpRowsRandomBackwardInSong() end}
 renoise.tool():add_midi_mapping{name="Paketti:Jump Backward Within Song by Random", invoke=function(message) if message:is_trigger() then PakettiJumpRowsRandomBackwardInSong() end end}
 
-
 function PopulateGainersOnEachTrack(placement)
   local song = renoise.song()
   for i = 1, song.sequencer_track_count do
@@ -7893,21 +7486,16 @@ end
 function map_knob_to_gainer(knob_value, placement)
   local song = renoise.song()
   
-  -- Ensure each track has a GlobalGainer, adding one if missing
   PopulateGainersOnEachTrack(placement)
   
-  -- Scale knob_value (0...127) to parameter range (0...4)
   local scaled_value = (knob_value / 127) * 4
   
-  -- Loop through each track to find and adjust the GlobalGainer based on placement
-  -- Loop through each track to find GlobalGainer and set its parameter
   for i = 1, song.sequencer_track_count do
     local track = song:track(i)
     
     for j = 2, #track.devices do
       local device = track.devices[j]
       if device.display_name == "GlobalGainer" then
-        -- Set parameter 1 to the scaled value
         device.parameters[1].value = scaled_value
         break
       end
@@ -7915,22 +7503,14 @@ function map_knob_to_gainer(knob_value, placement)
   end
 end
 
-
 renoise.tool():add_keybinding{name="Global:Paketti:Populate GlobalGainers on Each Track (start chain)",invoke=function() PopulateGainersOnEachTrack("start") end}
 renoise.tool():add_keybinding{name="Global:Paketti:Populate GlobalGainers on Each Track (end chain)",invoke=function() PopulateGainersOnEachTrack("end") end}
-
-renoise.tool():add_midi_mapping{
-  name = "Paketti:GlobalGainer Knob Control (start chain)",
-  invoke = function(midi_message) map_knob_to_gainer(midi_message.int_value, "start") end
-}
-
-renoise.tool():add_midi_mapping{
-  name = "Paketti:GlobalGainer Knob Control (end chain)",
-  invoke = function(midi_message) map_knob_to_gainer(midi_message.int_value, "end") end
-}
+renoise.tool():add_menu_entry{name="--Mixer:Paketti..:Populate GlobalGainers on Each Track (start chain)",invoke=function() PopulateGainersOnEachTrack("start") end}
+renoise.tool():add_menu_entry{name="Mixer:Paketti..:Populate GlobalGainers on Each Track (end chain)",invoke=function() PopulateGainersOnEachTrack("end") end}
 
 
-
+renoise.tool():add_midi_mapping{name="Paketti:GlobalGainer Knob Control (start chain)",invoke=function(midi_message) map_knob_to_gainer(midi_message.int_value, "start") end}
+renoise.tool():add_midi_mapping{name="Paketti:GlobalGainer Knob Control (end chain)",invoke=function(midi_message) map_knob_to_gainer(midi_message.int_value, "end") end}
 --------
 function AddGainerCrossfadeSelectedTrack(name)
   local song = renoise.song()
@@ -7975,9 +7555,9 @@ end
 
 -- Keybindings, menu entries, and MIDI mappings in a single line format
 renoise.tool():add_keybinding{name="Global:Paketti:Add Gainer A to Selected Track",invoke=function() AddGainerCrossfadeSelectedTrack("A") end}
-renoise.tool():add_menu_entry{name="Mixer:Paketti:Add Gainer A to Selected Track",invoke=function() AddGainerCrossfadeSelectedTrack("A") end}
+renoise.tool():add_menu_entry{name="--Mixer:Paketti..:Add Gainer A to Selected Track",invoke=function() AddGainerCrossfadeSelectedTrack("A") end}
 renoise.tool():add_keybinding{name="Global:Paketti:Add Gainer B to Selected Track",invoke=function() AddGainerCrossfadeSelectedTrack("B") end}
-renoise.tool():add_menu_entry{name="Mixer:Paketti:Add Gainer B to Selected Track",invoke=function() AddGainerCrossfadeSelectedTrack("B") end}
+renoise.tool():add_menu_entry{name="Mixer:Paketti..:Add Gainer B to Selected Track",invoke=function() AddGainerCrossfadeSelectedTrack("B") end}
 renoise.tool():add_midi_mapping{name="Paketti:Gainer Crossfade A/B",invoke=function(midi_message) map_crossfade_to_ab(midi_message.int_value) end}
 
 ------

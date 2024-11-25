@@ -24,9 +24,6 @@ end
 
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Mute/Unmute Note Column", invoke=function() muteUnmuteNoteColumn() end}
 
-
-
-
 function voloff()
 local s = renoise.song()
 local currColumn = renoise.song().selected_note_column_index
@@ -2705,6 +2702,8 @@ function wipeSelectedTrackTrackDSPs()
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Wipe Selected Track TrackDSPs",invoke=function() wipeSelectedTrackTrackDSPs() end}
+renoise.tool():add_menu_entry{name="--Mixer:Paketti..:Wipe Selected Track TrackDSPs",invoke=function() wipeSelectedTrackTrackDSPs() end}
+renoise.tool():add_menu_entry{name="--DSP Device:Paketti..:Wipe Selected Track TrackDSPs",invoke=function() wipeSelectedTrackTrackDSPs() end}
 ------
 
 
@@ -3484,4 +3483,73 @@ end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Set Random EditStep 0-64",invoke=function() PakettiRandomEditStep(0) end}
 renoise.tool():add_keybinding{name="Global:Paketti:Set Random EditStep 1-64",invoke=function() PakettiRandomEditStep(1) end}
+---------
+-- Function to clear the selected track starting from the row below the selected line index
+function clear_below_selected_line()
+  local song = renoise.song()
+  local selected_track = song.selected_track
+  local selected_line_index = song.selected_line_index
+  local pattern = song.selected_pattern
+  local track_index = song.selected_track_index
+
+  -- Get the track data for the selected track in the current pattern
+  local track_data = pattern.tracks[track_index]
+
+  -- Iterate through all lines starting from the row below the selected_line_index
+  for line_idx = selected_line_index + 1, #track_data.lines do
+    local line = track_data:line(line_idx)
+    
+    -- Clear note columns
+    for note_col_idx = 1, selected_track.visible_note_columns do
+      local note_column = line:note_column(note_col_idx)
+      note_column:clear()
+    end
+
+    -- Clear effect columns
+    for effect_col_idx = 1, selected_track.visible_effect_columns do
+      local effect_column = line:effect_column(effect_col_idx)
+      effect_column:clear()
+    end
+  end
+
+  -- Inform the user of the operation via status bar
+  renoise.app():show_status("Cleared lines below the selected line index in the current track.")
+end
+
+-- Function to clear all tracks starting from the row below the selected line index
+function clear_all_tracks_below_current_row()
+  local song = renoise.song()
+  local selected_line_index = song.selected_line_index
+
+  -- Iterate over all tracks in the song
+  for track_index, track in ipairs(song.tracks) do
+    local pattern_track = song.selected_pattern:track(track_index)
+
+    -- Iterate through all lines in the current pattern, starting below the selected line index
+    for line_idx = selected_line_index + 1, #pattern_track.lines do
+      local line = pattern_track:line(line_idx)
+      
+      -- Clear note columns (only if the track supports note columns)
+      if track.type == renoise.Track.TRACK_TYPE_SEQUENCER then
+        for note_col_idx = 1, track.visible_note_columns do
+          local note_column = line:note_column(note_col_idx)
+          note_column:clear()
+        end
+      end
+
+      -- Clear effect columns
+      for effect_col_idx = 1, track.visible_effect_columns do
+        local effect_column = line:effect_column(effect_col_idx)
+        effect_column:clear()
+      end
+    end
+  end
+
+  -- Inform the user of the operation via status bar
+  renoise.app():show_status("Cleared all tracks below the selected line index.")
+end
+
+
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Clear Selected Track Below Current Row",invoke=function() clear_below_selected_line() end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Clear All Tracks Below Current Row",invoke=function() clear_all_tracks_below_current_row() end}
 

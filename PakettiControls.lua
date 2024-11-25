@@ -1,5 +1,4 @@
 -- Shortcuts 2nd / 3rds
--- 
 --2nd Save Song bind
 function saveSong()
   renoise.app():save_song()
@@ -79,7 +78,6 @@ function RecordToggleg()
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Toggle EditMode (2nd)",invoke=function() RecordToggleg() end}
-
 renoise.tool():add_keybinding{name="Global:Paketti:Toggle EditMode (3rd)",invoke=function() RecordToggleg() end}
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 function RecordFollowMetronomeToggle()
@@ -99,7 +97,6 @@ if t.playing==false then t.playing=true t.metronome_enabled=true t.follow_player
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Record+Follow+Metronome Toggle",invoke=function() RecordFollowMetronomeToggle() end}
-
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 function FollowPatternToggle()
 local a=renoise.app()
@@ -125,7 +122,6 @@ if not fp then fp=true else fp=false end end}
 
 renoise.tool():add_menu_entry{name="DSP Device Automation:Follow Off",invoke=function() renoise.song().transport.follow_player=false end}  
 -------
--- Keyboard Octave Up/Down switch
 function KeybOctave(amount)
 local t = renoise.song().transport
 t.octave= (t.octave + amount) % 9
@@ -139,7 +135,6 @@ function PakettiTranspose(steps)
   local selection = song.selection_in_pattern
   local pattern = song.selected_pattern
 
-  -- Determine the range to transpose
   local start_track, end_track, start_line, end_line, start_column, end_column
 
   if selection ~= nil then
@@ -158,7 +153,6 @@ function PakettiTranspose(steps)
     end_column = song.tracks[start_track].visible_note_columns
   end
 
-  -- Check if the selected track is a Group, Master, or Send track
   local is_valid_track = false
   for track_index = start_track, end_track do
     local track = song:track(track_index)
@@ -173,22 +167,19 @@ function PakettiTranspose(steps)
     return
   end
 
-  -- Iterate through each track in the determined range
   for track_index = start_track, end_track do
     local track = song:track(track_index)
 
     if track.type == renoise.Track.TRACK_TYPE_SEQUENCER then
       local track_pattern = pattern:track(track_index)
 
-      -- Iterate through each line in the determined range
       for line_index = start_line, end_line do
         local line = track_pattern:line(line_index)
 
-        -- Iterate through each note column in the line within the determined range
         for column_index = start_column, end_column do
           local note_column = line:note_column(column_index)
           if not note_column.is_empty then
-            -- Skip transposing if note_value is 120 or 121
+
             if note_column.note_value < 120 then
               note_column.note_value = (note_column.note_value + steps) % 120
             end
@@ -199,20 +190,16 @@ function PakettiTranspose(steps)
   end
 end
 
-
--- Adding keybindings for octave and semitone transpose
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Transpose Octave Up (Selection/Track)",invoke=function() PakettiTranspose(12) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Transpose Octave Down (Selection/Track)",invoke=function() PakettiTranspose(-12) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Transpose +1 (Selection/Track)",invoke=function() PakettiTranspose(1) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Transpose -1 (Selection/Track)",invoke=function() PakettiTranspose(-1) end}
-
 --------------
 function PakettiTransposeNoteColumn(steps)
   local song = renoise.song()
   local selection = song.selection_in_pattern
   local pattern = song.selected_pattern
 
-  -- Determine the range to transpose based on selection
   local start_track, end_track, start_line, end_line, start_column, end_column
 
   if selection ~= nil then
@@ -231,24 +218,19 @@ function PakettiTransposeNoteColumn(steps)
     end_column = song.selected_note_column_index
   end
 
-  -- Iterate through each track in the determined range
   for track_index = start_track, end_track do
     local track = song:track(track_index)
     local track_pattern = pattern:track(track_index)
 
-    -- Set the column range for each track based on the selection
     local first_column = (track_index == start_track) and start_column or 1
     local last_column = (track_index == end_track) and end_column or track.visible_note_columns
 
-    -- Iterate through each line in the determined range
     for line_index = start_line, end_line do
       local line = track_pattern:line(line_index)
 
-      -- Iterate through each note column within the selected column range
       for column_index = first_column, last_column do
         local note_column = line:note_column(column_index)
         if not note_column.is_empty then
-          -- Skip transposing if note_value is 120 or 121
           if note_column.note_value < 120 then
             note_column.note_value = (note_column.note_value + steps) % 120
           end
@@ -258,23 +240,19 @@ function PakettiTransposeNoteColumn(steps)
   end
 end
 
--- Adding keybindings for octave and semitone transpose in note columns
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Transpose Octave Up Note Column (Selection/Note Column)",invoke=function() PakettiTransposeNoteColumn(12) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Transpose Octave Down Note Column (Selection/Note Column)",invoke=function() PakettiTransposeNoteColumn(-12) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Transpose +1 Note Column (Selection/Note Column)",invoke=function() PakettiTransposeNoteColumn(1) end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Transpose -1 Note Column (Selection/Note Column)",invoke=function() PakettiTransposeNoteColumn(-1) end}
 
-
-
 ---------
 function simpleplay()
-if renoise.song().transport.playing == true
-then renoise.song().transport.playing = false
-else renoise.song().transport.playing = true end end
+if renoise.song().transport.playing 
+then renoise.song().transport.playing=false
+else renoise.song().transport.playing=true end end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Simple Play",invoke=function() simpleplay() end}
 ---------
--- Metronome On/Off for keyboard shortcut and midibind.
 function MetronomeOff()
 if renoise.song().transport.metronome_enabled then renoise.song().transport.metronome_enabled = false else renoise.song().transport.metronome_enabled=true end end
 
@@ -363,17 +341,14 @@ end
 renoise.song().selected_track_index=previousTrack
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Select Track (Next)", invoke=function() selectNextTrack() end}
-renoise.tool():add_keybinding{name="Global:Paketti:Select Track (Previous)", invoke=function() selectPreviousTrack() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Select Track (Next)",invoke=function() selectNextTrack() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Select Track (Previous)",invoke=function() selectPreviousTrack() end}
 
 
 function createNewTrack()
 renoise.song():insert_track_at(renoise.song().selected_track_index)
 end
 renoise.tool():add_keybinding{name="Global:Paketti:Insert Track (2nd)", invoke=function() createNewTrack() end}
-
-
---------
 
 ---------
 -- Define a table with the middle frame constants
@@ -402,7 +377,6 @@ function cycleMiddleFrames(midiValue)
   renoise.app().window.active_middle_frame = middle_frames[index]
 end
 
--- Add keybindings for each tab switch
 renoise.tool():add_keybinding{name="Global:Paketti:Sample Editor Tab Switcher (01 Phrases)",invoke=function() sampleEditorTabSwitcher(1) end}
 renoise.tool():add_keybinding{name="Global:Paketti:Sample Editor Tab Switcher (02 Keyzones)",invoke=function() sampleEditorTabSwitcher(2) end}
 renoise.tool():add_keybinding{name="Global:Paketti:Sample Editor Tab Switcher (03 Waveform)",invoke=function() sampleEditorTabSwitcher(3) end}
@@ -410,10 +384,7 @@ renoise.tool():add_keybinding{name="Global:Paketti:Sample Editor Tab Switcher (0
 renoise.tool():add_keybinding{name="Global:Paketti:Sample Editor Tab Switcher (05 Effects)",invoke=function() sampleEditorTabSwitcher(5) end}
 renoise.tool():add_keybinding{name="Global:Paketti:Sample Editor Tab Switcher (06 Plugin Editor)",invoke=function() sampleEditorTabSwitcher(6) end}
 renoise.tool():add_keybinding{name="Global:Paketti:Sample Editor Tab Switcher (07 Midi Editor)",invoke=function() sampleEditorTabSwitcher(7) end}
-
--- Add MIDI mapping to cycle through middle frames
-renoise.tool():add_midi_mapping{name="Paketti:Cycle Sample Editor Tabs",invoke=function(midiMessage) cycleMiddleFrames(midiMessage.int_value) end}
-
+renoise.tool():add_midi_mapping{name="Paketti:Cycle Sample Editor Tabs x[Knob]",invoke=function(midiMessage) cycleMiddleFrames(midiMessage.int_value) end}
 
 ----------
 --2nd keybind for LoopBlock forward/backward
@@ -436,17 +407,15 @@ renoise.tool():add_keybinding{name="Global:Paketti:Select LoopBlock Forwards (Ne
 --------
 ---------
 
-local function set_edit_step(value)
+local function PakettiSetEditStep(value)
   renoise.song().transport.edit_step=value
 --  renoise.app():show_status("Edit Step set to " .. tostring(value))
 end
 
 -- Keybinding definitions from 00 to 64
 for i=0,64 do
-  renoise.tool():add_keybinding {
-    name=string.format("Global:Paketti:Set EditStep to %02d", i),
-    invoke=function() set_edit_step(i) end
-  }
+  renoise.tool():add_keybinding{name="Global:Paketti:Set EditStep to " .. formatDigits(2,i),
+    invoke=function() PakettiSetEditStep(i) end}
 end
 
 

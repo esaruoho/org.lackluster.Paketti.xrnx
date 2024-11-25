@@ -1482,7 +1482,8 @@ function update_repeater_with_midi_value(int_value, track_name_change)
     renoise.song().selected_track:insert_device_at("Audio/Effects/Native/Repeater", #track.devices + 1)
     device_index = #track.devices -- Index of the newly added device
     device_found = true
-    print("Repeater device added")
+    renoise.song().selected_track.devices[device_index].parameters[2].show_in_mixer=true
+--    print("Repeater device added")
   end
 
   if device_found then

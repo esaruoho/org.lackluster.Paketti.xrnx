@@ -40,6 +40,7 @@ require "PakettiColuga"
 require "PakettiRequests"
 require "PakettiExperimental_Verify"
 
+
 ------------------------------------------------
 local themes_path = renoise.tool().bundle_path .. "Themes/"
 local themes = os.filenames(themes_path, "*.xrnc")
@@ -62,26 +63,12 @@ function pakettiThemeSelectorRenoiseStartFavorites()
 
   local current_index = math.random(2, #preferences.pakettiThemeSelector.FavoritedList)
   local random_theme = preferences.pakettiThemeSelector.FavoritedList[current_index]
---  print("Randomized Favorite: " .. tostring(random_theme))
 
   local cleaned_theme_name = tostring(random_theme):match(".*%. (.+)") or tostring(random_theme)
   selected_theme_index = table.find(themes, cleaned_theme_name)
 
---oprint (tostring(random_theme))
-
 renoise.app():load_theme(themes_path .. tostring(random_theme) .. ".xrnc")
 renoise.app():show_status("Randomized a theme out of your favorite list. " .. tostring(random_theme))
---[[
-  if selected_theme_index then
-    local filename = themes[selected_theme_index]
-
-    local full_path = themes_path .. filename
-    renoise.app():load_theme(full_path)
-    renoise.app():show_status("Randomized a theme out of your favorite list.")
-  else
-    renoise.app():show_status("Selected theme not found.")
-  end
---]]
 end
 
 local function pakettiThemeSelectorPickRandomThemeFromAll()
@@ -98,10 +85,18 @@ end
 
 --local PakettiAutomationDoofer=false
 
+
 function startup()  
+  if preferences.pakettiEditMode.value == 2 and renoise.song().transport.edit_mode then 
+    for i = 1,#renoise.song().tracks do
+      renoise.song().tracks[i].color_blend=0 
+    end
+--renoise.song().selected_track.color_blend = 40 
+
+
+  end
    local s=renoise.song()
    local t=s.transport
-     -- renoise.app().window:select_preset(1)
       s.sequencer.keep_sequence_sorted=false
       t.groove_enabled=true
       if preferences.pakettiThemeSelector.RenoiseLaunchRandomLoad.value then 
@@ -110,7 +105,6 @@ function startup()
     pakettiThemeSelectorRenoiseStartFavorites()
   end
   end
-  
        shuffle_oblique_strategies()
  if PakettiAutomationDoofer==true then
  
@@ -118,16 +112,13 @@ function startup()
   monitor_doofer2_macros(renoise.song().tracks[masterTrack].devices[3])
   monitor_doofer1_macros(renoise.song().tracks[masterTrack].devices[2])
 else end
-
 end
+
 
 if not renoise.tool().app_new_document_observable:has_notifier(startup)   
   then renoise.tool().app_new_document_observable:add_notifier(startup)
   else renoise.tool().app_new_document_observable:remove_notifier(startup) end  
 ---------
---_AUTO_RELOAD_DEBUG = function() startup()
---end
-
 -- Debug print  
 function dbug(msg)  
  local base_types = {  
@@ -139,9 +130,7 @@ function dbug(msg)
  else print(msg) end  
 end
 
-
-
-
+_AUTO_RELOAD_DEBUG = true
 
 
 

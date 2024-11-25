@@ -233,6 +233,11 @@ renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker F5 Start Play
 ----------------------------------------------------------------------------------------------------------------
 -- F7, or Impulse Tracker Play from line.
 function ImpulseTrackerPlayFromLine()
+local monitoring_enabled = true
+  --InitSBx()
+  reset_repeat_counts()
+
+
  local s = renoise.song()
  local t = s.transport
  local startpos = t.playback_pos  

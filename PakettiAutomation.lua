@@ -1,11 +1,9 @@
-
 groove_master_track = nil
 --groove_master_device = nil
 paketti_automation1_device = nil
 paketti_automation2_device = nil
 
 PakettiAutomationDoofer = false
-
 
 -- Utility Functions
 local function set_edit_mode(value)
@@ -33,13 +31,11 @@ local function set_sample_record(value)
     end
   else
     if is_recording_active then
-      -- Stop recording
       renoise.song().transport:start_stop_sample_recording()
       is_recording_active = false -- Update the state to indicate recording has stopped
     end
   end
   
-  -- Always set the middle frame to 1
   renoise.app().window.active_middle_frame = 1
 end
 
@@ -99,21 +95,14 @@ local function inject_xml_to_doofer1(device)
   local transport = song.transport
 
   -- Get current values for Groove, BPM, LPB, EditStep, and Octave
-  local groove1 = transport.groove_amounts[1] * 100 -- Groove amounts are between 0 and 1, so multiply by 100
+  local groove1 = transport.groove_amounts[1] * 100 
   local groove2 = transport.groove_amounts[2] * 100
   local groove3 = transport.groove_amounts[3] * 100
   local groove4 = transport.groove_amounts[4] * 100
 
-  -- Map BPM to a 0-100 scale. BPM is between 32 and 187
   local bpm_value = ((transport.bpm - 32) / (187 - 32)) * 100
-
-  -- Map LPB (Lines Per Beat) to a 0-100 scale. LPB is between 1 and 32
   local lpb_value = ((transport.lpb - 1) / (32 - 1)) * 100
-
-  -- Map EditStep to a 0-100 scale. EditStep is between 0 and 64
   local edit_step_value = (transport.edit_step / 64) * 100
-
-  -- Map Octave to a 0-100 scale. Octave is between 0 and 8
   local octave_value = (transport.octave / 8) * 100
 
   -- Construct the XML with the dynamic values injected
@@ -1649,8 +1638,6 @@ renoise.tool():add_keybinding { name = "Global:Paketti..:Automation Top to Cente
 renoise.tool():add_keybinding { name = "Global:Paketti..:Automation Center to Bottom (Lin)", invoke = automation_center_to_bottom_lin }
 renoise.tool():add_keybinding { name = "Global:Paketti..:Automation Bottom to Center (Lin)", invoke = automation_bottom_to_center_lin }
 
-
-
 local function randomize_envelope()
   local song = renoise.song()
   local automation_parameter = song.selected_automation_parameter
@@ -1666,10 +1653,20 @@ local function randomize_envelope()
   local pattern_length = song:pattern(song.selected_pattern_index).number_of_lines
   local selection = envelope and envelope.selection_range
 
+  -- Helper to ensure line is valid
+  local function validate_line(line)
+    if pattern_length == 512 and line > 512 then
+      return 512 -- Cap it at 512 if the pattern length is the maximum allowed
+    end
+    return math.min(math.max(1, line), pattern_length)
+  end
+
   if not envelope then
     envelope = track_automation:create_automation(automation_parameter)
     print("Created new automation envelope for parameter: " .. automation_parameter.name)
-    for line=1, pattern_length do envelope:add_point_at(line, math.random()) end
+    for line = 1, pattern_length do
+      envelope:add_point_at(validate_line(line), math.random())
+    end
     renoise.app():show_status("Filled new envelope across entire pattern with random values.")
     print("Randomized entire pattern with random values.")
     return
@@ -1677,14 +1674,20 @@ local function randomize_envelope()
 
   if selection then
     local start_line, end_line = selection[1], selection[2]
-    for line=start_line, end_line do envelope:add_point_at(line, math.random()) end
+    start_line = validate_line(start_line)
+    end_line = validate_line(end_line)
+    for line = start_line, end_line do
+      envelope:add_point_at(validate_line(line), math.random())
+    end
     renoise.app():show_status("Randomized automation points within selected range.")
     print("Randomized selection range from line " .. start_line .. " to line " .. end_line)
     return
   end
 
   envelope:clear()
-  for line=1, pattern_length do envelope:add_point_at(line, math.random()) end
+  for line = 1, pattern_length do
+    envelope:add_point_at(validate_line(line), math.random())
+  end
   renoise.app():show_status("Randomized entire existing envelope across pattern.")
   print("Randomized entire existing envelope across the pattern.")
 end
@@ -1718,7 +1721,7 @@ local function randomize_device_envelopes(start_param)
       -- Create or clear the envelope
       if not envelope then
         envelope = track_automation:create_automation(parameter)
-        print("Created new automation envelope for parameter: " .. parameter.name)
+  --      print("Created new automation envelope for parameter: " .. parameter.name)
       else
         envelope:clear()
       end
@@ -1728,9 +1731,9 @@ local function randomize_device_envelopes(start_param)
         envelope:add_point_at(line, math.random())
       end
       
-      print("Randomized entire envelope for parameter: " .. parameter.name)
+ --     print("Randomized entire envelope for parameter: " .. parameter.name)
     else
-      print("Parameter " .. parameter.name .. " is not automatable, skipping.")
+ --     print("Parameter " .. parameter.name .. " is not automatable, skipping.")
     end
   end
 
@@ -1915,6 +1918,6 @@ end
 for i = 0, 1, 0.1 do
   local formatted_value = string.format("%.1f", i)
 renoise.tool():add_keybinding{name = "Global:Paketti:Write Automation Value " .. formatted_value,invoke = function() write_automation_value(tonumber(formatted_value)) end}
-renoise.tool():add_menu_entry{name = "Main Menu:Tools:Paketti..:Write Automation Value " .. formatted_value,invoke = function() write_automation_value(tonumber(formatted_value)) end}
+renoise.tool():add_menu_entry{name = "Main Menu:Tools:Paketti..:Automation..:Write Automation Value " .. formatted_value,invoke = function() write_automation_value(tonumber(formatted_value)) end}
 end
 

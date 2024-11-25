@@ -1,3 +1,5 @@
+-- TODO: Phase Shift + Pitch Shift invert mix
+
 local vb = renoise.ViewBuilder()
   local buffer = nil
   local current_name = nil

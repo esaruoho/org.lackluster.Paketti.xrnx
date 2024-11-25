@@ -1420,3 +1420,29 @@ function PakettiEightSlotsByOneTwentyKeyHandler(dialog, key)
   end
 end
 
+function PakettiEightOneTwentyInit()
+local editmodestate=false
+if renoise.song().transport.edit_mode then 
+editmodestate = true
+renoise.song().transport.edit_mode=false end
+for i = 1,8 do
+renoise.song():insert_track_at(i)
+end
+renoise.song().transport.edit_mode = editmodestate
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Initialize for Groovebox 8120",invoke=function() 
+PakettiEightOneTwentyInit()
+end}
+
+renoise.tool():add_menu_entry{name="Mixer:Paketti..:Initialize for Groovebox 8120",invoke=function() 
+PakettiEightOneTwentyInit()
+end}
+
+
+
+
+
+
+
+

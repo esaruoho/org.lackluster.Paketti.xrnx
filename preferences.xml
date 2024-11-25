@@ -7,93 +7,6 @@
   <pakettiLoaderInterpolation>1.0</pakettiLoaderInterpolation>
   <pakettiDefaultXRNI>Presets/12st_Pitchbend.xrni</pakettiDefaultXRNI>
   <loadPaleGreenTheme>false</loadPaleGreenTheme>
-  <pakettiTitler>
-    <textfile_path>External/wordlist.txt</textfile_path>
-    <trackTitlerDateFormat>YYYY_MM_DD</trackTitlerDateFormat>
-    <notes_file_path>External/notes.txt</notes_file_path>
-  </pakettiTitler>
-  <PakettiMoveSilenceThreshold>0.0121</PakettiMoveSilenceThreshold>
-  <pakettiSlideContentAutomationToo>true</pakettiSlideContentAutomationToo>
-  <pakettiEditMode>2</pakettiEditMode>
-  <WipeSlices>
-    <sliceCounter>1.0</sliceCounter>
-    <WipeSlicesBeatSyncMode>1.0</WipeSlicesBeatSyncMode>
-    <WipeSlicesLoopRelease>false</WipeSlicesLoopRelease>
-    <WipeSlicesMuteGroup>1.0</WipeSlicesMuteGroup>
-    <WipeSlicesBeatSyncGlobal>false</WipeSlicesBeatSyncGlobal>
-    <WipeSlicesAutofade>true</WipeSlicesAutofade>
-    <slicePreviousDirection>1.0</slicePreviousDirection>
-    <WipeSlicesLoopMode>2</WipeSlicesLoopMode>
-    <WipeSlicesAutoseek>false</WipeSlicesAutoseek>
-    <WipeSlicesOneShot>false</WipeSlicesOneShot>
-    <WipeSlicesNNA>1.0</WipeSlicesNNA>
-  </WipeSlices>
-  <pakettiMidiPopulator>
-    <delayColumn>false</delayColumn>
-    <noteColumns>1.0</noteColumns>
-    <volumeColumn>false</volumeColumn>
-    <populateSends>true</populateSends>
-    <incomingAudio>false</incomingAudio>
-    <panningColumn>false</panningColumn>
-    <sampleEffectsColumn>false</sampleEffectsColumn>
-    <collapsed>false</collapsed>
-    <effectColumns>1.0</effectColumns>
-  </pakettiMidiPopulator>
-  <pakettiDialogClose>esc</pakettiDialogClose>
-  <pakettiLoaderFilterType>LP Clean</pakettiLoaderFilterType>
-  <pakettiLoaderOverSampling>true</pakettiLoaderOverSampling>
-  <PakettiDeviceChainPath>DeviceChains/</PakettiDeviceChainPath>
-  <UserPreferences>
-    <userPreferredDevice05>&lt;None&gt;</userPreferredDevice05>
-    <userPreferredDevice07>&lt;None&gt;</userPreferredDevice07>
-    <userPreferredDeviceLoad>true</userPreferredDeviceLoad>
-    <userPreferredDevice09>&lt;None&gt;</userPreferredDevice09>
-    <userPreferredDevice01>&lt;None&gt;</userPreferredDevice01>
-    <userPreferredDevice04>&lt;None&gt;</userPreferredDevice04>
-    <userPreferredDevice10>&lt;None&gt;</userPreferredDevice10>
-    <userPreferredDevice08>&lt;None&gt;</userPreferredDevice08>
-    <userPreferredDevice02>&lt;None&gt;</userPreferredDevice02>
-    <userPreferredDevice03>&lt;None&gt;</userPreferredDevice03>
-    <userPreferredDevice06>&lt;None&gt;</userPreferredDevice06>
-  </UserPreferences>
-  <selectionNewInstrumentAutoFade>true</selectionNewInstrumentAutoFade>
-  <upperFramePreference>0.0</upperFramePreference>
-  <pakettiPhraseInitDialog>
-    <NoteColumns>1.0</NoteColumns>
-    <LPB>4</LPB>
-    <VolumeColumnVisible>false</VolumeColumnVisible>
-    <Name/>
-    <Autoseek>false</Autoseek>
-    <Shuffle>0.0</Shuffle>
-    <Length>64</Length>
-    <SetName>false</SetName>
-    <SampleFXColumnVisible>false</SampleFXColumnVisible>
-    <EffectColumns>0.0</EffectColumns>
-    <InstrumentColumnVisible>false</InstrumentColumnVisible>
-    <DelayColumnVisible>false</DelayColumnVisible>
-    <PanningColumnVisible>false</PanningColumnVisible>
-  </pakettiPhraseInitDialog>
-  <pakettiCheatSheet>
-    <pakettiCheatSheetRandomizeMax>159.59790209790211</pakettiCheatSheetRandomizeMax>
-    <pakettiCheatSheetRandomizeMin>2.674825174825175</pakettiCheatSheetRandomizeMin>
-    <pakettiCheatSheetRandomizeDontOverwrite>false</pakettiCheatSheetRandomizeDontOverwrite>
-    <pakettiCheatSheetRandomizeWholeTrack>true</pakettiCheatSheetRandomizeWholeTrack>
-    <pakettiCheatSheetRandomizeSwitch>false</pakettiCheatSheetRandomizeSwitch>
-    <pakettiCheatSheetRandomize>true</pakettiCheatSheetRandomize>
-    <pakettiCheatSheetFillAll>100</pakettiCheatSheetFillAll>
-  </pakettiCheatSheet>
-  <pakettiColuga>
-    <pakettiColugaNewInstrumentOrSameInstrument>true</pakettiColugaNewInstrumentOrSameInstrument>
-    <pakettiColugaPathToSave>&lt;No path set&gt;</pakettiColugaPathToSave>
-    <pakettiColugaLoopMode>2</pakettiColugaLoopMode>
-    <pakettiColugaFormatToSave>1.0</pakettiColugaFormatToSave>
-    <pakettiColugaAmountOfVideos>1.0</pakettiColugaAmountOfVideos>
-    <pakettiColugaOutputDirectory>Set this yourself, please.</pakettiColugaOutputDirectory>
-    <pakettiColugaClipLength>10</pakettiColugaClipLength>
-    <pakettiColugaYT_DLPLocation>&lt;No path set&gt;</pakettiColugaYT_DLPLocation>
-    <pakettiColugaLoadWholeVideo>true</pakettiColugaLoadWholeVideo>
-  </pakettiColuga>
-  <pakettiLoaderOneshot>false</pakettiLoaderOneshot>
   <RandomizeSettings>
     <pakettiRandomizeAllDevicesPercentageUserPreference1>10</pakettiRandomizeAllDevicesPercentageUserPreference1>
     <pakettiRandomizeAllDevicesPercentage>50</pakettiRandomizeAllDevicesPercentage>
@@ -120,7 +33,1385 @@
     <pakettiRandomizeAllDevicesPercentageUserPreference4>75</pakettiRandomizeAllDevicesPercentageUserPreference4>
     <pakettiRandomizeAllDevicesPercentageUserPreference2>25</pakettiRandomizeAllDevicesPercentageUserPreference2>
   </RandomizeSettings>
-  <selectionNewInstrumentSelect>false</selectionNewInstrumentSelect>
+  <PakettiMoveSilenceThreshold>0.0121</PakettiMoveSilenceThreshold>
+  <pakettiSlideContentAutomationToo>true</pakettiSlideContentAutomationToo>
+  <UserDefinedSampleFolders06>/Users/esaruoho/Music/rMBP_2024_01_27 samples/x3_plimps/</UserDefinedSampleFolders06>
+  <PakettiDynamicViews>
+    <PakettiDynamicView type="lua_model:PakettiDynamicViewEntry">
+      <steps>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>3</upper_frame_index>
+          <lower_frame_index>3</lower_frame_index>
+          <instrument_box_visible>true</instrument_box_visible>
+          <middle_frame_index>2</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>true</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>true</pattern_advanced_edit_visible>
+          <upper_frame_index>2</upper_frame_index>
+          <lower_frame_index>2</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>2</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+      </steps>
+    </PakettiDynamicView>
+    <PakettiDynamicView type="lua_model:PakettiDynamicViewEntry">
+      <steps>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>2</lower_frame_index>
+          <instrument_box_visible>true</instrument_box_visible>
+          <middle_frame_index>6</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>true</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>2</lower_frame_index>
+          <instrument_box_visible>true</instrument_box_visible>
+          <middle_frame_index>8</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>true</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>2</lower_frame_index>
+          <instrument_box_visible>true</instrument_box_visible>
+          <middle_frame_index>7</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>true</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>2</lower_frame_index>
+          <instrument_box_visible>true</instrument_box_visible>
+          <middle_frame_index>4</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>true</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>2</lower_frame_index>
+          <instrument_box_visible>true</instrument_box_visible>
+          <middle_frame_index>5</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>true</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+      </steps>
+    </PakettiDynamicView>
+    <PakettiDynamicView type="lua_model:PakettiDynamicViewEntry">
+      <steps>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>2</lower_frame_index>
+          <instrument_box_visible>true</instrument_box_visible>
+          <middle_frame_index>10</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>true</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>2</lower_frame_index>
+          <instrument_box_visible>true</instrument_box_visible>
+          <middle_frame_index>9</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>true</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>2</lower_frame_index>
+          <instrument_box_visible>true</instrument_box_visible>
+          <middle_frame_index>4</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>true</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+      </steps>
+    </PakettiDynamicView>
+    <PakettiDynamicView type="lua_model:PakettiDynamicViewEntry">
+      <steps>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>3</upper_frame_index>
+          <lower_frame_index>3</lower_frame_index>
+          <instrument_box_visible>true</instrument_box_visible>
+          <middle_frame_index>3</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>true</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>true</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>4</upper_frame_index>
+          <lower_frame_index>4</lower_frame_index>
+          <instrument_box_visible>true</instrument_box_visible>
+          <middle_frame_index>3</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>true</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+      </steps>
+    </PakettiDynamicView>
+    <PakettiDynamicView type="lua_model:PakettiDynamicViewEntry">
+      <steps>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+      </steps>
+    </PakettiDynamicView>
+    <PakettiDynamicView type="lua_model:PakettiDynamicViewEntry">
+      <steps>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+      </steps>
+    </PakettiDynamicView>
+    <PakettiDynamicView type="lua_model:PakettiDynamicViewEntry">
+      <steps>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+      </steps>
+    </PakettiDynamicView>
+    <PakettiDynamicView type="lua_model:PakettiDynamicViewEntry">
+      <steps>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>1.0</upper_frame_index>
+          <lower_frame_index>1.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>1.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+        <step type="lua_model:PakettiDynamicViewStepEntry">
+          <pattern_matrix_visible>false</pattern_matrix_visible>
+          <pattern_advanced_edit_visible>false</pattern_advanced_edit_visible>
+          <upper_frame_index>0.0</upper_frame_index>
+          <lower_frame_index>0.0</lower_frame_index>
+          <instrument_box_visible>false</instrument_box_visible>
+          <middle_frame_index>0.0</middle_frame_index>
+          <sample_record_visible>false</sample_record_visible>
+          <disk_browser_visible>false</disk_browser_visible>
+        </step>
+      </steps>
+    </PakettiDynamicView>
+  </PakettiDynamicViews>
+  <pakettiEditMode>2</pakettiEditMode>
+  <WipeSlices>
+    <sliceCounter>1.0</sliceCounter>
+    <WipeSlicesBeatSyncMode>1.0</WipeSlicesBeatSyncMode>
+    <WipeSlicesLoopRelease>false</WipeSlicesLoopRelease>
+    <WipeSlicesMuteGroup>1.0</WipeSlicesMuteGroup>
+    <WipeSlicesBeatSyncGlobal>false</WipeSlicesBeatSyncGlobal>
+    <WipeSlicesAutofade>true</WipeSlicesAutofade>
+    <slicePreviousDirection>1.0</slicePreviousDirection>
+    <WipeSlicesLoopMode>2</WipeSlicesLoopMode>
+    <WipeSlicesAutoseek>false</WipeSlicesAutoseek>
+    <WipeSlicesOneShot>false</WipeSlicesOneShot>
+    <WipeSlicesNNA>1.0</WipeSlicesNNA>
+  </WipeSlices>
+  <PakettiDeviceLoaders>
+    <PakettiDeviceLoader type="lua_model:PakettiDeviceEntry">
+      <path>Audio/Effects/AU/aumf:SMY2:UHfX</path>
+      <name>Zebrify</name>
+      <device_type>AudioUnit</device_type>
+    </PakettiDeviceLoader>
+    <PakettiDeviceLoader type="lua_model:PakettiDeviceEntry">
+      <path>Audio/Effects/AU/aumf:reV0:UHfX</path>
+      <name>ZRev</name>
+      <device_type>AudioUnit</device_type>
+    </PakettiDeviceLoader>
+  </PakettiDeviceLoaders>
+  <pakettiCheatSheet>
+    <pakettiCheatSheetRandomizeMax>182.77972027972024</pakettiCheatSheetRandomizeMax>
+    <pakettiCheatSheetRandomizeMin>0.0</pakettiCheatSheetRandomizeMin>
+    <pakettiCheatSheetRandomizeDontOverwrite>false</pakettiCheatSheetRandomizeDontOverwrite>
+    <pakettiCheatSheetRandomizeWholeTrack>false</pakettiCheatSheetRandomizeWholeTrack>
+    <pakettiCheatSheetRandomizeSwitch>false</pakettiCheatSheetRandomizeSwitch>
+    <pakettiCheatSheetRandomize>true</pakettiCheatSheetRandomize>
+    <pakettiCheatSheetFillAll>100</pakettiCheatSheetFillAll>
+  </pakettiCheatSheet>
+  <PakettiPluginLoaders>
+    <PakettiPluginLoader type="lua_model:PakettiPluginEntry">
+      <name>Amigo (AU)</name>
+      <path>Audio/Generators/AU/aumu:Amgo:PTNZ</path>
+    </PakettiPluginLoader>
+    <PakettiPluginLoader type="lua_model:PakettiPluginEntry">
+      <name>Attack (AU)</name>
+      <path>Audio/Generators/AU/aumu:3EDr:3E00</path>
+    </PakettiPluginLoader>
+    <PakettiPluginLoader type="lua_model:PakettiPluginEntry">
+      <name>Bucket ONE (AU)</name>
+      <path>Audio/Generators/AU/aumu:fb-1:FuBu</path>
+    </PakettiPluginLoader>
+    <PakettiPluginLoader type="lua_model:PakettiPluginEntry">
+      <name>Knif Audio Knifonium (AU)</name>
+      <path>Audio/Generators/AU/aumu:Knif:Brwx</path>
+    </PakettiPluginLoader>
+    <PakettiPluginLoader type="lua_model:PakettiPluginEntry">
+      <name>Kontakt (AU)</name>
+      <path>Audio/Generators/AU/aumu:Ni$D:-NI-</path>
+    </PakettiPluginLoader>
+    <PakettiPluginLoader type="lua_model:PakettiPluginEntry">
+      <name>Reaktor 6 (AU)</name>
+      <path>Audio/Generators/AU/aumu:NiR6:-NI-</path>
+    </PakettiPluginLoader>
+    <PakettiPluginLoader type="lua_model:PakettiPluginEntry">
+      <name>Vintage (AU)</name>
+      <path>Audio/Generators/AU/aumu:V4vi:Manu</path>
+    </PakettiPluginLoader>
+    <PakettiPluginLoader type="lua_model:PakettiPluginEntry">
+      <name>ANA 2 (AU)</name>
+      <path>Audio/Generators/AU/aumu:ANA2:SnAc</path>
+    </PakettiPluginLoader>
+    <PakettiPluginLoader type="lua_model:PakettiPluginEntry">
+      <name>AUMIDISynth (AU)</name>
+      <path>Audio/Generators/AU/aumu:msyn:appl</path>
+    </PakettiPluginLoader>
+    <PakettiPluginLoader type="lua_model:PakettiPluginEntry">
+      <name>MonoFury (AU)</name>
+      <path>Audio/Generators/AU/aumu:1416:FuBu</path>
+    </PakettiPluginLoader>
+    <PakettiPluginLoader type="lua_model:PakettiPluginEntry">
+      <name>MPS (AU)</name>
+      <path>Audio/Generators/AU/aumu:MPS1:FuBu</path>
+    </PakettiPluginLoader>
+    <PakettiPluginLoader type="lua_model:PakettiPluginEntry">
+      <name>One (AU)</name>
+      <path>Audio/Generators/AU/aumu:FOne:FabF</path>
+    </PakettiPluginLoader>
+    <PakettiPluginLoader type="lua_model:PakettiPluginEntry">
+      <name>PPG Wave 2.V (AU)</name>
+      <path>Audio/Generators/AU/aumu:2900:3E00</path>
+    </PakettiPluginLoader>
+    <PakettiPluginLoader type="lua_model:PakettiPluginEntry">
+      <name>XO (AU)</name>
+      <path>Audio/Generators/AU/aumu:xAXO:xlnA</path>
+    </PakettiPluginLoader>
+    <PakettiPluginLoader type="lua_model:PakettiPluginEntry">
+      <name>Zebra2 (AU)</name>
+      <path>Audio/Generators/AU/aumu:SMD2:UHfX</path>
+    </PakettiPluginLoader>
+  </PakettiPluginLoaders>
+  <pakettiDialogClose>esc</pakettiDialogClose>
+  <pakettiMidiPopulator>
+    <delayColumn>false</delayColumn>
+    <noteColumns>1.0</noteColumns>
+    <volumeColumn>false</volumeColumn>
+    <populateSends>true</populateSends>
+    <incomingAudio>false</incomingAudio>
+    <panningColumn>false</panningColumn>
+    <sampleEffectsColumn>false</sampleEffectsColumn>
+    <collapsed>false</collapsed>
+    <effectColumns>1.0</effectColumns>
+  </pakettiMidiPopulator>
+  <pakettiLoaderFilterType>LP Clean</pakettiLoaderFilterType>
+  <pakettiTitler>
+    <textfile_path>External/wordlist.txt</textfile_path>
+    <trackTitlerDateFormat>YYYY-MM-DD</trackTitlerDateFormat>
+    <notes_file_path>External/notes.txt</notes_file_path>
+  </pakettiTitler>
+  <pakettiPhraseInitDialog>
+    <NoteColumns>1.0</NoteColumns>
+    <LPB>4</LPB>
+    <VolumeColumnVisible>false</VolumeColumnVisible>
+    <Name/>
+    <Autoseek>false</Autoseek>
+    <Shuffle>0.0</Shuffle>
+    <Length>64</Length>
+    <SetName>false</SetName>
+    <SampleFXColumnVisible>false</SampleFXColumnVisible>
+    <EffectColumns>0.0</EffectColumns>
+    <InstrumentColumnVisible>false</InstrumentColumnVisible>
+    <DelayColumnVisible>false</DelayColumnVisible>
+    <PanningColumnVisible>false</PanningColumnVisible>
+  </pakettiPhraseInitDialog>
+  <pakettiColuga>
+    <pakettiColugaNewInstrumentOrSameInstrument>true</pakettiColugaNewInstrumentOrSameInstrument>
+    <pakettiColugaPathToSave>&lt;No path set&gt;</pakettiColugaPathToSave>
+    <pakettiColugaLoopMode>2</pakettiColugaLoopMode>
+    <pakettiColugaFormatToSave>1.0</pakettiColugaFormatToSave>
+    <pakettiColugaAmountOfVideos>1.0</pakettiColugaAmountOfVideos>
+    <pakettiColugaOutputDirectory>Set this yourself, please.</pakettiColugaOutputDirectory>
+    <pakettiColugaClipLength>10</pakettiColugaClipLength>
+    <pakettiColugaYT_DLPLocation>&lt;No path set&gt;</pakettiColugaYT_DLPLocation>
+    <pakettiColugaLoadWholeVideo>true</pakettiColugaLoadWholeVideo>
+  </pakettiColuga>
+  <pakettiLoaderOverSampling>true</pakettiLoaderOverSampling>
   <OctaMEDPickPutSlots>
     <Slot10/>
     <RandomizeEnabled>false</RandomizeEnabled>
@@ -128,14 +1419,14 @@
     <RandomizePercentage>10</RandomizePercentage>
     <SetSelectedInstrument>false</SetSelectedInstrument>
     <Slot09/>
-    <Slot01>C-4 0F 12 45 33 3250 | F-4 0F A0 30 40 0500 | G-4 0F 20 34 56 7080||0A00|0B0F|0E0D|0U0A</Slot01>
+    <Slot01>C-4 02 .. .. .. .... | --- .. .. .. .. ....||0Y20</Slot01>
     <Slot03/>
     <Slot05/>
     <Slot04/>
     <Slot08/>
     <Slot07/>
     <Slot06/>
-    <Slot02/>
+    <Slot02>C-4 04 .. .. E3 ....||</Slot02>
   </OctaMEDPickPutSlots>
   <pakettieSpeak>
     <pitch>35</pitch>
@@ -151,37 +1442,58 @@
     <language>40</language>
     <speed>150</speed>
   </pakettieSpeak>
+  <UserDefinedSampleFolders10>/Users/esaruoho/Music/rMBP_2024_01_27 samples/vox_/</UserDefinedSampleFolders10>
+  <PakettiDeviceChainPath>DeviceChains/</PakettiDeviceChainPath>
+  <UserDefinedSampleFolders02>/Users/esaruoho/Music/rMBP_2024_01_27 samples/x3_xmplimps/</UserDefinedSampleFolders02>
+  <UserPreferences>
+    <userPreferredDevice05>&lt;None&gt;</userPreferredDevice05>
+    <userPreferredDevice07>&lt;None&gt;</userPreferredDevice07>
+    <userPreferredDeviceLoad>true</userPreferredDeviceLoad>
+    <userPreferredDevice09>&lt;None&gt;</userPreferredDevice09>
+    <userPreferredDevice01>&lt;None&gt;</userPreferredDevice01>
+    <userPreferredDevice04>&lt;None&gt;</userPreferredDevice04>
+    <userPreferredDevice10>&lt;None&gt;</userPreferredDevice10>
+    <userPreferredDevice08>&lt;None&gt;</userPreferredDevice08>
+    <userPreferredDevice02>&lt;None&gt;</userPreferredDevice02>
+    <userPreferredDevice03>&lt;None&gt;</userPreferredDevice03>
+    <userPreferredDevice06>&lt;None&gt;</userPreferredDevice06>
+  </UserPreferences>
+  <selectionNewInstrumentAutoFade>true</selectionNewInstrumentAutoFade>
+  <selectionNewInstrumentAutoseek>false</selectionNewInstrumentAutoseek>
+  <upperFramePreference>0.0</upperFramePreference>
+  <UserDefinedSampleFolders08>/Users/esaruoho/Music/rMBP_2024_01_27 samples/wc_recycle chopped/</UserDefinedSampleFolders08>
+  <UserDefinedSampleFolders01>/Users/esaruoho/Music/rMBP_2024_01_27 samples/yamaha tx81z/</UserDefinedSampleFolders01>
+  <UserDefinedSampleFolders05>/Users/esaruoho/Music/rMBP_2024_01_27 samples/x3_purpose_is_to_exist/</UserDefinedSampleFolders05>
+  <pakettiLoaderOneshot>false</pakettiLoaderOneshot>
+  <pakettiDefaultDrumkitXRNI>Presets/12st_Pitchbend_Drumkit_C0.xrni</pakettiDefaultDrumkitXRNI>
+  <selectionNewInstrumentSelect>false</selectionNewInstrumentSelect>
+  <UserDefinedSampleFolders03>/Users/esaruoho/Music/rMBP_2024_01_27 samples/x3_saxpliumpsh/</UserDefinedSampleFolders03>
+  <UserDefinedSampleFolders07>/Users/esaruoho/Music/rMBP_2024_01_27 samples/x3_kihkih/</UserDefinedSampleFolders07>
   <pakettiThemeSelector>
     <FavoritedList>
       <Favorited>&lt;No Theme Selected&gt;</Favorited>
-      <Favorited>bata_binary</Favorited>
-      <Favorited>Mono Blue (dblue)</Favorited>
-      <Favorited>Simply Focus Soft</Favorited>
-      <Favorited>Xan-Operating tracks Mod</Favorited>
-      <Favorited>un~blackforestcake</Favorited>
-      <Favorited>so fancy 4k</Favorited>
     </FavoritedList>
-    <RenoiseLaunchFavoritesLoad>true</RenoiseLaunchFavoritesLoad>
+    <RenoiseLaunchFavoritesLoad>false</RenoiseLaunchFavoritesLoad>
     <RenoiseLaunchRandomLoad>false</RenoiseLaunchRandomLoad>
-    <PreviousSelectedTheme>so fancy 4k</PreviousSelectedTheme>
+    <PreviousSelectedTheme/>
   </pakettiThemeSelector>
   <renderBitDepth>32</renderBitDepth>
-  <pakettiDefaultDrumkitXRNI>Presets/12st_Pitchbend_Drumkit_C0.xrni</pakettiDefaultDrumkitXRNI>
+  <UserDefinedSampleFolders04>/Users/esaruoho/Music/rMBP_2024_01_27 samples/x3_region/</UserDefinedSampleFolders04>
   <pakettiLoaderNNA>2</pakettiLoaderNNA>
-  <selectionNewInstrumentAutoseek>false</selectionNewInstrumentAutoseek>
+  <UserDefinedSampleFolders09>/Users/esaruoho/Music/rMBP_2024_01_27 samples/wack ass samples/</UserDefinedSampleFolders09>
   <pakettiLoaderLoopExit>false</pakettiLoaderLoopExit>
   <renderBypass>false</renderBypass>
   <pakettiPitchbendLoaderEnvelope>false</pakettiPitchbendLoaderEnvelope>
   <pakettiLoaderAutoseek>false</pakettiLoaderAutoseek>
   <AppSelection>
-    <SmartFoldersApp3>/Users/esaruoho/Music/samples/LogicSmartFolder/</SmartFoldersApp3>
+    <SmartFoldersApp3>/Users/esaruoho/Music/samples/RenoiseSmartFolder/</SmartFoldersApp3>
     <AppSelection1>/Applications/Audacity.app</AppSelection1>
-    <AppSelection6>/Applications/Vivaldi.app</AppSelection6>
-    <SmartFoldersApp1>/Users/esaruoho/Music/samples/RenoiseSmartFolder/</SmartFoldersApp1>
+    <AppSelection6>/Applications/Logic Pro.app</AppSelection6>
+    <SmartFoldersApp1>/Users/esaruoho/Music/samples/LogicSmartFolder/</SmartFoldersApp1>
     <SmartFoldersApp2>/Users/esaruoho/Music/samples/LiveSmartFolder/</SmartFoldersApp2>
     <AppSelection3>/System/Applications/Music.app</AppSelection3>
-    <AppSelection5>/Applications/Cog.app</AppSelection5>
-    <AppSelection4>/Applications/Logic Pro X.app</AppSelection4>
+    <AppSelection5>/Applications/VLC.app</AppSelection5>
+    <AppSelection4>/Applications/Cog.app</AppSelection4>
     <AppSelection2>/Applications/Ableton Live 12 Suite.app</AppSelection2>
   </AppSelection>
   <pakettiLoaderAutoFade>true</pakettiLoaderAutoFade>
