@@ -20,9 +20,6 @@ jobs:
           zip -r org.lackluster.Paketti_V3.54.xrnx . \
             -x "*.git*" "*.github*" \
             "preferences.xml" \
-            "preferences_deviceLoaders.xml" \
-            "preferences_midigen.xml" \
-            "preferences_pluginLoaders.xml" \
             "preferencesDynamicView.xml"
       
       # Dynamically generate a tag name and set it as an environment variable
