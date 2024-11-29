@@ -1566,6 +1566,10 @@ end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Insert Stereo -> Mono device to Beginning of DSP Chain",invoke=function() insertMonoToBeginning() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Insert Stereo -> Mono device to End of DSP Chain",invoke=function() insertMonoToEnd() end}
+renoise.tool():add_menu_entry{name="--DSP Device:Paketti..:Insert Stereo -> Mono device to Beginning of DSP Chain",invoke=function() insertMonoToBeginning() end}
+renoise.tool():add_menu_entry{name="DSP Device:Paketti..:Insert Stereo -> Mono device to End of DSP Chain",invoke=function() insertMonoToEnd() end}
+renoise.tool():add_menu_entry{name="--Mixer:Paketti..:Insert Stereo -> Mono device to Beginning of DSP Chain",invoke=function() insertMonoToBeginning() end}
+renoise.tool():add_menu_entry{name="Mixer:Paketti..:Insert Stereo -> Mono device to End of DSP Chain",invoke=function() insertMonoToEnd() end}
 
 
 function insertMonoToMasterEnd()

@@ -96,72 +96,91 @@ renoise.tool():add_keybinding{name="Mixer:Paketti:Capture Nearest Instrument and
 
 function capture_ins_oct(state)
    local closest_note = {}  
-   local current_track=renoise.song().selected_track_index
-   local current_pattern=renoise.song().selected_pattern_index
+   local current_track = renoise.song().selected_track_index
+   local current_pattern = renoise.song().selected_pattern_index
    
-   for pos,line in renoise.song().pattern_iterator:lines_in_pattern_track(current_pattern,current_track) do
+   for pos, line in renoise.song().pattern_iterator:lines_in_pattern_track(current_pattern, current_track) do
       if (not line.is_empty) then
-         local t={}
-         if (renoise.song().selected_note_column_index==0) then
-            for i=1,renoise.song().tracks[current_track].visible_note_columns do
-               table.insert(t,i)
+         local t = {}
+         if (renoise.song().selected_note_column_index == 0) then
+            for i = 1, renoise.song().tracks[current_track].visible_note_columns do
+               table.insert(t, i)
             end
          else 
-            table.insert(t,renoise.song().selected_note_column_index)
+            table.insert(t, renoise.song().selected_note_column_index)
          end  
          
-         for i,v in ipairs(t) do 
-            local notecol=line.note_columns[v]
+         for _, v in ipairs(t) do 
+            local notecol = line.note_columns[v]
             
-            if ( (not notecol.is_empty) and (notecol.note_string~="OFF")) then
-               if (closest_note.oct==nil) then
-                  closest_note.oct=math.min(math.floor(notecol.note_value/12),8)
-                  closest_note.line=pos.line
-                  closest_note.ins=notecol.instrument_value+1
-               elseif ( math.abs(pos.line-renoise.song().transport.edit_pos.line) < math.abs(closest_note.line-renoise.song().transport.edit_pos.line) ) then
-                  closest_note.oct=math.min(math.floor(notecol.note_value/12),8)
-                  closest_note.line=pos.line
-                  closest_note.ins=notecol.instrument_value+1
+            if (not notecol.is_empty and notecol.note_string ~= "OFF") then
+               if (closest_note.oct == nil) then
+                  closest_note.oct = math.min(math.floor(notecol.note_value / 12), 8)
+                  closest_note.line = pos.line
+                  closest_note.ins = notecol.instrument_value + 1
+                  closest_note.note = notecol.note_value
+               elseif (math.abs(pos.line - renoise.song().transport.edit_pos.line) < math.abs(closest_note.line - renoise.song().transport.edit_pos.line)) then
+                  closest_note.oct = math.min(math.floor(notecol.note_value / 12), 8)
+                  closest_note.line = pos.line
+                  closest_note.ins = notecol.instrument_value + 1
+                  closest_note.note = notecol.note_value
                end         
             end 
          end 
       end 
    end
 
-renoise.song().selected_instrument_index = closest_note.ins
-
-if state == "no" then return else
-   if (closest_note.oct~=nil) then 
-      if renoise.song().selected_instrument_index == closest_note.ins then
-if renoise.app().window.active_middle_frame == 1 and renoise.app().window.active_lower_frame == 2 then
-renoise.app().window.active_lower_frame = 1 
-renoise.app():show_status("Instrument already captured, jumping back from Automation to Track DSP Device Lower Frame.")
-return end
-
-if renoise.app().window.active_middle_frame == renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
-then renoise.app().window.active_middle_frame = 1 
-renoise.app().window.active_lower_frame = 2 
-renoise.app():show_status("Instrument already captured, jumping from Sample Editor to Pattern Editor with Track Automation Lower Frame.")
-
-return end
-
-
-         renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
-         renoise.app():show_status("Instrument already captured, jumping to Sample Editor.")
-         return
---         renoise.app().window.active_middle_frame = 1
-      else
-         -- Set instrument and octave if not already selected
-         renoise.song().selected_instrument_index = closest_note.ins
-         renoise.song().transport.octave = closest_note.oct
-      end
+   -- If no instrument is found, stop
+   if not closest_note.ins then
+      renoise.app():show_status("No nearby instrument found.")
+      return
    end
 
-   -- Focus on the pattern editor in the middle frame
-   local w = renoise.app().window
-   w.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
+   -- Step 1: If the nearest instrument is not selected, select it
+   if renoise.song().selected_instrument_index ~= closest_note.ins then
+      renoise.song().selected_instrument_index = closest_note.ins
+      renoise.song().transport.octave = closest_note.oct
+      renoise.app():show_status("Instrument captured. Run the script again to jump to the sample.")
+      return
+   end
+
+   -- Step 2: If in the Sample Editor, toggle back to the Pattern Editor
+   if renoise.app().window.active_middle_frame == renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR then
+      renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
+      renoise.app():show_status("Back to Pattern Editor.")
+      return
+   end
+
+   -- Step 3: If instrument is selected, jump to the nearest sample in the Sample Editor
+   if state == "yes" then
+      local instrument = renoise.song().instruments[closest_note.ins]
+      if instrument and #instrument.samples > 0 then
+         -- Determine the first sample's root note using sample_mappings
+         local sample_mapping = instrument.sample_mappings[1][1] -- First sample mapping
+         local first_sample_note = sample_mapping and sample_mapping.note_range[1] or 0 -- Default to C-0 (0)
+         
+         -- Calculate the sample index based on the closest note
+         local sample_index = 1
+         for i, sample_map in ipairs(instrument.sample_mappings[1]) do
+            if closest_note.note >= sample_map.note_range[1] and closest_note.note <= sample_map.note_range[2] then
+               sample_index = i
+               break
+            end
+         end
+
+         -- Set the selected sample index and switch to the sample editor
+         renoise.song().selected_sample_index = sample_index
+         renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
+         renoise.app():show_status("Instrument and sample captured, jumping to Sample Editor.")
+         return
+      else
+         renoise.app():show_status("No samples available in the instrument.")
+         return
+      end
+   end
 end
-end
+
+
 
 
 -----------------------------------------------------------------------------------------------------------

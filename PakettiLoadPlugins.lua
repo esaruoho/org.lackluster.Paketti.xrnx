@@ -61,14 +61,10 @@ function loadFromPreferences()
 
   local loaders = preferences.PakettiPluginLoaders
   local count = #loaders
-  print("Loading plugins from preferences.PakettiPluginLoaders:")
   for i = 1, count do
     local plugin = loaders:property(i)
     local pluginName = plugin.name.value
     local path = plugin.path.value
-
-    -- Print the plugin being loaded
-    print(string.format("Loading Plugin '%s' with Path '%s'", pluginName, path))
 
     -- Create KeyBinding
     local keyBindingName = "Global:Paketti:Load Plugin " .. pluginName

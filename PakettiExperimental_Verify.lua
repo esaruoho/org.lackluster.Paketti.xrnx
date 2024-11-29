@@ -1,3 +1,28 @@
+function globalCenter()
+
+local song=renoise.song()
+
+-- Calculate the total number of tracks
+local total_tracks=song.sequencer_track_count+1+song.send_track_count
+
+-- Iterate through each track and set panning values
+for i=1,total_tracks do
+  local track=song.tracks[i]
+  track.postfx_panning.value=0.5
+  track.prefx_panning.value=0.5
+end
+
+renoise.app():show_status("Panning values for all tracks set to 0.5")
+
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Set All Tracks to Center",invoke=function() globalCenter() end}
+renoise.tool():add_menu_entry{name="Mixer:Paketti..:Set All Tracks to Center",invoke=function() globalCenter() end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Set All Tracks to Center",invoke=function() globalCenter() end}
+renoise.tool():add_menu_entry{name="DSP Device:Paketti..:Set All Tracks to Center",invoke=function() globalCenter() end}
+
+
+
 local function add_automation_points_for_notes()
   local song = renoise.song()
 
@@ -1628,15 +1653,6 @@ renoise.tool():add_midi_mapping {name="Paketti:Select Automation Playmode (Previ
 renoise.tool():add_midi_mapping {name="Paketti:Select Automation Playmode 01 Points",invoke=function() PakettiAutomationPlayModeChange_SetPlaymode(renoise.PatternTrackAutomation.PLAYMODE_POINTS) end}
 renoise.tool():add_midi_mapping {name="Paketti:Select Automation Playmode 02 Lines",invoke=function() PakettiAutomationPlayModeChange_SetPlaymode(renoise.PatternTrackAutomation.PLAYMODE_LINES) end}
 renoise.tool():add_midi_mapping {name="Paketti:Select Automation Playmode 03 Curves",invoke=function() PakettiAutomationPlayModeChange_SetPlaymode(renoise.PatternTrackAutomation.PLAYMODE_CURVES) end}
-
-
-
-
-
-renoise.app():show_status("YOOOOOOOOO")
-print ("YOOO")
-
-renoise.tool():add_keybinding{name="Global:Paketti:YOOOOO",invoke=function() print("hello") end}
 
 
 

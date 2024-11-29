@@ -2984,70 +2984,161 @@ renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Reverse Notes in Se
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Reverse Notes in Selection",invoke=PakettiReverseNotesInSelection}
 
 -------
+local MIN_SHIFT = -12
+local MAX_SHIFT = 12
 
-
-function PakettiOctaveBaseNote(direction, scope)
+-- Main function to adjust base notes
+local function PakettiBaseNoteShifter(interval, scope)
   local song = renoise.song()
-  local octave_shift = 12 -- Define the octave shift in semitones
-  local is_up = direction == "up"
+  
+  -- Validate interval
+  if interval == 0 then
+    renoise.app():show_status("No shift applied (interval is 0)")
+    return
+  end
   
   -- Helper function to adjust the base note
-  local function adjust_base_note(sample, instrument_index, sample_index)
+  local function adjust_base_note(sample, interval, instrument_index, sample_index)
     if sample.sample_mapping ~= nil then
       local base_note = sample.sample_mapping.base_note
+      local new_base_note = base_note + interval
+      
+      -- Ensure the new base note is within MIDI range (0 to 108)
+      if new_base_note > 108 then
+        renoise.app():show_status("Basenote cannot exceed C-9. Skipping (Instrument " .. instrument_index .. ", Sample " .. sample_index .. ")")
+        return
+      elseif new_base_note < 0 then
+        renoise.app():show_status("Basenote cannot be below C-0. Skipping (Instrument " .. instrument_index .. ", Sample " .. sample_index .. ")")
+        return
+      end
+      
+      sample.sample_mapping.base_note = new_base_note
+    end
+  end
 
-      if is_up then
-        if base_note >= 108 then
-          renoise.app():show_status("Base note is already at C-9, cannot go higher (Instrument "..instrument_index..", Sample "..sample_index..")")
-        else
-          sample.sample_mapping.base_note = math.min(108, base_note + octave_shift)
-        end
-      else -- direction is "down"
-        if base_note <= 0 then
-          renoise.app():show_status("Base note is already at C-0, cannot go lower (Instrument "..instrument_index..", Sample "..sample_index..")")
-        else
-          sample.sample_mapping.base_note = math.max(0, base_note - octave_shift)
-        end
+  -- Function to process a single instrument
+  local function process_instrument(instrument, instrument_index, interval)
+    if #instrument.samples == 0 then
+      renoise.app():show_status("Instrument " .. instrument_index .. " has no samples.")
+      return
+    end
+
+    local first_sample = instrument.samples[1]
+    local has_slice_markers = first_sample.slice_markers and #first_sample.slice_markers > 0
+
+    if has_slice_markers then
+      -- Only adjust the first sample
+      adjust_base_note(first_sample, interval, instrument_index, 1)
+    else
+      -- Adjust all samples
+      for j, sample in ipairs(instrument.samples) do
+        adjust_base_note(sample, interval, instrument_index, j)
       end
     end
   end
+
+  -- Determine the shift direction for status messages
+  local direction = (interval > 0) and ("+" .. interval) or tostring(interval)
 
   -- Process all instruments or only the selected instrument
   if scope == "all" then
     for i, instrument in ipairs(song.instruments) do
-      for j, sample in ipairs(instrument.samples) do
-        adjust_base_note(sample, i, j)
-      end
+      process_instrument(instrument, i, interval)
     end
-    renoise.app():show_status("Base note adjusted by one octave for all instruments ("..direction..")")
+    renoise.app():show_status("Basenote shifted by " .. direction .. " semitones for all instruments.")
   elseif scope == "current" then
     local instrument = song.selected_instrument
     if not instrument or #instrument.samples == 0 then
-      renoise.app():show_status("No selected instrument or no samples in the current instrument")
+      renoise.app():show_status("No selected instrument or no samples in the current instrument.")
       return
     end
-    for j, sample in ipairs(instrument.samples) do
-      adjust_base_note(sample, "current", j)
-    end
-    renoise.app():show_status("Base note adjusted by one octave for the current instrument ("..direction..")")
+    local instrument_index = song.selected_instrument_index
+    process_instrument(instrument, instrument_index, interval)
+    renoise.app():show_status("Basenote shifted by " .. direction .. " semitones for the current instrument.")
   else
-    renoise.app():show_status("Invalid scope parameter: use 'all' or 'current'")
+    renoise.app():show_status("Invalid scope parameter: use 'all' or 'current'.")
   end
 end
 
--- Menu entries for calling the function with specific parameters
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor..:Octave Basenote Up (All Instruments)", invoke=function() PakettiOctaveBaseNote("up", "all") end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor..:Octave Basenote Down (All Instruments)", invoke=function() PakettiOctaveBaseNote("down", "all") end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor..:Octave Basenote Up (Selected Instrument)", invoke=function() PakettiOctaveBaseNote("up", "current") end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor..:Octave Basenote Down (Selected Instrument)", invoke=function() PakettiOctaveBaseNote("down", "current") end}
-renoise.tool():add_keybinding{name="Global:Paketti:Octave Basenote Up (All Instruments)", invoke=function() PakettiOctaveBaseNote("up", "all") end}
-renoise.tool():add_keybinding{name="Global:Paketti:Octave Basenote Down (All Instruments)", invoke=function() PakettiOctaveBaseNote("down", "all") end}
-renoise.tool():add_keybinding{name="Global:Paketti:Octave Basenote Up (Selected Instrument)", invoke=function() PakettiOctaveBaseNote("up", "current") end}
-renoise.tool():add_keybinding{name="Global:Paketti:Octave Basenote Down (Selected Instrument)", invoke=function() PakettiOctaveBaseNote("down", "current") end}
-renoise.tool():add_midi_mapping{name="Paketti:Octave Basenote Up (All Instruments)", invoke=function() PakettiOctaveBaseNote("up", "all") end}
-renoise.tool():add_midi_mapping{name="Paketti:Octave Basenote Down (All Instruments)", invoke=function() PakettiOctaveBaseNote("down", "all") end}
-renoise.tool():add_midi_mapping{name="Paketti:Octave Basenote Up (Selected Instrument)", invoke=function() PakettiOctaveBaseNote("up", "current") end}
-renoise.tool():add_midi_mapping{name="Paketti:Octave Basenote Down (Selected Instrument)", invoke=function() PakettiOctaveBaseNote("down", "current") end}
+-- Generate controls for each semitone shift from -12 to +12, excluding 0
+for interval = MIN_SHIFT, MAX_SHIFT do
+  if interval ~= 0 then
+    local shift_label = (interval > 0) and ("+" .. interval) or tostring(interval)
+
+    -- Define menu labels under "Main Menu:Tools:Paketti..:Pattern Editor..:"
+    local menu_label_all_main = "Main Menu:Tools:Paketti..:Pattern Editor..:Basenote..:Basenote Shift " .. shift_label .. " (All Instruments)"
+    local menu_label_current_main = "Main Menu:Tools:Paketti..:Pattern Editor..:Basenote..:Basenote Shift " .. shift_label .. " (Selected Instrument)"
+    local key_label_all_main = "Sample Mappings:Paketti..:Basenote..:Basenote Shift " .. shift_label .. " (All Instruments)"
+    local key_label_current_main = "Sample Mappings:Paketti..:Basenote..:Basenote Shift " .. shift_label .. " (Selected Instrument)"
+    
+    -- Define menu labels under "Pattern Editor:Paketti..:"
+    local menu_label_all_pattern = "Sample Editor:Paketti..:Basenote..:Basenote Shift " .. shift_label .. " (All Instruments)"
+    local menu_label_current_pattern = "Sample Editor:Paketti..:Basenote..:Basenote Shift " .. shift_label .. " (Selected Instrument)"
+    
+    -- Define unique identifiers for keybindings
+    local keybinding_label_all = "Global:Paketti:Basenote Shift " .. shift_label .. " (All Instruments)"
+    local keybinding_label_current = "Global:Paketti:Basenote Shift " .. shift_label .. " (Selected Instrument)"
+    
+    -- Define MIDI mapping labels
+    local midi_mapping_all = "Paketti:Basenote Shift " .. shift_label .. " (All Instruments)"
+    local midi_mapping_current = "Paketti:Basenote Shift " .. shift_label .. " (Selected Instrument)"
+
+    -- Add menu entries under "Main Menu:Tools:Paketti..:Pattern Editor..:"
+    renoise.tool():add_menu_entry{
+      name = menu_label_all_main,
+      invoke = function() PakettiBaseNoteShifter(interval, "all") end
+    }
+    
+    renoise.tool():add_menu_entry{
+      name = key_label_current_main,
+      invoke = function() PakettiBaseNoteShifter(interval, "current") end
+    }
+
+    renoise.tool():add_menu_entry{
+      name = key_label_all_main,
+      invoke = function() PakettiBaseNoteShifter(interval, "all") end
+    }
+    
+    renoise.tool():add_menu_entry{
+      name = menu_label_current_main,
+      invoke = function() PakettiBaseNoteShifter(interval, "current") end
+    }
+
+    -- Add menu entries under "Pattern Editor:Paketti..:"
+    renoise.tool():add_menu_entry{
+      name = menu_label_all_pattern,
+      invoke = function() PakettiBaseNoteShifter(interval, "all") end
+    }
+    
+    renoise.tool():add_menu_entry{
+      name = menu_label_current_pattern,
+      invoke = function() PakettiBaseNoteShifter(interval, "current") end
+    }
+
+    -- Add keybindings
+    renoise.tool():add_keybinding{
+      name = keybinding_label_all,
+      invoke = function() PakettiBaseNoteShifter(interval, "all") end
+    }
+    
+    renoise.tool():add_keybinding{
+      name = keybinding_label_current,
+      invoke = function() PakettiBaseNoteShifter(interval, "current") end
+    }
+
+    -- Add MIDI mappings
+    renoise.tool():add_midi_mapping{
+      name = midi_mapping_all,
+      invoke = function() PakettiBaseNoteShifter(interval, "all") end
+    }
+    
+    renoise.tool():add_midi_mapping{
+      name = midi_mapping_current,
+      invoke = function() PakettiBaseNoteShifter(interval, "current") end
+    }
+  end
+end
+
 
 ---------
 

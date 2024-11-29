@@ -1682,21 +1682,29 @@ renoise.tool():add_keybinding{name = "Global:Paketti:Impulse Tracker ALT-Y Swap 
 -----------
 
 -- Move to the next track, maintaining column type, with wrapping.
+-- Move to the next track, maintaining column type, with wrapping.
 function PakettiImpulseTrackerMoveForwardsTrackWrap()
   local song = renoise.song()
   local current_index = song.selected_track_index
   local is_effect_column = song.selected_effect_column_index > 0
   
+  -- Wrap to the first track if at the last track
   if current_index < #song.tracks then
     song.selected_track_index = current_index + 1
   else
     song.selected_track_index = 1
   end
   
-  if is_effect_column then
-    song.selected_effect_column_index = 1
+  -- Handle note/effect column based on track type
+  local selected_track = song.tracks[song.selected_track_index]
+  if selected_track.type == renoise.Track.TRACK_TYPE_SEQUENCER then
+    if is_effect_column then
+      song.selected_effect_column_index = 1
+    else
+      song.selected_note_column_index = 1
+    end
   else
-    song.selected_note_column_index = 1
+    song.selected_effect_column_index = 1
   end
 end
 
@@ -1706,16 +1714,23 @@ function PakettiImpulseTrackerMoveBackwardsTrackWrap()
   local current_index = song.selected_track_index
   local is_effect_column = song.selected_effect_column_index > 0
   
+  -- Wrap to the last track if at the first track
   if current_index > 1 then
     song.selected_track_index = current_index - 1
   else
     song.selected_track_index = #song.tracks
   end
   
-  if is_effect_column then
-    song.selected_effect_column_index = 1
+  -- Handle note/effect column based on track type
+  local selected_track = song.tracks[song.selected_track_index]
+  if selected_track.type == renoise.Track.TRACK_TYPE_SEQUENCER then
+    if is_effect_column then
+      song.selected_effect_column_index = 1
+    else
+      song.selected_note_column_index = 1
+    end
   else
-    song.selected_note_column_index = 1
+    song.selected_effect_column_index = 1
   end
 end
 
@@ -1725,16 +1740,24 @@ function PakettiImpulseTrackerMoveForwardsTrack()
   local current_index = song.selected_track_index
   local is_effect_column = song.selected_effect_column_index > 0
   
+  -- Move to the next track if not at the last
   if current_index < #song.tracks then
     song.selected_track_index = current_index + 1
   else
     renoise.app():show_status("You are on the last track.")
+    return
   end
   
-  if is_effect_column then
-    song.selected_effect_column_index = 1
+  -- Handle note/effect column based on track type
+  local selected_track = song.tracks[song.selected_track_index]
+  if selected_track.type == renoise.Track.TRACK_TYPE_SEQUENCER then
+    if is_effect_column then
+      song.selected_effect_column_index = 1
+    else
+      song.selected_note_column_index = 1
+    end
   else
-    song.selected_note_column_index = 1
+    song.selected_effect_column_index = 1
   end
 end
 
@@ -1744,16 +1767,24 @@ function PakettiImpulseTrackerMoveBackwardsTrack()
   local current_index = song.selected_track_index
   local is_effect_column = song.selected_effect_column_index > 0
   
+  -- Move to the previous track if not at the first
   if current_index > 1 then
     song.selected_track_index = current_index - 1
   else
     renoise.app():show_status("You are on the first track.")
+    return
   end
   
-  if is_effect_column then
-    song.selected_effect_column_index = 1
+  -- Handle note/effect column based on track type
+  local selected_track = song.tracks[song.selected_track_index]
+  if selected_track.type == renoise.Track.TRACK_TYPE_SEQUENCER then
+    if is_effect_column then
+      song.selected_effect_column_index = 1
+    else
+      song.selected_note_column_index = 1
+    end
   else
-    song.selected_note_column_index = 1
+    song.selected_effect_column_index = 1
   end
 end
 

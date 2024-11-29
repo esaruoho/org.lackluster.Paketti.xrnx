@@ -713,12 +713,14 @@ local function loadRandomDrumkitSamples(num_samples)
         -- Load the sample file into the sample buffer
         if sample_buffer:load_from(selected_file) then
             renoise.app():show_status("Loaded sample: " .. selected_file)
+
         else
             renoise.app():show_status("Failed to load sample: " .. selected_file)
             break
         end
 
         -- Set sample name and properties
+                      
         sample.name = file_name
         sample.interpolation_mode = preferences.pakettiLoaderInterpolation.value
         sample.oversample_enabled = preferences.pakettiLoaderOverSampling.value
@@ -748,14 +750,11 @@ local function loadRandomDrumkitSamples(num_samples)
 end
 
 
-
-
 -- Shortcut usage example
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Instruments..:Paketti PitchBend Drumkit Sample Loader (Random)", invoke=function() loadRandomDrumkitSamples(120)  end}
-renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Paketti PitchBend Drumkit Sample Loader (Random)", invoke=function() loadRandomDrumkitSamples(120)  end}
-renoise.tool():add_menu_entry{name="--Disk Browser Files:Paketti..:Paketti PitchBend Drumkit Sample Loader (Random)", invoke=function() loadRandomDrumkitSamples(120)  end}
-
-renoise.tool():add_keybinding{name="Global:Paketti:Paketti PitchBend Drumkit Sample Loader (Random)", invoke=function() loadRandomDrumkitSamples(120)  end}
+renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Paketti PitchBend Drumkit Sample Loader (Random)", invoke=function() loadRandomDrumkitSamples(120) end}
+renoise.tool():add_menu_entry{name="--Disk Browser Files:Paketti..:Paketti PitchBend Drumkit Sample Loader (Random)", invoke=function() loadRandomDrumkitSamples(120) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Paketti PitchBend Drumkit Sample Loader (Random)", invoke=function() loadRandomDrumkitSamples(120) end}
 renoise.tool():add_midi_mapping{name="Paketti:Midi Paketti PitchBend Drumkit Sample Loader (Random)", invoke=function(message) if message:is_trigger() then loadRandomDrumkitSamples(120)  end end}
 
 -- Function to create a new instrument from the selected sample buffer range

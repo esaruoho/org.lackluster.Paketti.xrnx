@@ -969,26 +969,6 @@ end
 local renoise = renoise
 local tool = renoise.tool()
 
-renoise.tool():add_menu_entry({name="Track Automation:Paketti..:Selection Up (Linear)",
-invoke = function() apply_selection_up_linear() end})
-renoise.tool():add_menu_entry({name="Track Automation:Paketti..:Selection Down (Linear)",
-invoke = function() apply_selection_down_linear() end})
-renoise.tool():add_menu_entry({name="Track Automation:Paketti..:Top to Top",
-invoke=function() apply_constant_automation_top_to_top() end})
-renoise.tool():add_menu_entry({name="Track Automation:Paketti..:Bottom to Bottom",
-invoke=function() apply_constant_automation_bottom_to_bottom() end})
-renoise.tool():add_menu_entry({name="Track Automation:Paketti..:Top to Center (Exp)",
-invoke=function() apply_exponential_automation_curve_top_to_center() end})
-renoise.tool():add_menu_entry({name="Track Automation:Paketti..:Bottom to Center (Exp)",
-invoke=function() apply_exponential_automation_curve_bottom_to_center() end})
-renoise.tool():add_menu_entry({name="Track Automation:Paketti..:Center to Bottom (Exp)",
-invoke=function() apply_exponential_automation_curve_center_to_bottom() end})
-renoise.tool():add_menu_entry({name="Track Automation:Paketti..:Center to Top (Exp)",
-invoke=function() apply_exponential_automation_curve_center_to_top() end})
-renoise.tool():add_menu_entry({name="Track Automation:Paketti..:Selection Down (Exp)",
-invoke=function() apply_exponential_automation_curveDOWN() end})
-renoise.tool():add_menu_entry({name="Track Automation:Paketti..:Selection Up (Exp)",
-invoke=function() apply_exponential_automation_curveUP() end})
 
 
 
@@ -1076,12 +1056,36 @@ end
 local renoise = renoise
 local tool = renoise.tool()
 
+
+
 local menu_entries = {
-  {"Track Automation:Paketti..:Selection Center->Up (Linear)", "center_up_linear"},
+  {"--Track Automation:Paketti..:Selection Center->Up (Linear)", "center_up_linear"},
   {"Track Automation:Paketti..:Selection Center->Down (Linear)", "center_down_linear"},
   {"Track Automation:Paketti..:Selection Up->Center (Linear)", "up_center_linear"},
   {"Track Automation:Paketti..:Selection Down->Center (Linear)", "down_center_linear"}
 }
+
+renoise.tool():add_menu_entry({name="Track Automation:Paketti..:Top to Top",
+invoke=function() apply_constant_automation_top_to_top() end})
+renoise.tool():add_menu_entry({name="Track Automation:Paketti..:Bottom to Bottom",
+invoke=function() apply_constant_automation_bottom_to_bottom() end})
+renoise.tool():add_menu_entry({name="--Track Automation:Paketti..:Selection Up (Exp)",
+invoke=function() apply_exponential_automation_curveUP() end})
+renoise.tool():add_menu_entry({name="Track Automation:Paketti..:Selection Up (Linear)",
+invoke = function() apply_selection_up_linear() end})
+renoise.tool():add_menu_entry({name="Track Automation:Paketti..:Selection Down (Exp)",
+invoke=function() apply_exponential_automation_curveDOWN() end})
+renoise.tool():add_menu_entry({name="Track Automation:Paketti..:Selection Down (Linear)",
+invoke = function() apply_selection_down_linear() end})
+renoise.tool():add_menu_entry({name="--Track Automation:Paketti..:Center to Top (Exp)",
+invoke=function() apply_exponential_automation_curve_center_to_top() end})
+renoise.tool():add_menu_entry({name="Track Automation:Paketti..:Center to Bottom (Exp)",
+invoke=function() apply_exponential_automation_curve_center_to_bottom() end})
+renoise.tool():add_menu_entry({name="Track Automation:Paketti..:Top to Center (Exp)",
+invoke=function() apply_exponential_automation_curve_top_to_center() end})
+renoise.tool():add_menu_entry({name="Track Automation:Paketti..:Bottom to Center (Exp)",
+invoke=function() apply_exponential_automation_curve_bottom_to_center() end})
+
 
 for _, entry in ipairs(menu_entries) do tool:add_menu_entry({name = entry[1], invoke = function() apply_linear_automation_curveCenter(entry[2]) end})
 end
@@ -1195,7 +1199,7 @@ local w=renoise.app().window
      end
 end
 
-renoise.tool():add_menu_entry{name="Track Automation:Paketti..:Open External Editor for Plugin",invoke=function() openExternalInstrumentEditor() end}
+renoise.tool():add_menu_entry{name="--Track Automation:Paketti..:Open External Editor for Plugin",invoke=function() openExternalInstrumentEditor() end}
 
 
 
@@ -1920,4 +1924,445 @@ for i = 0, 1, 0.1 do
 renoise.tool():add_keybinding{name = "Global:Paketti:Write Automation Value " .. formatted_value,invoke = function() write_automation_value(tonumber(formatted_value)) end}
 renoise.tool():add_menu_entry{name = "Main Menu:Tools:Paketti..:Automation..:Write Automation Value " .. formatted_value,invoke = function() write_automation_value(tonumber(formatted_value)) end}
 end
+-----------------
+
+
+
+
+local function PakettiAutomationSelectionFloodFill()
+  local song = renoise.song()
+  local automation_parameter = song.selected_automation_parameter
+
+  if not automation_parameter or not automation_parameter.is_automatable then
+    renoise.app():show_status("Please select an automatable parameter.")
+    print("No automatable parameter selected.")
+    return
+  end
+
+  local track_automation = song:pattern(song.selected_pattern_index):track(song.selected_track_index)
+  local envelope = track_automation:find_automation(automation_parameter)
+  local pattern_length = song:pattern(song.selected_pattern_index).number_of_lines
+
+  if not envelope then
+    renoise.app():show_status("No automation envelope found for the selected parameter.")
+    print("No automation envelope found.")
+    return
+  end
+
+  local selection = envelope.selection_range
+  if not selection then
+    renoise.app():show_status("Please select a range in the automation envelope.")
+    print("No selection range found.")
+    return
+  end
+
+  local start_line, end_line = selection[1], selection[2]
+  if start_line >= end_line then
+    renoise.app():show_status("Invalid selection range.")
+    print("Invalid selection range.")
+    return
+  end
+
+  -- Extract points from the selection
+  local selected_points = {}
+  for _, point in ipairs(envelope.points) do
+    if point.time >= start_line and point.time <= end_line then
+      table.insert(selected_points, {time = point.time - start_line, value = point.value})
+    end
+  end
+
+  if #selected_points == 0 then
+    renoise.app():show_status("No automation points found in the selection.")
+    print("No points in selection range.")
+    return
+  end
+
+  -- Adjust the last point's timing once
+  local last_point = selected_points[#selected_points]
+  last_point.time = (end_line - start_line) - 0.01
+  selected_points[#selected_points] = last_point
+
+  -- Clear all automation after the selection ends
+  envelope:clear_range(end_line + 1, pattern_length)
+  print("Cleared automation points after line " .. end_line .. ".")
+  print("------")
+
+  -- Debug: Print the adjusted selection points
+  print("Adjusted Selection Points (Ready for Repetition):")
+  for _, point in ipairs(selected_points) do
+    print(string.format("Relative Time: %.2f, Value: %.2f", point.time, point.value))
+  end
+  print("------")
+
+  -- Flood-fill the rest of the pattern with the selected points
+  local repeat_count = math.ceil((pattern_length - start_line + 1) / (end_line - start_line))
+  local resultant_points = {}
+
+  for i = 0, repeat_count - 1 do
+    local offset = i * (end_line - start_line)
+    local segment_points = {}
+
+    for _, point in ipairs(selected_points) do
+      local target_time = start_line + offset + point.time
+      if target_time > pattern_length then
+        break
+      end
+      envelope:add_point_at(target_time, point.value)
+      table.insert(resultant_points, {time = target_time, value = point.value})
+      table.insert(segment_points, {time = target_time, value = point.value})
+    end
+
+    -- Debug: Print each segment
+    print("Applied Points (Segment):")
+    for _, point in ipairs(segment_points) do
+      print(string.format("Time: %.2f, Value: %.2f", point.time, point.value))
+    end
+    print("------")
+  end
+
+  -- Debug: Group resultant points by segments
+  print("Resultant Envelope Points (Grouped by Segments):")
+  local grouped_points = {}
+  for _, point in ipairs(resultant_points) do
+    local group_index = math.floor((point.time - start_line) / (end_line - start_line))
+    grouped_points[group_index] = grouped_points[group_index] or {}
+    table.insert(grouped_points[group_index], point)
+  end
+
+  for segment_index, segment in ipairs(grouped_points) do
+    print(string.format("Segment %d:", segment_index + 1))
+    for _, point in ipairs(segment) do
+      print(string.format("Time: %.2f, Value: %.2f", point.time, point.value))
+    end
+    print("------")
+  end
+
+  renoise.app():show_status("Automation selection flooded successfully.")
+  print("Flooded automation values from lines " .. start_line .. " to " .. pattern_length)
+end
+
+-- Keybinding and menu registration
+renoise.tool():add_keybinding{
+  name="Global:Paketti:Flood Fill Automation Selection",
+  invoke=PakettiAutomationSelectionFloodFill
+}
+renoise.tool():add_menu_entry{
+  name="Main Menu:Tools:Paketti..:Flood Fill Automation Selection",
+  invoke=PakettiAutomationSelectionFloodFill
+}
+renoise.tool():add_menu_entry{
+  name="Track Automation:Paketti..:Flood Fill Automation Selection",
+  invoke=PakettiAutomationSelectionFloodFill
+}
+
+------
+local function SetAutomationRangeValue(value)
+  local song = renoise.song()
+  local automation_parameter = song.selected_automation_parameter
+
+  if not automation_parameter or not automation_parameter.is_automatable then
+    renoise.app():show_status("Please select an automatable parameter.")
+    print("No automatable parameter selected.")
+    return
+  end
+
+  local track_automation = song:pattern(song.selected_pattern_index):track(song.selected_track_index)
+  local envelope = track_automation:find_automation(automation_parameter)
+  local selection = nil
+
+  -- Check for selection range
+  if envelope then
+    selection = envelope.selection_range
+  end
+
+  if not envelope then
+    -- Create envelope and set to PLAYMODE_POINTS, selection is lost
+    envelope = track_automation:create_automation(automation_parameter)
+    envelope.playmode = renoise.PatternTrackAutomation.PLAYMODE_POINTS
+    renoise.app():show_status("Created automation envelope in PLAYMODE_POINTS.")
+    print("Created automation envelope in PLAYMODE_POINTS for parameter: " .. automation_parameter.name)
+    return
+  end
+
+  if not selection then
+    renoise.app():show_status("Please select a valid range in the automation envelope.")
+    print("No valid selection range found.")
+    return
+  end
+
+  -- Apply changes to the selection range
+  local start_line, end_line = selection[1], selection[2]
+  if start_line >= end_line then
+    renoise.app():show_status("Invalid selection range.")
+    print("Invalid selection range.")
+    return
+  end
+
+  -- Set all points in the selection range to the specified value
+  envelope:clear_range(start_line, end_line)
+  for line = start_line, end_line do
+    envelope:add_point_at(line, value)
+  end
+
+  renoise.app():show_status("Automation range set to " .. value .. ".")
+  print("Set automation range from line " .. start_line .. " to " .. end_line .. " to " .. value .. ".")
+end
+
+-- Menu entries, keybindings, and MIDI mappings
+renoise.tool():add_menu_entry{name="Track Automation:Paketti..:Set Automation Range to Max (1.0)",invoke=function() SetAutomationRangeValue(1.0) end}
+renoise.tool():add_menu_entry{name="Track Automation:Paketti..:Set Automation Range to Middle (0.5)",invoke=function() SetAutomationRangeValue(0.5) end}
+renoise.tool():add_menu_entry{name="Track Automation:Paketti..:Set Automation Range to Min (0.0)",invoke=function() SetAutomationRangeValue(0.0) end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Set Automation Range to Max (1.0)",invoke=function() SetAutomationRangeValue(1.0) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Automation Range to Middle (0.5)",invoke=function() SetAutomationRangeValue(0.5) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Set Automation Range to Min (0.0)",invoke=function() SetAutomationRangeValue(0.0) end}
+
+renoise.tool():add_midi_mapping{name="Paketti:Set Automation Range to Max (1.0)",invoke=function(message) if message:is_trigger() then SetAutomationRangeValue(1.0) end end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Automation Range to Middle (0.5)",invoke=function(message) if message:is_trigger() then SetAutomationRangeValue(0.5) end end}
+renoise.tool():add_midi_mapping{name="Paketti:Set Automation Range to Min (0.0)",invoke=function(message) if message:is_trigger() then SetAutomationRangeValue(0.0) end end}
+-------
+local function FlipAutomationHorizontal()
+  local song = renoise.song()
+  local automation_parameter = song.selected_automation_parameter
+
+  if not automation_parameter or not automation_parameter.is_automatable then
+    renoise.app():show_status("Please select an automatable parameter.")
+    print("No automatable parameter selected.")
+    return
+  end
+
+  local track_automation = song:pattern(song.selected_pattern_index):track(song.selected_track_index)
+  local envelope = track_automation:find_automation(automation_parameter)
+
+  if not envelope then
+    renoise.app():show_status("No automation envelope exists for the selected parameter.")
+    print("No automation envelope exists.")
+    return
+  end
+
+  local selection = envelope.selection_range
+  if not selection then
+    renoise.app():show_status("Please select a range in the automation envelope.")
+    print("No valid selection range found.")
+    return
+  end
+
+  local start_line, end_line = selection[1], selection[2]
+  if start_line >= end_line then
+    renoise.app():show_status("Invalid selection range.")
+    print("Invalid selection range.")
+    return
+  end
+
+  -- Collect points within the selection range
+  local points = {}
+  print("Original Automation Points (Horizontal Flip):")
+  for _, point in ipairs(envelope.points) do
+    if point.time >= start_line and point.time <= end_line then
+      table.insert(points, {time=point.time, value=point.value})
+      print(string.format("Row %03d: Value %.2f", point.time, point.value))
+    end
+  end
+
+  -- Sort points by time for deterministic flipping
+  table.sort(points, function(a, b) return a.time < b.time end)
+
+  -- Clear the range before applying flipped points
+  envelope:clear_range(start_line, end_line)
+
+  print("Flipping Points Horizontally...")
+  local total_points = #points
+  for i, point in ipairs(points) do
+    local flipped_time = points[total_points - i + 1].time -- Reverse the time order
+    envelope:add_point_at(flipped_time, point.value)
+    print(string.format("Row %03d: Flipped to Row %03d, Value %.2f (verified as %.2f)",
+      point.time, flipped_time, point.value, point.value))
+  end
+
+  renoise.app():show_status("Automation selection flipped horizontally.")
+  print("Automation selection flipped horizontally from line " .. start_line .. " to " .. end_line .. ".")
+end
+
+-----------
+local function ScaleAutomation(scale_factor)
+  local song = renoise.song()
+  local automation_parameter = song.selected_automation_parameter
+
+  if not automation_parameter or not automation_parameter.is_automatable then
+    renoise.app():show_status("Please select an automatable parameter.")
+    print("No automatable parameter selected.")
+    return
+  end
+
+  local track_automation = song:pattern(song.selected_pattern_index):track(song.selected_track_index)
+  local envelope = track_automation:find_automation(automation_parameter)
+
+  if not envelope then
+    renoise.app():show_status("No automation envelope exists for the selected parameter.")
+    print("No automation envelope exists.")
+    return
+  end
+
+  local selection = envelope.selection_range
+  local start_line, end_line
+  if selection then
+    start_line, end_line = selection[1], selection[2]
+  else
+    start_line, end_line = 1, renoise.song().patterns[song.selected_pattern_index].number_of_lines
+  end
+
+  if start_line >= end_line then
+    renoise.app():show_status("Invalid selection range.")
+    print("Invalid selection range.")
+    return
+  end
+
+  -- Center point for scaling
+  local center_point = 0.0
+  if automation_parameter.value_quantum == 1 then
+    center_point = 0.5 -- PitchBend, Panning, Width
+  end
+
+  -- Scale points
+  local points = {}
+  for _, point in ipairs(envelope.points) do
+    if point.time >= start_line and point.time <= end_line then
+      table.insert(points, point)
+    end
+  end
+
+  if #points == 0 then
+    renoise.app():show_status("No automation points found in the specified range.")
+    print("No automation points found.")
+    return
+  end
+
+  print("Original Points for Scaling:")
+  for _, point in ipairs(points) do
+    print(string.format("Row %03d: Value %.2f", point.time, point.value))
+  end
+
+  for _, point in ipairs(points) do
+    local scaled_value
+    if point.value > center_point then
+      scaled_value = center_point + (point.value - center_point) * scale_factor
+    else
+      scaled_value = center_point - (center_point - point.value) * scale_factor
+    end
+    envelope:add_point_at(point.time, math.max(0.0, math.min(1.0, scaled_value))) -- Clamp between 0 and 1
+    print(string.format("Row %03d: Value %.2f scaled to %.2f", point.time, point.value, scaled_value))
+  end
+
+  renoise.app():show_status("Automation scaled by " .. (scale_factor * 100) .. "%.")
+  print("Scaled automation points in range " .. start_line .. " to " .. end_line .. " by " .. (scale_factor * 100) .. "%.")
+end
+
+-- Menu entries, keybindings, and MIDI mappings for scaling
+renoise.tool():add_menu_entry{name="Track Automation:Paketti..:Scale Automation to 90%",invoke=function() ScaleAutomation(0.9) end}
+renoise.tool():add_menu_entry{name="Track Automation:Paketti..:Scale Automation to 110%",invoke=function() ScaleAutomation(1.1) end}
+renoise.tool():add_menu_entry{name="Track Automation:Paketti..:Scale Automation to 200%",invoke=function() ScaleAutomation(2.0) end}
+renoise.tool():add_menu_entry{name="Track Automation:Paketti..:Scale Automation to 50%",invoke=function() ScaleAutomation(0.5) end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Scale Automation to 90%",invoke=function() ScaleAutomation(0.9) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Scale Automation to 110%",invoke=function() ScaleAutomation(1.1) end}
+renoise.tool():add_keybinding{name="Globael:Paketti:Scale Automation to 200%",invoke=function() ScaleAutomation(2.0) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Scale Automation to 50%",invoke=function() ScaleAutomation(0.5) end}
+
+renoise.tool():add_midi_mapping{name="Paketti:Scale Automation to 90%",invoke=function(message) if message:is_trigger() then ScaleAutomation(0.9) end end}
+renoise.tool():add_midi_mapping{name="Paketti:Scale Automation to 110%",invoke=function(message) if message:is_trigger() then ScaleAutomation(1.1) end end}
+renoise.tool():add_midi_mapping{name="Paketti:Scale Automation to 200%",invoke=function(message) if message:is_trigger() then ScaleAutomation(2.0) end end}
+renoise.tool():add_midi_mapping{name="Paketti:Scale Automation to 50%",invoke=function(message) if message:is_trigger() then ScaleAutomation(0.5) end end}
+
+------
+renoise.tool():add_midi_mapping{
+  name="Paketti:Dynamic Scale Automation",
+  invoke=function(message)
+    if not message.int_value then
+      renoise.app():show_status("Invalid MIDI message for dynamic scaling.")
+      print("Invalid MIDI message received.")
+      return
+    end
+
+    local knob_value = message.int_value -- MIDI knob value (0–127)
+    local scale_factor
+
+    if knob_value < 64 then
+      -- Reduce scale (10% to 100%)
+      scale_factor = 0.1 + (knob_value / 63) * (1.0 - 0.1)
+    elseif knob_value == 64 then
+      -- Neutral (no change)
+      scale_factor = 1.0
+    else
+      -- Increase scale (100% to 200%)
+      scale_factor = 1.0 + ((knob_value - 64) / 63) * (2.0 - 1.0)
+    end
+
+    ScaleAutomation(scale_factor)
+    renoise.app():show_status("Scaled automation dynamically to " .. (scale_factor * 100) .. "%.")
+    print("Dynamic scale factor applied: " .. scale_factor)
+  end
+}
+
+---
+
+
+
+
+local function FlipAutomationVertical()
+  local song = renoise.song()
+  local automation_parameter = song.selected_automation_parameter
+
+  if not automation_parameter or not automation_parameter.is_automatable then
+    renoise.app():show_status("Please select an automatable parameter.")
+    print("No automatable parameter selected.")
+    return
+  end
+
+  local track_automation = song:pattern(song.selected_pattern_index):track(song.selected_track_index)
+  local envelope = track_automation:find_automation(automation_parameter)
+
+  if not envelope then
+    renoise.app():show_status("No automation envelope exists for the selected parameter.")
+    print("No automation envelope exists.")
+    return
+  end
+
+  local selection = envelope.selection_range
+  if not selection then
+    renoise.app():show_status("Please select a range in the automation envelope.")
+    print("No valid selection range found.")
+    return
+  end
+
+  local start_line, end_line = selection[1], selection[2]
+  if start_line >= end_line then
+    renoise.app():show_status("Invalid selection range.")
+    print("Invalid selection range.")
+    return
+  end
+
+  -- Flip vertically: Invert the values of points within the selection range
+  print("Original Automation Points (Vertical Flip):")
+  for _, point in ipairs(envelope.points) do
+    if point.time >= start_line and point.time <= end_line then
+      print(string.format("Row %03d: Value %.2f", point.time, point.value))
+      envelope:add_point_at(point.time, 1.0 - point.value)
+      print(string.format("Row %03d: Value %.2f flipped to %.2f (verified as %.2f)",
+        point.time, point.value, 1.0 - point.value, 1.0 - point.value))
+    end
+  end
+
+  renoise.app():show_status("Automation selection flipped vertically.")
+  print("Automation selection flipped vertically from line " .. start_line .. " to " .. end_line .. ".")
+end
+
+-- Menu entries, keybindings, and MIDI mappings
+renoise.tool():add_menu_entry{name="Track Automation:Paketti..:Flip Automation Selection Horizontally",invoke=FlipAutomationHorizontal}
+renoise.tool():add_menu_entry{name="Track Automation:Paketti..:Flip Automation Selection Vertically",invoke=FlipAutomationVertical}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Flip Automation Selection Horizontally",invoke=FlipAutomationHorizontal}
+renoise.tool():add_keybinding{name="Global:Paketti:Flip Automation Selection Vertically",invoke=FlipAutomationVertical}
+
+renoise.tool():add_midi_mapping{name="Paketti:Flip Automation Selection Horizontally",invoke=function(message) if message:is_trigger() then FlipAutomationHorizontal() end end}
+renoise.tool():add_midi_mapping{name="Paketti:Flip Automation Selection Vertically",invoke=function(message) if message:is_trigger() then FlipAutomationVertical() end end}
 

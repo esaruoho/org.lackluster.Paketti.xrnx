@@ -54,7 +54,6 @@ function loadDeviceFromPreferences()
   end
 
   local loaders = preferences.PakettiDeviceLoaders
-  print("Loading devices from preferences.PakettiDeviceLoaders:")
   for i = 1, #loaders do
     local device = loaders:property(i)
     local device_name = device.name.value
@@ -118,7 +117,6 @@ function loadSelectedDevices()
   for _, cb_info in ipairs(checkboxes) do
     if cb_info.checkbox.value then
       local pluginPath = cb_info.path
-      print("Loading Device:", pluginPath)
       if current_device_type == "Native" then
         loadnative(pluginPath)
       else

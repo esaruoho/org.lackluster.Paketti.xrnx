@@ -96,39 +96,6 @@ function create_device_entry(name, path, device_type)
   return entry
 end
 
--- Define the PakettiDynamicViewStepEntry class
-local PakettiDynamicViewStepEntry = renoise.Document.create("PakettiDynamicViewStepEntry") {
-  upper_frame_index = 1,
-  middle_frame_index = 1,
-  lower_frame_index = 1,
-  sample_record_visible = false,
-  disk_browser_visible = false,
-  instrument_box_visible = false,
-  pattern_matrix_visible = false,
-  pattern_advanced_edit_visible = false,
-}
-function create_dynamic_view_step_entry()
-  local entry = PakettiDynamicViewStepEntry()
-  return entry
-end
-
--- Define the PakettiDynamicViewEntry class
-local PakettiDynamicViewEntry = renoise.Document.create("PakettiDynamicViewEntry") {
-  steps = renoise.Document.DocumentList(),
-}
-
--- Function to create a new PakettiDynamicViewEntry
-function create_dynamic_view_entry()
-  local entry = PakettiDynamicViewEntry()
-  -- Initialize steps
-  for step = 1, steps_per_view do
-    local step_entry = create_dynamic_view_step_entry()
-    entry.steps:insert(step, step_entry)
-  end
-  return entry
-end
-
-
 preferences = renoise.Document.create("ScriptingToolPreferences") {
   pakettiDialogClose="esc",
   PakettiDeviceChainPath = "DeviceChains/",
@@ -323,11 +290,11 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
     },    
   PakettiPluginLoaders = renoise.Document.DocumentList(),
   PakettiDeviceLoaders = renoise.Document.DocumentList(), 
-  PakettiDynamicViews = renoise.Document.DocumentList(),
+    PakettiDynamicViews = renoise.Document.DocumentList(),
+
   }
 
 renoise.tool().preferences = preferences
-
 
 -- Accessing Segments
 eSpeak = renoise.tool().preferences.pakettieSpeak
@@ -337,11 +304,6 @@ AppSelection = renoise.tool().preferences.AppSelection
 RandomizeSettings = renoise.tool().preferences.RandomizeSettings
 pakettiColuga = renoise.tool().preferences.pakettiColuga
 DynamicViewPrefs = renoise.tool().preferences.PakettiDynamicViews
-
--- Ensure PakettiDynamicViews exists within preferences
-if not preferences:property("PakettiDynamicViews") then
-  preferences:add_property("PakettiDynamicViews", renoise.Document.create("PakettiDynamicViewsPreferences") {})
-end
 
 
 -- Function to initialize the filter index
