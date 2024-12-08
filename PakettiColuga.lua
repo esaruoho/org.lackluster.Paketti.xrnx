@@ -1,6 +1,6 @@
 -- TODO YT-DLP make it output to GUI Console
 -- TODO YT-DLP make sure it finishes downloading
-local yt_dlp_path = ""
+local yt_dlp_path = "/opt/homebrew/bin/yt-dlp"
 local ffmpeg_path = ""
 local RUNTIME = tostring(os.time())
 local SAMPLE_LENGTH = 10
@@ -323,7 +323,7 @@ function PakettiColugaExecuteLua(search_phrase, youtube_url, download_dir, clip_
   local search_results_file = temp_dir .. "/search_results.txt"
 
   -- Log starting arguments
-  PakettiColugaLogMessage("Starting PakettiColuga with arguments:")
+  PakettiColugaLogMessage("Starting Paketti YT-DLP with arguments:")
   PakettiColugaLogMessage("SEARCH_PHRASE: " .. tostring(search_phrase))
   PakettiColugaLogMessage("YOUTUBE_URL: " .. tostring(youtube_url))
   PakettiColugaLogMessage("DOWNLOAD_DIR: " .. tostring(download_dir))
@@ -372,7 +372,7 @@ function PakettiColugaExecuteLua(search_phrase, youtube_url, download_dir, clip_
   -- Signal completion
   PakettiColugaSignalCompletion(completion_signal_file)
 
-  PakettiColugaLogMessage("PakettiColuga finished.")
+  PakettiColugaLogMessage("Paketti YT-DLP finished.")
 end
 
 -- Function to load downloaded samples into Renoise
@@ -489,7 +489,7 @@ end
 
 -- Function to prompt for output directory
 function PakettiColugaPromptForOutputDir()
-  renoise.app():show_warning("Please set the folder that Coluga will download to")
+  renoise.app():show_warning("Please set the folder that YT-DLP will download to...")
   local dir = renoise.app():prompt_for_path("Select Output Directory")
   if dir then
     vb.views.output_dir.text = dir
@@ -500,7 +500,7 @@ end
 
 -- Function to prompt for save path
 function PakettiColugaPromptForSavePath()
-  renoise.app():show_warning("Please set the folder to save WAV or FLAC as")
+  renoise.app():show_warning("Please set the folder to save WAV or FLAC to...")
   local dir = renoise.app():prompt_for_path("Select Save Path")
   if dir then
     vb.views.save_path.text = dir
@@ -511,8 +511,8 @@ end
 
 -- Function to prompt for yt-dlp path
 function PakettiColugaPromptForYTDLPPath()
-  renoise.app():show_warning("Please select the yt-dlp executable")
-  local file = renoise.app():prompt_for_filename_to_read({"*"}, "Select yt-dlp Executable")
+  renoise.app():show_warning("Please select the YT-DLP executable")
+  local file = renoise.app():prompt_for_filename_to_read({"*.*"}, "Select YT-DLP Executable")
   if file then
     vb.views.yt_dlp_location.text = file
     preferences.pakettiColuga.pakettiColugaYT_DLPLocation.value = file
@@ -830,7 +830,7 @@ function PakettiColugaShowDialog()
     PakettiColugaCloseDialog()
   else
     dialog_content = PakettiColugaDialogContent()
-    dialog = renoise.app():show_custom_dialog("Paketti Coluga Downloader", dialog_content, PakettiColugaKeyHandlerFunc)
+    dialog = renoise.app():show_custom_dialog("Paketti YT-DLP Downloader", dialog_content, PakettiColugaKeyHandlerFunc)
     PakettiColugaLogMessage("YT-DLP Downloader Initialized and ready to go.")
   end
 end
@@ -842,12 +842,13 @@ function PakettiColugaCloseDialog()
   dialog = nil
   logview = nil  
   vb = nil       
-  renoise.app():show_status("Closing Paketti Coluga Dialog")
+  renoise.app():show_status("Closing Paketti YT-DLP Dialog")
 end
 
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Xperimental/Work in Progress:Paketti YT-DLP Downloader Dialog...", invoke = function() PakettiColugaShowDialog() end }
 
-renoise.tool():add_keybinding { name = "Global:Tools:Paketti Coluga Downloader", invoke = PakettiColugaShowDialog }
---renoise.tool():add_menu_entry { name = "Sample Editor:Paketti..:Paketti Coluga Downloader...", invoke = PakettiColugaShowDialog }
---renoise.tool():add_menu_entry { name = "Sample Navigator:Paketti..:Paketti Coluga Downloader...", invoke = PakettiColugaShowDialog }
---renoise.tool():add_menu_entry { name = "Instrument Box:Paketti..:Paketti Coluga Downloader...", invoke = PakettiColugaShowDialog }
+renoise.tool():add_keybinding { name = "Global:Tools:Paketti YT-DLP Downloader", invoke = PakettiColugaShowDialog }
+--renoise.tool():add_menu_entry { name = "Sample Editor:Paketti..:Paketti YT-DLP Downloader...", invoke = PakettiColugaShowDialog }
+--renoise.tool():add_menu_entry { name = "Sample Navigator:Paketti..:Paketti YT-DLP Downloader...", invoke = PakettiColugaShowDialog }
+--renoise.tool():add_menu_entry { name = "Instrument Box:Paketti..:Paketti YT-DLP Downloader...", invoke = PakettiColugaShowDialog }
 

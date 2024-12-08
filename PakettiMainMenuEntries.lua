@@ -29,13 +29,13 @@ local dialog_content = vb:column{
   vb:multiline_textfield{width = textfield_width, height = 40, text = "There's probably tons more, but: dBlue, danoise, cortex, pandabot, ffx, Joule, Avaruus, astu/flo, syflom, Protman, vV, Bantai, taktik, Snowrobot, MXB, Jenoki, Kmaki, aleksip, Unless, martblek and the whole Renoise community."},
 
   vb:text{text = "Ideas provided by:", style = "strong", font = "bold"},
-  vb:multiline_textfield{width = textfield_width, height = 80, text = "tkna, Nate Schmold, Casiino, Royal Sexton, Bovaflux, Xerxes, ViZiON, Satoi, Kaneel, Subi, MigloJE, Yalk DX, Michael Langer, Christopher Jooste, Zoey Samples, Avaruus, Pieter Koenekoop, Widgetphreak, Bálint Magyar, Mick Rippon, MMD (Mr. Mark Dollin), ne7, renoize-user, Dionysis, untilde, Greystar, Kaidiak, sousândrade, senseiprod, Brandon Hale, dmt, Diigitae, Dávid Halmi (Nagz), tEiS, Floppi J, Aleksi Eeben, fuzzy, Jalex, Mike Pehel, grymmjack, Mister Garbanzo, tdel, Jek, Mezzguru, Run Anymore, gentleclockdivider, Aaron Munson (Ilkae), pr0t0type, Joonas Holmén (JouluPam), Ugly Cry and many others."},
+  vb:multiline_textfield{width = textfield_width, height = 80, text = "tkna, Nate Schmold, Casiino, Royal Sexton, Bovaflux, Xerxes, ViZiON, Satoi, Kaneel, Subi, MigloJE, Yalk DX, Michael Langer, Christopher Jooste, Zoey Samples, Avaruus, Pieter Koenekoop, Widgetphreak, Bálint Magyar, Mick Rippon, MMD (Mr. Mark Dollin), ne7, renoize-user, Dionysis, untilde, Greystar, Kaidiak, sousândrade, senseiprod, Brandon Hale, dmt, Diigitae, Dávid Halmi (Nagz), tEiS, Floppi J, Aleksi Eeben, fuzzy, Jalex, Mike Pehel, grymmjack, Mister Garbanzo, tdel, Jek, Mezzguru, Run Anymore, gentleclockdivider, Aaron Munson (Ilkae), pr0t0type, Joonas Holmén (JouluPam), Ugly Cry, NPC1, Vulkan and many others."},
 
   vb:text{text = "Who made it possible:", style = "strong", font = "bold"},
   vb:multiline_textfield{width = textfield_width, height = 40, text = "Thanks to @lpn (Brothomstates) for suggesting that I could pick up and learn LUA, that it would not be beyond me. Really appreciate your (sometimes misplaced and ahead-of-time) faith in me. And thanks for the inspiration."},
 
   vb:text{text = "Kudos:", style = "strong", font = "bold"},
-  vb:multiline_textfield{width = textfield_width, height = 60, text = "Massive kudos to martblek for allowing me to take his abandoned ReSpeak tool and make it into a Paketti eSpeak Text-to-Speech, Kaidiak for donating ClippyClip device, and also for smdkun for letting me tweak their KeyBind Visualizer code and incorporate it into Paketti further down the line."},
+  vb:multiline_textfield{width = textfield_width, height = 60, text = "Massive kudos to martblek for allowing me to take his abandoned ReSpeak tool and make it into Paketti eSpeak Text-to-Speech, Kaidiak for donating ClippyClip device, and also for smdkun for letting me tweak their KeyBind Visualizer code and incorporate it into Paketti further down the line."},
 
   vb:horizontal_aligner{mode = "distribute", vb:text{text = "Talk about Paketti", style = "strong", font = "bold"}},
   vb:horizontal_aligner{
@@ -357,7 +357,6 @@ renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Paketti Track Rena
 
 
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Paketti eSpeak Text-to-Speech Dialog...",invoke=function()PakettieSpeakToggleDialog()end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Xperimental/Work in Progress:Paketti Coluga Downloader Dialog...", invoke = function() PakettiColugaShowDialog() end }
 renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Xperimental/Work in Progress:Audio Processing Tools Dialog...", invoke = function() PakettiAudioProcessingToolsDialogShow() end}
 
 

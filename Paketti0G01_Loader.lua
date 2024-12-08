@@ -246,7 +246,7 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
     pakettiColugaFormatToSave=1,
     pakettiColugaPathToSave="<No path set>",
     pakettiColugaNewInstrumentOrSameInstrument=true,
-    pakettiColugaYT_DLPLocation="<No path set>"  
+    pakettiColugaYT_DLPLocation="/opt/homebrew/bin/yt-dlp"  
   },  
   pakettiCheatSheet = {
     pakettiCheatSheetRandomize=false,
@@ -291,8 +291,32 @@ preferences = renoise.Document.create("ScriptingToolPreferences") {
   PakettiPluginLoaders = renoise.Document.DocumentList(),
   PakettiDeviceLoaders = renoise.Document.DocumentList(), 
     PakettiDynamicViews = renoise.Document.DocumentList(),
-
-  }
+  UserDevices = {
+      Path = renoise.Document.ObservableString(""),
+    Slot01 = renoise.Document.ObservableString(""),
+    Slot02 = renoise.Document.ObservableString(""),
+    Slot03 = renoise.Document.ObservableString(""),
+    Slot04 = renoise.Document.ObservableString(""),
+    Slot05 = renoise.Document.ObservableString(""),
+    Slot06 = renoise.Document.ObservableString(""),
+    Slot07 = renoise.Document.ObservableString(""),
+    Slot08 = renoise.Document.ObservableString(""),
+    Slot09 = renoise.Document.ObservableString(""),
+    Slot10 = renoise.Document.ObservableString("")  
+    },
+  UserInstruments = {
+    Path = renoise.Document.ObservableString(""),
+    Slot01 = renoise.Document.ObservableString(""),
+    Slot02 = renoise.Document.ObservableString(""),
+    Slot03 = renoise.Document.ObservableString(""),
+    Slot04 = renoise.Document.ObservableString(""),
+    Slot05 = renoise.Document.ObservableString(""),
+    Slot06 = renoise.Document.ObservableString(""),
+    Slot07 = renoise.Document.ObservableString(""),
+    Slot08 = renoise.Document.ObservableString(""),
+    Slot09 = renoise.Document.ObservableString(""),
+    Slot10 = renoise.Document.ObservableString("")    
+  }}
 
 renoise.tool().preferences = preferences
 

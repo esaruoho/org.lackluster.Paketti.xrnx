@@ -4,6 +4,85 @@ function formatDigits(digits, number)
   return string.format("%0" .. digits .. "d", number)
 end
 
+
+
+function selection_in_pattern_pro()
+  local song = renoise.song()
+
+  -- Get the selection in pattern
+  local selection = song.selection_in_pattern
+  if not selection then
+    print("No selection in pattern!")
+    return nil
+  end
+
+  -- Debug: Print selection details
+  print("Selection in Pattern:")
+  print("Start Track:", selection.start_track)
+  print("End Track:", selection.end_track)
+  print("Start Column:", selection.start_column)
+  print("End Column:", selection.end_column)
+  print("Start Line:", selection.start_line)
+  print("End Line:", selection.end_line)
+
+  local result = {}
+
+  -- Iterate over the selected tracks
+  for track_index = selection.start_track, selection.end_track do
+    local track = song.tracks[track_index]
+    local track_info = {
+      track_index = track_index,
+      track_type = track.type, -- Track type (e.g., "track", "group", "send", "master")
+      note_columns = {},
+      effect_columns = {}
+    }
+
+    -- Fetch visible note and effect columns
+    local visible_note_columns = track.visible_note_columns
+    local visible_effect_columns = track.visible_effect_columns
+    local total_columns = visible_note_columns + visible_effect_columns
+
+    -- Debugging visibility
+    print("Track Index:", track_index)
+    print("Visible Note Columns:", visible_note_columns)
+    print("Visible Effect Columns:", visible_effect_columns)
+    print("Total Columns:", total_columns)
+
+    -- Determine the range of selected columns for this track
+    local track_start_column = (track_index == selection.start_track) and selection.start_column or 1
+    local track_end_column = (track_index == selection.end_track) and selection.end_column or total_columns
+
+    -- Ensure valid column ranges
+    track_start_column = math.max(track_start_column, 1)
+    track_end_column = math.min(track_end_column, total_columns)
+
+    -- Process Note Columns
+    if visible_note_columns > 0 and track_start_column <= visible_note_columns then
+      for col = track_start_column, math.min(track_end_column, visible_note_columns) do
+        table.insert(track_info.note_columns, col)
+      end
+    end
+
+    -- Process Effect Columns
+    if visible_effect_columns > 0 and track_end_column > visible_note_columns then
+      local effect_start = math.max(track_start_column - visible_note_columns, 1)
+      local effect_end = track_end_column - visible_note_columns
+      for col = effect_start, math.min(effect_end, visible_effect_columns) do
+        table.insert(track_info.effect_columns, col)
+      end
+    end
+
+    -- Debugging output
+    print("Selected Note Columns:", #track_info.note_columns > 0 and table.concat(track_info.note_columns, ", ") or "None")
+    print("Selected Effect Columns:", #track_info.effect_columns > 0 and table.concat(track_info.effect_columns, ", ") or "None")
+
+    -- Add track information to the result
+    table.insert(result, track_info)
+  end
+
+  return result
+end
+
 require "Paketti0G01_Loader"
 require "PakettiKeyBindings"
 require "PakettiThemeSelector"

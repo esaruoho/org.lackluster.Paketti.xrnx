@@ -1,22 +1,23 @@
-Debug: Total Paketti keybindings found - 3771
-0001:Pattern Editor:Paketti: ∿ OctaMED Pick Slot 01: <Shortcut not Assigned>
-0002:Pattern Editor:Paketti: ∿ OctaMED Pick Slot 02: <Shortcut not Assigned>
-0003:Pattern Editor:Paketti: ∿ OctaMED Pick Slot 03: <Shortcut not Assigned>
-0004:Pattern Editor:Paketti: ∿ OctaMED Pick Slot 04: <Shortcut not Assigned>
-0005:Pattern Editor:Paketti: ∿ OctaMED Pick Slot 05: <Shortcut not Assigned>
-0006:Pattern Editor:Paketti: ∿ OctaMED Pick Slot 06: <Shortcut not Assigned>
-0007:Pattern Editor:Paketti: ∿ OctaMED Pick Slot 07: <Shortcut not Assigned>
-0008:Pattern Editor:Paketti: ∿ OctaMED Pick Slot 08: <Shortcut not Assigned>
-0009:Pattern Editor:Paketti: ∿ OctaMED Pick Slot 09: <Shortcut not Assigned>
-0010:Pattern Editor:Paketti: ∿ OctaMED Pick Slot 10: <Shortcut not Assigned>
-0011:Pattern Editor:Paketti: ∿ OctaMED Pick/Put Dialog: <Shortcut not Assigned>
-0012:Pattern Editor:Paketti: ∿ OctaMED Put Slot 01: <Shortcut not Assigned>
-0013:Pattern Editor:Paketti: ∿ OctaMED Put Slot 02: <Shortcut not Assigned>
-0014:Pattern Editor:Paketti: ∿ OctaMED Put Slot 03: <Shortcut not Assigned>
-0015:Pattern Editor:Paketti: ∿ OctaMED Put Slot 04: <Shortcut not Assigned>
-0016:Pattern Editor:Paketti: ∿ OctaMED Put Slot 05: <Shortcut not Assigned>
-0017:Pattern Editor:Paketti: ∿ OctaMED Put Slot 06: <Shortcut not Assigned>
-0018:Pattern Editor:Paketti: ∿ OctaMED Put Slot 07: <Shortcut not Assigned>
-0019:Pattern Editor:Paketti: ∿ OctaMED Put Slot 08: <Shortcut not Assigned>
-0020:Pattern Editor:Paketti: ∿ OctaMED Put Slot 09: <Shortcut not Assigned>
-0021:Pattern Editor:Paketti: ∿ OctaMED Put Slot 10: <Shortcut not Assigned>
+Debug: Total Paketti keybindings found - 3809
+0001:Global:Paketti: ∿ Open User Preferences Dialog: <Shortcut not Assigned>
+0002:Global:Paketti: ∿ Randomize All Devices of Track with User1 (%): <Shortcut not Assigned>
+0003:Global:Paketti: ∿ Randomize All Devices of Track with User2 (%): <Shortcut not Assigned>
+0004:Global:Paketti: ∿ Randomize All Devices of Track with User3 (%): <Shortcut not Assigned>
+0005:Global:Paketti: ∿ Randomize All Devices of Track with User4 (%): <Shortcut not Assigned>
+0006:Global:Paketti: ∿ Randomize All Devices of Track with User5 (%): <Shortcut not Assigned>
+0007:Global:Paketti: ∿ Randomize All Plugins in Song with User1 (%): <Shortcut not Assigned>
+0008:Global:Paketti: ∿ Randomize All Plugins in Song with User2 (%): <Shortcut not Assigned>
+0009:Global:Paketti: ∿ Randomize All Plugins in Song with User3 (%): <Shortcut not Assigned>
+0010:Global:Paketti: ∿ Randomize All Plugins in Song with User4 (%): <Shortcut not Assigned>
+0011:Global:Paketti: ∿ Randomize All Plugins in Song with User5 (%): <Shortcut not Assigned>
+0012:Global:Paketti: ∿ Randomize Selected Device with User1 (%): <Shortcut not Assigned>
+0013:Global:Paketti: ∿ Randomize Selected Device with User2 (%): <Shortcut not Assigned>
+0014:Global:Paketti: ∿ Randomize Selected Device with User3 (%): <Shortcut not Assigned>
+0015:Global:Paketti: ∿ Randomize Selected Device with User4 (%): <Shortcut not Assigned>
+0016:Global:Paketti: ∿ Randomize Selected Device with User5 (%): <Shortcut not Assigned>
+0017:Global:Paketti: ∿ Randomize Selected Plugin with User1 (%): <Shortcut not Assigned>
+0018:Global:Paketti: ∿ Randomize Selected Plugin with User2 (%): <Shortcut not Assigned>
+0019:Global:Paketti: ∿ Randomize Selected Plugin with User3 (%): <Shortcut not Assigned>
+0020:Global:Paketti: ∿ Randomize Selected Plugin with User4 (%): <Shortcut not Assigned>
+0021:Global:Paketti: ∿ Randomize Selected Plugin with User5 (%): <Shortcut not Assigned>
+0022:Global:Paketti: ∿ Show/Hide User Preference Devices Master Dialog: Shift + Option + 0

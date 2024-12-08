@@ -3273,8 +3273,8 @@ function ExposeAndSelectColumn(number)
   end
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Expose and Select Next Column",invoke=function() ExposeAndSelectColumn(1) end}
-renoise.tool():add_keybinding{name="Global:Paketti:Hide Current and Select Previous Column",invoke=function() ExposeAndSelectColumn(-1) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Expose and Select Next Column",invoke=function() ExposeAndSelectColumn(1) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Hide Current and Select Previous Column",invoke=function() ExposeAndSelectColumn(-1) end}
 renoise.tool():add_midi_mapping{name="Paketti:Expose and Select Next Column",invoke=function(message) if message:is_trigger() then ExposeAndSelectColumn(1) end end}
 renoise.tool():add_midi_mapping{name="Paketti:Hide Current and Select Previous Column",invoke=function(message) if message:is_trigger() then xposeAndSelectColumn(-1) end end}
 
@@ -3552,4 +3552,845 @@ end
 
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Clear Selected Track Below Current Row",invoke=function() clear_below_selected_line() end}
 renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Clear All Tracks Below Current Row",invoke=function() clear_all_tracks_below_current_row() end}
+-----
+-- Helper function to check if in a valid note column
+local function is_in_note_column()
+  local note_column_index = renoise.song().selected_note_column_index
+  if note_column_index == nil then
+    renoise.app():show_status("You are not in a Note Column, doing nothing.")
+    return false
+  end
+  return true
+end
+
+-- Function to match the current sub-column type to all rows in the selected note column
+local function match_current_sub_column_to_track()
+  if not is_in_note_column() then return end
+
+  local song = renoise.song()
+  local track = song.selected_track
+  local sub_column_type = song.selected_sub_column_type
+  local line_index = song.selected_line_index
+  local pattern = song.selected_pattern
+  local number_of_lines = pattern.number_of_lines
+  local note_column_index = song.selected_note_column_index
+  local current_line = pattern:track(song.selected_track_index):line(line_index)
+
+  -- Iterate through all lines in the selected track and match based on sub-column type
+  for i = 1, number_of_lines do
+    local line = pattern:track(song.selected_track_index):line(i)
+
+    if sub_column_type == 2 and current_line.note_columns[note_column_index].instrument_value ~= nil then
+      line.note_columns[note_column_index].instrument_value = current_line.note_columns[note_column_index].instrument_value
+    elseif sub_column_type == 3 and current_line.note_columns[note_column_index].volume_value ~= renoise.PatternLine.EMPTY_VOLUME then
+      line.note_columns[note_column_index].volume_value = current_line.note_columns[note_column_index].volume_value
+    elseif sub_column_type == 4 and current_line.note_columns[note_column_index].panning_value ~= renoise.PatternLine.EMPTY_PANNING then
+      line.note_columns[note_column_index].panning_value = current_line.note_columns[note_column_index].panning_value
+    elseif sub_column_type == 5 and current_line.note_columns[note_column_index].delay_value ~= renoise.PatternLine.EMPTY_DELAY then
+      line.note_columns[note_column_index].delay_value = current_line.note_columns[note_column_index].delay_value
+    elseif sub_column_type == 6 and current_line.note_columns[note_column_index].effect_number_value ~= renoise.PatternLine.EMPTY_EFFECT_NUMBER then
+      line.note_columns[note_column_index].effect_number_value = current_line.note_columns[note_column_index].effect_number_value
+    elseif sub_column_type == 7 and current_line.note_columns[note_column_index].effect_amount_value ~= renoise.PatternLine.EMPTY_EFFECT_AMOUNT then
+      line.note_columns[note_column_index].effect_amount_value = current_line.note_columns[note_column_index].effect_amount_value
+    end
+  end
+
+  renoise.app():show_status("Matched current sub-column value to the entire track.")
+end
+
+-- Function to match volume column to current row
+local function match_volume_to_current_row()
+  if not is_in_note_column() then return end
+
+  local song = renoise.song()
+  local track = song.selected_track
+  local line_index = song.selected_line_index
+  local pattern = song.selected_pattern
+  local number_of_lines = pattern.number_of_lines
+  local note_column_index = song.selected_note_column_index
+  local current_line = pattern:track(song.selected_track_index):line(line_index)
+
+  -- Get the volume value from the selected note column
+  if current_line.note_columns[note_column_index].volume_value ~= renoise.PatternLine.EMPTY_VOLUME then
+    local volume_value = current_line.note_columns[note_column_index].volume_value
+
+    -- Apply to all lines in the selected track
+    for i = 1, number_of_lines do
+      local line = pattern:track(song.selected_track_index):line(i)
+      line.note_columns[note_column_index].volume_value = volume_value
+    end
+  end
+
+  renoise.app():show_status("Matched volume to the entire track from the current row.")
+end
+
+-- Function to match panning column to current row
+local function match_panning_to_current_row()
+  if not is_in_note_column() then return end
+
+  local song = renoise.song()
+  local track = song.selected_track
+  local line_index = song.selected_line_index
+  local pattern = song.selected_pattern
+  local number_of_lines = pattern.number_of_lines
+  local note_column_index = song.selected_note_column_index
+  local current_line = pattern:track(song.selected_track_index):line(line_index)
+
+  -- Get the panning value from the selected note column
+  if current_line.note_columns[note_column_index].panning_value ~= renoise.PatternLine.EMPTY_PANNING then
+    local panning_value = current_line.note_columns[note_column_index].panning_value
+
+    -- Apply to all lines in the selected track
+    for i = 1, number_of_lines do
+      local line = pattern:track(song.selected_track_index):line(i)
+      line.note_columns[note_column_index].panning_value = panning_value
+    end
+  end
+
+  renoise.app():show_status("Matched panning to the entire track from the current row.")
+end
+
+-- Function to match delay column to current row
+local function match_delay_to_current_row()
+  if not is_in_note_column() then return end
+
+  local song = renoise.song()
+  local track = song.selected_track
+  local line_index = song.selected_line_index
+  local pattern = song.selected_pattern
+  local number_of_lines = pattern.number_of_lines
+  local note_column_index = song.selected_note_column_index
+  local current_line = pattern:track(song.selected_track_index):line(line_index)
+
+  -- Get the delay value from the selected note column
+  if current_line.note_columns[note_column_index].delay_value ~= renoise.PatternLine.EMPTY_DELAY then
+    local delay_value = current_line.note_columns[note_column_index].delay_value
+
+    -- Apply to all lines in the selected track
+    for i = 1, number_of_lines do
+      local line = pattern:track(song.selected_track_index):line(i)
+      line.note_columns[note_column_index].delay_value = delay_value
+    end
+  end
+
+  renoise.app():show_status("Matched delay to the entire track from the current row.")
+end
+
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Match Current Sub Column Selection", invoke = function() match_current_sub_column_to_track() end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Match Volume Column to Current Row",invoke = function() match_volume_to_current_row()end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Match Panning Column to Current Row",invoke = function() match_panning_to_current_row() end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Match Delay Column to Current Row",invoke = function() match_delay_to_current_row() end}
+-------
+
+function nudge(direction)
+  local song = renoise.song()
+  local selection = selection_in_pattern_pro()
+  if not selection then 
+    renoise.app():show_status("No selection in pattern!")
+    return
+  end
+
+  local pattern_index = song.selected_pattern_index
+  local pattern = song.patterns[pattern_index]
+
+  -- Get selection boundaries from song.selection_in_pattern
+  local pattern_selection = song.selection_in_pattern
+  if not pattern_selection then
+    renoise.app():show_status("No selection in pattern!")
+    return
+  end
+  local start_line = pattern_selection.start_line
+  local end_line = pattern_selection.end_line
+
+  -- Debugging: Print the selection boundaries
+  print("Selection in Pattern:")
+  print(string.format("Start Line: %d, End Line: %d", start_line, end_line))
+  print(string.format("Start Column: %d, End Column: %d", pattern_selection.start_column, pattern_selection.end_column))
+  for _, track_info in ipairs(selection) do
+    print(string.format("Track Index: %d", track_info.track_index))
+    print(string.format("Selected Note Columns: %s", table.concat(track_info.note_columns, ", ")))
+  end
+
+  -- Helper functions to copy note and effect columns
+  local function copy_note_column(note_column)
+    return {
+      note_value = note_column.note_value,
+      instrument_value = note_column.instrument_value,
+      volume_value = note_column.volume_value,
+      panning_value = note_column.panning_value,
+      delay_value = note_column.delay_value,
+      effect_number_value = note_column.effect_number_value,
+      effect_amount_value = note_column.effect_amount_value
+    }
+  end
+
+  local function set_note_column(note_column, data)
+    note_column.note_value = data.note_value
+    note_column.instrument_value = data.instrument_value
+    note_column.volume_value = data.volume_value
+    note_column.panning_value = data.panning_value
+    note_column.delay_value = data.delay_value
+    note_column.effect_number_value = data.effect_number_value
+    note_column.effect_amount_value = data.effect_amount_value
+  end
+
+  local function copy_effect_column(effect_column)
+    return {
+      number_value = effect_column.number_value,
+      amount_value = effect_column.amount_value
+    }
+  end
+
+  local function set_effect_column(effect_column, data)
+    effect_column.number_value = data.number_value
+    effect_column.amount_value = data.amount_value
+  end
+
+  -- Iterate through selected tracks
+  for _, track_info in ipairs(selection) do
+    local track = song.tracks[track_info.track_index]
+
+    -- Validate the boundaries
+    local lines = pattern.tracks[track_info.track_index].lines
+    local adjusted_start_line = math.max(1, math.min(start_line, #lines))
+    local adjusted_end_line = math.max(1, math.min(end_line, #lines))
+
+    -- Process all selected note columns
+    for _, column_index in ipairs(track_info.note_columns) do
+      if direction == "down" then
+        -- Store the bottom line data
+        local bottom_line = lines[adjusted_end_line]
+        local stored_note_column = copy_note_column(bottom_line.note_columns[column_index])
+        local stored_effect_columns = {}
+        for ec_index, effect_column in ipairs(bottom_line.effect_columns) do
+          stored_effect_columns[ec_index] = copy_effect_column(effect_column)
+        end
+
+        -- Shift data down
+        for line_index = adjusted_end_line, adjusted_start_line + 1, -1 do
+          local current_line = lines[line_index]
+          local previous_line = lines[line_index - 1]
+
+          -- Copy note column data
+          local current_note_column = current_line.note_columns[column_index]
+          local previous_note_column = previous_line.note_columns[column_index]
+          current_note_column:copy_from(previous_note_column)
+
+          -- Copy effect columns
+          local current_effect_columns = current_line.effect_columns
+          local previous_effect_columns = previous_line.effect_columns
+          for ec_index = 1, #current_effect_columns do
+            current_effect_columns[ec_index]:copy_from(previous_effect_columns[ec_index])
+          end
+        end
+
+        -- Place stored data into the top line
+        local top_line = lines[adjusted_start_line]
+        set_note_column(top_line.note_columns[column_index], stored_note_column)
+        local top_effect_columns = top_line.effect_columns
+        for ec_index = 1, #top_effect_columns do
+          set_effect_column(top_effect_columns[ec_index], stored_effect_columns[ec_index] or {})
+        end
+
+      elseif direction == "up" then
+        -- Store the top line data
+        local top_line = lines[adjusted_start_line]
+        local stored_note_column = copy_note_column(top_line.note_columns[column_index])
+        local stored_effect_columns = {}
+        for ec_index, effect_column in ipairs(top_line.effect_columns) do
+          stored_effect_columns[ec_index] = copy_effect_column(effect_column)
+        end
+
+        -- Shift data up
+        for line_index = adjusted_start_line, adjusted_end_line - 1 do
+          local current_line = lines[line_index]
+          local next_line = lines[line_index + 1]
+
+          -- Copy note column data
+          local current_note_column = current_line.note_columns[column_index]
+          local next_note_column = next_line.note_columns[column_index]
+          current_note_column:copy_from(next_note_column)
+
+          -- Copy effect columns
+          local current_effect_columns = current_line.effect_columns
+          local next_effect_columns = next_line.effect_columns
+          for ec_index = 1, #current_effect_columns do
+            current_effect_columns[ec_index]:copy_from(next_effect_columns[ec_index])
+          end
+        end
+
+        -- Place stored data into the bottom line
+        local bottom_line = lines[adjusted_end_line]
+        set_note_column(bottom_line.note_columns[column_index], stored_note_column)
+        local bottom_effect_columns = bottom_line.effect_columns
+        for ec_index = 1, #bottom_effect_columns do
+          set_effect_column(bottom_effect_columns[ec_index], stored_effect_columns[ec_index] or {})
+        end
+
+      else
+        renoise.app():show_status("Invalid nudge direction!")
+        return
+      end
+    end -- End of column iteration
+  end -- End of track iteration
+
+  -- Return focus to the pattern editor
+  renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
+  renoise.app():show_status("Nudge " .. direction .. " applied.")
+end
+
+renoise.tool():add_keybinding {name = "Pattern Editor:Paketti:Nudge Down",invoke = function() nudge("down") end}
+renoise.tool():add_keybinding {name = "Pattern Editor:Paketti:Nudge Up",invoke = function() nudge("up") end}
+
+function nudge_with_delay(direction)
+  local song = renoise.song()
+  local selection = selection_in_pattern_pro()
+  if not selection then 
+    renoise.app():show_status("No selection in pattern!")
+    return
+  end
+
+  local pattern_index = song.selected_pattern_index
+  local pattern = song.patterns[pattern_index]
+
+  -- Get selection boundaries from song.selection_in_pattern
+  local pattern_selection = song.selection_in_pattern
+  if not pattern_selection then
+    renoise.app():show_status("No selection in pattern!")
+    return
+  end
+  local start_line = pattern_selection.start_line
+  local end_line = pattern_selection.end_line
+
+  -- Debugging: Print the selection boundaries
+  print("Selection in Pattern:")
+  print(string.format("Start Line: %d, End Line: %d", start_line, end_line))
+  print(string.format("Start Column: %d, End Column: %d", pattern_selection.start_column, pattern_selection.end_column))
+  for _, track_info in ipairs(selection) do
+    print(string.format("Track Index: %d", track_info.track_index))
+    print(string.format("Selected Note Columns: %s", table.concat(track_info.note_columns, ", ")))
+  end
+
+  -- Iterate through selected tracks
+  for _, track_info in ipairs(selection) do
+    local track = song.tracks[track_info.track_index]
+
+    -- Do not modify delay column visibility
+    -- Validate the boundaries
+    local lines = pattern.tracks[track_info.track_index].lines
+    local adjusted_start_line = math.max(1, math.min(start_line, #lines))
+    local adjusted_end_line = math.max(1, math.min(end_line, #lines))
+
+    -- Process all selected note columns
+    for _, column_index in ipairs(track_info.note_columns) do
+      -- Determine the iteration order based on the direction
+      if direction == "down" then
+        -- Process from bottom to top for "nudge down"
+        for line_index = adjusted_end_line, adjusted_start_line, -1 do
+          local note_column = lines[line_index].note_columns[column_index]
+          local effect_columns = lines[line_index].effect_columns
+
+          -- Process even if the note_column is empty (no note), but has a delay value
+          if not note_column.is_empty or note_column.delay_value > 0 then
+            local delay = note_column.delay_value
+            local new_delay = delay + 1
+
+            if new_delay > 0xFF then
+              new_delay = 0
+
+              -- Determine the next line index with wrap-around
+              local next_line_index = line_index + 1
+              if next_line_index > adjusted_end_line then
+                next_line_index = adjusted_start_line  -- Wrap to the start of the selection
+              end
+
+              local next_line = lines[next_line_index]
+              local next_note_column = next_line.note_columns[column_index]
+              local next_effect_columns = next_line.effect_columns
+
+              -- Check if the target note column and effect columns are empty
+              local can_move = next_note_column.is_empty and next_note_column.delay_value == 0
+              for _, next_effect_column in ipairs(next_effect_columns) do
+                if not next_effect_column.is_empty then
+                  can_move = false
+                  break
+                end
+              end
+
+              if can_move then
+                print(string.format(
+                  "Moving note/delay down with wrap: Track %d, Column %d, Row %d -> Row %d", 
+                  track_info.track_index, column_index, line_index, next_line_index))
+                
+                -- Move the note column (includes volume, panning, sample effect data)
+                next_note_column:copy_from(note_column)
+                next_note_column.delay_value = new_delay -- Set new delay in the new row
+                note_column:clear() -- Clear the old note completely
+
+                -- Move effect columns
+                for ec_index, effect_column in ipairs(effect_columns) do
+                  local next_effect_column = next_effect_columns[ec_index]
+                  next_effect_column:copy_from(effect_column)
+                  effect_column:clear()
+                end
+              else
+                print(string.format(
+                  "Collision at Track %d, Column %d, Row %d. Cannot nudge further.", 
+                  track_info.track_index, column_index, next_line_index))
+                -- Cannot move note due to collision
+              end
+            else
+              -- Update the delay value
+              note_column.delay_value = new_delay
+              print(string.format(
+                "Row %d, Column %d: Note %s, Delay %02X -> %02X",
+                line_index, column_index, note_column.note_string, delay, new_delay))
+            end
+          end
+        end
+      elseif direction == "up" then
+        -- Process from top to bottom for "nudge up"
+        for line_index = adjusted_start_line, adjusted_end_line do
+          local note_column = lines[line_index].note_columns[column_index]
+          local effect_columns = lines[line_index].effect_columns
+
+          -- Process even if the note_column is empty (no note), but has a delay value
+          if not note_column.is_empty or note_column.delay_value > 0 then
+            local delay = note_column.delay_value
+            local new_delay = delay - 1
+
+            if new_delay < 0 then
+              new_delay = 0xFF
+
+              -- Determine the previous line index with wrap-around
+              local prev_line_index = line_index - 1
+              if prev_line_index < adjusted_start_line then
+                prev_line_index = adjusted_end_line  -- Wrap to the end of the selection
+              end
+
+              local prev_line = lines[prev_line_index]
+              local prev_note_column = prev_line.note_columns[column_index]
+              local prev_effect_columns = prev_line.effect_columns
+
+              -- Check if the target note column and effect columns are empty
+              local can_move = prev_note_column.is_empty and prev_note_column.delay_value == 0
+              for _, prev_effect_column in ipairs(prev_effect_columns) do
+                if not prev_effect_column.is_empty then
+                  can_move = false
+                  break
+                end
+              end
+
+              if can_move then
+                print(string.format(
+                  "Moving note/delay up with wrap: Track %d, Column %d, Row %d -> Row %d", 
+                  track_info.track_index, column_index, line_index, prev_line_index))
+                
+                -- Move the note column (includes volume, panning, sample effect data)
+                prev_note_column:copy_from(note_column)
+                prev_note_column.delay_value = new_delay -- Set new delay in the new row
+                note_column:clear() -- Clear the old note completely
+
+                -- Move effect columns
+                for ec_index, effect_column in ipairs(effect_columns) do
+                  local prev_effect_column = prev_effect_columns[ec_index]
+                  prev_effect_column:copy_from(effect_column)
+                  effect_column:clear()
+                end
+              else
+                print(string.format(
+                  "Collision at Track %d, Column %d, Row %d. Cannot nudge further.", 
+                  track_info.track_index, column_index, prev_line_index))
+                -- Cannot move note due to collision
+              end
+            else
+              -- Update the delay value
+              note_column.delay_value = new_delay
+              print(string.format(
+                "Row %d, Column %d: Note %s, Delay %02X -> %02X",
+                line_index, column_index, note_column.note_string, delay, new_delay))
+            end
+          end
+        end
+      else
+        renoise.app():show_status("Invalid nudge direction!")
+        return
+      end
+    end -- End of column iteration
+  end -- End of track iteration
+
+  -- Return focus to the pattern editor
+  renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
+  renoise.app():show_status("Nudge " .. direction .. " with delay applied.")
+end
+
+-- Keybindings for nudging up and down
+renoise.tool():add_keybinding {name = "Pattern Editor:Paketti:Nudge with Delay (Down)", invoke = function() nudge_with_delay("down") end}
+renoise.tool():add_keybinding {name = "Pattern Editor:Paketti:Nudge with Delay (Up)", invoke = function() nudge_with_delay("up") end}
+
+
+
+
+
+-- Main function for toggling LPB and inserting ZLxx commands.
+local function toggle_lpb_and_insert_commands()
+  local song=renoise.song()
+  local pattern=song.selected_pattern
+  local track_idx=song.selected_track_index
+  local line_idx=song.selected_line_index
+  local track=song.tracks[track_idx]
+  
+  if track.type~=renoise.Track.TRACK_TYPE_SEQUENCER then
+    renoise.app():show_status("ZLxx commands can only be applied to regular tracks!")
+    return
+  end
+
+  -- Read LPB from the first row of the track (stored LPB).
+  local first_line=pattern:track(track_idx):line(1)
+  local stored_lpb=nil
+  
+  if first_line.effect_columns[1].number_string=="ZL" then
+    stored_lpb=first_line.effect_columns[1].amount_value -- Read the stored LPB.
+  else
+    -- If no stored LPB, write the current LPB to the first row.
+    stored_lpb=song.transport.lpb
+    first_line.effect_columns[1].number_string="ZL"
+    first_line.effect_columns[1].amount_value=stored_lpb
+    renoise.app():show_status("Stored LPB="..stored_lpb.." in the first row.")
+  end
+
+  -- Calculate LPB/4.
+  local lpb_div_4=math.max(1, math.floor(stored_lpb/4)) -- Ensure it's at least 1.
+
+  -- Toggle LPB: If current LPB=LPB/4, switch back to stored LPB. Otherwise, set to LPB/4.
+  if song.transport.lpb==lpb_div_4 then
+    song.transport.lpb=stored_lpb
+    renoise.app():show_status("Restored LPB to original value: "..stored_lpb)
+  else
+    song.transport.lpb=lpb_div_4
+    renoise.app():show_status("Set LPB to LPB/4: "..lpb_div_4)
+  end
+
+  -- Insert ZL01 at the current line.
+  local current_line=pattern:track(track_idx):line(line_idx)
+  current_line.effect_columns[1].number_string="ZL"
+  current_line.effect_columns[1].amount_value=1
+
+  -- Insert ZLxx (stored LPB) at the calculated next position.
+  local pattern_length=pattern.number_of_lines
+  local next_idx=line_idx+lpb_div_4
+  if next_idx>pattern_length then
+    next_idx=(next_idx-pattern_length)%pattern_length -- Wrap to the first row.
+  end
+
+  local next_line=pattern:track(track_idx):line(next_idx)
+  next_line.effect_columns[1].number_string="ZL"
+  next_line.effect_columns[1].amount_value=stored_lpb
+
+  -- Return focus to the pattern editor.
+  renoise.app().window.active_middle_frame=renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
+  renoise.app():show_status("Inserted ZL01 and ZL"..stored_lpb.." commands!")
+  renoise.song().transport.lpb=stored_lpb
+end
+
+-- Add keybinding to trigger the function.
+renoise.tool():add_keybinding {name="Global:Paketti:Divide LPB by 4, return to Original",invoke=function() toggle_lpb_and_insert_commands() end}
+-------
+
+
+function globalCenter()
+
+local song=renoise.song()
+
+-- Calculate the total number of tracks
+local total_tracks=song.sequencer_track_count+1+song.send_track_count
+
+-- Iterate through each track and set panning values
+for i=1,total_tracks do
+  local track=song.tracks[i]
+  track.postfx_panning.value=0.5
+  track.prefx_panning.value=0.5
+end
+
+renoise.app():show_status("Panning values for all tracks set to 0.5")
+
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Set All Tracks to Center",invoke=function() globalCenter() end}
+renoise.tool():add_menu_entry{name="Mixer:Paketti..:Set All Tracks to Center",invoke=function() globalCenter() end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Set All Tracks to Center",invoke=function() globalCenter() end}
+renoise.tool():add_menu_entry{name="DSP Device:Paketti..:Set All Tracks to Center",invoke=function() globalCenter() end}
+------
+-- Toggle Note Off "===" On / Off in all selected tracks within the selection or current row.
+function PakettiNoteOffToSelection()
+  local s = renoise.song()
+  local currPatt = s.selected_pattern_index
+  local selection = s.selection_in_pattern
+  local note_col_idx = s.selected_note_column_index
+
+  if selection then
+    -- Loop through all lines and tracks within the selection
+    for line = selection.start_line, selection.end_line do
+      for track = selection.start_track, selection.end_track do
+        local note_col = s.patterns[currPatt].tracks[track].lines[line].note_columns[note_col_idx]
+        
+        if note_col_idx and note_col_idx > 0 then
+          if note_col.note_string == "OFF" then
+            note_col.note_string = ""
+          else
+            note_col.note_string = "OFF"
+          end
+        end
+      end
+    end
+  else
+    -- No selection, operate on the current row
+    local currLine = s.selected_line_index
+    local currTrack = s.selected_track_index
+    
+    if note_col_idx and note_col_idx > 0 then
+      local note_col = s.patterns[currPatt].tracks[currTrack].lines[currLine].note_columns[note_col_idx]
+      
+      if note_col.note_string == "OFF" then
+        note_col.note_string = ""
+      else
+        note_col.note_string = "OFF"
+      end
+    end
+  end
+end
+
+-- Add keybinding for the new function
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Toggle Note Off in Selected Tracks",invoke=function() PakettiNoteOffToSelection() end}
+
+-------
+-- Function with an option to retain or clear silence rows
+local function DuplicateSelectionWithPaddingMoveCursor(retain_silence_content)
+    local song = renoise.song()
+    local selection = song.selection_in_pattern
+
+    -- Check if there's a selection
+    if not selection then
+        renoise.app():show_status("Nothing was selected, doing nothing.")
+        return
+    end
+
+    local pattern = song.selected_pattern
+    local pattern_lines = pattern.number_of_lines
+    local selected_track_index = song.selected_track_index
+
+    -- Determine selection start and end lines
+    local start_line = selection.start_line
+    local end_line = selection.end_line
+    local selection_length = end_line - start_line + 1
+
+    -- Calculate required end position to fit content, silence, content, and final silence
+    local required_end_position = end_line + (selection_length * 3)  -- original + silence + duplicated + final silence
+
+    -- Check if the required pattern length exceeds the max limit of 512 lines
+    if required_end_position > 512 then
+        renoise.app():show_status("Already at maximum pattern length, doing nothing.")
+        return
+    end
+
+    -- Resize pattern only if required end position exceeds current length
+    if required_end_position > pattern_lines then
+        pattern.number_of_lines = required_end_position
+        pattern_lines = required_end_position
+        renoise.app():show_status("Pattern resized to " .. required_end_position .. " lines to accommodate duplication and silence.")
+    end
+
+    -- Calculate positions for silent rows and duplicated content
+    local silence_start = end_line + 1
+    local paste_start = silence_start + selection_length
+    local paste_end = paste_start + selection_length - 1
+    local final_silence_start = paste_end + 1
+
+    -- Reference to the track for modifying lines
+    local track = pattern:track(selected_track_index)
+
+    -- Copy the selected lines into a table
+    local content_copy = {}
+    for line = start_line, end_line do
+        local line_data = track:line(line)
+        content_copy[#content_copy + 1] = {
+            note_columns = {},
+            effect_columns = {}
+        }
+        -- Copy each note column
+        for nc = 1, #line_data.note_columns do
+            local note_column = line_data:note_column(nc)
+            content_copy[#content_copy].note_columns[nc] = {
+                note_value = note_column.note_value,
+                instrument_value = note_column.instrument_value,
+                volume_value = note_column.volume_value,
+                panning_value = note_column.panning_value,
+                delay_value = note_column.delay_value,
+                effect_number_value = note_column.effect_number_value,
+                effect_amount_value = note_column.effect_amount_value
+            }
+        end
+        -- Copy each effect column
+        for ec = 1, #line_data.effect_columns do
+            local effect_column = line_data:effect_column(ec)
+            content_copy[#content_copy].effect_columns[ec] = {
+                number_value = effect_column.number_value,
+                amount_value = effect_column.amount_value
+            }
+        end
+    end
+
+    -- Insert silence after original content (retain or clear based on function parameter)
+    for line = silence_start, silence_start + selection_length - 1 do
+        if not retain_silence_content then
+            track:line(line):clear()
+        end
+    end
+
+    -- Paste duplicated content after the silent rows
+    for i, line_content in ipairs(content_copy) do
+        local target_line = track:line(paste_start + i - 1)
+        -- Paste note columns
+        for nc, note_data in ipairs(line_content.note_columns) do
+            local note_column = target_line:note_column(nc)
+            note_column.note_value = note_data.note_value
+            note_column.instrument_value = note_data.instrument_value
+            note_column.volume_value = note_data.volume_value
+            note_column.panning_value = note_data.panning_value
+            note_column.delay_value = note_data.delay_value
+            note_column.effect_number_value = note_data.effect_number_value
+            note_column.effect_amount_value = note_data.effect_amount_value
+        end
+        -- Paste effect columns
+        for ec, effect_data in ipairs(line_content.effect_columns) do
+            local effect_column = target_line:effect_column(ec)
+            effect_column.number_value = effect_data.number_value
+            effect_column.amount_value = effect_data.amount_value
+        end
+    end
+
+    -- Insert final silence after the duplicated content (retain or clear based on function parameter)
+    for line = final_silence_start, final_silence_start + selection_length - 1 do
+        if not retain_silence_content then
+            track:line(line):clear()
+        end
+    end
+
+    -- Set selection and move cursor to the equivalent row in the pasted content
+    song.selection_in_pattern = {
+        start_line = paste_start,
+        end_line = paste_end,
+        start_track = selection.start_track,
+        end_track = selection.end_track
+    }
+    song.transport.edit_pos = renoise.SongPos(song.selected_sequence_index, paste_start + (song.transport.edit_pos.line - start_line))
+end
+
+
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Duplicate Selection with Padding&Move Cursor 1", invoke=function() DuplicateSelectionWithPaddingMoveCursor(false) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Duplicate Selection with Padding&Move Cursor 2", invoke=function() DuplicateSelectionWithPaddingMoveCursor(true) end}
+------
+local function NudgeAndPasteSelection(deselect)
+    local song = renoise.song()
+    local selection = song.selection_in_pattern
+
+    -- Check if there's a selection
+    if not selection then
+        renoise.app():show_status("Nothing was selected, doing nothing.")
+        return
+    end
+
+    local pattern = song.selected_pattern
+    local pattern_lines = pattern.number_of_lines
+    local selected_track_index = song.selected_track_index
+
+    -- Determine selection start and end lines
+    local start_line = selection.start_line
+    local end_line = selection.end_line
+    local selection_length = end_line - start_line + 1
+
+    -- Reference to the track for modifying lines
+    local track = pattern:track(selected_track_index)
+
+    -- Step 1: Copy the selected lines into a table
+    local content_copy = {}
+    for line = start_line, end_line do
+        local line_data = track:line(line)
+        content_copy[#content_copy + 1] = {
+            note_columns = {},
+            effect_columns = {}
+        }
+        -- Copy each note column
+        for nc = 1, #line_data.note_columns do
+            local note_column = line_data:note_column(nc)
+            content_copy[#content_copy].note_columns[nc] = {
+                note_value = note_column.note_value,
+                instrument_value = note_column.instrument_value,
+                volume_value = note_column.volume_value,
+                panning_value = note_column.panning_value,
+                delay_value = note_column.delay_value,
+                effect_number_value = note_column.effect_number_value,
+                effect_amount_value = note_column.effect_amount_value
+            }
+        end
+        -- Copy each effect column
+        for ec = 1, #line_data.effect_columns do
+            local effect_column = line_data:effect_column(ec)
+            content_copy[#content_copy].effect_columns[ec] = {
+                number_value = effect_column.number_value,
+                amount_value = effect_column.amount_value
+            }
+        end
+    end
+
+    -- Step 2: Nudge existing content down by the selection length
+    for line = pattern_lines - selection_length, start_line, -1 do
+        local target_line = line + selection_length
+        if target_line <= pattern_lines then
+            track:line(target_line):copy_from(track:line(line))
+        end
+    end
+
+    -- Step 3: Clear the original selection range to prepare for pasting
+    for line = start_line, end_line do
+        track:line(line):clear()
+    end
+
+    -- Step 4: Paste the copied content into the original selection position
+    for i, line_content in ipairs(content_copy) do
+        local target_line = track:line(start_line + i - 1)
+        -- Paste note columns
+        for nc, note_data in ipairs(line_content.note_columns) do
+            local note_column = target_line:note_column(nc)
+            note_column.note_value = note_data.note_value
+            note_column.instrument_value = note_data.instrument_value
+            note_column.volume_value = note_data.volume_value
+            note_column.panning_value = note_data.panning_value
+            note_column.delay_value = note_data.delay_value
+            note_column.effect_number_value = note_data.effect_number_value
+            note_column.effect_amount_value = note_data.effect_amount_value
+        end
+        -- Paste effect columns
+        for ec, effect_data in ipairs(line_content.effect_columns) do
+            local effect_column = target_line:effect_column(ec)
+            effect_column.number_value = effect_data.number_value
+            effect_column.amount_value = effect_data.amount_value
+        end
+    end
+
+    -- Set selection in pattern to the newly pasted content
+if deselect ~= false then
+
+    song.selection_in_pattern = {
+        start_line = start_line,
+        end_line = end_line,
+        start_track = selection.start_track,
+        end_track = selection.end_track
+    }
+else renoise.song().selection_in_pattern = nil
+end
+end
+
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Nudge and Paste Selection", invoke=function() NudgeAndPasteSelection(true) end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Nudge and Paste Selection + Deselect", invoke=function() NudgeAndPasteSelection(false) end}
 

@@ -222,7 +222,7 @@ t.metronome_enabled=false
 t.loop_block_enabled=false
 t.loop_pattern = false
 t.loop_block_enabled=false
-t:start(renoise.Transport.PLAYMODE_RESTART_PATTERN)
+t:start_at(startpos)
 end
 renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker F5 Start Playback", invoke=function() ImpulseTrackerPlaySong() end}
 renoise.tool():add_keybinding{name="Global:Paketti:Impulse Tracker F5 Start Playback (2nd)", invoke=function() ImpulseTrackerPlaySong() end}

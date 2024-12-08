@@ -1697,7 +1697,7 @@ local function randomize_envelope()
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Randomize Automation Envelope",invoke=randomize_envelope}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Randomize Automation Envelope",invoke=randomize_envelope}
+renoise.tool():add_menu_entry{name="--Main Menu:Tools:Paketti..:Automation..:Randomize Automation Envelope",invoke=randomize_envelope}
 renoise.tool():add_menu_entry{name="--Track Automation:Paketti..:Randomize Automation Envelope",invoke=randomize_envelope}
 renoise.tool():add_midi_mapping{name="Paketti:Randomize Automation Envelope",invoke=randomize_envelope}
 
@@ -1746,7 +1746,7 @@ end
 
 -- Keybinding, menu, and MIDI mapping entries for the tool
 renoise.tool():add_keybinding{name="Global:Paketti:Randomize Automation Envelopes for Device",invoke=function() randomize_device_envelopes(1) end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Randomize Automation Envelopes for Device",invoke=function() randomize_device_envelopes(1) end}
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Automation..:Randomize Automation Envelopes for Device",invoke=function() randomize_device_envelopes(1) end}
 renoise.tool():add_menu_entry{name="DSP Device:Paketti..:Randomize Automation Envelopes for Device",invoke=function() randomize_device_envelopes(1) end}
 renoise.tool():add_menu_entry{name="Mixer:Paketti..:Randomize Automation Envelopes for Device",invoke=function() randomize_device_envelopes(1) end}
 renoise.tool():add_menu_entry{name="Track Automation:Paketti..:Randomize Automation Envelopes for Device",invoke=function() randomize_device_envelopes(1) end}
@@ -1793,6 +1793,8 @@ end
 renoise.tool():add_keybinding{name="Global:Paketti:Switch to Automation Dynamic",invoke=function() showAutomationHardDynamic() end}
 -----------
 local dialog = nil
+local vb = nil -- Make vb accessible globally
+local suppress_notifier = false -- Flag to suppress the notifier
 
 local function apply_textfield_value(value)
   local song = renoise.song()
@@ -1836,18 +1838,49 @@ local function apply_textfield_value(value)
   renoise.app():show_status("Set automation point at line " .. line_index .. " with value " .. automation_value)
 end
 
-local function apply_textfield_value_and_close(value)
+local function apply_textfield_value_and_move(value)
   -- Print the new value
   print("New Automation Value: " .. value)
   
-  -- Close the dialog if it's open
-  if dialog and dialog.visible then
-    dialog:close()
-    dialog = nil
-  end
-  
   -- Set the automation point in the Renoise pattern editor
   apply_textfield_value(value)
+  
+  -- Move to next line if "Follow Editstep" is checked
+  if dialog and dialog.visible then
+    local follow_editstep = vb.views.follow_editstep_checkbox.value
+    if follow_editstep then
+      local song = renoise.song()
+      local edit_step = song.transport.edit_step
+      local current_line = song.selected_line_index
+      local pattern_length = song.selected_pattern.number_of_lines
+      local next_line = current_line + edit_step
+      if next_line > pattern_length then
+        next_line = ((next_line - 1) % pattern_length) + 1 -- wrap around
+        song.selected_line_index = next_line
+        renoise.app():show_status("Wrapped to line " .. next_line)
+      else
+        song.selected_line_index = next_line
+      end
+      -- Re-focus the textfield and clear its content safely
+      suppress_notifier = true
+      vb.views.value_textfield.value = ""
+      suppress_notifier = false
+      vb.views.value_textfield.active = true
+      vb.views.value_textfield.edit_mode = true
+    else
+      -- If not following editstep, close the dialog
+      dialog:close()
+      dialog = nil
+    end
+  end
+end
+
+local function textfield_notifier(new_value)
+  if suppress_notifier then
+    return
+  end
+  local clamped_value = math.min(math.max(tonumber(new_value) or 0, 0), 1)
+  apply_textfield_value_and_move(clamped_value)
 end
 
 local function show_value_dialog()
@@ -1857,26 +1890,99 @@ local function show_value_dialog()
     return
   end
 
-  local vb = renoise.ViewBuilder()
+  vb = renoise.ViewBuilder() -- Create vb here and make it global
   local initial_value = "0.93524"
+
   local textfield = vb:textfield{
     width = 60,
     id = "value_textfield",
     value = initial_value,
     edit_mode = true,
-    notifier = function(new_value)
-      local clamped_value = math.min(math.max(tonumber(new_value) or 0, 0), 1)
-      if tostring(clamped_value) ~= initial_value then
-        apply_textfield_value_and_close(clamped_value) end end}
-  
-  local apply_button=vb:button{text="Write Automation to Current Line",width=180,notifier=function() apply_textfield_value_and_close(vb.views.value_textfield.value) end}
+    notifier = textfield_notifier
+  }
 
-  dialog = renoise.app():show_custom_dialog("Set Automation Value", vb:column{ margin=10, vb:row{ textfield, apply_button } })
+  local apply_button = vb:button{
+    text = "Write Automation to Current Line",
+    width = 180,
+    notifier = function()
+      apply_textfield_value_and_move(vb.views.value_textfield.value)
+    end
+  }
+
+  local follow_editstep_checkbox = vb:checkbox {
+    id = "follow_editstep_checkbox",
+    value = false, -- default unchecked
+    notifier = function(value)
+      print("Follow Editstep checkbox changed to " .. tostring(value))
+      -- Re-focus the textfield when the checkbox is clicked
+      vb.views.value_textfield.active = true
+      vb.views.value_textfield.edit_mode = true
+    end
+  }
+
+  local editstep_valuebox = vb:valuebox {
+    id = "editstep_valuebox",
+    value = renoise.song().transport.edit_step,
+    min = 1,
+    max = 256,
+    notifier = function(value)
+      print("Edit step value changed to " .. tostring(value))
+      renoise.song().transport.edit_step = value
+      -- Re-focus the textfield when the valuebox value is changed
+      vb.views.value_textfield.active = true
+      vb.views.value_textfield.edit_mode = true
+    end
+  }
+
+  local close_button = vb:button{
+    text = "Close",
+    notifier = function()
+      if dialog and dialog.visible then
+        dialog:close()
+        dialog = nil
+      end
+    end
+  }
+
+  dialog = renoise.app():show_custom_dialog("Set Automation Value",
+    vb:column{
+      margin=10,
+      vb:row{
+        textfield,
+        apply_button,
+      },
+      vb:row{
+        vb:text{text="Follow Editstep"},
+        follow_editstep_checkbox,
+        vb:text{text="Editstep"},
+        editstep_valuebox,
+      },
+      vb:row{
+        close_button,
+      }
+    }
+  )
   renoise.app().window.active_lower_frame = 2
+  -- Set initial focus to the textfield
+  vb.views.value_textfield.active = true
+  vb.views.value_textfield.edit_mode = true
 end
 
-renoise.tool():add_keybinding{name="Global:Paketti:Show Automation Value Dialog...",invoke=function() show_value_dialog() end}
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Show Automation Value Dialog...",invoke=function() show_value_dialog() end}
+renoise.tool():add_keybinding{
+  name="Global:Paketti:Show Automation Value Dialog...",
+  invoke=function() show_value_dialog() end
+}
+
+renoise.tool():add_menu_entry{
+  name="Main Menu:Tools:Paketti..:Paketti Automation Value Dialog...",
+  invoke=function() show_value_dialog() end
+}
+
+
+
+
+
+
 
 
 
@@ -1922,7 +2028,12 @@ end
 for i = 0, 1, 0.1 do
   local formatted_value = string.format("%.1f", i)
 renoise.tool():add_keybinding{name = "Global:Paketti:Write Automation Value " .. formatted_value,invoke = function() write_automation_value(tonumber(formatted_value)) end}
+if i == 0 then
+
+renoise.tool():add_menu_entry{name = "--Main Menu:Tools:Paketti..:Automation..:Write Automation Value " .. formatted_value,invoke = function() write_automation_value(tonumber(formatted_value)) end}
+else
 renoise.tool():add_menu_entry{name = "Main Menu:Tools:Paketti..:Automation..:Write Automation Value " .. formatted_value,invoke = function() write_automation_value(tonumber(formatted_value)) end}
+end
 end
 -----------------
 
@@ -2047,7 +2158,7 @@ renoise.tool():add_keybinding{
   invoke=PakettiAutomationSelectionFloodFill
 }
 renoise.tool():add_menu_entry{
-  name="Main Menu:Tools:Paketti..:Flood Fill Automation Selection",
+  name="--Main Menu:Tools:Paketti..:Automation..:Flood Fill Automation Selection",
   invoke=PakettiAutomationSelectionFloodFill
 }
 renoise.tool():add_menu_entry{
@@ -2365,4 +2476,138 @@ renoise.tool():add_keybinding{name="Global:Paketti:Flip Automation Selection Ver
 
 renoise.tool():add_midi_mapping{name="Paketti:Flip Automation Selection Horizontally",invoke=function(message) if message:is_trigger() then FlipAutomationHorizontal() end end}
 renoise.tool():add_midi_mapping{name="Paketti:Flip Automation Selection Vertically",invoke=function(message) if message:is_trigger() then FlipAutomationVertical() end end}
+-----
+
+local function add_automation_points_for_notes()
+  local song = renoise.song()
+
+  -- Ensure there's a selected track and automation parameter
+  local track = song.selected_track
+  local parameter = song.selected_automation_parameter
+  local pattern_index = song.selected_pattern_index
+  local track_index = song.selected_track_index
+  local line_index = song.selected_line_index
+
+  if not parameter then
+    renoise.app():show_status("Please select a parameter to automate.")
+    print("No automation parameter selected.")
+    return
+  end
+
+  -- Access the current pattern and the selected track's pattern track
+  local pattern = song:pattern(pattern_index)
+  local pattern_track = pattern:track(track_index)
+
+  -- Find or create automation envelope for the parameter
+  local envelope = pattern_track:find_automation(parameter)
+  if not envelope then
+    envelope = pattern_track:create_automation(parameter)
+    print("Created new automation envelope for parameter: " .. parameter.name)
+  end
+
+  -- Iterate through the lines in the pattern track to find notes
+  for line_index = 1, pattern.number_of_lines do
+    local line = pattern_track:line(line_index)
+
+    if line and line.note_columns then
+      -- Check for valid notes in the note columns
+      for _, note_column in ipairs(line.note_columns) do
+        if note_column.note_value < 120 then -- Valid MIDI note
+          -- Set the automation point at the line's position
+          local value = 0.5 -- Default automation value (you can adjust this logic as needed)
+          envelope:add_point_at(line_index, value)
+
+          renoise.app():show_status(
+            "Added automation point at line " .. line_index .. " with value " .. value
+          )
+          print("Added automation point at line " .. line_index .. " with value " .. value)
+        end
+      end
+    end
+  end
+
+  renoise.app():show_status("Finished adding automation points for notes.")
+end
+
+-- Execute the function
+renoise.tool():add_menu_entry{name="Track Automation:Paketti..:Generate Automation Points from Notes in Selected Track",invoke=function()
+add_automation_points_for_notes() end}
+renoise.tool():add_menu_entry{name="Track Automation List:Paketti..:Generate Automation Points from Notes in Selected Track",invoke=function()
+add_automation_points_for_notes() end}
+
+renoise.tool():add_keybinding{name="Global:Paketti:Generate Automation Points from Notes in Selected Track",invoke=function()
+add_automation_points_for_notes()
+renoise.app().window.active_middle_frame = 1
+renoise.app().window.active_lower_frame = 2
+ end}
+--------
+
+local function PakettiAutomationPlayModeChange_SetPlaymode(mode)
+  local song = renoise.song()
+  local automation_parameter = song.selected_automation_parameter
+  if not automation_parameter or not automation_parameter.is_automatable then
+    renoise.app():show_status("Please select an automatable parameter.")
+    return
+  end
+
+  local envelope = song:pattern(song.selected_pattern_index):track(song.selected_track_index):find_automation(automation_parameter)
+  if not envelope then
+    renoise.app():show_status("No automation envelope found for the selected parameter.")
+    return
+  end
+
+  envelope.playmode = mode
+  renoise.app():show_status("Playmode set to " .. mode)
+end
+
+local function PakettiAutomationPlayModeChange_Next()
+  local song = renoise.song()
+  local automation_parameter = song.selected_automation_parameter
+  if not automation_parameter or not automation_parameter.is_automatable then
+    renoise.app():show_status("Please select an automatable parameter.")
+    return
+  end
+
+  local envelope = song:pattern(song.selected_pattern_index):track(song.selected_track_index):find_automation(automation_parameter)
+  if not envelope then
+    renoise.app():show_status("No automation envelope found for the selected parameter.")
+    return
+  end
+
+  envelope.playmode = (envelope.playmode % 3) + 1
+  renoise.app():show_status("Next playmode selected: " .. envelope.playmode)
+end
+
+local function PakettiAutomationPlayModeChange_Previous()
+  local song = renoise.song()
+  local automation_parameter = song.selected_automation_parameter
+  if not automation_parameter or not automation_parameter.is_automatable then
+    renoise.app():show_status("Please select an automatable parameter.")
+    return
+  end
+
+  local envelope = song:pattern(song.selected_pattern_index):track(song.selected_track_index):find_automation(automation_parameter)
+  if not envelope then
+    renoise.app():show_status("No automation envelope found for the selected parameter.")
+    return
+  end
+
+  envelope.playmode = (envelope.playmode - 2) % 3 + 1
+  renoise.app():show_status("Previous playmode selected: " .. envelope.playmode)
+end
+
+-- Add Keybindings
+renoise.tool():add_keybinding {name="Global:Paketti:Select Automation Playmode (Next)",invoke=PakettiAutomationPlayModeChange_Next}
+renoise.tool():add_keybinding {name="Global:Paketti:Select Automation Playmode (Previous)",invoke=PakettiAutomationPlayModeChange_Previous}
+renoise.tool():add_keybinding {name="Global:Paketti:Select Automation Playmode 01 Points",invoke=function() PakettiAutomationPlayModeChange_SetPlaymode(renoise.PatternTrackAutomation.PLAYMODE_POINTS) end}
+renoise.tool():add_keybinding {name="Global:Paketti:Select Automation Playmode 02 Lines",invoke=function() PakettiAutomationPlayModeChange_SetPlaymode(renoise.PatternTrackAutomation.PLAYMODE_LINES) end}
+renoise.tool():add_keybinding {name="Global:Paketti:Select Automation Playmode 03 Curves",invoke=function() PakettiAutomationPlayModeChange_SetPlaymode(renoise.PatternTrackAutomation.PLAYMODE_CURVES) end}
+
+-- Add MIDI Mappings
+renoise.tool():add_midi_mapping {name="Paketti:Select Automation Playmode (Next)",invoke=PakettiAutomationPlayModeChange_Next}
+renoise.tool():add_midi_mapping {name="Paketti:Select Automation Playmode (Previous)",invoke=PakettiAutomationPlayModeChange_Previous}
+renoise.tool():add_midi_mapping {name="Paketti:Select Automation Playmode 01 Points",invoke=function() PakettiAutomationPlayModeChange_SetPlaymode(renoise.PatternTrackAutomation.PLAYMODE_POINTS) end}
+renoise.tool():add_midi_mapping {name="Paketti:Select Automation Playmode 02 Lines",invoke=function() PakettiAutomationPlayModeChange_SetPlaymode(renoise.PatternTrackAutomation.PLAYMODE_LINES) end}
+renoise.tool():add_midi_mapping {name="Paketti:Select Automation Playmode 03 Curves",invoke=function() PakettiAutomationPlayModeChange_SetPlaymode(renoise.PatternTrackAutomation.PLAYMODE_CURVES) end}
+
 

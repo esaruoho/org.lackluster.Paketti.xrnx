@@ -2843,6 +2843,123 @@ renoise.tool():add_menu_entry{name="--Instrument Box:Paketti..:Isolate Slices or
 renoise.tool():add_menu_entry{name="--Sample Mappings:Paketti..:Isolate Slices or Samples to New Instruments",invoke=PakettiIsolateSlices}
 renoise.tool():add_keybinding{name="Global:Paketti:Isolate Slices or Samples to New Instruments",invoke=PakettiIsolateSlices}
 renoise.tool():add_midi_mapping{name="Paketti:Isolate Slices or Samples to New Instruments",invoke=PakettiIsolateSlices}
+
+-- Main function to isolate slices into a new instrument or samples into new instruments
+function PakettiIsolateSlicesToInstrument()
+  local song = renoise.song()
+  local selected_instrument_index = song.selected_instrument_index
+  local instrument = song.selected_instrument
+  local selected_sample_index = song.selected_sample_index
+
+  if not instrument or #instrument.samples == 0 then
+    renoise.app():show_status("No valid instrument with samples selected.")
+    return
+  end
+
+  -- Helper function to create a new instrument
+  local function create_new_instrument(name_suffix, index)
+    song:insert_instrument_at(index)
+    song.selected_instrument_index = index
+renoise.app():load_instrument(preferences.pakettiDefaultDrumkitXRNI.value)
+    local new_instrument = song.instruments[index]
+    new_instrument.name = instrument.name .. name_suffix
+    return new_instrument
+  end
+
+  -- Helper function to create a new sample with given sample data
+  local function create_new_sample(new_instrument, sample, start_frame, end_frame, sample_name)
+    local new_sample = new_instrument:insert_sample_at(#new_instrument.samples + 1)
+    new_sample.name = sample_name
+
+    local slice_length = end_frame - start_frame + 1
+    new_sample.sample_buffer:create_sample_data(
+      sample.sample_buffer.sample_rate,
+      sample.sample_buffer.bit_depth,
+      sample.sample_buffer.number_of_channels,
+      slice_length
+    )
+    new_sample.sample_buffer:prepare_sample_data_changes()
+
+    for ch = 1, sample.sample_buffer.number_of_channels do
+      for frame = 1, slice_length do
+        new_sample.sample_buffer:set_sample_data(ch, frame, sample.sample_buffer:sample_data(ch, start_frame + frame - 1))
+      end
+    end
+
+    new_sample.sample_buffer:finalize_sample_data_changes()
+  end
+
+  local sample = instrument.samples[1]
+  local insert_index = selected_instrument_index + 1
+
+  if #sample.slice_markers > 0 then
+    -- Create one new instrument for all slices
+    local new_instrument = create_new_instrument(" (Isolated Slices)", insert_index)
+    for i, slice_start in ipairs(sample.slice_markers) do
+      local slice_end = (i == #sample.slice_markers) and sample.sample_buffer.number_of_frames or sample.slice_markers[i + 1] - 1
+      local slice_length = slice_end - slice_start + 1
+
+      if slice_length > 0 then
+        local sample_name = "Slice " .. string.format("%02X", i)
+        create_new_sample(new_instrument, sample, slice_start, slice_end, sample_name)
+      else
+        renoise.app():show_status("Invalid slice length calculated.")
+        return
+      end
+    end
+    song.selected_instrument_index = insert_index
+  else
+    -- No slices, handle samples as before
+    for i = 1, #instrument.samples do
+      local sample = instrument.samples[i]
+      -- Create a new instrument for each sample
+      local new_instrument = create_new_instrument(" (Sample " .. string.format("%02X", i) .. ")", insert_index)
+      create_new_sample(new_instrument, sample, 1, sample.sample_buffer.number_of_frames, sample.name)
+      insert_index = insert_index + 1
+    end
+    song.selected_instrument_index = selected_instrument_index + selected_sample_index
+  end
+
+  song.transport.octave = 3
+  renoise.app():show_status(
+    #sample.slice_markers > 0 and
+    #sample.slice_markers .. " Slices isolated into a new Instrument" or
+    #instrument.samples .. " Samples isolated into new Instruments"
+  )
+  renoise.song().selected_instrument:delete_sample_at(1)
+end
+
+-- Update menu entries and keybindings to reflect the new function name and purpose
+renoise.tool():add_menu_entry{
+  name="Instrument Box:Paketti..:Isolate Slices to New Instrument",
+  invoke=PakettiIsolateSlicesToInstrument
+}
+renoise.tool():add_menu_entry{
+  name="Sample Navigator:Paketti..:Isolate Slices to New Instrument",
+  invoke=PakettiIsolateSlicesToInstrument
+}
+renoise.tool():add_menu_entry{
+  name="Sample Editor:Paketti..:Isolate Slices to New Instrument",
+  invoke=PakettiIsolateSlicesToInstrument
+}
+renoise.tool():add_menu_entry{
+  name="Sample Mappings:Paketti..:Isolate Slices to New Instrument",
+  invoke=PakettiIsolateSlicesToInstrument
+}
+renoise.tool():add_menu_entry{
+  name="Main Menu:Tools:Paketti..:Instruments..:Isolate Slices to New Instrument",
+  invoke=PakettiIsolateSlicesToInstrument
+}
+renoise.tool():add_keybinding{
+  name="Global:Paketti:Isolate Slices to New Instrument",
+  invoke=PakettiIsolateSlicesToInstrument
+}
+renoise.tool():add_midi_mapping{
+  name="Paketti:Isolate Slices to New Instrument",
+  invoke=PakettiIsolateSlicesToInstrument
+}
+
+
 ---------
 --[[
   This script reverses the notes and their associated data in the selected pattern range.
@@ -2850,140 +2967,235 @@ renoise.tool():add_midi_mapping{name="Paketti:Isolate Slices or Samples to New I
 ]]
 
 function PakettiReverseNotesInSelection()
-  local song = renoise.song()
-  local selection = song.selection_in_pattern
+  local song=renoise.song()
+  local selection=selection_in_pattern_pro()
 
   if not selection then
     renoise.app():show_status("No selection in the pattern.")
     return
   end
 
-  local start_line = selection.start_line
-  local end_line = selection.end_line
-  local start_track = selection.start_track
-  local end_track = selection.end_track
+  -- Get the global start and end lines from song.selection_in_pattern
+  local pattern_selection=song.selection_in_pattern
+  local start_line=pattern_selection.start_line
+  local end_line=pattern_selection.end_line
 
-  local notes = {}
-  local origin_track = song.tracks[start_track]
+  local notes={}
 
-  -- Collect notes and effect columns from the selection
-  for line = start_line, end_line do
-    for track = start_track, end_track do
-      local pattern_track = song.selected_pattern.tracks[track]
-      local note_columns = pattern_track:line(line).note_columns
-      local effect_columns = pattern_track:line(line).effect_columns
-      local line_data = {note_columns = {}, effect_columns = {}}
+  -- Collect notes and effect columns from the advanced selection
+  for _,track_info in ipairs(selection) do
+    local track_index=track_info.track_index
+    local pattern_track=song.selected_pattern.tracks[track_index]
 
-      for column_index, column in ipairs(note_columns) do
-        line_data.note_columns[column_index] = {
-          note_value = column.note_value,
-          instrument_value = column.instrument_value,
-          volume_value = column.volume_value,
-          panning_value = column.panning_value,
-          delay_value = column.delay_value,
-          is_empty = column.is_empty
+    -- Loop through lines in the selection
+    for line=start_line,end_line do
+      local line_data={note_columns={},effect_columns={}}
+
+      -- Collect note columns
+      for _,col in ipairs(track_info.note_columns) do
+        local column=pattern_track:line(line).note_columns[col]
+        line_data.note_columns[col]={
+          note_value=column.note_value,
+          instrument_value=column.instrument_value,
+          volume_value=column.volume_value,
+          panning_value=column.panning_value,
+          delay_value=column.delay_value,
+          is_empty=column.is_empty
         }
       end
 
-      for column_index, column in ipairs(effect_columns) do
-        line_data.effect_columns[column_index] = {
-          number_value = column.number_value,
-          amount_value = column.amount_value,
-          is_empty = column.is_empty
+      -- Collect effect columns
+      for _,col in ipairs(track_info.effect_columns) do
+        local column=pattern_track:line(line).effect_columns[col]
+        line_data.effect_columns[col]={
+          number_value=column.number_value,
+          amount_value=column.amount_value,
+          is_empty=column.is_empty
         }
       end
 
-      table.insert(notes, {line = line, track = track, line_data = line_data})
+      table.insert(notes,{line=line,track=track_index,line_data=line_data})
     end
   end
 
   -- Debug output for collected notes and effect columns
   print("Collected Notes and Effect Columns:")
-  for _, note in ipairs(notes) do
-    for column_index, column in ipairs(note.line_data.note_columns) do
-      if not column.is_empty then
+  for _,note in ipairs(notes) do
+    for col,col_data in pairs(note.line_data.note_columns) do
+      if not col_data.is_empty then
         print(string.format("Line: %d, Track: %d, Note Column: %d, Note: %d, Instrument: %d, Volume: %d, Panning: %d, Delay: %d",
-          note.line, note.track, column_index, column.note_value, column.instrument_value, column.volume_value, column.panning_value, column.delay_value))
+          note.line,note.track,col,col_data.note_value,col_data.instrument_value,col_data.volume_value,col_data.panning_value,col_data.delay_value))
       else
-        print(string.format("Line: %d, Track: %d, Note Column: %d is empty", note.line, note.track, column_index))
+        print(string.format("Line: %d, Track: %d, Note Column: %d is empty",note.line,note.track,col))
       end
     end
-    for column_index, column in ipairs(note.line_data.effect_columns) do
-      if not column.is_empty then
+    for col,col_data in pairs(note.line_data.effect_columns) do
+      if not col_data.is_empty then
         print(string.format("Line: %d, Track: %d, Effect Column: %d, Number: %d, Amount: %d",
-          note.line, note.track, column_index, column.number_value, column.amount_value))
+          note.line,note.track,col,col_data.number_value,col_data.amount_value))
       else
-        print(string.format("Line: %d, Track: %d, Effect Column: %d is empty", note.line, note.track, column_index))
+        print(string.format("Line: %d, Track: %d, Effect Column: %d is empty",note.line,note.track,col))
       end
     end
   end
 
   -- Reverse the collected notes and effect columns
-  local reversed_notes = {}
-  for i = #notes, 1, -1 do
-    table.insert(reversed_notes, notes[i])
+  local reversed_notes={}
+  for i=#notes,1,-1 do
+    table.insert(reversed_notes,notes[i])
   end
 
   -- Debug output for reversed notes and effect columns
   print("Reversed Notes and Effect Columns:")
-  for _, note in ipairs(reversed_notes) do
-    for column_index, column in ipairs(note.line_data.note_columns) do
-      if not column.is_empty then
+  for _,note in ipairs(reversed_notes) do
+    for col,col_data in pairs(note.line_data.note_columns) do
+      if not col_data.is_empty then
         print(string.format("Line: %d, Track: %d, Note Column: %d, Note: %d, Instrument: %d, Volume: %d, Panning: %d, Delay: %d",
-          note.line, note.track, column_index, column.note_value, column.instrument_value, column.volume_value, column.panning_value, column.delay_value))
+          note.line,note.track,col,col_data.note_value,col_data.instrument_value,col_data.volume_value,col_data.panning_value,col_data.delay_value))
       else
-        print(string.format("Line: %d, Track: %d, Note Column: %d is empty", note.line, note.track, column_index))
+        print(string.format("Line: %d, Track: %d, Note Column: %d is empty",note.line,note.track,col))
       end
     end
-    for column_index, column in ipairs(note.line_data.effect_columns) do
-      if not column.is_empty then
+    for col,col_data in pairs(note.line_data.effect_columns) do
+      if not col_data.is_empty then
         print(string.format("Line: %d, Track: %d, Effect Column: %d, Number: %d, Amount: %d",
-          note.line, note.track, column_index, column.number_value, column.amount_value))
+          note.line,note.track,col,col_data.number_value,col_data.amount_value))
       else
-        print(string.format("Line: %d, Track: %d, Effect Column: %d is empty", note.line, note.track, column_index))
+        print(string.format("Line: %d, Track: %d, Effect Column: %d is empty",note.line,note.track,col))
       end
     end
   end
 
   -- Write reversed notes and effect columns back to the original selection
-  for i, note in ipairs(reversed_notes) do
-    local line_index = start_line + (i - 1)
-    for column_index, column in ipairs(note.line_data.note_columns) do
-      local note_column = song.selected_pattern.tracks[note.track]:line(line_index).note_columns[column_index]
-      
-      note_column.note_value = column.note_value
-      note_column.instrument_value = column.instrument_value
-      note_column.volume_value = column.volume_value
-      note_column.panning_value = column.panning_value
-      note_column.delay_value = column.delay_value
+  for i,note in ipairs(reversed_notes) do
+    local line_index=start_line+(i-1)
+    local pattern_track=song.selected_pattern.tracks[note.track]
+
+    for col,col_data in pairs(note.line_data.note_columns) do
+      local note_column=pattern_track:line(line_index).note_columns[col]
+      note_column.note_value=col_data.note_value
+      note_column.instrument_value=col_data.instrument_value
+      note_column.volume_value=col_data.volume_value
+      note_column.panning_value=col_data.panning_value
+      note_column.delay_value=col_data.delay_value
 
       -- Debug output before writing note
       print(string.format("Writing Note to Line: %d, Track: %d, Note Column: %d, Note: %d, Instrument: %d, Volume: %d, Panning: %d, Delay: %d",
-        line_index, note.track, column_index, column.note_value, column.instrument_value, column.volume_value, column.panning_value, column.delay_value))
+        line_index,note.track,col,col_data.note_value,col_data.instrument_value,col_data.volume_value,col_data.panning_value,col_data.delay_value))
     end
-    for column_index, column in ipairs(note.line_data.effect_columns) do
-      local effect_column = song.selected_pattern.tracks[note.track]:line(line_index).effect_columns[column_index]
-      
-      effect_column.number_value = column.number_value
-      effect_column.amount_value = column.amount_value
+    for col,col_data in pairs(note.line_data.effect_columns) do
+      local effect_column=pattern_track:line(line_index).effect_columns[col]
+      effect_column.number_value=col_data.number_value
+      effect_column.amount_value=col_data.amount_value
 
       -- Debug output before writing effect
       print(string.format("Writing Effect to Line: %d, Track: %d, Effect Column: %d, Number: %d, Amount: %d",
-        line_index, note.track, column_index, column.number_value, column.amount_value))
+        line_index,note.track,col,col_data.number_value,col_data.amount_value))
     end
   end
-
-  -- Debug output after writing back reversed notes and effect columns
-  print("Reversed notes and effect columns written back to pattern in the original selection.")
 
   renoise.app():show_status("Notes and effect columns in the selection have been reversed.")
 end
 
-renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor..:Reverse Notes in Selection",invoke=PakettiReverseNotesInSelection}
+
+renoise.tool():add_menu_entry{name="Main Menu:Tools:Paketti..:Pattern Editor..:Reverse Notes in Selection",invoke=function() PakettiReverseNotesInSelection() end }
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Reverse Notes in Selection",invoke=function() PakettiReverseNotesInSelection() end}
+
+-- Randomize or swap notes in a pattern selection
+-- Randomize or swap notes in a pattern selection (using selection_in_pattern_pro)
+function randomize_notes_in_selection()
+  local song = renoise.song()
+  local selection = selection_in_pattern_pro()
+
+  -- Check if a valid selection is returned
+  if not selection then 
+    renoise.app():show_status("No selection in pattern")
+    return 
+  end
+
+  local notes = {}
+  local note_positions = {}
+
+  -- Step 1: Collect all notes in the selection
+  for _, track_info in ipairs(selection) do
+    local track_index = track_info.track_index
+    local note_columns = track_info.note_columns
+
+    for _, col in ipairs(note_columns) do
+      for line_idx = song.selection_in_pattern.start_line, song.selection_in_pattern.end_line do
+        local note_column = song:pattern(song.selected_pattern_index):track(track_index):line(line_idx):note_column(col)
+        
+        -- Check if there's a note in this column
+        if note_column and note_column.note_string ~= "---" then
+          table.insert(notes, {
+            note = note_column.note_string,
+            instr = note_column.instrument_value,
+            vol = note_column.volume_value,
+            pann = note_column.panning_value,
+            delay = note_column.delay_value
+          })
+          table.insert(note_positions, {
+            line = line_idx,
+            track = track_index,
+            column = col
+          })
+
+          -- Clear the note in preparation for rearranging
+          note_column:clear()
+        end
+      end
+    end
+  end
+
+  -- Step 2: Handle the notes based on their count
+  local note_count = #notes
+
+  if note_count < 2 then
+    renoise.app():show_status("Not enough notes to randomize")
+    return
+  elseif note_count == 2 then
+    -- Swap the two notes
+    local temp = note_positions[1]
+    note_positions[1] = note_positions[2]
+    note_positions[2] = temp
+  else
+    -- Randomize note positions
+    local random_pos = {}
+
+    while #note_positions > 0 do
+      local idx = math.random(#note_positions)
+      table.insert(random_pos, note_positions[idx])
+      table.remove(note_positions, idx)
+    end
+
+    note_positions = random_pos
+  end
+
+  -- Step 3: Reapply the notes in their new positions
+  for i, note_data in ipairs(notes) do
+    local pos = note_positions[i]
+    local note_column = song:pattern(song.selected_pattern_index):track(pos.track):line(pos.line):note_column(pos.column)
+    note_column.note_string = note_data.note
+    note_column.instrument_value = note_data.instr
+    note_column.volume_value = note_data.vol
+    note_column.panning_value = note_data.pann
+    note_column.delay_value = note_data.delay
+  end
+
+  renoise.app():show_status("Notes randomized successfully")
+end
+
+
+
+renoise.tool():add_keybinding{name="Global:Paketti:Roll the Dice on Notes",invoke= function()
+randomize_notes_in_selection() end}
+
+renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Roll the Dice on Notes in Selection",invoke=function() randomize_notes_in_selection() end }
 renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Reverse Notes in Selection",invoke=PakettiReverseNotesInSelection}
-renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Reverse Notes in Selection",invoke=PakettiReverseNotesInSelection}
+
 
 -------
+--[[
 local MIN_SHIFT = -12
 local MAX_SHIFT = 12
 
@@ -3135,6 +3347,126 @@ for interval = MIN_SHIFT, MAX_SHIFT do
     renoise.tool():add_midi_mapping{
       name = midi_mapping_current,
       invoke = function() PakettiBaseNoteShifter(interval, "current") end
+    }
+  end
+end
+]]--
+
+local MIN_SHIFT = -12
+local MAX_SHIFT = 12
+
+-- Main function to adjust instrument transpose
+local function PakettiTransposeShifter(interval, scope)
+  local song = renoise.song()
+  
+  -- Validate interval
+  if interval == 0 then
+    renoise.app():show_status("No shift applied (interval is 0)")
+    return
+  end
+  
+  -- Function to process a single instrument
+  local function process_instrument(instrument, instrument_index, interval)
+    local new_transpose = instrument.transpose + interval
+    
+    -- Ensure the new transpose is within valid range (-120 to +120)
+    if new_transpose > 120 then
+      renoise.app():show_status("Transpose cannot exceed +120. Skipping Instrument " .. instrument_index)
+      return
+    elseif new_transpose < -120 then
+      renoise.app():show_status("Transpose cannot be below -120. Skipping Instrument " .. instrument_index)
+      return
+    end
+    
+    instrument.transpose = new_transpose
+  end
+  
+  -- Determine the shift direction for status messages
+  local direction = (interval > 0) and ("+" .. interval) or tostring(interval)
+  
+  -- Process all instruments or only the selected instrument
+  if scope == "all" then
+    for i, instrument in ipairs(song.instruments) do
+      process_instrument(instrument, i, interval)
+    end
+    renoise.app():show_status("Transpose shifted by " .. direction .. " semitones for all instruments.")
+  elseif scope == "current" then
+    local instrument = song.selected_instrument
+    if not instrument then
+      renoise.app():show_status("No selected instrument.")
+      return
+    end
+    local instrument_index = song.selected_instrument_index
+    process_instrument(instrument, instrument_index, interval)
+    renoise.app():show_status("Transpose shifted by " .. direction .. " semitones for the current instrument.")
+  else
+    renoise.app():show_status("Invalid scope parameter: use 'all' or 'current'.")
+  end
+end
+
+-- Generate controls for each semitone shift from -12 to +12, excluding 0
+for interval = MIN_SHIFT, MAX_SHIFT do
+  if interval ~= 0 then
+    local shift_label = (interval > 0) and ("+" .. interval) or tostring(interval)
+
+    -- Define menu labels under "Main Menu:Tools:Paketti..:Instrument..:"
+    local menu_label_all_main = "Main Menu:Tools:Paketti..:Instruments..:Transpose..:Transpose Shift " .. shift_label .. " (All Instruments)"
+    local menu_label_current_main = "Main Menu:Tools:Paketti..:Instruments..:Transpose..:Transpose Shift " .. shift_label .. " (Selected Instrument)"
+    
+    -- Define menu labels under "Sample Editor:Paketti..:"
+    local menu_label_all_pattern = "Sample Editor:Paketti..:Transpose..:Transpose Shift " .. shift_label .. " (All Instruments)"
+    local menu_label_current_pattern = "Sample Editor:Paketti..:Transpose..:Transpose Shift " .. shift_label .. " (Selected Instrument)"
+    
+    -- Define unique identifiers for keybindings
+    local keybinding_label_all = "Global:Paketti:Transpose Shift " .. shift_label .. " (All Instruments)"
+    local keybinding_label_current = "Global:Paketti:Transpose Shift " .. shift_label .. " (Selected Instrument)"
+    
+    -- Define MIDI mapping labels
+    local midi_mapping_all = "Paketti:Transpose Shift " .. shift_label .. " (All Instruments)"
+    local midi_mapping_current = "Paketti:Transpose Shift " .. shift_label .. " (Selected Instrument)"
+
+    -- Add menu entries under "Main Menu:Tools:Paketti..:Instrument..:"
+    renoise.tool():add_menu_entry{
+      name = menu_label_all_main,
+      invoke = function() PakettiTransposeShifter(interval, "all") end
+    }
+    
+    renoise.tool():add_menu_entry{
+      name = menu_label_current_main,
+      invoke = function() PakettiTransposeShifter(interval, "current") end
+    }
+
+    -- Add menu entries under "Sample Editor:Paketti..:"
+    renoise.tool():add_menu_entry{
+      name = menu_label_all_pattern,
+      invoke = function() PakettiTransposeShifter(interval, "all") end
+    }
+    
+    renoise.tool():add_menu_entry{
+      name = menu_label_current_pattern,
+      invoke = function() PakettiTransposeShifter(interval, "current") end
+    }
+
+    -- Add keybindings
+    renoise.tool():add_keybinding{
+      name = keybinding_label_all,
+      invoke = function() PakettiTransposeShifter(interval, "all") end
+    }
+    
+    renoise.tool():add_keybinding{
+      name = keybinding_label_current,
+      invoke = function() PakettiTransposeShifter(interval, "current") end
+    }
+
+    -- Add MIDI mappings
+    renoise.tool():add_midi_mapping{
+      name = midi_mapping_all,
+      invoke = function() PakettiTransposeShifter(interval, "all") end
+    }
+    
+    renoise.tool():add_midi_mapping{
+      name = midi_mapping_current,
+      invoke = function() PakettiTransposeShifter(interval, "current") end
     }
   end
 end
@@ -7685,4 +8017,276 @@ end
 -- Call the main function
 renoise.tool():add_keybinding{name="Global:Paketti:Save Song with Timestamp",invoke=function() save_with_new_timestamp() end}
 renoise.tool():add_menu_entry{name="Main Menu:File:Save Song with Timestamp",invoke=function() save_with_new_timestamp() end}
+-------
+local dialog -- Variable to track dialog visibility
+
+-- Function to modify the SampleBuffer based on operation and value
+function PakettiOffsetSampleBuffer(operation, number)
+  local sample = renoise.song().selected_sample
+  local buffer = sample.sample_buffer
+
+  if buffer.has_sample_data then
+    buffer:prepare_sample_data_changes()
+    
+    for ch = 1, buffer.number_of_channels do
+      for i = 1, buffer.number_of_frames do
+        local current_sample = buffer:sample_data(ch, i)
+        local modified_sample
+
+        if operation == "subtract" then
+          modified_sample = math.max(-1.0, math.min(1.0, current_sample + number)) -- Shift down with negative value
+        elseif operation == "multiply" then
+          modified_sample = math.max(-1.0, math.min(1.0, current_sample * (1 + number))) -- Apply scaling factor
+        else
+          renoise.app():show_status("Invalid operation. Use 'subtract' or 'multiply'.")
+          return
+        end
+
+        buffer:set_sample_data(ch, i, modified_sample)
+      end
+    end
+    
+    buffer:finalize_sample_data_changes()
+    renoise.app():show_status(operation .. " operation applied with value " .. number .. " to the sample buffer.")
+  else
+    renoise.app():show_status("No sample data available in the selected sample.")
+  end
+end
+
+-- Key handler function as per your specification
+local function PakettiOffsetDialogKeyHandlerFunc(dialog, key)
+  local closer = preferences.pakettiDialogClose.value
+  if key.modifiers == "" and key.name == closer then
+    dialog:close()
+    return
+  end
+
+  if key.name == "!" then
+    dialog:close()
+    renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
+  else
+    return key
+  end
+end
+
+-- Function to show the offset dialog with slider, switch, and button
+function show_offset_dialog()
+  if dialog and dialog.visible then
+    dialog:close() -- Close if already open
+    return
+  end
+
+  local vb = renoise.ViewBuilder()
+  local slider_value = vb:text { text="0.0", width=40 } -- Initial display text for slider value
+  
+  local slider = vb:slider {
+    min=-1.0,
+    max=1.0,
+    value=0,
+    width=120,
+    notifier=function(value)
+      slider_value.text = string.format("%.2f", value) -- Update text to reflect slider position
+    end
+  }
+
+  local operation_switch = vb:switch { items={ "-", "*" }, value=1, width=40 }
+  
+  local function apply_offset()
+    local value = slider.value
+    local operation = (operation_switch.value == 1) and "subtract" or "multiply"
+    
+    -- Adjust operation logic based on slider value
+    PakettiOffsetSampleBuffer(operation, value)
+
+    renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
+  end
+
+  local content = vb:column {
+    vb:horizontal_aligner {
+      vb:text { text="Offset/Multiplier:" },
+      slider,
+      slider_value -- Display text next to the slider
+    },
+    vb:horizontal_aligner {
+      vb:text { text="Operation:" },
+      operation_switch
+    },
+    vb:button { text="Change Sample Buffer", width=160, notifier=apply_offset }
+  }
+
+  dialog = renoise.app():show_custom_dialog("Offset Sample Buffer", content, PakettiOffsetDialogKeyHandlerFunc)
+      renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_INSTRUMENT_SAMPLE_EDITOR
+
+end
+
+renoise.tool():add_keybinding { name="Sample Editor:Paketti:Offset Sample Buffer by -0.5", invoke=function() PakettiOffsetSampleBuffer("subtract", 0.5) end }
+renoise.tool():add_keybinding { name="Sample Editor:Paketti:Multiply Sample Buffer by 0.5", invoke=function() PakettiOffsetSampleBuffer("multiply", 0.5) end }
+renoise.tool():add_keybinding { name="Global:Paketti:Offset Dialog...", invoke=show_offset_dialog }
+renoise.tool():add_menu_entry { name="Sample Editor:Paketti..:Offset Dialog...", invoke=show_offset_dialog }
+renoise.tool():add_menu_entry { name="Main Menu:Tools:Paketti..:Paketti Offset Dialog...", invoke=show_offset_dialog }
+
+
+------
+
+-- Function to invert specified content in the selection or entire track
+function invert_content(column_type)
+  local song=renoise.song()
+  local pattern=song.selected_pattern
+  local selection=song.selection_in_pattern
+
+  -- Determine the range based on the selection or entire track if no selection
+  local start_line, end_line, start_track, end_track, start_column, end_column
+
+  if selection then
+    start_line=selection.start_line
+    end_line=selection.end_line
+    start_track=selection.start_track
+    end_track=selection.end_track
+    start_column=selection.start_column
+    end_column=selection.end_column
+  else
+    start_line=1
+    end_line=pattern.number_of_lines
+    start_track=song.selected_track_index
+    end_track=start_track
+    start_column=1
+    end_column=song:track(start_track).visible_note_columns + song:track(start_track).visible_effect_columns
+  end
+
+  -- Iterate over the specified lines and tracks
+  for line_index=start_line, end_line do
+    for track_index=start_track, end_track do
+      local track=pattern:track(track_index)
+      local track_vis=song:track(track_index)
+      local note_columns_visible=track_vis.visible_note_columns
+      local effect_columns_visible=track_vis.visible_effect_columns
+      local total_columns_visible=note_columns_visible + effect_columns_visible
+
+      -- Calculate column boundaries for this track
+      local current_start_column = (selection and track_index == start_track) and start_column or 1
+      local current_end_column = (selection and track_index == end_track) and end_column or total_columns_visible
+
+      -- Iterate over the columns based on calculated boundaries
+      for col=current_start_column, current_end_column do
+        if col <= note_columns_visible and (column_type == "notecolumns" or column_type == "all") then
+          -- Note column inversion
+          local note_col=track:line(line_index).note_columns[col]
+
+          -- Invert volume if within 0x00-0x80 range
+          if note_col.volume_value >= 0 and note_col.volume_value <= 0x80 then
+            note_col.volume_value=0x80 - note_col.volume_value
+          end
+
+          -- Invert panning if within 0x00-0x80 range
+          if note_col.panning_value >= 0 and note_col.panning_value <= 0x80 then
+            note_col.panning_value=0x80 - note_col.panning_value
+          end
+
+          -- Invert delay if present (range 0x00-0xFF)
+          if note_col.delay_value > 0 then
+            note_col.delay_value=0xFF - note_col.delay_value
+          end
+
+          -- Invert effect amount if present (range 0x00-0xFF)
+          if note_col.effect_amount_value > 0 then
+            note_col.effect_amount_value=0xFF - note_col.effect_amount_value
+          end
+
+        elseif col > note_columns_visible and (column_type == "effectcolumns" or column_type == "all") then
+          -- Effect column inversion
+          local effect_col=track:line(line_index).effect_columns[col - note_columns_visible]
+
+          -- Invert amount if present (range 0x00-0xFF) only if number_value is not zero
+          if effect_col.number_value ~= 0 then
+            effect_col.amount_value = (effect_col.amount_value == 0x00) and 0xFF or (0xFF - effect_col.amount_value)
+          end
+        end
+      end
+    end
+  end
+
+  renoise.app():show_status("Inverted values in selected range: " .. column_type)
+end
+
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Invert Note Column Subcolumns", invoke=function() invert_content("notecolumns") end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Invert Effect Column Subcolumns", invoke=function() invert_content("effectcolumns") end}
+renoise.tool():add_keybinding{name="Pattern Editor:Paketti:Invert All Subcolumns", invoke=function() invert_content("all") end}
+renoise.tool():add_menu_entry{name="--Pattern Editor:Paketti..:Invert Note Column Subcolumns", invoke=function() invert_content("notecolumns") end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Invert Effect Column Subcolumns", invoke=function() invert_content("effectcolumns") end}
+renoise.tool():add_menu_entry{name="Pattern Editor:Paketti..:Invert All Subcolumns", invoke=function() invert_content("all") end}
+
+
+---
+function wipe_random_notes_with_note_offs()
+  local song = renoise.song()
+  local random = math.random
+
+  -- Get the selection in pattern
+  local selection_data = selection_in_pattern_pro()
+  if not selection_data then
+    renoise.app():show_status("No valid selection in pattern!")
+    return
+  end
+
+  local pattern_index = song.selected_pattern_index
+  local pattern = song.patterns[pattern_index]
+
+  -- Randomize the number of notes to replace (1–12)
+  local notes_to_replace = random(1, 12)
+  local replaced_count = 0
+
+  print("Random notes to replace:", notes_to_replace)
+
+  -- Iterate through the tracks in the selection
+  for _, track_info in ipairs(selection_data) do
+    local track_index = track_info.track_index
+    local track = song.tracks[track_index]
+
+    print("Processing Track:", track_index)
+
+    -- Skip tracks with no selected note columns
+    if #track_info.note_columns > 0 then
+      for _, column_index in ipairs(track_info.note_columns) do
+        print("Processing Column:", column_index)
+
+        -- Access the lines within the selected range
+        for line_index = song.selection_in_pattern.start_line, song.selection_in_pattern.end_line do
+          local line = pattern.tracks[track_index]:line(line_index)
+          local note_column = line:note_column(column_index)
+
+          -- Debug: Print note details
+          if note_column then
+            print("Line:", line_index, "Column:", column_index, "Note String:", note_column.note_string or "Empty", "Is Empty:", note_column.is_empty)
+          end
+
+          -- Replace random notes with NOTE_OFF, skipping NOTE_OFF columns
+          if note_column and not note_column.is_empty and note_column.note_string ~= "OFF" then
+            if replaced_count < notes_to_replace and random(0, 1) == 1 then -- Random decision for replacement
+              print("Replacing Note with NOTE_OFF at Line:", line_index, "Column:", column_index)
+              note_column.note_string = "OFF" -- Set the note to OFF
+              note_column.instrument_value = 255 -- Clear the instrument value
+              replaced_count = replaced_count + 1
+            end
+          end
+        end
+      end
+    else
+      print("No selected note columns in Track:", track_index)
+    end
+  end
+
+  -- Show appropriate status message
+  if replaced_count > 0 then
+    renoise.app():show_status("Removed " .. replaced_count .. " notes and replaced them with note-offs.")
+  else
+    renoise.app():show_status("No notes left to be wiped, doing nothing.")
+  end
+
+  -- Return focus to the pattern editor
+  renoise.app().window.active_middle_frame = renoise.ApplicationWindow.MIDDLE_FRAME_PATTERN_EDITOR
+end
+
+
+
+renoise.tool():add_keybinding{name="Global:Paketti:Wipe Random Notes",invoke=function() wipe_random_notes_with_note_offs() end}
 

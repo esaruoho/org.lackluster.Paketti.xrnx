@@ -35,6 +35,20 @@
   </RandomizeSettings>
   <PakettiMoveSilenceThreshold>0.0121</PakettiMoveSilenceThreshold>
   <pakettiSlideContentAutomationToo>true</pakettiSlideContentAutomationToo>
+  <UserInstruments>
+    <Slot10/>
+    <Path/>
+    <Slot06/>
+    <Slot01>/Users/esaruoho/Library/Mobile Documents/com~apple~CloudDocs/Renoise/Tools/org.lackluster.Paketti.xrnx/DeviceChains//Slot01.xrni</Slot01>
+    <Slot03>/Users/esaruoho/Library/Mobile Documents/com~apple~CloudDocs/Renoise/Tools/org.lackluster.Paketti.xrnx/DeviceChains//Slot03.xrni</Slot03>
+    <Slot05/>
+    <Slot04/>
+    <Slot09/>
+    <Slot08/>
+    <Slot07/>
+    <Slot02>/Users/esaruoho/Library/Mobile Documents/com~apple~CloudDocs/Renoise/Tools/org.lackluster.Paketti.xrnx/DeviceChains//Slot02.xrni</Slot02>
+  </UserInstruments>
+  <UserDefinedSampleFolders05/>
   <UserDefinedSampleFolders06/>
   <PakettiDynamicViews/>
   <pakettiEditMode>1.0</pakettiEditMode>
@@ -53,15 +67,24 @@
   </WipeSlices>
   <PakettiDeviceLoaders/>
   <pakettiCheatSheet>
-    <pakettiCheatSheetRandomizeMax>195.26223776223779</pakettiCheatSheetRandomizeMax>
-    <pakettiCheatSheetRandomizeMin>0.0</pakettiCheatSheetRandomizeMin>
+    <pakettiCheatSheetRandomizeMax>188.1293706293707</pakettiCheatSheetRandomizeMax>
+    <pakettiCheatSheetRandomizeMin>87.377622377622373</pakettiCheatSheetRandomizeMin>
     <pakettiCheatSheetRandomizeDontOverwrite>false</pakettiCheatSheetRandomizeDontOverwrite>
-    <pakettiCheatSheetRandomizeWholeTrack>false</pakettiCheatSheetRandomizeWholeTrack>
+    <pakettiCheatSheetRandomizeWholeTrack>true</pakettiCheatSheetRandomizeWholeTrack>
     <pakettiCheatSheetRandomizeSwitch>false</pakettiCheatSheetRandomizeSwitch>
     <pakettiCheatSheetRandomize>true</pakettiCheatSheetRandomize>
     <pakettiCheatSheetFillAll>100</pakettiCheatSheetFillAll>
   </pakettiCheatSheet>
-  <PakettiPluginLoaders/>
+  <PakettiPluginLoaders>
+    <PakettiPluginLoader type="lua_model:PakettiPluginEntry">
+      <name>Vintage (AU)</name>
+      <path>Audio/Generators/AU/aumu:V4vi:Manu</path>
+    </PakettiPluginLoader>
+    <PakettiPluginLoader type="lua_model:PakettiPluginEntry">
+      <name>XO (AU)</name>
+      <path>Audio/Generators/AU/aumu:xAXO:xlnA</path>
+    </PakettiPluginLoader>
+  </PakettiPluginLoaders>
   <pakettiDialogClose>esc</pakettiDialogClose>
   <pakettiMidiPopulator>
     <delayColumn>false</delayColumn>
@@ -74,7 +97,7 @@
     <collapsed>false</collapsed>
     <effectColumns>1.0</effectColumns>
   </pakettiMidiPopulator>
-  <pakettiLoaderFilterType>LP Clean</pakettiLoaderFilterType>
+  <pakettiLoaderFilterType>LP Moog</pakettiLoaderFilterType>
   <pakettiTitler>
     <textfile_path>External/wordlist.txt</textfile_path>
     <trackTitlerDateFormat>YYYY_MM_DD</trackTitlerDateFormat>
@@ -101,9 +124,9 @@
     <pakettiColugaLoopMode>2</pakettiColugaLoopMode>
     <pakettiColugaFormatToSave>1.0</pakettiColugaFormatToSave>
     <pakettiColugaAmountOfVideos>1.0</pakettiColugaAmountOfVideos>
-    <pakettiColugaOutputDirectory>Set this yourself, please.</pakettiColugaOutputDirectory>
+    <pakettiColugaOutputDirectory>/Users/esaruoho/Music/samples/colugatest/</pakettiColugaOutputDirectory>
     <pakettiColugaClipLength>10</pakettiColugaClipLength>
-    <pakettiColugaYT_DLPLocation>&lt;No path set&gt;</pakettiColugaYT_DLPLocation>
+    <pakettiColugaYT_DLPLocation>/opt/homebrew/Cellar/yt-dlp/2024.11.18/libexec/bin/yt-dlp</pakettiColugaYT_DLPLocation>
     <pakettiColugaLoadWholeVideo>true</pakettiColugaLoadWholeVideo>
   </pakettiColuga>
   <pakettiLoaderOverSampling>true</pakettiLoaderOverSampling>
@@ -158,7 +181,19 @@
   <upperFramePreference>0.0</upperFramePreference>
   <UserDefinedSampleFolders08/>
   <UserDefinedSampleFolders01/>
-  <UserDefinedSampleFolders05/>
+  <UserDevices>
+    <Slot10/>
+    <Path/>
+    <Slot06>/Users/esaruoho/Library/Mobile Documents/com~apple~CloudDocs/Renoise/Tools/org.lackluster.Paketti.xrnx/DeviceChains//Slot06.xrnt</Slot06>
+    <Slot01>/Users/esaruoho/Library/Mobile Documents/com~apple~CloudDocs/Renoise/Tools/org.lackluster.Paketti.xrnx/DeviceChains/colourcopy-valhalladelay-pingpong-niceness.xrnt</Slot01>
+    <Slot03>/Users/esaruoho/Library/Mobile Documents/com~apple~CloudDocs/Renoise/Tools/org.lackluster.Paketti.xrnx/DeviceChains//Slot03.xrnt</Slot03>
+    <Slot05>/Users/esaruoho/Library/Mobile Documents/com~apple~CloudDocs/Renoise/Tools/org.lackluster.Paketti.xrnx/DeviceChains//Slot05.xrnt</Slot05>
+    <Slot04>/Users/esaruoho/Library/Mobile Documents/com~apple~CloudDocs/Renoise/Tools/org.lackluster.Paketti.xrnx/DeviceChains//Slot04.xrnt</Slot04>
+    <Slot09/>
+    <Slot08/>
+    <Slot07/>
+    <Slot02>/Users/esaruoho/Library/Mobile Documents/com~apple~CloudDocs/Renoise/Tools/org.lackluster.Paketti.xrnx/DeviceChains//Slot02.xrnt</Slot02>
+  </UserDevices>
   <pakettiLoaderOneshot>false</pakettiLoaderOneshot>
   <pakettiDefaultDrumkitXRNI>Presets/12st_Pitchbend_Drumkit_C0.xrni</pakettiDefaultDrumkitXRNI>
   <selectionNewInstrumentSelect>false</selectionNewInstrumentSelect>

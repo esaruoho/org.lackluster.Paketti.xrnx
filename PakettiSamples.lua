@@ -5,6 +5,8 @@ local vb = renoise.ViewBuilder()
 local app_paths = {}
 local smart_folder_paths = {}
 
+
+
 -- Function to browse for an app and update the corresponding field
 function appSelectionBrowseForApp(index)
     local file_extensions = {"*.*"}
@@ -347,6 +349,12 @@ end
 for i=1, 6 do
     renoise.tool():add_keybinding{
         name="Global:Paketti:Send Selected Sample to AppSelection" .. i,
+        invoke=function()
+            saveSelectedSampleToTempAndOpen(preferences.AppSelection["AppSelection"..i].value)
+        end
+    }
+    renoise.tool():add_menu_entry{
+        name="Sample Editor:Paketti..:Launch App..:Send Selected Sample to AppSelection" .. i,
         invoke=function()
             saveSelectedSampleToTempAndOpen(preferences.AppSelection["AppSelection"..i].value)
         end
@@ -3341,11 +3349,15 @@ local function load_random_akwf_sample(amount)
 
       -- Set the volume of each sample to the calculated reduction factor
       sample.volume = volume_reduction_factor
+      renoise.song().selected_instrument.volume = volume_reduction_factor
 
       -- Extract filename for setting sample name
       local filename = selected_file:match("([^/]+)%.wav$") or "Sample"
       sample.name = filename
       sample.transpose = -2
+
+      -- Set finetune based on index: -10 for odd, +10 for even
+      sample.fine_tune = (i % 2 == 1) and -10 or 10
 
       -- Update instrument name for clarity, using the last loaded file
       instrument.name = "AKWF - " .. filename
@@ -3358,10 +3370,21 @@ local function load_random_akwf_sample(amount)
   end
 end
 
+
 -- Keybindings to load different numbers of samples
 renoise.tool():add_keybinding{name="Global:Paketti:Load Random AKWF Sample", invoke=function() load_random_akwf_sample(1) end}
 renoise.tool():add_keybinding{name="Global:Paketti:Load Random amount (1...12) of AKWF Samples", invoke=function() load_random_akwf_sample("random") end}
 renoise.tool():add_keybinding{name="Global:Paketti:Load 05 AKWF Samples", invoke=function() load_random_akwf_sample(5) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load 05 AKWF Samples with Overlap Random", invoke=function() load_random_akwf_sample(5) 
+DrumKitToOverlay(2) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load 05 AKWF Samples with Overlap Cycle", invoke=function() load_random_akwf_sample(5) 
+DrumKitToOverlay(1) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load 12 AKWF Samples with Overlap Random", invoke=function() load_random_akwf_sample(12) 
+DrumKitToOverlay(2) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load 12 AKWF Samples with Overlap Cycle", invoke=function() load_random_akwf_sample(12) 
+DrumKitToOverlay(1) end}
+
+
 renoise.tool():add_keybinding{name="Global:Paketti:Load 04 AKWF Samples (XY)", invoke=function() load_random_akwf_sample(4)
 for i = 1,#renoise.song().selected_instrument.samples do
 renoise.song().selected_instrument.samples[i].volume = 0
@@ -3946,7 +3969,72 @@ function PakettiUserDefinedSamplesShowDialog()
 end
 
 -- Add menu entry to show the dialog
-renoise.tool():add_menu_entry{
-  name = "Main Menu:Tools:Paketti..:!Preferences..:User-Defined Sample Folders",
-  invoke = PakettiUserDefinedSamplesShowDialog
-}
+renoise.tool():add_menu_entry{name = "Main Menu:Tools:Paketti..:Paketti User-Defined Sample Folders Dialog...",invoke=PakettiUserDefinedSamplesShowDialog}
+renoise.tool():add_menu_entry{name = "Sample Editor:Paketti..:User-Defined Sample Folders Dialog...",invoke=PakettiUserDefinedSamplesShowDialog}
+renoise.tool():add_keybinding{name = "Global:Paketti:User-Defined Sample Folders Dialog...",invoke=PakettiUserDefinedSamplesShowDialog}
+
+------
+
+
+local function duplicate_sample_with_transpose(transpose_amount)
+  local song = renoise.song()
+  local instrument = song.selected_instrument
+  local selected_sample_index = song.selected_sample_index
+
+  if not instrument then
+    renoise.app():show_status("No instrument selected.")
+    return
+  end
+
+  if not selected_sample_index or selected_sample_index < 1 or selected_sample_index > #instrument.samples then
+    renoise.app():show_status("No valid sample selected.")
+    return
+  end
+
+  -- Get the selected sample
+  local original_sample = instrument.samples[selected_sample_index]
+
+  -- Create a new sample slot
+  local new_sample_index = selected_sample_index + 1
+  instrument:insert_sample_at(new_sample_index)
+  local new_sample = instrument.samples[new_sample_index]
+
+  -- Copy data from original sample to new sample
+  new_sample:copy_from(original_sample)
+
+  -- Set the transpose and rename the sample
+  new_sample.transpose = original_sample.transpose + transpose_amount
+  new_sample.name = original_sample.name .. " " .. (transpose_amount >= 0 and "+" or "") .. transpose_amount
+
+  -- Confirm the duplication
+  renoise.app():show_status("Sample duplicated and transposed by " .. transpose_amount .. ".")
+end
+
+-- Keybindings, Menu Entries, and MIDI Mappings for each transpose amount
+renoise.tool():add_keybinding{name="Global:Paketti:Duplicate Selected Sample at -12 transpose",invoke=function() duplicate_sample_with_transpose(-12) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Duplicate Selected Sample at -24 transpose",invoke=function() duplicate_sample_with_transpose(-24) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Duplicate Selected Sample at +12 transpose",invoke=function() duplicate_sample_with_transpose(12) end}
+renoise.tool():add_keybinding{name="Global:Paketti:Duplicate Selected Sample at +24 transpose",invoke=function() duplicate_sample_with_transpose(24) end}
+
+renoise.tool():add_menu_entry{name="--Sample Navigator:Paketti..:Duplicate Selected Sample at -12 transpose",invoke=function() duplicate_sample_with_transpose(-12) end}
+renoise.tool():add_menu_entry{name="Sample Navigator:Paketti..:Duplicate Selected Sample at -24 transpose",invoke=function() duplicate_sample_with_transpose(-24) end}
+renoise.tool():add_menu_entry{name="Sample Navigator:Paketti..:Duplicate Selected Sample at +12 transpose",invoke=function() duplicate_sample_with_transpose(12) end}
+renoise.tool():add_menu_entry{name="Sample Navigator:Paketti..:Duplicate Selected Sample at +24 transpose",invoke=function() duplicate_sample_with_transpose(24) end}
+
+renoise.tool():add_menu_entry{name="--Sample Mappings:Paketti..:Duplicate Selected Sample at -12 transpose",invoke=function() duplicate_sample_with_transpose(-12) end}
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Duplicate Selected Sample at -24 transpose",invoke=function() duplicate_sample_with_transpose(-24) end}
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Duplicate Selected Sample at +12 transpose",invoke=function() duplicate_sample_with_transpose(12) end}
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Duplicate Selected Sample at +24 transpose",invoke=function() duplicate_sample_with_transpose(24) end}
+
+
+renoise.tool():add_menu_entry{name="--Sample Editor:Paketti..:Duplicate Selected Sample at -12 transpose",invoke=function() duplicate_sample_with_transpose(-12) end}
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Duplicate Selected Sample at -24 transpose",invoke=function() duplicate_sample_with_transpose(-24) end}
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Duplicate Selected Sample at +12 transpose",invoke=function() duplicate_sample_with_transpose(12) end}
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Duplicate Selected Sample at +24 transpose",invoke=function() duplicate_sample_with_transpose(24) end}
+
+
+renoise.tool():add_midi_mapping{name="Paketti:Duplicate Selected Sample at -12 transpose",invoke=function(message) if message:is_trigger() then duplicate_sample_with_transpose(-12) end end}
+renoise.tool():add_midi_mapping{name="Paketti:Duplicate Selected Sample at -24 transpose",invoke=function(message) if message:is_trigger() then duplicate_sample_with_transpose(-24) end end}
+renoise.tool():add_midi_mapping{name="Paketti:Duplicate Selected Sample at +12 transpose",invoke=function(message) if message:is_trigger() then duplicate_sample_with_transpose(12) end end}
+renoise.tool():add_midi_mapping{name="Paketti:Duplicate Selected Sample at +24 transpose",invoke=function(message) if message:is_trigger() then duplicate_sample_with_transpose(24) end end}
+

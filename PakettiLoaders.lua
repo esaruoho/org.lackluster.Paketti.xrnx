@@ -2742,3 +2742,225 @@ renoise.tool():add_keybinding{name="Global:Paketti:Insert Inverter Device to Tra
 renoise.tool():add_midi_mapping{name="Paketti:Insert Inverter Device to TrackDSP/SampleFX",invoke=function(message) if message:is_trigger() then PakettiInvertDeviceTrackDSP() end end}
 -----
 
+function wipePhrases()
+-- Deletes all phrases in the current instrument or shows a status if none exist
+local song = renoise.song()
+local instrument = song.selected_instrument
+
+if #instrument.phrases > 0 then
+  while #instrument.phrases > 0 do
+    instrument:delete_phrase_at(1) -- Always delete the first phrase (index 0)
+  end
+  renoise.app():show_status("All phrases deleted from the current instrument.")
+else
+  renoise.app():show_status("There were no phrases to delete.")
+end
+end
+renoise.tool():add_keybinding{name="Global:Paketti:Wipe Phrases on Selected Instrument",invoke=function() wipePhrases() end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Wipe Phrases on Selected Instrument",invoke=function() wipePhrases() end}
+renoise.tool():add_menu_entry{name="Phrase Editor:Paketti..:Wipe Phrases on Selected Instrument",invoke=function() wipePhrases() end}
+renoise.tool():add_menu_entry{name="Phrase Mappings:Paketti..:Wipe Phrases on Selected Instrument",invoke=function() wipePhrases() end}
+renoise.tool():add_menu_entry{name="Phrase Grid:Paketti..:Wipe Phrases on Selected Instrument",invoke=function() wipePhrases() end}
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Wipe Phrases on Selected Instrument",invoke=function() wipePhrases() end}
+
+function loadXRNIWipePhrases()
+-- Prompts user to load an .XRNI, loads it into a new instrument, and deletes all phrases
+local song = renoise.song()
+local current_instrument_index = song.selected_instrument_index
+
+-- Create a new instrument below the current one and select it
+local new_instrument_index = math.min(current_instrument_index + 1, #song.instruments + 1)
+song:insert_instrument_at(new_instrument_index)
+song.selected_instrument_index = new_instrument_index
+local new_instrument = song.selected_instrument
+
+-- Prompt the user to load an XRNI file
+local file_path = renoise.app():prompt_for_filename_to_read({"*.xrni"}, "Select an XRNI file to load")
+
+if not file_path then
+  renoise.app():show_status("No .XRNI was selected, doing nothing.")
+  return -- Exit the script if no file was selected
+end
+
+-- Try loading the selected XRNI file into the newly created instrument
+local success, error_message = pcall(function()
+  renoise.app():load_instrument(file_path)
+end)
+
+if not success then
+  renoise.app():show_status("Failed to load the selected .XRNI file: " .. error_message)
+  return -- Exit if the XRNI couldn't be loaded
+end
+
+-- Wipe all phrases from the newly loaded instrument
+if #renoise.song().selected_instrument.phrases > 0 then
+  while #renoise.song().selected_instrument.phrases > 0 do
+    renoise.song().selected_instrument:delete_phrase_at(1) -- Always delete the first phrase
+  end
+  renoise.app():show_status("Loaded .XRNI and deleted all phrases from the new instrument.")
+else
+  renoise.app():show_status("Loaded .XRNI, but there were no phrases to delete.")
+end
+
+end 
+
+renoise.tool():add_keybinding{name="Global:Paketti:Load XRNI & Wipe Phrases",invoke=function() loadXRNIWipePhrases() end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Load XRNI & Wipe Phrases",invoke=function() loadXRNIWipePhrases() end}
+renoise.tool():add_menu_entry{name="Phrase Editor:Paketti..:Load XRNI & Wipe Phrases",invoke=function() loadXRNIWipePhrases() end}
+renoise.tool():add_menu_entry{name="Phrase Mappings:Paketti..:Load XRNI & Wipe Phrases",invoke=function() loadXRNIWipePhrases() end}
+renoise.tool():add_menu_entry{name="Phrase Grid:Paketti..:Load XRNI & Wipe Phrases",invoke=function() loadXRNIWipePhrases() end}
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Load XRNI & Wipe Phrases",invoke=function() loadXRNIWipePhrases() end}
+renoise.tool():add_midi_mapping{name="Paketti:Load XRNI & Wipe Phrases",invoke=function(message) if message:is_trigger() then
+ loadXRNIWipePhrases() end end}
+
+function loadXRNIWipePhrasesTwo()
+-- Prompts user to load an .XRNI, loads it into a new instrument, and deletes all phrases
+local song = renoise.song()
+local current_instrument_index = song.selected_instrument_index
+
+-- Create a new instrument below the current one and select it
+local new_instrument_index = math.min(current_instrument_index + 1, #song.instruments + 1)
+song:insert_instrument_at(new_instrument_index)
+song.selected_instrument_index = new_instrument_index
+local new_instrument = song.selected_instrument
+
+-- Prompt the user to load an XRNI file
+local file_path = renoise.app():prompt_for_filename_to_read({"*.xrni"}, "Select an XRNI file to load")
+
+if not file_path then
+  renoise.app():show_status("No .XRNI was selected, doing nothing.")
+  return -- Exit the script if no file was selected
+end
+
+-- Try loading the selected XRNI file into the newly created instrument
+local success, error_message = pcall(function()
+  renoise.app():load_instrument(file_path)
+end)
+
+if not success then
+  renoise.app():show_status("Failed to load the selected .XRNI file: " .. error_message)
+  return -- Exit if the XRNI couldn't be loaded
+end
+
+-- Wipe all phrases from the newly loaded instrument
+if #renoise.song().selected_instrument.phrases > 0 then
+renoise.song().instruments[renoise.song().selected_instrument_index].phrase_playback_mode=1
+  renoise.app():show_status("Loaded .XRNI and disabled phrases.")
+else
+  renoise.app():show_status("Loaded .XRNI, but there were no phrases to disable.")
+end
+end 
+
+renoise.tool():add_keybinding{name="Global:Paketti:Load XRNI & Disable Phrases",invoke=function() loadXRNIWipePhrasesTwo() end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Load XRNI & Disable Phrases",invoke=function() loadXRNIWipePhrasesTwo() end}
+renoise.tool():add_menu_entry{name="Phrase Editor:Paketti..:Load XRNI & Disable Phrases",invoke=function() loadXRNIWipePhrasesTwo() end}
+renoise.tool():add_menu_entry{name="Phrase Mappings:Paketti..:Load XRNI & Disable Phrases",invoke=function() loadXRNIWipePhrasesTwo() end}
+renoise.tool():add_menu_entry{name="Phrase Grid:Paketti..:Load XRNI & Disable Phrases",invoke=function() loadXRNIWipePhrasesTwo() end}
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Load XRNI & Disable Phrases",invoke=function() loadXRNIWipePhrasesTwo() end}
+renoise.tool():add_midi_mapping{name="Paketti:Load XRNI & Disable Phrases",invoke=function(message) if message:is_trigger() then
+ loadXRNIWipePhrasesTwo() end end}
+
+
+
+
+
+
+function loadXRNIKeepPhrases()
+
+-- Creates a new instrument, loads an XRNI, and shows its name with phrase information
+local song = renoise.song()
+local current_instrument_index = song.selected_instrument_index
+
+-- Create a new instrument below the current one and select it
+local new_instrument_index = math.min(current_instrument_index + 1, #song.instruments + 1)
+song:insert_instrument_at(new_instrument_index)
+song.selected_instrument_index = new_instrument_index
+local new_instrument = song.selected_instrument
+
+-- Prompt the user to load an XRNI file
+local file_path = renoise.app():prompt_for_filename_to_read({"*.xrni"}, "Select an XRNI file to load")
+
+if not file_path then
+  renoise.app():show_status("No .XRNI was selected, doing nothing.")
+  return -- Exit the script if no file was selected
+end
+
+-- Try loading the selected XRNI file into the newly created instrument
+local success, error_message = pcall(function()
+  renoise.app():load_instrument(file_path)
+end)
+
+if not success then
+  renoise.app():show_status("Failed to load the selected .XRNI file: " .. error_message)
+  return -- Exit if the XRNI couldn't be loaded
+end
+
+
+
+-- Show a status message with the instrument name and phrase info
+renoise.app():show_status("Loaded Instrument name: " .. file_path)
+end
+renoise.tool():add_keybinding{name="Global:Paketti:Load XRNI & Keep Phrases",invoke=function() loadXRNIKeepPhrases() end}
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Load XRNI & Keep Phrases",invoke=function() loadXRNIKeepPhrases() end}
+renoise.tool():add_menu_entry{name="Phrase Editor:Paketti..:Load XRNI & Keep Phrases",invoke=function() loadXRNIKeepPhrases() end}
+renoise.tool():add_menu_entry{name="Phrase Mappings:Paketti..:Load XRNI & Keep Phrases",invoke=function() loadXRNIKeepPhrases() end}
+renoise.tool():add_menu_entry{name="Phrase Grid:Paketti..:Load XRNI & Keep Phrases",invoke=function() loadXRNIKeepPhrases() end}
+renoise.tool():add_menu_entry{name="Sample Mappings:Paketti..:Load XRNI & Keep Phrases",invoke=function() loadXRNIKeepPhrases() end}
+renoise.tool():add_midi_mapping{name="Paketti:Load XRNI & Keep Phrases",invoke=function(message) if message:is_trigger() then loadXRNIKeepPhrases() end end}
+
+-------
+function loadNewWithCurrentSliceMarkers()
+  local song=renoise.song()
+  if song.selected_sample  == nil then
+  renoise.app():show_status("There is no sample in this instrument, doing nothing.")
+  return else  
+local originalSample = renoise.song().instruments[renoise.song().selected_instrument_index]
+local selected_sample =  song.selected_instrument.samples[1]
+
+  -- Check if the selected sample has slice markers
+if #selected_sample.slice_markers == 0 then
+    renoise.app():show_status("Please select an instrument with slice markers, doing nothing for now.")
+  else
+    -- Retain slice markers and sample settings
+    local saved_markers=selected_sample.slice_markers
+    local saved_sample=selected_sample
+
+    -- Trigger the file loader to load a new sample
+    pitchBendMultipleSampleLoader()
+
+    -- Wait for the sample to load and then apply markers and settings
+    local new_sample=song.selected_sample -- Assumes the loaded sample replaces selected_sample
+
+    if new_sample then
+      local new_sample_length=new_sample.sample_buffer.number_of_frames
+
+      -- Filter markers to fit within the new sample length
+      local valid_markers={}
+      for _, marker in ipairs(saved_markers) do
+        if marker<=new_sample_length then
+          table.insert(valid_markers,marker)
+        end
+      end
+
+      -- Apply the valid slice markers and copy general sample settings
+      new_sample.slice_markers=valid_markers
+      CopySampleSettings(originalSample.samples[1],renoise.song().selected_instrument.samples[1])
+
+      -- Copy slice settings for each individual slice sample
+      for i=2, #originalSample.samples do  -- Slices start at index 2
+        CopySliceSettings(originalSample.samples[i],renoise.song().selected_instrument.samples[i])
+      end
+
+      renoise.app():show_status("Slice markers and all sample & slice settings applied to the newly loaded sample.")
+    else
+      renoise.app():show_status("No new sample loaded; settings not applied.")
+    end
+  end
+end
+end
+
+-- Register menu entries and keybindings
+renoise.tool():add_menu_entry{name="Instrument Box:Paketti..:Load New Instrument with Current Slice Markers",invoke=function() loadNewWithCurrentSliceMarkers() end}
+renoise.tool():add_menu_entry{name="Sample Editor:Paketti..:Load New Instrument with Current Slice Markers",invoke=function() loadNewWithCurrentSliceMarkers() end}
+renoise.tool():add_keybinding{name="Global:Paketti:Load New Instrument with Current Slice Markers",invoke=function() loadNewWithCurrentSliceMarkers() end}
+

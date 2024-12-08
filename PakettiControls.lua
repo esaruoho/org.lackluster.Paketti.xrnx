@@ -418,4 +418,41 @@ for i=0,64 do
     invoke=function() PakettiSetEditStep(i) end}
 end
 
+----
+--esa- 2nd keybind for Record Toggle ON/OFF with effect_column reading
+function RecordToggle()
+ local a=renoise.app()
+ local s=renoise.song()
+ local t=s.transport
+ local currentstep=t.edit_step
+--if has notifier, dump notifier, if no notifier, add notifier
+ if t.edit_mode then
+    t.edit_mode=false
+ if t.edit_step==0 then
+    t.edit_step=1
+ else
+  return
+ end 
+ else
+      t.edit_mode = true
+   if s.selected_effect_column_index == 1 then t.edit_step=0
+   elseif s.selected_effect_column_index == 0 then t.edit_step=currentstep return
+   end
+end
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Record Toggle with EditStep Reading (2nd)", invoke=function() RecordToggle() end}
+
+
+
+
+---------
+function loadRecentlySavedSong()
+renoise.app():load_song(renoise.app().recently_saved_song_files[1])
+end
+
+renoise.tool():add_keybinding{name="Global:Paketti:Load Recently Saved Song",invoke=function() loadRecentlySavedSong() end}
+renoise.tool():add_menu_entry{name="Main Menu:File:Paketti..:Load Recently Saved Song",invoke=function() loadRecentlySavedSong() end}
+
+
 

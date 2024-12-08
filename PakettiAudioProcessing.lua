@@ -1291,4 +1291,178 @@ function normalize_selected_sample()
 end
 
 renoise.tool():add_keybinding{name="Global:Paketti:Paketti Normalize Sample",invoke=function() normalize_selected_sample() end}
+---------
+local function auto_correlate()
+  local sample = renoise.song().selected_sample
+  if not sample or not sample.sample_buffer.has_sample_data then
+    renoise.app():show_status("No sample selected or sample buffer empty.")
+    return
+  end
+
+  local buffer = sample.sample_buffer
+  local sample_frames = buffer.number_of_frames
+  local channels = buffer.number_of_channels
+
+  if sample_frames < 100 then
+    renoise.app():show_status("Sample too short for correlation analysis.")
+    return
+  end
+
+  -- Downsample the data for speed
+  local step = math.max(1, math.floor(sample_frames / 1000)) -- Reduce to ~1000 frames max
+  local function get_sample(ch, frame)
+    return buffer:sample_data(ch, frame)
+  end
+
+  -- Find zero-crossings for candidate points
+  local candidates = {}
+  for i = 1, sample_frames - step, step do
+    local prev_sample = get_sample(1, i)
+    local next_sample = get_sample(1, i + step)
+    if prev_sample * next_sample <= 0 then -- Zero-crossing detected
+      table.insert(candidates, i)
+    end
+  end
+
+  if #candidates < 2 then
+    renoise.app():show_status("Not enough zero-crossings for loop detection.")
+    return
+  end
+
+  -- Correlation function to compare candidate segments
+  local function calculate_correlation(start, length)
+    local sum = 0
+    for i = 1, length, step do
+      for ch = 1, channels do
+        if start + i <= sample_frames and start + length + i <= sample_frames then
+          local diff = get_sample(ch, start + i) - get_sample(ch, start + length + i)
+          sum = sum + math.abs(diff)
+        end
+      end
+    end
+    return sum / (length / step)
+  end
+
+  -- Find the best matching start and endpoint
+  local best_start, best_end, min_diff = 1, sample_frames, math.huge
+  for _, start in ipairs(candidates) do
+    for _, end_candidate in ipairs(candidates) do
+      if end_candidate > start then
+        local length = end_candidate - start
+        local diff = calculate_correlation(start, length)
+        if diff < min_diff then
+          min_diff = diff
+          best_start = start
+          best_end = end_candidate
+        end
+      end
+    end
+  end
+
+  -- Apply loop points
+  if best_start < best_end then
+    sample.loop_mode = renoise.Sample.LOOP_MODE_FORWARD
+    sample.loop_start = best_start
+    sample.loop_end = best_end
+    renoise.app():show_status(("Loop set: %d to %d (Diff: %.4f)"):format(best_start, best_end, min_diff))
+  else
+    renoise.app():show_status("Failed to find suitable loop points.")
+  end
+end
+
+renoise.tool():add_menu_entry {
+  name = "Sample Editor:Auto Correlate Loop",
+  invoke = auto_correlate
+}
+
+
+
+
+
+
+
+----------
+local function auto_detect_single_cycle_loop()
+  local sample = renoise.song().selected_sample
+  if not sample or not sample.sample_buffer.has_sample_data then
+    renoise.app():show_status("No sample selected or sample buffer empty.")
+    return
+  end
+
+  local buffer = sample.sample_buffer
+  local sample_frames = buffer.number_of_frames
+  local channels = buffer.number_of_channels
+
+  if sample_frames < 2 then
+    renoise.app():show_status("Sample too short for single-cycle detection.")
+    return
+  end
+
+  -- Helper function to get average amplitude over all channels
+  local function get_amplitude(frame)
+    local sum = 0
+    for ch = 1, channels do
+      sum = sum + buffer:sample_data(ch, frame)
+    end
+    return sum / channels
+  end
+
+  -- Downsample the data for faster processing
+  local step = math.max(1, math.floor(sample_frames / 1000)) -- Reduce to ~1000 frames max
+  local amplitudes = {}
+  for i = 1, sample_frames, step do
+    amplitudes[#amplitudes + 1] = get_amplitude(i)
+  end
+
+  -- Autocorrelation-based periodicity detection (on downsampled data)
+  local best_period = 0
+  local min_difference = math.huge
+  for period = 1, math.floor(#amplitudes / 2) do
+    local difference = 0
+    for i = 1, #amplitudes - period do
+      difference = difference + math.abs(amplitudes[i] - amplitudes[i + period])
+    end
+    if difference < min_difference then
+      min_difference = difference
+      best_period = period * step -- Convert back to original frame scale
+    end
+  end
+
+  if best_period == 0 then
+    renoise.app():show_status("No periodicity detected in sample.")
+    return
+  end
+
+  -- Find zero-crossing points within the detected cycle
+  local function find_nearest_zero_crossing(start_frame)
+    for frame = start_frame, sample_frames - 1 do
+      if get_amplitude(frame) * get_amplitude(frame + 1) <= 0 then
+        return frame
+      end
+    end
+    return start_frame -- Default to start if no zero-crossing found
+  end
+
+  local loop_start = find_nearest_zero_crossing(1)
+  local loop_end = find_nearest_zero_crossing(loop_start + best_period)
+
+  if loop_start >= loop_end then
+    renoise.app():show_status("Failed to detect suitable loop points.")
+    return
+  end
+
+  -- Apply the detected loop points
+  sample.loop_mode = renoise.Sample.LOOP_MODE_FORWARD
+  sample.loop_start = loop_start
+  sample.loop_end = loop_end
+  renoise.app():show_status(("Loop set: %d to %d (Period: %d)"):format(loop_start, loop_end, best_period))
+end
+
+renoise.tool():add_menu_entry {
+  name = "Sample Editor:Auto Detect Single-Cycle Loop",
+  invoke = auto_detect_single_cycle_loop
+}
+
+
+
 
