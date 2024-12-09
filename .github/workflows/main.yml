@@ -1,4 +1,4 @@
-name: XRNX Package and Release
+name: Package Paketti as .XRNX
 
 on:
   workflow_dispatch:
@@ -13,27 +13,21 @@ jobs:
       # Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v2
-
-      # Find and Package .xrnx Directories
-      - name: Package XRNX Files
-        id: package_xrnx
+      
+      # Zip the contents or specified directory of the repo, excluding specific XML files
+      - name: Zip XRNX Package
         run: |
-          mkdir -p packaged
-          # Loop through all directories ending with .xrnx
-          find . -type d -name "*.xrnx" | while read -r xrnx_dir; do
-            xrnx_name=$(basename "$xrnx_dir")
-            # Zip the contents of the directory into a .xrnx file
-            zip -r "packaged/$xrnx_name" "$xrnx_dir"/*
-          done
-          # List all packaged files
-          ls -1 packaged/*.xrnx > packaged_files.txt
-
-      # Generate a tag name
+          zip -r org.lackluster.Paketti_V3.54.xrnx . \
+            -x "*.git*" "*.github*" \
+            "preferences.xml" \
+            "preferencesDynamicView.xml"
+      
+      # Dynamically generate a tag name and set it as an environment variable
       - name: Generate Tag Name
         run: |
           echo "TAG_NAME=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
-
-      # Create and push a tag
+      
+      # Create a tag with the generated tag name
       - name: Create and Push Tag
         run: |
           git config --local user.email "action@github.com"
@@ -42,8 +36,8 @@ jobs:
           git push origin $TAG_NAME
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # Create a GitHub release
+      
+      # Create a GitHub release using the generated tag name
       - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@v1
@@ -54,19 +48,14 @@ jobs:
           release_name: Release ${{ env.TAG_NAME }}
           draft: false
           prerelease: false
-
-      # Upload each XRNX file to the release
-      - name: Upload XRNX Files to Release
+      
+      # Upload the XRNX file to the GitHub release
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          while read -r asset_path; do
-            asset_name=$(basename "$asset_path")
-            echo "Uploading $asset_name"
-            curl \
-              -X POST \
-              -H "Authorization: token $GITHUB_TOKEN" \
-              -H "Content-Type: application/octet-stream" \
-              --data-binary @"$asset_path" \
-              "${{ steps.create_release.outputs.upload_url }}"?name="$asset_name"
-          done < packaged_files.txt
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./org.lackluster.Paketti_V3.54.xrnx
+          asset_name: org.lackluster.Paketti_V3.54.xrnx
+          asset_content_type: application/octet-stream
